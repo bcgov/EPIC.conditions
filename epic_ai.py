@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import generate_poem
+from gpt import generate_poem, extract_info
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -35,12 +35,13 @@ with gr.Blocks() as demo:
         )
     with gr.Tab("Condition Extractor"):
         file_input = gr.File(label="File Input")
-        output = gr.Textbox(label="Output")
+        completion_object = gr.Textbox(label="Completion Object")
+        completion_data = gr.Textbox(label="Completion Data")
         submit_button = gr.Button("Submit")
         submit_button.click(
-            fn=read_pdf.read_pdf,
+            fn=extract_info,
             inputs=file_input,
-            outputs=output
+            outputs=[completion_object, completion_data]
         )
 
 demo.launch()

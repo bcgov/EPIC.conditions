@@ -3,13 +3,10 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-
 import read_pdf
-
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 
 def generate_poem(model, prompt, file1, doc_type1, file2, doc_type2):
 
@@ -62,32 +59,83 @@ def generate_poem(model, prompt, file1, doc_type1, file2, doc_type2):
     return completion.choices[0].message.content
 
 
-tools = [
-  {
-    "type": "function",
-    "function": {
-      "name": "get_current_weather",
-      "description": "Get the current weather in a given location",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "location": {
-            "type": "string",
-            "description": "The city and state, e.g. San Francisco, CA",
+def extract_info_old():
+  tools = [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_current_weather",
+        "description": "Get the current weather in a given location",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "The city and state, e.g. San Francisco, CA",
+            },
+            "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
           },
-          "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+          "required": ["location"],
         },
-        "required": ["location"],
-      },
+      }
     }
-  }
-]
-messages = [{"role": "user", "content": "What's the weather like in Boston today in C?"}]
-completion = client.chat.completions.create(
-  model="gpt-4o",
-  messages=messages,
-  tools=tools,
-  tool_choice="auto"
-)
+  ]
+  messages = [{"role": "user", "content": "What's the weather like in Boston today in C?"}]
+  completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=messages,
+    tools=tools,
+    tool_choice="auto"
+  )
 
-print(completion.choices[0].message.tool_calls[0].function.arguments)
+  print(completion.choices[0].message.tool_calls[0].function.arguments)
+
+def extract_info(file_input):
+
+  file_text = None
+  with open(file_input.name, "r") as f:
+
+      # If file is a PDF, convert it to text
+      if file_input.name.endswith(".pdf"):
+          file_text = read_pdf.read_pdf(file_input.name)
+      elif file_input.name.endswith(".txt"):
+          file_text = f.read()
+      else:
+          return "File 1 is not a PDF or TXT file"
+      
+  print(file_text)
+
+  tools = [
+    {
+      "type": "function",
+      "function": {
+        "name": "format_info",
+        "description": "Format the information extracted from the document.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "condition_name": {
+              "type": "string",
+              "description": "The name of the condition.",
+            },
+            "condition_number": {
+              "type": "integer",
+              "description": "The number associated with the condition.",
+            },
+            # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+          },
+          "required": ["condition_name, condition_number"],
+        },
+      }
+    }
+  ]
+  messages = [{"role": "user", "content": f"Here is a condition:\n\n{file_text}"}]
+  completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=messages,
+    tools=tools,
+    tool_choice="auto"
+  )
+
+  return(completion, completion.choices[0].message.tool_calls[0].function.arguments)
+  # return(completion)
