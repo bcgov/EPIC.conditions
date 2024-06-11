@@ -114,17 +114,22 @@ def extract_info(file_input):
         "parameters": {
           "type": "object",
           "properties": {
-            "condition_name": {
-              "type": "string",
-              "description": "The name of the condition.",
-            },
-            "condition_number": {
-              "type": "integer",
-              "description": "The number associated with the condition.",
-            },
-            # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+              "conditions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "condition_name": {"type": "string", "description": "The name of the condition."},
+                        "condition_number": {"type": "integer", "description": "The number associated with the condition."},
+                        "condition_text": {"type": "string", "description": "The text of the condition."},
+                    },
+                },
+                "description": "The first five of the the conditions extracted from the document.",
+                # "description": "All of the the conditions extracted from the document.",
+
+              },
           },
-          "required": ["condition_name, condition_number"],
+          "required": ["conditions"],
         },
       }
     }
