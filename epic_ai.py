@@ -36,7 +36,7 @@ with gr.Blocks() as demo:
     with gr.Tab("Condition Extractor"):
         file_input = gr.File(label="File Input")
         completion_object = gr.Textbox(label="Completion Object")
-        completion_data = gr.Textbox(label="Completion Data")
+        completion_data = gr.JSON(label="Completion Data")
         submit_button = gr.Button("Submit")
         submit_button.click(
             fn=extract_info,
