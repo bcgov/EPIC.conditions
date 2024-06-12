@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import generate_poem, extract_info
+from gpt import generate_poem, extract_info, check_sub_conditions
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -41,6 +41,16 @@ with gr.Blocks() as demo:
         submit_button.click(
             fn=extract_info,
             inputs=file_input,
+            outputs=[completion_object, completion_data]
+        )
+    with gr.Tab("Sub Condition Checker"):
+        text_input = gr.Textbox(label="Text Input")
+        completion_object = gr.Textbox(label="Contains Sub Sections")
+        completion_data = gr.JSON(label="Contains Sub Sections")
+        submit_button = gr.Button("Submit")
+        submit_button.click(
+            fn=check_sub_conditions,
+            inputs=text_input,
             outputs=[completion_object, completion_data]
         )
 

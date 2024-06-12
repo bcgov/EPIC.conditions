@@ -121,7 +121,28 @@ def extract_info(file_input):
                     "properties": {
                         "condition_name": {"type": "string", "description": "The name of the condition."},
                         "condition_number": {"type": "integer", "description": "The number associated with the condition."},
-                        "condition_text": {"type": "string", "description": "The text of the condition."},
+                        "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues."},
+                        "subconditions": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
+                                    "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
+                                    "subconditions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
+                                                "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
+                                                
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
                 "description": "The first five of the the conditions extracted from the document.",
@@ -134,7 +155,7 @@ def extract_info(file_input):
       }
     }
   ]
-  messages = [{"role": "user", "content": f"Here is a condition:\n\n{file_text}"}]
+  messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}"}]
   completion = client.chat.completions.create(
     model="gpt-4o",
     messages=messages,
@@ -143,4 +164,40 @@ def extract_info(file_input):
   )
 
   return(completion, completion.choices[0].message.tool_calls[0].function.arguments)
-  # return(completion)
+
+
+def check_sub_conditions(text_input):
+  tools = [
+    {
+      "type": "function",
+      "function": {
+        "name": "extract_subconditions",
+        "description": "Extracts sub conditions from the text.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+              "subconditions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
+                        "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
+                    },
+                },
+              },
+          },
+          "required": ["subconditions"],
+        },
+      }
+    }
+  ]
+  messages = [{"role": "user", "content": f"Here is a condition:\n\n{text_input}"}]
+  completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=messages,
+    tools=tools,
+    tool_choice="auto"
+  )
+
+  return(completion, completion.choices[0].message.tool_calls[0].function.arguments)
