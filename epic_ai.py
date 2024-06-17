@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import generate_poem, extract_info, check_sub_conditions
+from gpt import generate_poem, extract_info, check_sub_conditions, count_conditions
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -34,15 +34,36 @@ with gr.Blocks() as demo:
             outputs=output
         )
     with gr.Tab("Condition Extractor"):
+
         file_input = gr.File(label="File Input")
-        completion_object = gr.Textbox(label="Completion Object")
-        completion_data = gr.JSON(label="Completion Data")
-        submit_button = gr.Button("Submit")
-        submit_button.click(
-            fn=extract_info,
-            inputs=file_input,
-            outputs=[completion_object, completion_data]
-        )
+
+        with gr.Row():
+            count_conditions_button = gr.Button("Count Conditions")
+            number_of_conditions = gr.Number(label="Number of Conditions", precision=0, value=0)
+            count_conditions_button.click(
+                fn=count_conditions,
+                inputs=file_input,
+                outputs=number_of_conditions
+            )
+
+        with gr.Row():
+            with gr.Column(scale=1):
+
+                # Slider for starting condition
+                starting_condition = gr.Slider(minimum=1, maximum=100, label="Starting Condition", step=1)
+
+                # Slider for ending condition
+                ending_condition = gr.Slider(minimum=1, maximum=100, label="Ending Condition", step=1)
+
+                submit_button = gr.Button("Submit")
+                completion_object = gr.Textbox(label="Completion Object")
+                completion_data = gr.JSON(label="Completion Data")
+                submit_button.click(
+                    fn=extract_info,
+                    inputs=[file_input, starting_condition, ending_condition],
+                    outputs=[completion_object, completion_data]
+                )
+                
     with gr.Tab("Sub Condition Checker"):
         text_input = gr.Textbox(label="Text Input")
         completion_object = gr.Textbox(label="Contains Sub Sections")

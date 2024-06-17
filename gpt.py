@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import read_pdf
 from openai import OpenAI
+import json
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -59,28 +60,40 @@ def generate_poem(model, prompt, file1, doc_type1, file2, doc_type2):
     return completion.choices[0].message.content
 
 
-def extract_info_old():
+def count_conditions(file_input):
+  file_text = None
+  with open(file_input.name, "r") as f:
+
+      # If file is a PDF, convert it to text
+      if file_input.name.endswith(".pdf"):
+          file_text = read_pdf.read_pdf(file_input.name)
+      elif file_input.name.endswith(".txt"):
+          file_text = f.read()
+      else:
+          return "File 1 is not a PDF or TXT file"
+      
+  print(file_text)
+
   tools = [
     {
       "type": "function",
       "function": {
-        "name": "get_current_weather",
-        "description": "Get the current weather in a given location",
+        "name": "count_conditions",
+        "description": "Count the number of conditions in the document.",
         "parameters": {
           "type": "object",
           "properties": {
-            "location": {
-              "type": "string",
-              "description": "The city and state, e.g. San Francisco, CA",
-            },
-            "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+              "count": {
+                "type": "integer",
+                "description": "The number of conditions in the document."
+              },
           },
-          "required": ["location"],
+          "required": ["count"],
         },
       }
     }
   ]
-  messages = [{"role": "user", "content": "What's the weather like in Boston today in C?"}]
+  messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}"}]
   completion = client.chat.completions.create(
     model="gpt-4o",
     messages=messages,
@@ -88,9 +101,12 @@ def extract_info_old():
     tool_choice="auto"
   )
 
-  print(completion.choices[0].message.tool_calls[0].function.arguments)
+  count_json = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
+  count = count_json["count"]
 
-def extract_info(file_input):
+  return(count)
+
+def extract_info(file_input, starting_condition_number, ending_condition_number):
 
   file_text = None
   with open(file_input.name, "r") as f:
@@ -145,12 +161,14 @@ def extract_info(file_input):
                         },
                     },
                 },
-                "description": "The first five of the the conditions extracted from the document.",
+                # "description": "The first ten of the the conditions extracted from the document.",
+                "description": f"Conditions {starting_condition_number} to and including {ending_condition_number} extracted from the document. Conditions always include the condition name",
+                # "description": f"Conditons 4 through 7 extracted from the document.",
                 # "description": "All of the the conditions extracted from the document.",
 
               },
           },
-          "required": ["conditions"],
+          "required": ["conditions", "conditions.condition_name"],
         },
       }
     }
