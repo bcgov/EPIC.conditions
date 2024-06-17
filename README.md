@@ -4,7 +4,7 @@
    
    `git clone https://github.com/MarkFeleaMotetGov/epic-ai-mark-testing.git`
 
-   `cd https://github.com/MarkFeleaMotetGov/epic-ai-mark-testing`
+   `cd epic-ai-mark-testing`
    
 
 2. Set up a virtual environment:
