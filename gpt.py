@@ -9,7 +9,7 @@ import json
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def generate_poem(model, prompt, file1, doc_type1, file2, doc_type2):
+def compare_documents(model, prompt, file1, doc_type1, file2, doc_type2):
 
     # Print all parameters
     print("Model: ", model)
@@ -174,43 +174,6 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
     }
   ]
   messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}"}]
-  completion = client.chat.completions.create(
-    model="gpt-4o",
-    messages=messages,
-    tools=tools,
-    tool_choice="auto"
-  )
-
-  return(completion, completion.choices[0].message.tool_calls[0].function.arguments)
-
-
-def check_sub_conditions(text_input):
-  tools = [
-    {
-      "type": "function",
-      "function": {
-        "name": "extract_subconditions",
-        "description": "Extracts sub conditions from the text.",
-        "parameters": {
-          "type": "object",
-          "properties": {
-              "subconditions": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
-                        "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
-                    },
-                },
-              },
-          },
-          "required": ["subconditions"],
-        },
-      }
-    }
-  ]
-  messages = [{"role": "user", "content": f"Here is a condition:\n\n{text_input}"}]
   completion = client.chat.completions.create(
     model="gpt-4o",
     messages=messages,
