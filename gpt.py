@@ -1,4 +1,3 @@
-
 import os
 import json
 import aiohttp
@@ -117,6 +116,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
   def validate_response(response, expected_count):
       try:
           response_json = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+
           conditions = response_json.get("conditions", [])
           return len(conditions) == expected_count
       except Exception as e:
@@ -139,11 +139,11 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
       
   # print(file_text)
 
-  function_description = f"Conditions {starting_condition_number} (inclusive) up to and including {ending_condition_number} extracted from the document. Conditions always include the condition name. Conditions that have subconditions will include the separated subconditions. Subconditions will include their subconditions."
+  function_description = f"Conditions {starting_condition_number} (inclusive) up to and including {ending_condition_number} extracted from the document. ALWAYS include the condition name."
 
   if starting_condition_number == ending_condition_number:
     print(f"Extracting condition {starting_condition_number} from the document.")
-    function_description = f"Only condition {starting_condition_number} extracted from the document. Always include the condition name. If the condition has subconditions, includes the separated subconditions. Subconditions will include their subconditions."
+    function_description = f"Only condition {starting_condition_number} extracted from the document. Always includes the condition name."
 
   tools = [
     {
@@ -159,30 +159,9 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
                 "items": {
                     "type": "object",
                     "properties": {
-                        "condition_name": {"type": "string", "description": "The name of the condition."},
+                        "condition_name": {"type": "string", "description": "The name of the condition. REQUIRED."},
                         "condition_number": {"type": "integer", "description": "The number associated with the condition."},
-                        "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues."},
-                        "subconditions": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
-                                    "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
-                                    "subconditions": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
-                                                "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
-                                                
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
+                        "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues. Include the same newlines as in the document."},
                     },
                 },
                 "description": function_description,
@@ -222,7 +201,7 @@ def extract_info_chunked(file_input, number_of_conditions, chunk_size=5):
     end = min(i + chunk_size, number_of_conditions)
 
 
-    print(Fore.YELLOW + "\nExtracting conditions", i + 1, "to", end, f"of {number_of_conditions}\n" + Fore.RESET)
+    print(Fore.YELLOW + "\nExtracting conditions", i + 1, "to", end, f"(of {number_of_conditions})\n" + Fore.RESET)
     chunk_completion, chunk = extract_info(file_input, i + 1, end)
     print(Fore.GREEN + chunk + Fore.RESET)
     chunks.append(chunk) 
@@ -246,5 +225,14 @@ def extract_all_conditions(file_input, number_of_conditions, chunk_size=5):
 
   chunks = extract_info_chunked(file_input, number_of_conditions, chunk_size)
   merged = merge_json_chunks(chunks)
+
+  # print the merged JSON, replacing \n with newlines by converting to a dictionary and then back to a string
+  merged = json.loads(merged)
+
+  print(Fore.CYAN + "\nMerged JSON:\n")
+  print(merged)
+  print(Fore.RESET)
+  
   print(Fore.GREEN + "\nSuccessfully extracted all conditions!" + Fore.RESET)
+  
   return merged
