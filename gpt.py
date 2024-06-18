@@ -236,3 +236,69 @@ def extract_all_conditions(file_input, number_of_conditions, chunk_size=5):
   print(Fore.GREEN + "\nSuccessfully extracted all conditions!" + Fore.RESET)
   
   return merged
+
+
+def extract_subconditions(condition_text):
+     
+    tools = [
+      {
+        "type": "function",
+        "function": {
+          "name": "format_condition",
+          "description": "Formats the input condition by breaking it down into nested subconditions",
+
+          "parameters": {
+            "type": "object",
+            "properties": {
+
+                  "clauses": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "properties": {
+                              "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets). If none, leave blank."},
+                              "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
+                              "subconditions": {
+                                  "type": "array",
+                                  "items": {
+                                      "type": "object",
+                                      "properties": {
+                                          "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
+                                          "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
+                                          "subconditions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
+                                                    "subcondition_text": {"type": "string", "description": "The text of the subcondition."},
+                                                    
+                                                },
+                                            },
+                                        },
+                                      },
+                                  },
+                              },
+                          },
+                      },
+                  },
+
+            },
+            "required": ["clauses"],
+          },
+
+
+
+
+        }
+      }
+    ]
+    messages = [{"role": "user", "content": f"Here is a condition:\n\n{condition_text}"}]
+    completion = client.chat.completions.create(
+      model="gpt-4o",
+      messages=messages,
+      tools=tools,
+      tool_choice="auto"
+    )
+  
+    return completion.choices[0].message.tool_calls[0].function.arguments
