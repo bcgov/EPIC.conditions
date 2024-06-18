@@ -119,7 +119,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
       else:
           return "File 1 is not a PDF or TXT file"
       
-  print(file_text)
+  # print(file_text)
 
   tools = [
     {
@@ -162,7 +162,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
                     },
                 },
                 # "description": "The first ten of the the conditions extracted from the document.",
-                "description": f"Conditions {starting_condition_number} to and including {ending_condition_number} extracted from the document. Conditions always include the condition name",
+                "description": f"Conditions {starting_condition_number} up to and including {ending_condition_number} extracted from the document. Conditions always include the condition name. Conditions that have subconditions will include the separated subconditions. Subconditions will include their subconditions.",
                 # "description": f"Conditons 4 through 7 extracted from the document.",
                 # "description": "All of the the conditions extracted from the document.",
 
@@ -182,3 +182,44 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
   )
 
   return(completion, completion.choices[0].message.tool_calls[0].function.arguments)
+
+
+def extract_info_chunked(file_input, number_of_conditions, chunk_size=10):
+    
+  chunks = []
+
+  for i in range(0, number_of_conditions, chunk_size):
+    end = min(i + chunk_size, number_of_conditions)
+
+
+    print("Extracting conditions", i + 1, "to", end)
+    chunk_completion, chunk = extract_info(file_input, i + 1, end)
+    print(chunk)
+    chunks.append(chunk) 
+
+  return chunks
+
+def merge_json_chunks(chunks):
+
+  merged = {
+    "conditions": []
+  }
+
+  for chunk in chunks:
+    chunk_json = json.loads(chunk)
+    merged["conditions"].extend(chunk_json["conditions"])
+
+  return json.dumps(merged) 
+
+
+def extract_all_conditions(file_input, number_of_conditions, chunk_size=10):
+
+  chunks = extract_info_chunked(file_input, number_of_conditions, chunk_size)
+  print(chunks)
+  merged = merge_json_chunks(chunks)
+  print(merged)
+  return merged
+    
+    
+    
+

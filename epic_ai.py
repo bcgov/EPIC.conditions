@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import compare_documents, extract_info, count_conditions
+from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, merge_json_chunks
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -34,6 +34,33 @@ with gr.Blocks() as demo:
                     inputs=[file_input, starting_condition, ending_condition],
                     outputs=[completion_object, completion_data]
                 )
+    with gr.Tab("Condition Extracter & Merger"):
+
+        file_input = gr.File(label="File Input")
+
+        with gr.Row():
+            count_conditions_button = gr.Button("Count Conditions")
+            number_of_conditions = gr.Number(label="Number of Conditions", precision=0, value=0)
+            count_conditions_button.click(
+                fn=count_conditions,
+                inputs=file_input,
+                outputs=number_of_conditions
+            )
+
+        with gr.Row():
+            with gr.Column(scale=1):
+
+                submit_button = gr.Button("Submit")
+                merged_chunks = gr.JSON(label="Merged Chunks")
+
+                submit_button.click(
+                    fn=extract_all_conditions,
+                    inputs=[file_input, number_of_conditions],
+                    outputs=[merged_chunks]
+
+                )
+
+
 
     with gr.Tab("Document Comparison"):
         with gr.Row():
