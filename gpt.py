@@ -1,12 +1,17 @@
 
-# Get OPENAI_API_KEY from environment variables
 import os
+import json
+
+
+import colorama
+from colorama import Fore, Back, Style
+
 from dotenv import load_dotenv
 load_dotenv()
 import read_pdf
 from openai import OpenAI
-import json
 
+# Get OPENAI_API_KEY from environment variables
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def compare_documents(model, prompt, file1, doc_type1, file2, doc_type2):
@@ -108,6 +113,18 @@ def count_conditions(file_input):
 
 def extract_info(file_input, starting_condition_number, ending_condition_number):
 
+  def validate_response(response, expected_count):
+      try:
+          response_json = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+          conditions = response_json.get("conditions", [])
+          return len(conditions) == expected_count
+      except Exception as e:
+          print(f"Validation error: {e}")
+          return False
+      
+  expected_count = ending_condition_number - starting_condition_number + 1
+
+
   file_text = None
   with open(file_input.name, "r") as f:
 
@@ -120,6 +137,12 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
           return "File 1 is not a PDF or TXT file"
       
   # print(file_text)
+
+  function_description = f"Conditions {starting_condition_number} (inclusive) up to and including {ending_condition_number} extracted from the document. Conditions always include the condition name. Conditions that have subconditions will include the separated subconditions. Subconditions will include their subconditions."
+
+  if starting_condition_number == ending_condition_number:
+    print(f"Extracting condition {starting_condition_number} from the document.")
+    function_description = f"Only condition {starting_condition_number} extracted from the document. Always include the condition name. If the condition has subconditions, includes the separated subconditions. Subconditions will include their subconditions."
 
   tools = [
     {
@@ -161,11 +184,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
                         },
                     },
                 },
-                # "description": "The first ten of the the conditions extracted from the document.",
-                "description": f"Conditions {starting_condition_number} up to and including {ending_condition_number} extracted from the document. Conditions always include the condition name. Conditions that have subconditions will include the separated subconditions. Subconditions will include their subconditions.",
-                # "description": f"Conditons 4 through 7 extracted from the document.",
-                # "description": "All of the the conditions extracted from the document.",
-
+                "description": function_description,
               },
           },
           "required": ["conditions", "conditions.condition_name"],
@@ -174,27 +193,37 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
     }
   ]
   messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}"}]
-  completion = client.chat.completions.create(
-    model="gpt-4o",
-    messages=messages,
-    tools=tools,
-    tool_choice="auto"
-  )
 
-  return(completion, completion.choices[0].message.tool_calls[0].function.arguments)
+  for attempt in range(3):  # Retry up to 3 times
+      completion = client.chat.completions.create(
+          model="gpt-4o",
+          messages=messages,
+          tools=tools,
+          tool_choice="auto"
+      )
+
+      if validate_response(completion, expected_count):
+          print(Fore.GREEN + f"Successfully extracted conditions {starting_condition_number} to {ending_condition_number}!" + Fore.RESET)
+          return completion, completion.choices[0].message.tool_calls[0].function.arguments
+      
+
+      print(Fore.RED + completion.choices[0].message.tool_calls[0].function.arguments + Fore.RESET)
+      print(Fore.RED + f"\nAttempt {attempt + 1}: Validation failed. Retrying...\n" + Fore.RESET)
+
+  return None, "Failed to extract the correct number of conditions after multiple attempts"
 
 
-def extract_info_chunked(file_input, number_of_conditions, chunk_size=10):
-    
+def extract_info_chunked(file_input, number_of_conditions, chunk_size=5):
+  
   chunks = []
 
   for i in range(0, number_of_conditions, chunk_size):
     end = min(i + chunk_size, number_of_conditions)
 
 
-    print("Extracting conditions", i + 1, "to", end)
+    print(Fore.YELLOW + "\nExtracting conditions", i + 1, "to", end, f"of {number_of_conditions}\n" + Fore.RESET)
     chunk_completion, chunk = extract_info(file_input, i + 1, end)
-    print(chunk)
+    print(Fore.GREEN + chunk + Fore.RESET)
     chunks.append(chunk) 
 
   return chunks
@@ -212,14 +241,9 @@ def merge_json_chunks(chunks):
   return json.dumps(merged) 
 
 
-def extract_all_conditions(file_input, number_of_conditions, chunk_size=10):
+def extract_all_conditions(file_input, number_of_conditions, chunk_size=5):
 
   chunks = extract_info_chunked(file_input, number_of_conditions, chunk_size)
-  print(chunks)
   merged = merge_json_chunks(chunks)
-  print(merged)
+  print(Fore.GREEN + "\nSuccessfully extracted all conditions!" + Fore.RESET)
   return merged
-    
-    
-    
-
