@@ -71,6 +71,19 @@ with gr.Blocks() as demo:
                     outputs=[merged_chunks]
                 )
 
+        with gr.Row():
+            with gr.Column(scale=1):
+                extract_subconditions_button = gr.Button("Extract Subconditions")
+                subconditions = gr.JSON(label="Extracted Subconditions")
+
+
+
+                extract_subconditions_button.click(
+                    fn=extract_all_subconditions,
+                    inputs=[merged_chunks],
+                    outputs=[subconditions]
+                )
+
 
     with gr.Tab("Sub-condition Extractor"):
 

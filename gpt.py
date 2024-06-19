@@ -125,7 +125,6 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
       
   expected_count = ending_condition_number - starting_condition_number + 1
 
-
   file_text = None
   with open(file_input.name, "r") as f:
 
@@ -172,9 +171,9 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
       }
     }
   ]
-  messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}"}]
+  messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}\n\nExtract conditions {starting_condition_number} to {ending_condition_number}."}]
 
-  for attempt in range(3):  # Retry up to 3 times
+  for attempt in range(5):  # Retry up to 5 times
       completion = client.chat.completions.create(
           model="gpt-4o",
           messages=messages,
@@ -307,7 +306,7 @@ def check_for_subconditions(input_condition_text):
       "type": "function",
       "function": {
         "name": "contains_subconditions",
-        "description": "Returns true or false if the input condition contains subconditions.",
+        "description": "Returns true or false if the input condition contains subconditions. For example, sections labelled with numbers, letters, or other identifiers of the subcondition. E.g. 1), 1 a), i, bullet points, etc. If there are no indicators of subconditions, the function should return false.",
 
         "parameters": {
           "type": "object",
@@ -318,7 +317,7 @@ def check_for_subconditions(input_condition_text):
               "description": "True if the input condition contains subconditions, false otherwise."
             },
           },
-          "required": ["clauses"],
+          "required": ["contains_subconditions"],
         },
 
       }
@@ -331,14 +330,30 @@ def check_for_subconditions(input_condition_text):
     tools=tools,
     tool_choice="auto"
   )
-
-  return completion.choices[0].message.content
+  return json.loads(completion.choices[0].message.tool_calls[0].function.arguments)["contains_subconditions"]
 
 
 def extract_all_subconditions(input_json):
 
   # For each condition, extract subconditions, then add them to the JSON
   for condition in input_json["conditions"]:
+
+    # Check if the condition has subconditions
+    print(Fore.CYAN + f"\nChecking for subconditions in condition {condition['condition_number']}:" + Fore.RESET)
+    has_subconditions = check_for_subconditions(condition["condition_text"])
+
+    if has_subconditions:
+      print(Fore.GREEN + "This condition has subconditions!" + Fore.RESET)
+    else:
+      print(Fore.RED + "This condition does not have subconditions." + Fore.RESET)
+      
+      # Set subconditions to empty array
+      condition["subconditions"] = []
+
+      # Skip to next condition
+      continue
+
+
     print(Fore.YELLOW + f"\nExtracting subconditions for condition {condition['condition_number']}:\n" + Fore.RESET)
     subcondition = extract_subcondition(condition["condition_text"])
     condition["subconditions"] = json.loads(subcondition)["clauses"]
