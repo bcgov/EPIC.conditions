@@ -238,7 +238,7 @@ def extract_all_conditions(file_input, number_of_conditions, chunk_size=5):
   return merged
 
 
-def extract_subconditions(condition_text):
+def extract_subcondition(condition_text):
      
     tools = [
       {
@@ -287,9 +287,6 @@ def extract_subconditions(condition_text):
             "required": ["clauses"],
           },
 
-
-
-
         }
       }
     ]
@@ -302,3 +299,52 @@ def extract_subconditions(condition_text):
     )
   
     return completion.choices[0].message.tool_calls[0].function.arguments
+
+def check_for_subconditions(input_condition_text):
+
+  tools = [
+    {
+      "type": "function",
+      "function": {
+        "name": "contains_subconditions",
+        "description": "Returns true or false if the input condition contains subconditions.",
+
+        "parameters": {
+          "type": "object",
+          "properties": {
+
+            "contains_subconditions": {
+              "type": "boolean",
+              "description": "True if the input condition contains subconditions, false otherwise."
+            },
+          },
+          "required": ["clauses"],
+        },
+
+      }
+    }
+  ]
+  messages = [{"role": "user", "content": f"Here is the text of a condition:\n\n{input_condition_text}"}]
+  completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=messages,
+    tools=tools,
+    tool_choice="auto"
+  )
+
+  return completion.choices[0].message.content
+
+
+def extract_all_subconditions(input_json):
+
+  # For each condition, extract subconditions, then add them to the JSON
+  for condition in input_json["conditions"]:
+    print(Fore.YELLOW + f"\nExtracting subconditions for condition {condition['condition_number']}:\n" + Fore.RESET)
+    subcondition = extract_subcondition(condition["condition_text"])
+    condition["subconditions"] = json.loads(subcondition)["clauses"]
+    print(Fore.GREEN + subcondition + Fore.RESET)
+    print(Fore.GREEN + f"Successfully extracted subconditions for condition {condition['condition_number']}!" + Fore.RESET)
+    
+
+  # Return new JSON with subconditions
+  return json.dumps(input_json)

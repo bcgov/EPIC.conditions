@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, merge_json_chunks, extract_subconditions
+from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, merge_json_chunks, extract_subcondition
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -34,6 +34,18 @@ with gr.Blocks() as demo:
                     inputs=[file_input, starting_condition, ending_condition],
                     outputs=[completion_object, completion_data]
                 )
+
+                extract_subconditions_button = gr.Button("Extract Subconditions")
+                subconditions = gr.JSON(label="Extracted Subconditions")
+
+                extract_subconditions_button.click(
+                    fn=extract_all_subconditions,
+                    inputs=[completion_data],
+                    outputs=[subconditions]
+                )
+
+
+
     with gr.Tab("Condition Extractor & Merger"):
 
         file_input = gr.File(label="File Input")
@@ -57,8 +69,8 @@ with gr.Blocks() as demo:
                     fn=extract_all_conditions,
                     inputs=[file_input, number_of_conditions],
                     outputs=[merged_chunks]
-
                 )
+
 
     with gr.Tab("Sub-condition Extractor"):
 
@@ -103,7 +115,7 @@ Project and for five years after commencing Operations."""
         subconditions = gr.JSON(label="Extracted Subconditions")
 
         submit_button.click(
-            fn=extract_subconditions,
+            fn=extract_subcondition,
             inputs=[condition],
             outputs=[subconditions]
 
