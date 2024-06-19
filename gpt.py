@@ -176,6 +176,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
   for attempt in range(5):  # Retry up to 5 times
       completion = client.chat.completions.create(
           model="gpt-4o",
+          # model="gpt-3.5-turbo", 
           messages=messages,
           tools=tools,
           tool_choice="auto"
