@@ -103,7 +103,7 @@ def count_conditions(file_input):
     model="gpt-4o",
     messages=messages,
     tools=tools,
-    tool_choice="auto"
+    tool_choice={"type": "function", "function": {"name": "count_conditions"}}
   )
 
   count_json = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
@@ -179,7 +179,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
           # model="gpt-3.5-turbo", 
           messages=messages,
           tools=tools,
-          tool_choice="auto"
+          tool_choice={"type": "function", "function": {"name": "format_info"}}
       )
 
       if validate_response(completion, expected_count):
@@ -295,7 +295,8 @@ def extract_subcondition(condition_text):
       model="gpt-4o",
       messages=messages,
       tools=tools,
-      tool_choice="auto"
+      tool_choice={"type": "function", "function": {"name": "format_condition"}}
+
     )
   
     return completion.choices[0].message.tool_calls[0].function.arguments
@@ -329,9 +330,19 @@ def check_for_subconditions(input_condition_text):
     model="gpt-4o",
     messages=messages,
     tools=tools,
-    tool_choice="auto"
+    tool_choice={"type": "function", "function": {"name": "contains_subconditions"}}
   )
-  return json.loads(completion.choices[0].message.tool_calls[0].function.arguments)["contains_subconditions"]
+
+  print(completion)
+
+  result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
+
+  # if result is not null, return the value of contains_subconditions
+  if result:
+    return result["contains_subconditions"]
+  
+  else:
+     print(Fore.RED + "Error: result is null" + Fore.RESET)
 
 
 def extract_all_subconditions(input_json):
