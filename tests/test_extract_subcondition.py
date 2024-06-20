@@ -1,7 +1,8 @@
 import pytest
-from gpt import check_for_subconditions, compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, merge_json_chunks, extract_subcondition
+import json
+from gpt import extract_subcondition
 
-condition_text_1= """Where a condition of this EA  Certificate  requires the Holder to consult particular party or 
+condition_text_3= """Where a condition of this EA  Certificate  requires the Holder to consult particular party or 
 parties regarding the content of a management plan, the Holder must:  
 a) Provide written notice to each such party that:  
 i) includes a copy of the management plan;  
@@ -34,12 +35,7 @@ These reports must be retained by the Holder through the Construction phase of t
 Project and for five years after commencing Operations."""
 
 
+def test_extract_subcondition():
+    subconditions = extract_subcondition(condition_text_3)
 
-
-
-@pytest.mark.check_for_subconditions
-@pytest.mark.parametrize("input_string,expected", [
-    (condition_text_1, True),
-])
-def test_check_for_subconditions(input_string, expected):
-    assert check_for_subconditions(input_string) == expected
+    assert isinstance(subconditions, str)
