@@ -307,19 +307,20 @@ def check_for_subconditions(input_condition_text):
     {
       "type": "function",
       "function": {
-        "name": "contains_subconditions",
-        "description": "Returns true or false if the input condition contains subconditions. For example, sections labelled with numbers, letters, or other identifiers of the subcondition. E.g. 1), 1 a), i, bullet points, etc. If there are no indicators of subconditions, the function should return false.",
+        "name": "extract_subconditions",
+        "description": "If the input condition contains subconditions, extract them.",
 
         "parameters": {
           "type": "object",
           "properties": {
 
-            "contains_subconditions": {
+            "contains_subcondition_identifiers": {
               "type": "boolean",
-              "description": "True if the input condition contains subconditions, false otherwise."
+              "description": "Does the condition have subconditions? For example: a), 1., i., bullet points, etc. New paragraphs or sentences are not considered subconditions."
             },
+
           },
-          "required": ["contains_subconditions"],
+          "required": ["contains_subcondition_identifiers"],
         },
 
       }
@@ -330,7 +331,7 @@ def check_for_subconditions(input_condition_text):
     model="gpt-4o",
     messages=messages,
     tools=tools,
-    tool_choice={"type": "function", "function": {"name": "contains_subconditions"}}
+    tool_choice={"type": "function", "function": {"name": "extract_subconditions"}}
   )
 
   print(completion)
@@ -339,7 +340,7 @@ def check_for_subconditions(input_condition_text):
 
   # if result is not null, return the value of contains_subconditions
   if result:
-    return result["contains_subconditions"]
+    return result["contains_subcondition_identifiers"]
   
   else:
      print(Fore.RED + "Error: result is null" + Fore.RESET)
