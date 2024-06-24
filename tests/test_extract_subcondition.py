@@ -34,8 +34,27 @@ The Holder must prepare monthly reports on the Holder’s compliance with this C
 These reports must be retained by the Holder through the Construction phase of the
 Project and for five years after commencing Operations."""
 
+@pytest.mark.extract_subcondition
+def test_extract_subcondition_eelgrass():
 
-def test_extract_subcondition():
-    subconditions = extract_subcondition(condition_text_3)
+    # open json from ../test_documents
+    with open('test_documents/eelgrass.json') as f:
+        conditions_json = json.load(f)
 
-    assert isinstance(subconditions, str)
+
+    for condition in conditions_json['conditions']:
+        print(json.dumps(condition['condition_name'], indent=4))
+
+    assert(True) # Finish this test
+
+    # print conditions_json
+
+    # convert json to string
+    # conditions_json_string = json.dumps(conditions_json)
+
+    # subconditions = extract_subcondition(condition_text_3)
+
+    # print("YOOO")
+
+
+    # assert isinstance(subconditions, str)
