@@ -111,17 +111,30 @@ def count_conditions(file_input):
 
   return(count)
 
+class FinishReasonError(Exception):
+    pass
+
+class LengthFinishReasonError(FinishReasonError):
+    pass
+
 def extract_info(file_input, starting_condition_number, ending_condition_number):
 
   def validate_response(response, expected_count):
       try:
-          response_json = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+          finish_reason = response.choices[0].finish_reason
+          if finish_reason == "length":
+              raise LengthFinishReasonError("Response was cut off due to length of response.")
+          elif finish_reason != "stop":
+              raise FinishReasonError(f"Unexpected finish reason: {finish_reason}")
 
+          response_json = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+          
           conditions = response_json.get("conditions", [])
           return len(conditions) == expected_count
+
       except Exception as e:
-          print(f"Validation error: {e}")
-          return False
+          raise e
+
       
   expected_count = ending_condition_number - starting_condition_number + 1
 
@@ -174,21 +187,40 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
   messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}\n\nExtract conditions {starting_condition_number} to {ending_condition_number}."}]
 
   for attempt in range(5):  # Retry up to 5 times
-      completion = client.chat.completions.create(
-          model="gpt-4o",
-          # model="gpt-3.5-turbo", 
-          messages=messages,
-          tools=tools,
-          tool_choice={"type": "function", "function": {"name": "format_info"}}
-      )
+      try: 
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            # model="gpt-3.5-turbo", 
+            messages=messages,
+            tools=tools,
+            tool_choice={"type": "function", "function": {"name": "format_info"}}
+        )
 
-      if validate_response(completion, expected_count):
-          print(Fore.GREEN + f"Successfully extracted conditions {starting_condition_number} to {ending_condition_number}!" + Fore.RESET)
-          return completion, completion.choices[0].message.tool_calls[0].function.arguments
-      
+        if validate_response(completion, expected_count):
+            print(Fore.GREEN + f"Successfully extracted conditions {starting_condition_number} to {ending_condition_number}!" + Fore.RESET)
+            return completion, completion.choices[0].message.tool_calls[0].function.arguments
 
-      print(Fore.RED + completion.choices[0].message.tool_calls[0].function.arguments + Fore.RESET)
-      print(Fore.RED + f"\nAttempt {attempt + 1}: Validation failed. Retrying...\n" + Fore.RESET)
+        print(Fore.RED + completion.choices[0].message.tool_calls[0].function.arguments + Fore.RESET)
+        print(Fore.RED + f"\nAttempt {attempt + 1}: Validation failed. Retrying...\n" + Fore.RESET)
+      except LengthFinishReasonError as e:
+          print(Fore.RED + f"WHOOPS! Validation error: {e}" + Fore.RESET)
+          
+          # Recursively call the function to retry, splitting the range in half
+          mid = (starting_condition_number + ending_condition_number) // 2
+
+          print(Fore.YELLOW + f"Splitting... {starting_condition_number} to {mid}" + Fore.RESET)
+          _, first_half = extract_info(file_input, starting_condition_number, mid)
+          
+          print(Fore.YELLOW + f"Splitting... {mid + 1} to {ending_condition_number}" + Fore.RESET)
+          _, second_half = extract_info(file_input, mid + 1, ending_condition_number)
+
+          # Merge the two JSONs
+          merged = merge_json_chunks([first_half, second_half])
+          return None, merged
+
+
+      except Exception as e:
+          print(Fore.RED + f"Exception :( : {e}" + Fore.RESET)
 
   return None, "Failed to extract the correct number of conditions after multiple attempts"
 
