@@ -92,37 +92,7 @@ with gr.Blocks() as demo:
 
         # set default value for condition
 
-        condition.value = """Where a condition of this EA  Certificate  requires the Holder to consult particular party or 
-parties regarding the content of a management plan, the Holder must:  
-a) Provide written notice to each such party that:  
-i) includes a copy of the management plan;  
-ii) invites the party to provide its views on the content of such management 
-plan; and  
-iii) indicates:  
-i. if a timeframe providing such views to the Holder is specified in the 
-relevant condition of this EA  Certificate , that the party may provide 
-such views to the Holder within such time frame; or  
-ii. if a timeframe providing such views to the Holder is not specified in 
-the relevant condition of this EA  Certificate , specifies a reasonable 
-period during which the party may submit such views to the Holder;  
-b) Undertake a full and impartial consideration of any views and ot her information 
-provided by a party in accordance with the timelines specified in a notice given 
-pursuant to paragraph (a);  
-c) Provide a written explanation to each party that provided comments in accordance 
-with a notice given pursuant to paragraph (a) as t o: 
-i) how the views and information provided by such party to the Holder 
-received have been considered and addressed in a revised version of the 
-management plan; or  
-ii) why such views and information have not been addressed in a revised 
-version of the management plan;  
-d) Maintain a record of consultation with each such party regarding the management 
-plan; and   
-5 
- e) Provide a copy of such consultation record to the EAO, the relevant party, or both, 
-promptly upon the written request of the EAO or such party.
-The Holder must prepare monthly reports on the Holder’s compliance with this Certificate.
-These reports must be retained by the Holder through the Construction phase of the
-Project and for five years after commencing Operations."""
+        condition.value = "Where a condition of this EA Certificate requires the Holder to consult particular party or parties regarding the content of a management plan, the Holder must:\na) Provide written notice to each such party that:\ni) includes a copy of the management plan;\nii) invites the party to provide its views on the content of such management plan; and\niii) indicates:\ni. if a timeframe providing such views to the Holder is specified in the relevant condition of this EA Certificate, that the party may provide such views to the Holder within such timeframe; or\nii. if a timeframe providing such views to the Holder is not specified in the relevant condition of this EA Certificate, specifies a reasonable period during which the party may submit such views to the Holder;\nb) Undertake a full and impartial consideration of any views and other information provided by a party in accordance with the timelines specified in a notice given pursuant to paragraph (a);\nc) Provide a written explanation to each party that provided comments in accordance with a notice given pursuant to paragraph (a) as to:\ni) how the views and information provided by such party to the Holder received have been considered and addressed in a revised version of the management plan; or\nii) why such views and information have not been addressed in a revised version of the management plan;\nd) Maintain a record of consultation with each such party regarding the management plan; and\ne) Provide a copy of such consultation record to the EAO, the relevant party, or both, promptly upon the written request of the EAO or such party.\nThe Holder must prepare monthly reports on the Holder’s compliance with this Certificate. These reports must be retained by the Holder through the Construction phase of the Project and for five years after commencing Operations."
 
         submit_button = gr.Button("Submit")
         subconditions = gr.JSON(label="Extracted Subconditions")
