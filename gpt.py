@@ -64,8 +64,20 @@ def compare_documents(model, prompt, file1, doc_type1, file2, doc_type2):
 
     return completion.choices[0].message.content
 
-
 def count_conditions(file_input):
+  """
+  Counts the number of conditions within a document using the GPT API.
+
+  Parameters:
+  file_input (str): Filepath to the document.
+
+  Returns:
+  str: The number of conditions within the document.
+  str: An error message if the file type is not supported.
+
+  Notes:
+  - Only PDF and TXT file types are supported. If the file is not one of these types, the function will return an error message.
+  """
   file_text = None
   with open(file_input.name, "r") as f:
 
@@ -118,6 +130,25 @@ class LengthFinishReasonError(FinishReasonError):
     pass
 
 def extract_info(file_input, starting_condition_number, ending_condition_number):
+  """
+  Extracts a range of conditions from a document (e.g. #11-15) using the GPT API and validate the response.
+
+  Parameters:
+  file_input (str): Filepath to the document.
+  starting_condition_number (int): The number of the starting condition to extract.
+  ending_condition_number (int): The number of the ending condition to extract.
+
+  Returns:
+  tuple: A tuple containing the full completion GPT API response and the extracted conditions as JSON, or an error message if the extraction fails.
+
+  Notes:
+  - The function attempts to extract the specified conditions up to 5 times, validating the response each time. On a failed validation, the function will retry.
+  - If the response is cut off due to GPT API response length limit, the function will recursively retry with a split range of conditions.
+
+  Raises:
+  LengthFinishReasonError: If the GPT response is cut off due to length.
+  FinishReasonError: If the GPT response has some other unexpected finish reason.
+  """
 
   def validate_response(response, expected_count):
       try:
@@ -148,14 +179,12 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
           file_text = f.read()
       else:
           return "File 1 is not a PDF or TXT file"
-      
-  # print(file_text)
 
-  function_description = f"Conditions {starting_condition_number} (inclusive) up to and including {ending_condition_number} extracted from the document. ALWAYS include the condition name."
+  conditions_list_description = f"Conditions {starting_condition_number} (inclusive) up to and including {ending_condition_number} extracted from the document. ALWAYS include the condition name."
 
   if starting_condition_number == ending_condition_number:
     print(f"Extracting condition {starting_condition_number} from the document.")
-    function_description = f"Only condition {starting_condition_number} extracted from the document. Always includes the condition name."
+    conditions_list_description = f"Only condition {starting_condition_number} extracted from the document. ALWAYS includes the condition name."
 
   tools = [
     {
@@ -176,7 +205,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
                         "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues. Include the same newlines as in the document."},
                     },
                 },
-                "description": function_description,
+                "description": conditions_list_description,
               },
           },
           "required": ["conditions", "conditions.condition_name"],
@@ -186,11 +215,12 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
   ]
   messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}\n\nExtract conditions {starting_condition_number} to {ending_condition_number}."}]
 
-  for attempt in range(5):  # Retry up to 5 times
+
+  # Retry up to 3 times if validation fails
+  for attempt in range(3):  
       try: 
         completion = client.chat.completions.create(
             model="gpt-4o",
-            # model="gpt-3.5-turbo", 
             messages=messages,
             tools=tools,
             tool_choice={"type": "function", "function": {"name": "format_info"}}
@@ -203,8 +233,8 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
         print(Fore.RED + completion.choices[0].message.tool_calls[0].function.arguments + Fore.RESET)
         print(Fore.RED + f"\nAttempt {attempt + 1}: Validation failed. Retrying...\n" + Fore.RESET)
       except LengthFinishReasonError as e:
-          print(Fore.RED + f"WHOOPS! Validation error: {e}" + Fore.RESET)
-          
+          print(Fore.RED + f"WHOOPS! Exceeded GPT API response length (LengthFinishReasonError): {e}" + Fore.RESET)
+
           # Recursively call the function to retry, splitting the range in half
           mid = (starting_condition_number + ending_condition_number) // 2
 
@@ -218,7 +248,6 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
           merged = merge_json_chunks([first_half, second_half])
           return None, merged
 
-
       except Exception as e:
           print(Fore.RED + f"Exception :( : {e}" + Fore.RESET)
 
@@ -226,7 +255,18 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
 
 
 def extract_info_chunked(file_input, number_of_conditions, chunk_size=5):
-  
+  """
+  Extract information from a document in chunks, processing a specified number of conditions at a time.
+
+  Parameters:
+  file_input (str): Filepath to the document.
+  number_of_conditions (int): The total number of conditions the document has.
+  chunk_size (int, optional): The number of conditions to extract in each chunk. Default is 5.
+
+  Returns:
+  list of str: A list of condition chunks in JSON format.
+  """
+
   chunks = []
 
   for i in range(0, number_of_conditions, chunk_size):
@@ -254,6 +294,17 @@ def merge_json_chunks(chunks):
 
 
 def extract_all_conditions(file_input, number_of_conditions, chunk_size=5):
+  """
+  Extract all conditions from a document by processing in chunks and merging the results.
+
+  Parameters:
+  file_input (str): Filepath to the document.
+  number_of_conditions (int): The total number of conditions the document has.
+  chunk_size (int, optional): The number of conditions to extract in each chunk. Default is 5.
+
+  Returns:
+  dict: A dictionary representing the merged JSON of all extracted conditions.
+  """
 
   chunks = extract_info_chunked(file_input, number_of_conditions, chunk_size)
   merged = merge_json_chunks(chunks)
@@ -271,7 +322,16 @@ def extract_all_conditions(file_input, number_of_conditions, chunk_size=5):
 
 
 def extract_subcondition(condition_text):
-     
+    """
+    Extract nested subconditions from a given condition text using the GPT API. E.g. a), i), 1), etc.
+
+    Parameters:
+    condition_text (str): The text of the condition to be broken down into subconditions.
+
+    Returns:
+    dict: A dictionary representing the formatted subconditions in JSON format.
+    """
+
     tools = [
       {
         "type": "function",
@@ -334,7 +394,18 @@ def extract_subcondition(condition_text):
     return completion.choices[0].message.tool_calls[0].function.arguments
 
 def check_for_subconditions(input_condition_text):
+  """
+  Check if a given condition text contains subconditions using the GPT API. E.g. a), i), 1), etc.
 
+  Parameters:
+  input_condition_text (str): The text of the condition to be analyzed.
+
+  Returns:
+  bool: True if the condition contains subcondition identifiers, False otherwise.
+
+  Notes:
+  - Subcondition identifiers can be letters, numbers, bullet points, etc. New paragraphs or sentences are not considered subconditions.
+  """
   tools = [
     {
       "type": "function",
@@ -370,7 +441,7 @@ def check_for_subconditions(input_condition_text):
 
   result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
 
-  # if result is not null, return the value of contains_subconditions
+  # If result is not null, return the value of contains_subconditions
   if result:
     return result["contains_subcondition_identifiers"]
   
@@ -379,7 +450,20 @@ def check_for_subconditions(input_condition_text):
 
 
 def extract_all_subconditions(input_json):
+  """
+  Extract all subconditions for each condition in the provided JSON.
 
+  Parameters:
+  input_json (dict): A dictionary containing conditions with their texts.
+
+  Returns:
+  str: A JSON as a string with the updated conditions, including extracted subconditions.
+
+  Notes:
+  - This function iterates over each condition in the input JSON.
+  - It checks if each condition has subconditions and extracts them if present.
+  - If a condition does not have subconditions, it sets an empty array for "subconditions".
+  """
   # For each condition, extract subconditions, then add them to the JSON
   for condition in input_json["conditions"]:
 
@@ -397,7 +481,6 @@ def extract_all_subconditions(input_json):
 
       # Skip to next condition
       continue
-
 
     print(Fore.YELLOW + f"\nExtracting subconditions for condition {condition['condition_number']}:\n" + Fore.RESET)
     subcondition = extract_subcondition(condition["condition_text"])
