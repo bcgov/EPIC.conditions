@@ -32,4 +32,4 @@
 
 To run the gradio UI, execute the following command:
 
-`python epic_ai.py`
+`python gradio_ui.py`

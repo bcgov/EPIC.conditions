@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, merge_json_chunks
+from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, merge_json_chunks, extract_subcondition
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -34,7 +34,19 @@ with gr.Blocks() as demo:
                     inputs=[file_input, starting_condition, ending_condition],
                     outputs=[completion_object, completion_data]
                 )
-    with gr.Tab("Condition Extracter & Merger"):
+
+                extract_subconditions_button = gr.Button("Extract Subconditions")
+                subconditions = gr.JSON(label="Extracted Subconditions")
+
+                extract_subconditions_button.click(
+                    fn=extract_all_subconditions,
+                    inputs=[completion_data],
+                    outputs=[subconditions]
+                )
+
+
+
+    with gr.Tab("Condition Extractor & Merger"):
 
         file_input = gr.File(label="File Input")
 
@@ -57,8 +69,40 @@ with gr.Blocks() as demo:
                     fn=extract_all_conditions,
                     inputs=[file_input, number_of_conditions],
                     outputs=[merged_chunks]
-
                 )
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                extract_subconditions_button = gr.Button("Extract Subconditions")
+                subconditions = gr.JSON(label="Extracted Subconditions")
+
+
+
+                extract_subconditions_button.click(
+                    fn=extract_all_subconditions,
+                    inputs=[merged_chunks],
+                    outputs=[subconditions]
+                )
+
+
+    with gr.Tab("Sub-condition Extractor"):
+
+        # default rows for subcondition extraction
+        condition = gr.Textbox(label="Condition", lines=10)
+
+        # set default value for condition
+
+        condition.value = "Where a condition of this EA Certificate requires the Holder to consult particular party or parties regarding the content of a management plan, the Holder must:\na) Provide written notice to each such party that:\ni) includes a copy of the management plan;\nii) invites the party to provide its views on the content of such management plan; and\niii) indicates:\ni. if a timeframe providing such views to the Holder is specified in the relevant condition of this EA Certificate, that the party may provide such views to the Holder within such timeframe; or\nii. if a timeframe providing such views to the Holder is not specified in the relevant condition of this EA Certificate, specifies a reasonable period during which the party may submit such views to the Holder;\nb) Undertake a full and impartial consideration of any views and other information provided by a party in accordance with the timelines specified in a notice given pursuant to paragraph (a);\nc) Provide a written explanation to each party that provided comments in accordance with a notice given pursuant to paragraph (a) as to:\ni) how the views and information provided by such party to the Holder received have been considered and addressed in a revised version of the management plan; or\nii) why such views and information have not been addressed in a revised version of the management plan;\nd) Maintain a record of consultation with each such party regarding the management plan; and\ne) Provide a copy of such consultation record to the EAO, the relevant party, or both, promptly upon the written request of the EAO or such party.\nThe Holder must prepare monthly reports on the Holder’s compliance with this Certificate. These reports must be retained by the Holder through the Construction phase of the Project and for five years after commencing Operations."
+
+        submit_button = gr.Button("Submit")
+        subconditions = gr.JSON(label="Extracted Subconditions")
+
+        submit_button.click(
+            fn=extract_subcondition,
+            inputs=[condition],
+            outputs=[subconditions]
+
+        )
 
 
 
