@@ -78,8 +78,6 @@ def count_conditions(file_input):
       else:
           return "File 1 is not a PDF or TXT file"
       
-  print(file_text)
-
   tools = [
     {
       "type": "function",
