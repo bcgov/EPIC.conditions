@@ -2,3 +2,5 @@ venv/
 __pycache__/
 
 .env
+
+batch_api_calling/output_jsonl_files/
