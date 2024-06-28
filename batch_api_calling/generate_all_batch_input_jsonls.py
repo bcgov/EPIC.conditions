@@ -85,7 +85,7 @@ def generate_all_batch_input_jsonls(condition_count_json_path):
         
         for document in data:
             file_path = os.path.join(document_file_paths, document['file_name'])
-            output_file = os.path.join("output_jsonl_files", f"{os.path.splitext(document['file_name'])[0]}.jsonl")
+            output_file = os.path.join("batch_requests_jsonl_files", f"{os.path.splitext(document['file_name'])[0]}.jsonl")
             
             # Ensure the output directory exists
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
