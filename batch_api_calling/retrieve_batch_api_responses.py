@@ -5,6 +5,12 @@ import json
 
 from colorama import Fore, Back, Style
 
+def retrieve_batch_status(batch_id):
+    response = client.batches.retrieve(batch_id)
+
+    batch_status = response.status
+    return batch_status
+
 def retrieve_batch_api_responses(batch_id):
     batch_status = client.batches.retrieve(batch_id)
     

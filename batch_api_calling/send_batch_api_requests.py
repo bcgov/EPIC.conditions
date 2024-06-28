@@ -3,6 +3,10 @@ from openai import OpenAI
 client = OpenAI()
 import os
 import json
+import time
+
+
+from retrieve_batch_api_responses import retrieve_batch_status
 
 def send_batch_api_request(jsonl_file_path):
     batch_input_file = client.files.create(
@@ -33,15 +37,31 @@ def send_all_batches(jsonl_folder):
     for jsonl_file in jsonl_files:
 
         jsonl_file_path = os.path.join(jsonl_folder, jsonl_file)
-        response = send_batch_api_request(jsonl_file_path)
+
+        while True:
+            response = send_batch_api_request(jsonl_file_path)
+            batch_status = retrieve_batch_status(response.id)
+
+            while batch_status == "validating":
+                print(f"Batch {jsonl_file} is still validating...")
+                time.sleep(2)  # Wait for 2 seconds before checking again
+                batch_status = retrieve_batch_status(response.id)
+
+            if batch_status == "failed":
+                print(f"Batch {jsonl_file} failed. waiting for 5 seconds before retrying...")
+                time.sleep(5)
+            else:
+                break
+
 
         batch = {
             "batch_name": jsonl_file,
             "batch_id": response.id,
-            "status": "created"
+            "status": batch_status
         }
 
         batches.append(batch)
+        print(f"Batch {jsonl_file} status: {batch_status}")
 
     with open("BATCH_STATUSES.json", "w") as f:
         f.write(json.dumps(batches, indent=4))
