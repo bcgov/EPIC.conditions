@@ -4,7 +4,7 @@ client = OpenAI()
 import os
 import json
 import time
-
+from colorama import Fore, Style
 
 from retrieve_batch_api_responses import retrieve_batch_status
 
@@ -25,7 +25,7 @@ def send_batch_api_request(jsonl_file_path):
         }
     )
 
-    print("\nBatch created:")
+    print(Fore.GREEN + "\nBatch created:" + Style.RESET_ALL)
     print(response)
 
     return response
@@ -35,24 +35,25 @@ def send_all_batches(jsonl_folder):
     batches = []
 
     for jsonl_file in jsonl_files:
-
         jsonl_file_path = os.path.join(jsonl_folder, jsonl_file)
+        attempt = 0
 
         while True:
             response = send_batch_api_request(jsonl_file_path)
             batch_status = retrieve_batch_status(response.id)
 
             while batch_status == "validating":
-                print(f"Batch {jsonl_file} is still validating...")
+                print(Fore.YELLOW + f"Batch {jsonl_file} is still validating..." + Style.RESET_ALL)
                 time.sleep(2)  # Wait for 2 seconds before checking again
                 batch_status = retrieve_batch_status(response.id)
 
             if batch_status == "failed":
-                print(f"Batch {jsonl_file} failed. waiting for 5 seconds before retrying...")
-                time.sleep(5)
+                wait_time = 2 ** attempt  # Exponential backoff
+                print(Fore.RED + f"Batch {jsonl_file} failed. waiting for {wait_time} seconds before retrying..." + Style.RESET_ALL)
+                time.sleep(wait_time)
+                attempt += 1
             else:
                 break
-
 
         batch = {
             "batch_name": jsonl_file,
@@ -61,10 +62,12 @@ def send_all_batches(jsonl_folder):
         }
 
         batches.append(batch)
-        print(f"Batch {jsonl_file} status: {batch_status}")
+        print(Fore.CYAN + f"Batch {jsonl_file} status: {batch_status}" + Style.RESET_ALL)
 
     with open("BATCH_STATUSES.json", "w") as f:
         f.write(json.dumps(batches, indent=4))
+
+        print(Fore.GREEN + "\nAll batches in progress or completed (BATCH_STATUSES.json)" + Style.RESET_ALL)
 
 def check_batch_queue_limit():
     # TO DO: make function that checks if the batch queue is full. If space, continue adding the next batch. If full, wait until space is available and then add the next batch.
