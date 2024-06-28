@@ -4,3 +4,4 @@ __pycache__/
 .env
 
 batch_api_calling/output_jsonl_files/
+batch_api_calling/CONDITION_COUNT.json
