@@ -3,8 +3,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import argparse
-from openai import OpenAI
-client = OpenAI()
 import json
 import read_pdf
 
@@ -91,6 +89,10 @@ def generate_all_batch_input_jsonls(condition_count_json_path):
             
             # Ensure the output directory exists
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+            # Clear the file if it already exists
+            with open(output_file, "w") as f:
+                pass
 
             generate_batch_input_jsonl(file_path, document['conditions_count'], output_file)
             print(Fore.GREEN + f"Generated JSONL file: {output_file}" + Style.RESET_ALL)
