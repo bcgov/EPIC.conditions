@@ -75,6 +75,10 @@ def generate_batch_input_jsonl(file_input, number_of_conditions, output_file, ch
     if end_condition is None:
         end_condition = number_of_conditions
 
+    # Clear output file if it already exists
+    with open(output_file, "w") as f:
+        pass
+
     for i in range(start_condition - 1, end_condition, chunk_size):
         end = min(i + chunk_size, end_condition)
         get_single_batch_input_request(file_input, i + 1, end, output_file)
