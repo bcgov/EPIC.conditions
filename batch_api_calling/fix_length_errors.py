@@ -47,7 +47,7 @@ def fix_all_length_errors(batch_statuses_json):
                         os.makedirs(output_folder, exist_ok=True)
 
                         # Generate new batch input JSONL file, extracting conditions individually
-                        generate_batch_input_jsonl(pdf_path, 11, f"./{output_folder}/{batch["batch_name"]}", 1, start_condition, end_condition)
+                        generate_batch_input_jsonl(pdf_path, 999, f"./{output_folder}/{batch["batch_name"]}", 1, start_condition, end_condition)
 
 
                         # Fix the length error
