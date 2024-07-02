@@ -86,15 +86,11 @@ def check_for_chunk_length_error(batch_responses_jsonl_files_path):
 
         jsonl_file_path = os.path.join(batch_responses_jsonl_files_path, jsonl_file)
 
-        print(jsonl_file_path)
-
         with open(jsonl_file_path, 'r') as file:
             for line in file:
                 response = json.loads(line)
                 finish_reason = response['response']['body']['choices'][0]['finish_reason']
                 
-                print(finish_reason)
-
                 if finish_reason != "stop":
 
                     if finish_reason == "length":
@@ -105,7 +101,6 @@ def check_for_chunk_length_error(batch_responses_jsonl_files_path):
                             batch_statuses_json = json.load(f)
 
                         current_batch_id = "_".join(jsonl_file.split("_")[2:4]).split(".")[0]
-                        print(current_batch_id)
 
                         # find the batch in the json file
                         for batch in batch_statuses_json:
@@ -149,32 +144,6 @@ def retrieve_batch_api_responses(batch_id):
     print(Fore.GREEN + f"Output file downloaded successfully to {batch_file_path}" + Style.RESET_ALL)
     return batch_file_path
 
-def merge_responses_into_json(batch_file_path, batch_id):
-    conditions = []
-    
-    with open(batch_file_path, "r") as file:
-        for line in file:
-            data = json.loads(line)
-            response_body = data.get("response", {}).get("body", {})
-            tool_calls = response_body.get("choices", [])[0].get("message", {}).get("tool_calls", [])
-            for call in tool_calls:
-                arguments = json.loads(call.get("function", {}).get("arguments", "{}"))
-                conditions.extend(arguments.get("conditions", []))
-
-    merged_conditions = {"conditions": conditions}
-    
-    # Create the subfolder if it doesn't exist
-    subfolder = "condition_jsons"
-    os.makedirs(subfolder, exist_ok=True)
-    
-    merged_file_path = os.path.join(subfolder, f"merged_conditions_{batch_id}.json")
-
-    with open(merged_file_path, "w") as file:
-        json.dump(merged_conditions, file, indent=4)
-
-    print(Fore.GREEN + f"Merged conditions written to {merged_file_path}" + Style.RESET_ALL)
-
-    return merged_conditions
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Retrieve batch API responses from OpenAI")
@@ -186,7 +155,3 @@ if __name__ == "__main__":
     if (check_all_batch_completion(args.batch_statuses_json)):
         retrieve_all_batch_responses(args.batch_statuses_json)
         check_for_chunk_length_error("./batch_responses_jsonl_files")
-        
-
-    # batch_file_path = retrieve_batch_api_responses(args.batch_id)
-    # merge_responses_into_json(batch_file_path, args.batch_id)
