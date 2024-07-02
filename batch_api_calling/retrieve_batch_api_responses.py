@@ -52,7 +52,7 @@ def check_all_batch_completion(batch_statuses_json_path):
 
     # Print summary
     if all_completed:
-        print(Fore.GREEN + "ALL BATCHES COMPLETED" + Style.RESET_ALL)
+        print(Fore.GREEN + "\n--------------- ALL BATCHES COMPLETED ---------------\n" + Style.RESET_ALL)
     else:
         # Print out the results
         for status, count in status_counts.items():
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument("batch_statuses_json", type=str, help="Batch statuses JSON file")
     args = parser.parse_args()
 
-    print(Fore.CYAN + f"Reading batch statuses from {args.batch_statuses_json}" + Style.RESET_ALL)
+    print(Fore.CYAN + f"Checking batch statuses from {args.batch_statuses_json}" + Style.RESET_ALL)
     update_all_batch_statuses(args.batch_statuses_json)
     if (check_all_batch_completion(args.batch_statuses_json)):
         retrieve_all_batch_responses(args.batch_statuses_json)
