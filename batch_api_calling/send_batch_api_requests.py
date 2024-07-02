@@ -30,7 +30,7 @@ def send_batch_api_request(jsonl_file_path):
 
     return response
 
-def send_all_batches(jsonl_folder):
+def send_all_batches(jsonl_folder, output_filename):
     jsonl_files = os.listdir(jsonl_folder)
     batches = []
 
@@ -64,7 +64,7 @@ def send_all_batches(jsonl_folder):
         batches.append(batch)
         print(Fore.CYAN + f"Batch {jsonl_file} status: {batch_status}" + Style.RESET_ALL)
 
-    with open("BATCH_STATUSES.json", "w") as f:
+    with open(output_filename, "w") as f:
         f.write(json.dumps(batches, indent=4))
 
         print(Fore.GREEN + "\nAll batches in progress or completed (BATCH_STATUSES.json)" + Style.RESET_ALL)
@@ -76,8 +76,13 @@ def check_batch_queue_limit():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send multiple batch API requests to OpenAI")
     parser.add_argument("jsonl_folder", type=str, help="Path to the folder containing JSONL files")
+    
+    # Optional output file name argument
+    parser.add_argument("--output", type=str, default="BATCH_STATUSES.json", help="Name of the output JSON file")
+    
     args = parser.parse_args()
+    
 
-    send_all_batches(args.jsonl_folder)
+    send_all_batches(args.jsonl_folder, args.output)
 
     # send_batch_api_request(args.jsonl_file)
