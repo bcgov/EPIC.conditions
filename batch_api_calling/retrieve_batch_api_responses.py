@@ -13,7 +13,6 @@ def retrieve_batch_status(batch_id):
     batch_status = response.status
     return batch_status
 
-
 def update_all_batch_statuses(batch_statuses_json_path):
     with open(batch_statuses_json_path, "r") as file:
         batch_statuses_json = json.load(file)
@@ -79,11 +78,55 @@ def retrieve_all_batch_responses(batch_statuses_json_path):
     for batch in batch_statuses_json:
         batch_id = batch.get("batch_id")
         batch_file_path = retrieve_batch_api_responses(batch_id)
-        merge_responses_into_json(batch_file_path, batch_id)
+        # merge_responses_into_json(batch_file_path, batch_id)
+
+def check_for_chunk_length_error(batch_responses_jsonl_files_path):
+
+    for jsonl_file in os.listdir(batch_responses_jsonl_files_path):
+
+        jsonl_file_path = os.path.join(batch_responses_jsonl_files_path, jsonl_file)
+
+        print(jsonl_file_path)
+
+        with open(jsonl_file_path, 'r') as file:
+            for line in file:
+                response = json.loads(line)
+                finish_reason = response['response']['body']['choices'][0]['finish_reason']
+                
+                print(finish_reason)
+
+                if finish_reason != "stop":
+
+                    if finish_reason == "length":
+                        print(Fore.RED + f"finish_reason length error in {jsonl_file}" + Style.RESET_ALL)
+                        
+                        # Update BATCH_STATUSES.json, change status to length_error
+                        with open("BATCH_STATUSES.json", "r") as f:
+                            batch_statuses_json = json.load(f)
+
+                        current_batch_id = "_".join(jsonl_file.split("_")[2:4]).split(".")[0]
+                        print(current_batch_id)
+
+                        # find the batch in the json file
+                        for batch in batch_statuses_json:
+                            if batch.get("batch_id") == current_batch_id:
+                                batch["status"] = "length_error"
+                                break
+
+                        with open("BATCH_STATUSES.json", "w") as f:
+                            json.dump(batch_statuses_json, f, indent=4)
+                            
+                        
+                        
+                        return True
+                    else:
+                        print(Fore.RED + f"finish_reason {finish_reason} error in {jsonl_file}" + Style.RESET_ALL)
 
 
-
-
+                
+    print(Fore.GREEN + "No finish_reason length errors found" + Style.RESET_ALL)
+    return False
+                
 
 
 
@@ -142,7 +185,7 @@ if __name__ == "__main__":
     update_all_batch_statuses(args.batch_statuses_json)
     if (check_all_batch_completion(args.batch_statuses_json)):
         retrieve_all_batch_responses(args.batch_statuses_json)
-
+        check_for_chunk_length_error("./batch_responses_jsonl_files")
         
 
     # batch_file_path = retrieve_batch_api_responses(args.batch_id)
