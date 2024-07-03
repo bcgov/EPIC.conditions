@@ -4,12 +4,7 @@ import os
 
 from generate_all_batch_input_jsonls import generate_batch_input_jsonl
 
-def fix_length_error():
-
-    return
-    
-
-def fix_all_length_errors(batch_statuses_json):
+def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
     with open(batch_statuses_json, "r") as f:
         batch_statuses_json = json.load(f)
 
@@ -64,6 +59,4 @@ if __name__ == "__main__":
     parser.add_argument("batch_statuses_json", type=str, help="Batch statuses JSON file")
     args = parser.parse_args()
 
-    fix_all_length_errors(args.batch_statuses_json)
-
-    # generate_batch_input_jsonl("../test_documents/schedule_b_pdfs/table_of_conditions_tsawwassen_eelgrass.pdf", 11, "test.jsonl", 1, start_condition=5, end_condition=7)
+    generate_all_batch_input_jsonls_length_fix(args.batch_statuses_json)
