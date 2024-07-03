@@ -74,13 +74,13 @@ def check_all_batch_completion(batch_statuses_json_path):
 
     return all_completed
      
-def retrieve_all_batch_responses(batch_statuses_json_path):
+def retrieve_all_batch_responses(batch_statuses_json_path, output_folder):
     with open(batch_statuses_json_path, "r") as file:
         batch_statuses_json = json.load(file)
 
     for batch in batch_statuses_json:
         batch_id = batch.get("batch_id")
-        batch_file_path = retrieve_batch_api_responses(batch_id)
+        batch_file_path = retrieve_batch_api_responses(batch_id, output_folder)
         # merge_responses_into_json(batch_file_path, batch_id)
 
 def check_for_chunk_length_error(batch_responses_jsonl_files_path):
@@ -124,23 +124,18 @@ def check_for_chunk_length_error(batch_responses_jsonl_files_path):
                 
     print(Fore.GREEN + "No finish_reason length errors found" + Style.RESET_ALL)
     return False
-                
 
-
-
-
-def retrieve_batch_api_responses(batch_id):
+def retrieve_batch_api_responses(batch_id, output_folder):
     # Create the subfolder if it doesn't exist
-    subfolder = "batch_responses_jsonl_files"
-    os.makedirs(subfolder, exist_ok=True)
+    os.makedirs(output_folder, exist_ok=True)
     
     # Retrieve the batch status and file content
     batch_status = client.batches.retrieve(batch_id)
     file = client.files.content(batch_status.output_file_id)
     file_data_bytes = file.read()
     
-    # Write the file data to a new file in the subfolder
-    batch_file_path = os.path.join(subfolder, f"batch_output_{batch_id}.jsonl")
+    # Write the file data to a new file in the output_folder
+    batch_file_path = os.path.join(output_folder, f"batch_output_{batch_id}.jsonl")
     with open(batch_file_path, "wb") as file:
         file.write(file_data_bytes)
 
@@ -151,10 +146,13 @@ def retrieve_batch_api_responses(batch_id):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Retrieve batch API responses from OpenAI")
     parser.add_argument("batch_statuses_json", type=str, help="Batch statuses JSON file")
+     # Optional output folder argument
+    parser.add_argument("--output", type=str, default="batch_responses_jsonl_files", help="Name of the output folder")
     args = parser.parse_args()
+
 
     print(Fore.CYAN + f"Checking batch statuses from {args.batch_statuses_json}" + Style.RESET_ALL)
     update_all_batch_statuses(args.batch_statuses_json)
     if (check_all_batch_completion(args.batch_statuses_json)):
-        retrieve_all_batch_responses(args.batch_statuses_json)
+        retrieve_all_batch_responses(args.batch_statuses_json, args.output)
         check_for_chunk_length_error("./batch_responses_jsonl_files")
