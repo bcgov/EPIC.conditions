@@ -1,3 +1,15 @@
+venv/
+__pycache__/
+
+.env
+
+batch_api_calling/batch_requests_jsonl_files/
+batch_api_calling/CONDITION_COUNT.json
+
+batch_api_calling/batch_responses_jsonl_files/
+batch_api_calling/condition_jsons/
+
+batch_api_calling/BATCH_STATUSES.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
