@@ -40,6 +40,7 @@ def fix_all_length_errors(batch_statuses_json):
                         pdf_name = batch["batch_name"].replace(".jsonl", ".pdf")
                         print("PDF NAME: " + pdf_name)
 
+
                         pdf_path = f"../test_documents/schedule_b_pdfs/{pdf_name}"
 
                         # create subfolder if it doesn't exist
@@ -47,7 +48,7 @@ def fix_all_length_errors(batch_statuses_json):
                         os.makedirs(output_folder, exist_ok=True)
 
                         # Generate new batch input JSONL file, extracting conditions individually
-                        generate_batch_input_jsonl(pdf_path, 999, f"./{output_folder}/{batch["batch_name"]}", 1, start_condition, end_condition)
+                        generate_batch_input_jsonl(pdf_path, 999, f"./{output_folder}/{line_json["custom_id"]}_{batch["batch_name"]}", 1, start_condition, end_condition)
 
 
                         # Fix the length error
