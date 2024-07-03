@@ -1,10 +1,13 @@
 import argparse
+from dotenv import load_dotenv
+load_dotenv()
 from openai import OpenAI
-client = OpenAI()
 import os
 import json
 import time
 from colorama import Fore, Style
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 from retrieve_batch_api_responses import retrieve_batch_status
 

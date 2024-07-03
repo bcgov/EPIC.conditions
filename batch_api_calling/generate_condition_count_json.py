@@ -5,7 +5,10 @@ import sys
 from openai import OpenAI
 from colorama import Fore, Style
 
-client = OpenAI()
+from dotenv import load_dotenv
+load_dotenv()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from gpt import count_conditions

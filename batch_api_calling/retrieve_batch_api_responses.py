@@ -1,9 +1,12 @@
 from openai import OpenAI
-client = OpenAI()
+from dotenv import load_dotenv
+load_dotenv()
 import argparse
 import json
 from collections import defaultdict
 import os
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 from colorama import Fore, Back, Style
 
