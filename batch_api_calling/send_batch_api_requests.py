@@ -72,10 +72,6 @@ def send_all_batches(jsonl_folder, output_filename):
 
         print(Fore.GREEN + "\nAll batches in progress or completed (BATCH_STATUSES.json)" + Style.RESET_ALL)
 
-def check_batch_queue_limit():
-    # TO DO: make function that checks if the batch queue is full. If space, continue adding the next batch. If full, wait until space is available and then add the next batch.
-    return
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send multiple batch API requests to OpenAI")
     parser.add_argument("jsonl_folder", type=str, help="Path to the folder containing JSONL files")
