@@ -65,12 +65,14 @@ def send_all_batches(jsonl_folder, output_filename):
         }
 
         batches.append(batch)
+
+        # Write the batch statuses to output_filename
+        with open(output_filename, "w") as f:
+            f.write(json.dumps(batches, indent=4))
+
         print(Fore.CYAN + f"Batch {jsonl_file} status: {batch_status}" + Style.RESET_ALL)
 
-    with open(output_filename, "w") as f:
-        f.write(json.dumps(batches, indent=4))
-
-        print(Fore.GREEN + "\nAll batches in progress or completed (BATCH_STATUSES.json)" + Style.RESET_ALL)
+    print(Fore.GREEN + "\nAll batches in progress or completed (BATCH_STATUSES.json)" + Style.RESET_ALL)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send multiple batch API requests to OpenAI")
