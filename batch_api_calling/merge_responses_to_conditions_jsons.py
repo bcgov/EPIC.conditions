@@ -35,14 +35,40 @@ def merge_responses_into_json(batch_file_path, batch_id):
 
 def merge_all_into_json(batch_responses_jsonl_files_path):
 
+    length_error_files = []
+
     for jsonl_file_name in os.listdir(batch_responses_jsonl_files_path):
 
         jsonl_file_path = os.path.join(batch_responses_jsonl_files_path, jsonl_file_name)
+        
 
-        # batch_output_batch_xaPFi8hGU7y9zthsZGB58aZs.jsonl
+
         batch_id = "_".join(jsonl_file_name.split("_")[2:4]).split(".")[0]
 
-        merge_responses_into_json(jsonl_file_path, batch_id)
+        # Open BATCH_STATUSES.json and print the batch_name of the batch with the current batch_id
+        with open("BATCH_STATUSES.json", "r") as f:
+            batch_statuses_json = json.load(f)
+
+
+        for batch in batch_statuses_json:
+            if batch["batch_id"] == batch_id:
+                status = batch["status"]
+                batch_name = batch["batch_name"]
+
+                if status == "length_error":
+                    print(Fore.RED + f"Length error in {batch_name} {jsonl_file_name}" + Style.RESET_ALL)
+                    length_error_files.append(batch_name)
+                    break
+
+                merge_responses_into_json(jsonl_file_path, batch_id)
+                break
+
+    if length_error_files:
+        # Print all the files that have length errors
+        print(Fore.RED + "\n------ SKIPPING FILES THAT HAVE LENGTH ERRORS ------" + Style.RESET_ALL)
+        for file in length_error_files:
+            print(Fore.RED + file + Style.RESET_ALL)
+
 
 
     # for batch in batch_statuses_json:
