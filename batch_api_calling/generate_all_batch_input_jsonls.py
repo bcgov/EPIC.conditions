@@ -70,7 +70,6 @@ def get_single_batch_input_request(file_name, starting_condition_number, ending_
     with open(output_file, "a") as jsonl_file:
         jsonl_file.write(json.dumps(json_object) + "\n")
   
-
 def generate_batch_input_jsonl(file_input, number_of_conditions, output_file, chunk_size=5, start_condition=1, end_condition=None):
     if end_condition is None:
         end_condition = number_of_conditions
@@ -82,8 +81,6 @@ def generate_batch_input_jsonl(file_input, number_of_conditions, output_file, ch
     for i in range(start_condition - 1, end_condition, chunk_size):
         end = min(i + chunk_size, end_condition)
         get_single_batch_input_request(file_input, i + 1, end, output_file)
-
-
 
 def generate_all_batch_input_jsonls(condition_count_json_path):
     with open(condition_count_json_path, 'r') as file:

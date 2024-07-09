@@ -35,7 +35,6 @@ def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
                         pdf_name = batch["batch_name"].replace(".jsonl", ".pdf")
                         print("PDF NAME: " + pdf_name)
 
-
                         pdf_path = f"../test_documents/schedule_b_pdfs/{pdf_name}"
 
                         # create subfolder if it doesn't exist
@@ -45,14 +44,7 @@ def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
                         # Generate new batch input JSONL file, extracting conditions individually
                         generate_batch_input_jsonl(pdf_path, 999, f"./{output_folder}/{line_json["custom_id"]}_{batch["batch_name"]}", 1, start_condition, end_condition)
 
-
-                        # Fix the length error
-                        # Update the batch_statuses_json
-                        # batch["status"] = "completed"
-
-
     print("All length errors fixed")
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix all requests that returned a length error in the batch API calls")

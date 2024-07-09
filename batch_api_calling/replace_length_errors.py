@@ -2,8 +2,6 @@ import argparse
 import json
 import os
 
-
-
 def fix_all_length_errors(batch_statuses_json):
     with open(batch_statuses_json, "r") as f:
         batch_statuses_json = json.load(f)
@@ -26,17 +24,6 @@ def fix_all_length_errors(batch_statuses_json):
                         print("REQUEST ID: " + line_json["id"])
 
                         print(line_json["custom_id"])
-
-                        # # Extract the start and end conditions from the custom_id e.g. request_1-5
-                        # start_condition = int(line_json["custom_id"].split("_")[1].split("-")[0])
-                        # end_condition = int(line_json["custom_id"].split("_")[1].split("-")[1])
-
-                        # # Remove .jsonl from the batch name and add .pdf
-                        # pdf_name = batch["batch_name"].replace(".jsonl", ".pdf")
-                        # print("PDF NAME: " + pdf_name)
-
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix length errors in batch responses")

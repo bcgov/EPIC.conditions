@@ -82,8 +82,5 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=str, default="BATCH_STATUSES.json", help="Name of the output JSON file")
     
     args = parser.parse_args()
-    
 
     send_all_batches(args.jsonl_folder, args.output)
-
-    # send_batch_api_request(args.jsonl_file)

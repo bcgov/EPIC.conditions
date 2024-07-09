@@ -69,13 +69,6 @@ def merge_all_into_json(batch_responses_jsonl_files_path):
         for file in length_error_files:
             print(Fore.RED + file + Style.RESET_ALL)
 
-
-
-    # for batch in batch_statuses_json:
-    #     batch_id = batch.get("batch_id")
-    #     batch_file_path = os.path.join("batch_responses_jsonl_files", f"batch_responses_{batch_id}.jsonl")
-    #     merge_responses_into_json(batch_file_path, batch_id)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Merge batch response jsonls into condition jsons")
     parser.add_argument("batch_responses_jsonl_files_path", type=str, help="Path to the folder containing batch response JSONL files")

@@ -119,8 +119,6 @@ def check_for_chunk_length_error(batch_responses_jsonl_files_path):
                         return True
                     else:
                         print(Fore.RED + f"finish_reason {finish_reason} error in {jsonl_file}" + Style.RESET_ALL)
-
-
                 
     print(Fore.GREEN + "No finish_reason length errors found" + Style.RESET_ALL)
     return False
@@ -141,7 +139,6 @@ def retrieve_batch_api_responses(batch_id, output_folder):
 
     print(Fore.GREEN + f"Output file downloaded successfully to {batch_file_path}" + Style.RESET_ALL)
     return batch_file_path
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Retrieve batch API responses from OpenAI")
