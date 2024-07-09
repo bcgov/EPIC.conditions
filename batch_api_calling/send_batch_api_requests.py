@@ -24,7 +24,7 @@ def send_batch_api_request(jsonl_file_path):
         endpoint="/v1/chat/completions",
         completion_window="24h",
         metadata={
-            "description": f"Batch for {jsonl_file_path}",
+            "jsonl_file_path": f"{jsonl_file_path}",
         }
     )
 
