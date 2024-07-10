@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-
+from colorama import Fore, Style
 from generate_all_batch_input_jsonls import generate_batch_input_jsonl
 
 def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
@@ -10,7 +10,7 @@ def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
 
     for batch in batch_statuses_json:
         if batch.get("status") == "length_error":
-            print(f"Fixing length error for {batch.get('batch_name')}")
+            print(f"{Fore.YELLOW}Fixing length error for batch: {Fore.CYAN}{batch.get('batch_name')}{Style.RESET_ALL}")
 
             batch_id = batch.get("batch_id")
             batch_file_path = f"batch_responses_jsonl_files/batch_output_{batch_id}.jsonl"
@@ -21,30 +21,29 @@ def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
                     finish_reason = line_json['response']['body']['choices'][0]['finish_reason']
 
                     if finish_reason == "length":
-                        print("Length error found!!!!!!!")
-                        print("BATCH ID: "+ batch["batch_id"])
-                        print("REQUEST ID: " + line_json["id"])
+                        print(f"{Fore.RED}Length error detected{Style.RESET_ALL}")
+                        print(f"{Fore.GREEN}Batch ID: {Fore.CYAN}{batch['batch_id']}{Style.RESET_ALL}")
+                        print(f"{Fore.GREEN}Request ID: {Fore.CYAN}{line_json['id']}{Style.RESET_ALL}")
 
-                        print(line_json["custom_id"])
+                        print(f"{Fore.GREEN}Custom ID: {Fore.CYAN}{line_json['custom_id']}{Style.RESET_ALL}")
 
-                        # Extract the start and end conditions from the custom_id e.g. request_1-5
                         start_condition = int(line_json["custom_id"].split("_")[1].split("-")[0])
                         end_condition = int(line_json["custom_id"].split("_")[1].split("-")[1])
 
-                        # Remove .jsonl from the batch name and add .pdf
                         pdf_name = batch["batch_name"].replace(".jsonl", ".pdf")
-                        print("PDF NAME: " + pdf_name)
+                        print(f"{Fore.GREEN}PDF Name: {Fore.CYAN}{pdf_name}{Style.RESET_ALL}")
 
                         pdf_path = f"../test_documents/schedule_b_pdfs/{pdf_name}"
 
-                        # create subfolder if it doesn't exist
-                        output_folder = "LENGTH_ERROR_batch_requests_jsonl_files"
+                        output_folder = "batch_requests_jsonl_files_length_fix"
                         os.makedirs(output_folder, exist_ok=True)
 
-                        # Generate new batch input JSONL file, extracting conditions individually
-                        generate_batch_input_jsonl(pdf_path, 999, f"./{output_folder}/{line_json["custom_id"]}_{batch["batch_name"]}", 1, start_condition, end_condition)
+                        output_file_path = f"./{output_folder}/{line_json['custom_id']}_{batch['batch_name']}"
+                        generate_batch_input_jsonl(pdf_path, 999, output_file_path, 1, start_condition, end_condition)
 
-    print("All length errors request jsonls generated")
+                        print(f"{Fore.GREEN}New batch input JSONL file generated at: {Fore.CYAN}{output_file_path}{Style.RESET_ALL}")
+
+    print(f"{Fore.GREEN}All length error requests JSONLs have been generated.{Style.RESET_ALL}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix all requests that returned a length error in the batch API calls")
