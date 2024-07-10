@@ -2,7 +2,7 @@
 
 1. Clone the repository:
    
-   `git clone https://github.com/MarkFeleaMotetGov/epic-ai-mark-testing.git`
+   `git clone https://github.com/bcgov/EPIC.conditions`
 
    `cd epic-ai-mark-testing`
    
