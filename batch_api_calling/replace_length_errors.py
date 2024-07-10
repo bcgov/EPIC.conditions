@@ -91,6 +91,12 @@ def replace_length_errors(new_batch_responses_jsonl_files_folder_path):
                                     with open(f"batch_responses_jsonl_files/{original_file_name}", "w") as f:
                                         f.writelines(new_lines)
                                     print(f"{Fore.GREEN}Updated {original_file_name} with new responses.{Style.RESET_ALL}")
+
+                                    # Update the status in BATCH_STATUSES.json
+                                    batch_status["status"] = "completed"
+                                    with open("BATCH_STATUSES.json", "w") as f:
+                                        json.dump(batch_statuses_json, f, indent=4)
+                                    print(f"{Fore.GREEN}Updated batch status for {file_name} to completed.{Style.RESET_ALL}")
                                 else:
                                     print(f"{Fore.RED}No matching custom_id found for {request_range} in {original_file_name}.{Style.RESET_ALL}")
 
