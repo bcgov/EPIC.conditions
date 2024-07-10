@@ -44,7 +44,7 @@ def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
                         # Generate new batch input JSONL file, extracting conditions individually
                         generate_batch_input_jsonl(pdf_path, 999, f"./{output_folder}/{line_json["custom_id"]}_{batch["batch_name"]}", 1, start_condition, end_condition)
 
-    print("All length errors fixed")
+    print("All length errors request jsonls generated")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix all requests that returned a length error in the batch API calls")
