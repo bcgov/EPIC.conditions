@@ -11,11 +11,12 @@ def merge_responses_into_json(batch_file_path, batch_id):
 
             data = json.loads(line)
 
-            response_body = data.get("response", {}).get("body", {})
-            tool_calls = response_body.get("choices", [])[0].get("message", {}).get("tool_calls", [])
+            response_body = data["response"]["body"]
+            tool_calls = response_body["choices"][0]["message"]["tool_calls"]
             for call in tool_calls:
-                arguments = json.loads(call.get("function", {}).get("arguments", "{}"))
-                conditions.extend(arguments.get("conditions", []))
+                arguments = json.loads(call["function"]["arguments"])
+                conditions.extend(arguments["conditions"])
+
 
     merged_conditions = {"conditions": conditions}
     
