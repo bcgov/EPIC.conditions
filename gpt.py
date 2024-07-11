@@ -201,7 +201,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
                         "condition_name": {"type": "string", "description": "The name of the condition. REQUIRED."},
                         "condition_number": {"type": "integer", "description": "The number associated with the condition."},
                         "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues. Include the same newlines as in the document."},
-                        "tags": {"type": "array", "items": {"type": "string"}, "description": "Tag(s) that best describe the condition. Select from this list: Economic, Health, Heritage, Environment, Social. If none apply, leave blank."},
+                        "tags": {"type": "array", "items": {"type": "string"}, "description": "Tag(s) that best describe the condition. Select from this list: Economic, Health, Culture, Environment, Social. If none apply, leave blank."},
                     },
                 },
                 "description": conditions_list_description,
