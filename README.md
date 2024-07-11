@@ -4,7 +4,7 @@
    
    `git clone https://github.com/bcgov/EPIC.conditions`
 
-   `cd epic-ai-mark-testing`
+   `cd EPIC.conditions`
    
 
 2. Set up a virtual environment:
