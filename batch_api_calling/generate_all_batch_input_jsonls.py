@@ -86,7 +86,7 @@ def generate_all_batch_input_jsonls(condition_count_json_path):
     with open(condition_count_json_path, 'r') as file:
         data = json.load(file)
 
-        document_file_paths = "../test_documents/schedule_b_pdfs/"
+        document_file_paths = "../test_documents/pdfs_for_batch_processing/"
         
         for document in data:
             file_path = os.path.join(document_file_paths, document['file_name'])

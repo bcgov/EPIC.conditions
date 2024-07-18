@@ -1,6 +1,8 @@
 
 ## Batch API Calling Overview
 
+Start by adding any PDF files you want to extract conditions from to /test_documents/pdfs_for_batch_processing
+
 ## 0. `generate_condition_count_json.py`
 
 **Description:**
@@ -8,7 +10,7 @@ Uses the GPT API to count how many conditions are in each PDF in the provided fo
 
 **Usage:**
 ```
-python generate_condition_count_json.py <path_to_folder_with_pdfs>
+python generate_condition_count_json.py ../test_documents/pdfs_for_batch_processing
 ```
 **Output:**
 CONDITION_COUNT.json

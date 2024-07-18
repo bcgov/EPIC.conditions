@@ -33,7 +33,7 @@ def generate_all_batch_input_jsonls_length_fix(batch_statuses_json):
                         pdf_name = batch["batch_name"].replace(".jsonl", ".pdf")
                         print(f"{Fore.GREEN}PDF Name: {Fore.CYAN}{pdf_name}{Style.RESET_ALL}")
 
-                        pdf_path = f"../test_documents/schedule_b_pdfs/{pdf_name}"
+                        pdf_path = f"../test_documents/pdfs_for_batch_processing/{pdf_name}"
 
                         output_folder = "batch_requests_jsonl_files_length_fix"
                         os.makedirs(output_folder, exist_ok=True)
