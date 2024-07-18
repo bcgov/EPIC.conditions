@@ -3,7 +3,56 @@ import os
 from colorama import Fore, Style
 import argparse
 
+def lookup_metadata_from_doc_name(document_name, everything_json):
+    
+        # Load the everything.json file
+        with open(everything_json, "r") as f:
+            everything = json.load(f)
+    
+        # Loop through the everything.json file
+        for project in everything:
+
+            internal_url = project["internalURL"]
+            document_name_from_internal_url = internal_url.split("/")[-1]
+            document_name_from_internal_url = document_name_from_internal_url.split(".")[0]
+
+            if document_name_from_internal_url == document_name:
+                display_name = project["displayName"]
+                print(Fore.GREEN + f"Display Name: {Fore.CYAN}{display_name}{Style.RESET_ALL}")
+                document_file_name = project["documentFileName"]
+                print(Fore.GREEN + f"Document File Name: {Fore.CYAN}{document_file_name}{Style.RESET_ALL}")
+                document_id = project["_id"]
+                print(Fore.GREEN + f"Document ID: {Fore.CYAN}{document_id}{Style.RESET_ALL}")
+
+                return display_name, document_file_name, document_id
+
+        print(Fore.RED + "Document ID not found in everything.json" + Style.RESET_ALL)
+
+        return None
+
+def get_info_from_batch_id(batch_id, batch_statuses_json):
+    with open(batch_statuses_json, "r") as f:
+        batch_statuses_json = json.load(f)
+
+    for batch in batch_statuses_json:
+
+        if batch["batch_id"] == batch_id:
+            print(Fore.GREEN + f"Batch ID: {Fore.CYAN}{batch['batch_id']}{Style.RESET_ALL}")
+            batch_name = batch["batch_name"]
+            print(Fore.GREEN + f"Batch Name: {Fore.CYAN}{batch_name}{Style.RESET_ALL}")
+            project_id = batch_name.split("_")[0]
+            print(Fore.GREEN + f"Project ID: {Fore.CYAN}{project_id}{Style.RESET_ALL}")
+            document_name = "_".join(batch_name.split("_")[1:])
+            document_name = document_name.replace(".jsonl", "")
+            print(Fore.GREEN + f"Document ID: {Fore.CYAN}{document_name}{Style.RESET_ALL}")
+
+            display_name, document_file_name, document_id = lookup_metadata_from_doc_name(document_name, "everything.json")
+
+            return project_id, display_name, document_file_name, document_id
+    return None
+
 def merge_responses_into_json(batch_file_path, batch_id):
+    
     conditions = []
     
     with open(batch_file_path, "r") as file:
@@ -19,6 +68,14 @@ def merge_responses_into_json(batch_file_path, batch_id):
 
 
     merged_conditions = {"conditions": conditions}
+
+    project_id, display_name, document_file_name, document_id = get_info_from_batch_id(batch_id, "BATCH_STATUSES.json")
+
+    
+    merged_conditions["project_id"] = project_id
+    merged_conditions["document_id"] = document_id
+    merged_conditions["display_name"] = display_name
+    merged_conditions["document_file_name"] = document_file_name
     
     # Create the subfolder if it doesn't exist
     subfolder = "condition_jsons"
@@ -29,7 +86,7 @@ def merge_responses_into_json(batch_file_path, batch_id):
     with open(merged_file_path, "w") as file:
         json.dump(merged_conditions, file, indent=4)
 
-    print(Fore.GREEN + f"Merged conditions written to {merged_file_path}" + Style.RESET_ALL)
+    print(Fore.GREEN + f"Merged conditions written to {merged_file_path}\n" + Style.RESET_ALL)
 
     return merged_conditions
 

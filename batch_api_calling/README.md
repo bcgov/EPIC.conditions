@@ -1,7 +1,7 @@
 
 ## Batch API Calling Overview
 
-Start by adding any PDF files you want to extract conditions from to /test_documents/pdfs_for_batch_processing
+Start by adding any PDF files you want to extract conditions from to /test_documents/pdfs_for_batch_processing. Also extract all_docs_info.zip so that everything.json is in /batch_api_calling.
 
 ## 0. `generate_condition_count_json.py`
 
