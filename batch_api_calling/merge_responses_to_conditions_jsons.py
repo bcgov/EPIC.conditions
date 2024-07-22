@@ -12,11 +12,13 @@ def lookup_metadata_from_doc_name(document_name, everything_json):
         # Loop through the everything.json file
         for project in everything:
 
-            internal_url = project["internalURL"]
-            document_name_from_internal_url = internal_url.split("/")[-1]
-            document_name_from_internal_url = document_name_from_internal_url.split(".")[0]
+            # internal_url = project["internalURL"]
+            # document_name_from_internal_url = internal_url.split("/")[-1]
+            # document_name_from_internal_url = document_name_from_internal_url.split(".")[0]
 
-            if document_name_from_internal_url == document_name:
+            document_id_from_big_json = project["_id"]
+
+            if document_id_from_big_json == document_name:
                 display_name = project["displayName"]
                 document_file_name = project["documentFileName"]
                 document_id = project["_id"]
