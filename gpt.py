@@ -113,6 +113,7 @@ def count_conditions(file_input):
     model="gpt-4o-2024-05-13",
     messages=messages,
     tools=tools,
+    temperature=0.0,
     tool_choice={"type": "function", "function": {"name": "count_conditions"}}
   )
 
