@@ -65,6 +65,7 @@ def get_single_batch_input_request(file_name, starting_condition_number, ending_
             "model": "gpt-4o-2024-05-13",
             "messages": messages,
             "tools": tools,
+            "temperature": 0.0,
             "tool_choice": {"type": "function", "function": {"name": "format_info"}}
         }
     }

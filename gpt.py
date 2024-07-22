@@ -202,6 +202,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
                         "condition_number": {"type": "integer", "description": "The number associated with the condition. Is null if not present."},
                         "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues. Include the same newlines as in the document."},
                         "tags": {"type": "array", "items": {"type": "string", "enum": ["Economic", "Health", "Heritage/Culture", "Environment", "Social", "Community Well-being", "Employment & Income", "Labour Force", "Housing & Accommodation", "Property Values", "Mammals", "Air Quality", "Marine Resources", "Aquatic Resources", "Ecosystems", "Marine Mammals", "Groundwater", "Vegetation", "Rare Plants", "Greenhouse Gas Emissions", "Wildlife", "Birds", "Amphibians", "Fish & Fish Habitat", "Surface Water", "Benthic Invertebrates", "Terrain", "Acoustics", "Human Health", "Aboriginal Interests", "Heritage", "Heritage Resources", "Accidents & Malfunctions", "Land & Resource Use", "L&RU Traditional Purposes", "Services & Infrastructure", "Transportation & Access", "Recreation", "Visual Quality", "Marine Transportation & Use"]}, "description": "List of one or more tags selected from the provided tag choices that best describe to the condition. If none apply, leave blank."},
+                        # "tags": {"type": "array", "items": {"type": "string", "enum": ["Economic", "Health", "Heritage/Culture", "Environment", "Social"]}, "description": "List of one or more tags selected from the provided tag choices that best describe to the condition. Economic: employment, income, labour force, housing, accommodation, property values, etc. Health: air quality, acoustics, human health, etc. Heritage/Culture: heritage, culture, cultural sites, landmarks, etc. Environment: air quality, marine resources, aquatic resources, ecosystems, vegetation, greenhouse gas emissions, wildlife, etc. Social: land use, commmunity well-bein, services and infrastructure, recreation, housing and accomodation, etc. Aborigianl Interests: traditional purposes, First Nations involvement, etc. (If none apply, leave blank)."},
                     },
                     "required": ["condition_name", "condition_text", "condition_number", "tags"],
                 },
@@ -223,6 +224,7 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
             model="gpt-4o-2024-05-13",
             messages=messages,
             tools=tools,
+            temperature=0.0,
             tool_choice={"type": "function", "function": {"name": "format_info"}}
         )
 
