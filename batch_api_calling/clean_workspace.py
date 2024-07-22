@@ -11,6 +11,11 @@ folders_to_clean = [
     "condition_jsons"
 ]
 
+files_to_delete = [
+    "BATCH_STATUSES.json",
+    "CONDITION_COUNT.json"
+]
+
 def delete_files_in_folder(folder):
     if os.path.exists(folder):
         for filename in os.listdir(folder):
@@ -25,13 +30,27 @@ def delete_files_in_folder(folder):
     else:
         print(f'Folder {folder} does not exist.')
 
+def delete_files(files):
+    for file in files:
+        if os.path.exists(file):
+            try:
+                os.unlink(file)
+            except Exception as e:
+                print(f'Failed to delete {file}. Reason: {e}')
+        else:
+            print(f'File {file} does not exist.')
+
 def main():
     confirmation = input(Fore.CYAN + "Are you sure you want to delete all files in the specified folders? This action cannot be undone. (Press Enter to confirm)" + Style.RESET_ALL).strip().lower()
     
     if confirmation in ['', 'yes']:
         for folder in folders_to_clean:
             delete_files_in_folder(folder)
-            print(Fore.GREEN + f'All files in {folder} have been deleted.' + Style.RESET_ALL)
+            print(Fore.GREEN + f'All files in {folder} have been deleted.' + Style.RESET_ALL)            
+
+        delete_files(files_to_delete)
+        print(Fore.GREEN + 'All files have been deleted.' + Style.RESET_ALL)
+
     else:
         print("Operation cancelled.")
 
