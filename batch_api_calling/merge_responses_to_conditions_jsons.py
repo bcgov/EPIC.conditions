@@ -18,13 +18,18 @@ def lookup_metadata_from_doc_name(document_name, everything_json):
 
             if document_name_from_internal_url == document_name:
                 display_name = project["displayName"]
-                print(Fore.GREEN + f"Display Name: {Fore.CYAN}{display_name}{Style.RESET_ALL}")
                 document_file_name = project["documentFileName"]
-                print(Fore.GREEN + f"Document File Name: {Fore.CYAN}{document_file_name}{Style.RESET_ALL}")
                 document_id = project["_id"]
+                date_issued = project["datePosted"]
+                act = project["legislation"]
+                
+                print(Fore.GREEN + f"Display Name: {Fore.CYAN}{display_name}{Style.RESET_ALL}")
+                print(Fore.GREEN + f"Document File Name: {Fore.CYAN}{document_file_name}{Style.RESET_ALL}")
                 print(Fore.GREEN + f"Document ID: {Fore.CYAN}{document_id}{Style.RESET_ALL}")
+                print(Fore.GREEN + f"Date Issued: {Fore.CYAN}{date_issued}{Style.RESET_ALL}")
+                print(Fore.GREEN + f"Act: {Fore.CYAN}{act}{Style.RESET_ALL}")
 
-                return display_name, document_file_name, document_id
+                return display_name, document_file_name, document_id, date_issued, act
 
         print(Fore.RED + "Document ID not found in everything.json" + Style.RESET_ALL)
 
@@ -46,9 +51,9 @@ def get_info_from_batch_id(batch_id, batch_statuses_json):
             document_name = document_name.replace(".jsonl", "")
             print(Fore.GREEN + f"Document ID: {Fore.CYAN}{document_name}{Style.RESET_ALL}")
 
-            display_name, document_file_name, document_id = lookup_metadata_from_doc_name(document_name, "everything.json")
+            display_name, document_file_name, document_id, date_issued, act = lookup_metadata_from_doc_name(document_name, "everything.json")
 
-            return project_id, display_name, document_file_name, document_id
+            return project_id, display_name, document_file_name, document_id, date_issued, act
     return None
 
 def merge_responses_into_json(batch_file_path, batch_id):
@@ -69,13 +74,15 @@ def merge_responses_into_json(batch_file_path, batch_id):
 
     merged_conditions = {"conditions": conditions}
 
-    project_id, display_name, document_file_name, document_id = get_info_from_batch_id(batch_id, "BATCH_STATUSES.json")
+    project_id, display_name, document_file_name, document_id, date_issued, act = get_info_from_batch_id(batch_id, "BATCH_STATUSES.json")
 
     
     merged_conditions["project_id"] = project_id
     merged_conditions["document_id"] = document_id
     merged_conditions["display_name"] = display_name
     merged_conditions["document_file_name"] = document_file_name
+    merged_conditions["date_issued"] = date_issued
+    merged_conditions["act"] = act
     
     # Create the subfolder if it doesn't exist
     subfolder = "condition_jsons"
