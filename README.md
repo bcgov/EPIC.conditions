@@ -1,4 +1,4 @@
-### Installation
+## Installation
 
 1. Clone the repository:
    
@@ -28,8 +28,14 @@
    OPENAI_API_KEY=openai_api_key_here
    ```
 
-### Usage
+## Usage
 
-To run the gradio UI, execute the following command:
+### Individual PDFs:
+
+Run the gradio UI by execute the following command in the root of the directory:
 
 `python gradio_ui.py`
+
+### Multiple PDFs (Batch Processing):
+
+See [batch processing README](https://github.com/bcgov/EPIC.conditions/tree/batch/batch_api_calling)
