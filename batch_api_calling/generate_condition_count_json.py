@@ -29,9 +29,6 @@ def generate_condition_count_json(condition_documents_folder_path):
     # List of all files in the folder
     files = os.listdir(condition_documents_folder_path)
 
-    # Initialize a list to hold the data for each file
-    data = []
-
     for file in files:
         if file in existing_data_dict:
             # File already processed, skip it
@@ -41,19 +38,21 @@ def generate_condition_count_json(condition_documents_folder_path):
         file_path = os.path.join(condition_documents_folder_path, file)
         with open(file_path, 'r') as f:
             conditions_count = count_conditions(f)
-            data.append({
-                "file_name": file,
-                "conditions_count": conditions_count
-            })
-            print(Fore.CYAN + f"Processed {file}: {conditions_count}" + Style.RESET_ALL)
 
-    # Combine new data with existing data
-    data.extend(existing_data)
+        # Add the new data
+        new_data = {
+            "file_name": file,
+            "conditions_count": conditions_count
+        }
 
-    # Write the combined data to a JSON file
-    with open(condition_count_file_path, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
-    print(Fore.GREEN + "Updated CONDITION_COUNT.json with new data." + Style.RESET_ALL)
+        # Append the new data to the existing data list
+        existing_data.append(new_data)
+
+        # Write the updated data list to the JSON file
+        with open(condition_count_file_path, 'w') as json_file:
+            json.dump(existing_data, json_file, indent=4)
+        print(Fore.CYAN + f"Processed {file}: {conditions_count}" + Style.RESET_ALL)
+        print(Fore.GREEN + "Updated CONDITION_COUNT.json with new data." + Style.RESET_ALL)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a JSON with PDF names and their condition counts")
