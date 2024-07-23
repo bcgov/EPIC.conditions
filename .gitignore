@@ -161,16 +161,19 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# openai gpt batch processing files
+# OpenAI GPT batch processing files
 batch_api_calling/batch_requests_jsonl_files/
-batch_api_calling/CONDITION_COUNT.json
-
 batch_api_calling/batch_responses_jsonl_files/
-batch_api_calling/condition_jsons/
-
-batch_api_calling/LENGTH_ERROR_batch_requests_jsonl_files/
-
-batch_api_calling/BATCH_STATUSES.json
-batch_api_calling/BATCH_STATUSES_LENGTH_FIX.json
 batch_api_calling/batch_requests_jsonl_files_length_fix/
 batch_api_calling/batch_responses_jsonl_files_length_fix/
+batch_api_calling/condition_jsons/
+
+batch_api_calling/CONDITION_COUNT.json
+batch_api_calling/BATCH_STATUSES.json
+batch_api_calling/BATCH_STATUSES_LENGTH_FIX.json
+
+batch_api_calling/everything.json
+
+test_documents/pdfs_for_batch_processing
+
+
