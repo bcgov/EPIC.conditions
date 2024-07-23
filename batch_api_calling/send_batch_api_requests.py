@@ -35,9 +35,10 @@ def send_batch_api_request(jsonl_file_path):
 
 def send_all_batches(jsonl_folder, output_filename):
     jsonl_files = os.listdir(jsonl_folder)
+    total_batches = len(jsonl_files)
     batches = []
 
-    for jsonl_file in jsonl_files:
+    for index, jsonl_file in enumerate(jsonl_files):
         jsonl_file_path = os.path.join(jsonl_folder, jsonl_file)
         attempt = 0
 
@@ -47,7 +48,7 @@ def send_all_batches(jsonl_folder, output_filename):
 
             while batch_status == "validating":
                 print(Fore.YELLOW + f"Batch {jsonl_file} is still validating..." + Style.RESET_ALL)
-                time.sleep(2)  # Wait for 2 seconds before checking again
+                time.sleep(1)  # Wait for 1 second before checking again
                 batch_status = retrieve_batch_status(response.id)
 
             if batch_status == "failed":
@@ -71,6 +72,8 @@ def send_all_batches(jsonl_folder, output_filename):
             f.write(json.dumps(batches, indent=4))
 
         print(Fore.CYAN + f"Batch {jsonl_file} status: {batch_status}" + Style.RESET_ALL)
+        print(Fore.CYAN + f"Progress: {index + 1}/{total_batches} batches added to queue." + Style.RESET_ALL)
+
 
     print(Fore.GREEN + "\nAll batches in progress or completed (BATCH_STATUSES.json)" + Style.RESET_ALL)
 
