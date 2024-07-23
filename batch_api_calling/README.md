@@ -15,7 +15,9 @@ CONDITION_COUNT.json
 
 <br>
 
-**NOTE: You may run into rate limits that causes the script to exit before counting all the conditions in every file. Simply wait a few minutes and run the script again to have it continue where it left off)**
+**NOTE 1: You may run into rate limits that causes the script to exit before counting all the conditions in every file. Simply wait a few minutes and run the script again to have it continue where it left off. It will skip any PDFs that had their conditions already counted)**
+
+**NOTE 2: Once you run this, you should verify if the number of conditions were counted correctly for each PDF by checking CONDITION_COUNT.json**
 
 ## 2.
 ```
@@ -98,5 +100,5 @@ Folder `/condition_jsons` containing a JSON with extracted conditions for each P
 python clean_workspace.py
 ```
 **Description:**
-Deletes all JSONs/JSONLs involved in batch proccessing process.
+Deletes all JSONs/JSONLs involved in batch processing process.
 
