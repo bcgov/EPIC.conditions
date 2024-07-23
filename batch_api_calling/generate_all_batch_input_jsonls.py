@@ -40,15 +40,17 @@ def get_single_batch_input_request(file_name, starting_condition_number, ending_
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "condition_name": {"type": "string", "description": "The name of the condition. REQUIRED."},
-                                    "condition_number": {"type": "integer", "description": "The number associated with the condition."},
+                                    "condition_name": {"type": "string", "description": "The name associated with the condition. Is null if not present."},
+                                    "condition_number": {"type": "integer", "description": "The number associated with the condition. Is null if not present."},
                                     "condition_text": {"type": "string", "description": "The text of the condition. Fix spacing issues. Include the same newlines as in the document."},
+                                    "tags": {"type": "array", "items": {"type": "string", "enum": ["Economic", "Health", "Heritage/Culture", "Environment", "Social", "Community Well-being", "Employment & Income", "Labour Force", "Housing & Accommodation", "Property Values", "Mammals", "Air Quality", "Marine Resources", "Aquatic Resources", "Ecosystems", "Marine Mammals", "Groundwater", "Vegetation", "Rare Plants", "Greenhouse Gas Emissions", "Wildlife", "Birds", "Amphibians", "Fish & Fish Habitat", "Surface Water", "Benthic Invertebrates", "Terrain", "Acoustics", "Human Health", "Aboriginal Interests", "Heritage", "Heritage Resources", "Accidents & Malfunctions", "Land & Resource Use", "L&RU Traditional Purposes", "Services & Infrastructure", "Transportation & Access", "Recreation", "Visual Quality", "Marine Transportation & Use"]}, "description": "List of one or more tags selected from the provided tag choices that best describe to the condition. If none apply, leave blank."},
                                 },
+                                "required": ["condition_name", "condition_text", "condition_number", "tags"],
                             },
                             "description": conditions_list_description,
                         },
                     },
-                    "required": ["conditions", "conditions.condition_name"],
+                    "required": ["conditions"],
                 },
             }
         }
@@ -63,6 +65,7 @@ def get_single_batch_input_request(file_name, starting_condition_number, ending_
             "model": "gpt-4o-2024-05-13",
             "messages": messages,
             "tools": tools,
+            "temperature": 0.0,
             "tool_choice": {"type": "function", "function": {"name": "format_info"}}
         }
     }
