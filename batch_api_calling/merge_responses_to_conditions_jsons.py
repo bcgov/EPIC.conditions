@@ -90,7 +90,7 @@ def merge_responses_into_json(batch_file_path, batch_id):
     subfolder = "condition_jsons"
     os.makedirs(subfolder, exist_ok=True)
     
-    merged_file_path = os.path.join(subfolder, f"{display_name}_{batch_id}.json")
+    merged_file_path = os.path.join(subfolder, f"{project_id}_{document_id}.json")
 
     with open(merged_file_path, "w") as file:
         json.dump(merged_conditions, file, indent=4)
