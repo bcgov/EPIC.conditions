@@ -13,7 +13,8 @@ folders_to_clean = [
 
 files_to_delete = [
     "BATCH_STATUSES.json",
-    "CONDITION_COUNT.json"
+    "CONDITION_COUNT.json",
+    "BATCH_STATUSES_LENGTH_FIX.json"
 ]
 
 def delete_files_in_folder(folder):
