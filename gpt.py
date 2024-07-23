@@ -94,7 +94,7 @@ def count_conditions(file_input):
       "type": "function",
       "function": {
         "name": "count_conditions",
-        "description": "Count the number of conditions in the document.",
+        "description": "Count the number of conditions in the document. Don't count subconditions as separate conditions. Only count main conditions",
         "parameters": {
           "type": "object",
           "properties": {
@@ -108,19 +108,22 @@ def count_conditions(file_input):
       }
     }
   ]
+
   messages = [{"role": "user", "content": f"Here is a document with conditions:\n\n{file_text}"}]
-  completion = client.chat.completions.create(
-    model="gpt-4o-2024-05-13",
-    messages=messages,
-    tools=tools,
-    temperature=0.0,
-    tool_choice={"type": "function", "function": {"name": "count_conditions"}}
-  )
-
-  count_json = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
-  count = count_json["count"]
-
-  return(count)
+  
+  try:
+      completion = client.chat.completions.create(
+        model="gpt-4o-2024-05-13",
+        messages=messages,
+        tools=tools,
+        temperature=0.0,
+        tool_choice={"type": "function", "function": {"name": "count_conditions"}}
+      )
+      count_json = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
+      count = count_json["count"]
+      return count
+  except Exception as e:
+      return f"API Error: {e}"
 
 class FinishReasonError(Exception):
     pass
