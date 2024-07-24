@@ -59,6 +59,13 @@ def get_verification_status(file_name):
     else:
         return {"verified_by_human": False}
 
+# Function to format the verification status as HTML
+def format_verification_status(verified):
+    if verified["verified_by_human"]:
+        return '<span style="color: green;">✅ Verified</span>'
+    else:
+        return '<span style="color: red;">❌ Not Verified</span>'
+
 # Create the Gradio interface
 with gr.Blocks() as demo:
     with gr.Tab("PDF to Text Converter"):
@@ -69,23 +76,25 @@ with gr.Blocks() as demo:
             save_button = gr.Button("Save Changes 💾")
             flag_verified_button = gr.Button("Flag as Verified ✅")
 
+        verification_status_output = gr.HTML()
         status_output = gr.Textbox(label="Status", lines=2, interactive=False)
         json_editor = gr.Textbox(label="JSON Content Editor", lines=20)
         json_viewer = gr.JSON(label="JSON Viewer")
-        verification_status_output = gr.JSON(label="Verification Status")
 
         # Define the event to load and display JSON content
         def display_json(file_name):
             content = read_json(file_name)
             verification_status = get_verification_status(file_name)
-            return content, json.loads(content), verification_status
+            verification_status_html = format_verification_status(verification_status)
+            return content, json.loads(content), verification_status_html
 
         # Define the event to save the edited JSON content
         def handle_save_json(file_name, content):
             status, content_dict = save_json(file_name, content)
             if content_dict:
                 verification_status = get_verification_status(file_name)
-                return status, content_dict, verification_status
+                verification_status_html = format_verification_status(verification_status)
+                return status, content_dict, verification_status_html
             else:
                 return status, gr.update(), gr.update()
 
@@ -97,7 +106,8 @@ with gr.Blocks() as demo:
         # Define the event to flag the JSON file as verified
         def handle_flag_verified(file_name):
             status, verification_status = flag_as_verified(file_name)
-            return status, verification_status
+            verification_status_html = format_verification_status(verification_status)
+            return status, verification_status_html
 
         file_dropdown.change(display_json, inputs=file_dropdown, outputs=[json_editor, json_viewer, verification_status_output])
         save_button.click(handle_save_json, inputs=[file_dropdown, json_editor], outputs=[status_output, json_viewer, verification_status_output])
