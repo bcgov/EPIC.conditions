@@ -176,4 +176,5 @@ batch_api_calling/everything.json
 
 test_documents/pdfs_for_batch_processing
 
-
+batch_api_calling/manual_verification/VERIFICATION_STATUSES.json
+batch_api_calling/manual_verification/condition_jsons_to_verify/*.json
