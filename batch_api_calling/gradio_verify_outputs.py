@@ -68,16 +68,15 @@ def format_verification_status(verified):
 
 # Create the Gradio interface
 with gr.Blocks() as demo:
-    with gr.Tab("PDF to Text Converter"):
+    with gr.Tab("AI Output JSON Verifier"):
         file_dropdown = gr.Dropdown(label="Select JSON File", choices=json_files)
         open_pdf_button = gr.Button("Open Corresponding PDF 🗎")
-
         with gr.Row():
             save_button = gr.Button("Save Changes 💾")
             flag_verified_button = gr.Button("Flag as Verified ✅")
-
         verification_status_output = gr.HTML()
-        status_output = gr.Textbox(label="Status", lines=2, interactive=False)
+        with gr.Row():
+            status_output = gr.Textbox(label="Save Status", lines=1, interactive=False)
         json_editor = gr.Textbox(label="JSON Content Editor", lines=20)
         json_viewer = gr.JSON(label="JSON Viewer")
 
