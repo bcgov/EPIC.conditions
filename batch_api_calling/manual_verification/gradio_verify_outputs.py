@@ -101,8 +101,8 @@ with gr.Blocks() as demo:
     with gr.Tab("AI Output JSON Verifier"):
         file_dropdown = gr.Dropdown(label="Select JSON File", choices=json_files)
         with gr.Row():
-            previous_button = gr.Button("Previous")
-            next_button = gr.Button("Next")
+            previous_button = gr.Button("◀️ Previous")
+            next_button = gr.Button("Next ▶️")
         open_pdf_button = gr.Button("Open Corresponding PDF 🗎")
         with gr.Row():
             save_button = gr.Button("Save Changes 💾")
