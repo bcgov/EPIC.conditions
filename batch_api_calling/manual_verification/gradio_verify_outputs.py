@@ -73,10 +73,36 @@ def format_verification_status(verified):
     else:
         return '<span style="color: red;">❌ Not Verified</span>'
 
+# Function to get the index of the current JSON file
+def get_file_index(file_name):
+    try:
+        return json_files.index(file_name)
+    except ValueError:
+        return -1
+
+# Function to get the next JSON file
+def get_next_file(file_name):
+    current_index = get_file_index(file_name)
+    if current_index < len(json_files) - 1:
+        return json_files[current_index + 1]
+    else:
+        return json_files[current_index]
+
+# Function to get the previous JSON file
+def get_previous_file(file_name):
+    current_index = get_file_index(file_name)
+    if current_index > 0:
+        return json_files[current_index - 1]
+    else:
+        return json_files[current_index]
+
 # Create the Gradio interface
 with gr.Blocks() as demo:
     with gr.Tab("AI Output JSON Verifier"):
         file_dropdown = gr.Dropdown(label="Select JSON File", choices=json_files)
+        with gr.Row():
+            previous_button = gr.Button("Previous")
+            next_button = gr.Button("Next")
         open_pdf_button = gr.Button("Open Corresponding PDF 🗎")
         with gr.Row():
             save_button = gr.Button("Save Changes 💾")
@@ -122,10 +148,22 @@ with gr.Blocks() as demo:
             verification_status_html = format_verification_status(verification_status)
             return status, verification_status_html
 
+        # Define the event to navigate to the next JSON file
+        def handle_next(file_name):
+            next_file = get_next_file(file_name)
+            return next_file, *display_json(next_file)
+
+        # Define the event to navigate to the previous JSON file
+        def handle_previous(file_name):
+            previous_file = get_previous_file(file_name)
+            return previous_file, *display_json(previous_file)
+
         file_dropdown.change(display_json, inputs=file_dropdown, outputs=[json_editor, json_viewer, verification_status_output])
         save_button.click(handle_save_json, inputs=[file_dropdown, json_editor], outputs=[status_output, json_viewer, verification_status_output])
         open_pdf_button.click(handle_open_pdf, inputs=file_dropdown, outputs=[])
         flag_verified_button.click(handle_flag_verified, inputs=file_dropdown, outputs=[status_output, verification_status_output])
         flag_unverified_button.click(handle_flag_unverified, inputs=file_dropdown, outputs=[status_output, verification_status_output])
+        next_button.click(handle_next, inputs=file_dropdown, outputs=[file_dropdown, json_editor, json_viewer, verification_status_output])
+        previous_button.click(handle_previous, inputs=file_dropdown, outputs=[file_dropdown, json_editor, json_viewer, verification_status_output])
 
 demo.launch()
