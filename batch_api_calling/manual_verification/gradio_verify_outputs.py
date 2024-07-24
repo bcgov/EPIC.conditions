@@ -3,8 +3,8 @@ import json
 import os
 
 # Define the paths to the folders and verification status file
-json_folder = './condition_jsons'
-pdf_folder = '../test_documents/pdfs_for_batch_processing'
+json_folder = './condition_jsons_to_verify'
+pdf_folder = '../../test_documents/pdfs_for_batch_processing'
 verification_status_file = 'VERIFICATION_STATUSES.json'
 
 # Get the list of JSON files
@@ -49,7 +49,14 @@ def flag_as_verified(file_name):
     statuses = read_verification_statuses()
     statuses[file_name] = {"verified_by_human": True}
     save_verification_statuses(statuses)
-    return "Verified", statuses[file_name]
+    return "Successfuly flagged as Verified", statuses[file_name]
+
+# Function to flag a JSON file as unverified
+def flag_as_unverified(file_name):
+    statuses = read_verification_statuses()
+    statuses[file_name] = {"verified_by_human": False}
+    save_verification_statuses(statuses)
+    return "Successfuly flagged as Unverified", statuses[file_name]
 
 # Function to get the verification status of a JSON file
 def get_verification_status(file_name):
@@ -74,6 +81,7 @@ with gr.Blocks() as demo:
         with gr.Row():
             save_button = gr.Button("Save Changes 💾")
             flag_verified_button = gr.Button("Flag as Verified ✅")
+            flag_unverified_button = gr.Button("Flag as Unverified ❌")
         verification_status_output = gr.HTML()
         with gr.Row():
             status_output = gr.Textbox(label="Save Status", lines=1, interactive=False)
@@ -107,10 +115,17 @@ with gr.Blocks() as demo:
             status, verification_status = flag_as_verified(file_name)
             verification_status_html = format_verification_status(verification_status)
             return status, verification_status_html
+        
+        # Define the event to flag the JSON file as unverified
+        def handle_flag_unverified(file_name):
+            status, verification_status = flag_as_unverified(file_name)
+            verification_status_html = format_verification_status(verification_status)
+            return status, verification_status_html
 
         file_dropdown.change(display_json, inputs=file_dropdown, outputs=[json_editor, json_viewer, verification_status_output])
         save_button.click(handle_save_json, inputs=[file_dropdown, json_editor], outputs=[status_output, json_viewer, verification_status_output])
         open_pdf_button.click(handle_open_pdf, inputs=file_dropdown, outputs=[])
         flag_verified_button.click(handle_flag_verified, inputs=file_dropdown, outputs=[status_output, verification_status_output])
+        flag_unverified_button.click(handle_flag_unverified, inputs=file_dropdown, outputs=[status_output, verification_status_output])
 
 demo.launch()

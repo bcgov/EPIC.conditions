@@ -2,7 +2,7 @@ import os
 import json
 
 # Define the paths to the folders and verification status file
-json_folder = './condition_jsons'
+json_folder = '../condition_jsons'
 verification_status_file = 'VERIFICATION_STATUSES.json'
 
 # Get the list of JSON files
