@@ -4,7 +4,7 @@ import os
 
 # Define the paths to the folders and verification status file
 json_folder = './condition_jsons_to_verify'
-pdf_folder = '../../test_documents/pdfs_for_batch_processing'
+pdf_folder = './pdfs'
 verification_status_file = 'VERIFICATION_STATUSES.json'
 
 # Get the list of JSON files
