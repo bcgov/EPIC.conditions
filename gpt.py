@@ -497,3 +497,112 @@ def extract_all_subconditions(input_json):
 
   # Return new JSON with subconditions
   return json.dumps(input_json)
+
+
+def management_plan_required(input_condition_text):
+   
+  tools = [
+    {
+      "type": "function",
+      "function": {
+        "name": "extract_plan_info",
+        "description": "If the input condition requires an external plan to be written, extract the info related to the plan.",
+
+        "parameters": {
+          "type": "object",
+          "properties": {
+
+            "requires_plan": {
+              "type": "boolean",
+              "description": "Does the condition explicitly state than an external plan should be written? For example: management plan, action plan, etc. True only if required details about the plan are mentioned in the condition."
+            },
+
+          },
+          "required": ["requires_plan"],
+        },
+
+      }
+    }
+  ]
+  messages = [{"role": "user", "content": f"Here is the text of a condition:\n\n{input_condition_text}"}]
+  completion = client.chat.completions.create(
+    model="gpt-4o-2024-05-13",
+    messages=messages,
+    tools=tools,
+    tool_choice={"type": "function", "function": {"name": "extract_plan_info"}}
+  )
+
+  print(completion)
+
+  result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
+
+  # If result is not null, return the value of contains_subconditions
+  if result:
+    return result["requires_plan"]
+  
+  else:
+    print(Fore.RED + "Error: result is null" + Fore.RESET)
+
+
+def extract_management_plan_info_using_gpt(condition_text):
+   
+  tools = [
+    {
+      "type": "function",
+      "function": {
+        "name": "format_info",
+        "description": "Format the information extracted from the condition.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+              "plan_name": {
+                "type": "string",
+                "description": "The name of the plan that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring plan, etc. Write it in title case."
+              },
+              "approval_type": {
+                "type": "string", 
+                "enum": ["Acceptance", "Satisfaction"],
+                "description": "If the plan is to the acceptance of or to the satisfaction of the Environmental Assessment Office (EAO)."
+              },
+              "stakeholders_to_consult": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "description": "The names of the stakeholders that the plan must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
+                },
+              },
+              "related_phase": {
+                "type": "string",
+                "description": "The phase of the project that the plan is related to. E.g. construction, operation, decommissioning, etc."
+              },
+              "days_prior_to_commencement": {
+                "type": "integer",
+                "description": "The number of days prior to the planned commencement that the plan must be provided to the EAO."
+              },
+          },
+          "required": ["plan_name", "approval_type", "stakeholders_to_consult", "related_phase", "days_prior_to_commencement"],
+        },
+      }
+    }
+  ]
+  messages = [{"role": "user", "content": f"Here is a condition written by the Environmental Assessment Office:\n\n{condition_text}\n\nFormat the information related to the management plan."}]
+
+  completion = client.chat.completions.create(
+      model="gpt-4o-2024-05-13",
+      messages=messages,
+      tools=tools,
+      temperature=0.0,
+      tool_choice={"type": "function", "function": {"name": "format_info"}}
+  )
+
+  return completion.choices[0].message.tool_calls[0].function.arguments
+
+
+def extract_management_plan_info(condition_text):
+   
+  if management_plan_required(condition_text):
+    print(Fore.GREEN + "This condition requires a management plan!" + Fore.RESET)
+    return extract_management_plan_info_using_gpt(condition_text)
+  else:
+    print(Fore.RED + "This condition does not require a management plan." + Fore.RESET)
+    return json.dumps({"whoops": "This condition does not require a management plan."})
