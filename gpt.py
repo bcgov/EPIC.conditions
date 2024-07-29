@@ -507,7 +507,7 @@ def management_plan_required(input_condition_text):
       "type": "function",
       "function": {
         "name": "extract_plan_info",
-        "description": "If the input condition requires an external plan to be written, extract the info related to the plan.",
+        "description": "If the input condition requires an external plan/program to be written, extract the info related to the plan.",
 
         "parameters": {
           "type": "object",
@@ -515,7 +515,7 @@ def management_plan_required(input_condition_text):
 
             "requires_plan": {
               "type": "boolean",
-              "description": "Does the condition explicitly state than an external plan should be written? For example: management plan, action plan, etc. True only if required details about the plan are mentioned in the condition. Returns False for conditions that merely describe what a management plan should include without requiring a new plan to be created."
+              "description": "Does the condition explicitly state that an external plan/program should be written? For example: air quality management plan, wildlife action plan, pollution mitigation plan, etc. Some conditions outline requirements for how plans should be written and handled, but do not specifically say that a plan must be written. In these cases, this should be False."
             },
 
           },
@@ -622,6 +622,6 @@ def extract_management_plan_info_from_json(input_file):
     print(Fore.CYAN + condition + Fore.RESET)
     
     plan_info = extract_management_plan_info(condition)
-    #  print(Fore.GREEN + plan_info + Fore.RESET)
-    #  condition["management_plan_info"] = json.loads(plan_info)
-    #  print(Fore.GREEN + f"Successfully extracted management plan info for condition {condition['condition_number']}!" + Fore.RESET)
+    print(Fore.GREEN + plan_info + Fore.RESET)
+    # condition["management_plan_info"] = json.loads(plan_info)
+    # print(Fore.GREEN + f"Successfully extracted management plan info for condition {condition['condition_number']}!" + Fore.RESET)
