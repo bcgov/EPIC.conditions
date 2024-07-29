@@ -97,13 +97,15 @@ Folder `/condition_jsons` containing a JSON with extracted conditions for each P
 
 ## 6.
 ```
-python --jsons_folder_path ./condition_jsons --output_folder_path ./condition_jsons_with_management_plans
+python extract_management_plans.py --jsons_folder_path ./condition_jsons --output_folder_path ./condition_jsons_with_management_plans
 ```
 
 **Description:**
 Detects conditions that require a management plan and extracts the management plan information from each JSON in the specified input folder. Saves new JSONs with extracted management plan info to the output folder.<br>
 **Output:**
 Folder `/condition_jsons_with_management_plans` containing updated JSONs with extracted management plan information.
+
+**NOTE 1: You may run into rate limits that causes the script to exit before extracting the management plan info in every file. Simply wait a few minutes and run the script again to have it continue where it left off. It will skip any JSONs that had their management plan info extracted.)**
 
 # Extras
 ```
