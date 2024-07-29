@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, merge_json_chunks, extract_subcondition, extract_management_plan_info
+from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, merge_json_chunks, extract_subcondition, extract_management_plan_info, extract_management_plan_info_from_json
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -157,6 +157,16 @@ with gr.Blocks() as demo:
             inputs=[condition],
             outputs=[subconditions]
 
+        )
+
+
+        json_input = gr.File(label="JSON Input")
+        json_submit_button = gr.Button("Submit")
+
+        json_submit_button.click(
+            fn=extract_management_plan_info_from_json,
+            inputs=[json_input]
+            # outputs=[subconditions]
         )
 
 

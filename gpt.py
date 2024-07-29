@@ -608,3 +608,20 @@ def extract_management_plan_info(condition_text):
   else:
     print(Fore.RED + "This condition does not require a management plan." + Fore.RESET)
     return json.dumps({"whoops": "This condition does not require a management plan."})
+  
+def extract_management_plan_info_from_json(input_file):
+
+  with open(input_file.name, "r") as f:
+    input_json = json.load(f)  
+
+  for condition in input_json["conditions"]:
+    print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires a management plan:" + Fore.RESET)
+    
+    # Merge condition name and text
+    condition = condition["condition_name"] + "\n\n" + condition["condition_text"]
+    print(Fore.CYAN + condition + Fore.RESET)
+    
+    plan_info = extract_management_plan_info(condition)
+    #  print(Fore.GREEN + plan_info + Fore.RESET)
+    #  condition["management_plan_info"] = json.loads(plan_info)
+    #  print(Fore.GREEN + f"Successfully extracted management plan info for condition {condition['condition_number']}!" + Fore.RESET)
