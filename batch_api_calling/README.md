@@ -15,7 +15,7 @@ CONDITION_COUNT.json
 
 <br>
 
-**NOTE 1: You may run into rate limits that causes the script to exit before counting all the conditions in every file. Simply wait a few minutes and run the script again to have it continue where it left off. It will skip any PDFs that had their conditions already counted)**
+**NOTE 1: You may run into rate limits that causes the script to exit before counting all the conditions in every file. Simply wait a few minutes and run the script again to have it continue where it left off. (It will skip any PDFs that had their conditions already counted)**
 
 **NOTE 2: Once you run this, you should verify if the number of conditions were counted correctly for each PDF by checking CONDITION_COUNT.json**
 
@@ -105,7 +105,7 @@ Detects conditions that require a management plan and extracts the management pl
 **Output:**
 Folder `/condition_jsons_with_management_plans` containing updated JSONs with extracted management plan information.
 
-**NOTE 1: You may run into rate limits that causes the script to exit before extracting the management plan info in every file. Simply wait a few minutes and run the script again to have it continue where it left off. It will skip any JSONs that had their management plan info extracted.)**
+**NOTE 1: You may run into rate limits that causes the script to exit before extracting the management plan info in every file. Simply wait a few minutes and run the script again to have it continue where it left off. (It will skip any JSONs that had their management plan info extracted)**
 
 # Extras
 ```
