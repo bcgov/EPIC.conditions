@@ -95,6 +95,16 @@ Parses all batch response JSONLs in ./batch_responses_jsonl_files and merges eac
 **Output:**
 Folder `/condition_jsons` containing a JSON with extracted conditions for each PDF
 
+## 6.
+```
+python --jsons_folder_path ./condition_jsons --output_folder_path ./condition_jsons_with_management_plans
+```
+
+**Description:**
+Detects conditions that require a management plan and extracts the management plan information from each JSON in the specified input folder. Saves new JSONs with extracted management plan info to the output folder.<br>
+**Output:**
+Folder `/condition_jsons_with_management_plans` containing updated JSONs with extracted management plan information.
+
 # Extras
 ```
 python clean_workspace.py

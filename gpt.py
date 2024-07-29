@@ -599,33 +599,27 @@ def extract_management_plan_info_using_gpt(condition_text):
 
   return completion.choices[0].message.tool_calls[0].function.arguments
 
-
 def extract_management_plan_info(condition_text):
-   
-  if management_plan_required(condition_text):
-    print(Fore.GREEN + "This condition requires a management plan!" + Fore.RESET)
-    return extract_management_plan_info_using_gpt(condition_text)
-  else:
-    print(Fore.RED + "This condition does not require a management plan." + Fore.RESET)
-    return json.dumps({"whoops": "This condition does not require a management plan."})
-  
-def extract_management_plan_info_from_json(input_file):
+    if management_plan_required(condition_text):
+        print(Fore.GREEN + "This condition requires a management plan!" + Fore.RESET)
+        return extract_management_plan_info_using_gpt(condition_text)
+    else:
+        print(Fore.RED + "This condition does not require a management plan." + Fore.RESET)
+        return None
 
-  with open(input_file.name, "r") as f:
-    input_json = json.load(f)  
+def extract_management_plan_info_from_json(input_file_path, output_file_path):
+    with open(input_file_path, "r") as f:
+        input_json = json.load(f)
 
-  for condition in input_json["conditions"]:
-    print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires a management plan:" + Fore.RESET)
-    
-    # Account for null condition names
-    condition_name = ""
-    if condition["condition_name"]:
-      condition_name = condition["condition_name"] + "\n\n"
-
-    condition = condition_name + condition["condition_text"]
-    # print(Fore.CYAN + condition + Fore.RESET)
-    
-    plan_info = extract_management_plan_info(condition)
-    print(Fore.CYAN + plan_info + Fore.RESET)
-    # condition["management_plan_info"] = json.loads(plan_info)
-    # print(Fore.GREEN + f"Successfully extracted management plan info for condition {condition['condition_number']}!" + Fore.RESET)
+    for condition in input_json["conditions"]:
+        print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires a management plan:" + Fore.RESET)
+        
+        condition_name = condition["condition_name"] + "\n\n" if condition["condition_name"] else ""
+        condition_text = condition_name + condition["condition_text"]
+        management_plan_info = extract_management_plan_info(condition_text)
+        
+        if management_plan_info is not None:
+            condition["management_plan"] = json.loads(management_plan_info)
+          
+    with open(output_file_path, "w") as f:
+        json.dump(input_json, f, indent=4)
