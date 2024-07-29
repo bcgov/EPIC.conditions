@@ -534,7 +534,7 @@ def management_plan_required(input_condition_text):
     tool_choice={"type": "function", "function": {"name": "extract_plan_info"}}
   )
 
-  print(completion)
+  # print(completion)
 
   result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
 
@@ -617,11 +617,15 @@ def extract_management_plan_info_from_json(input_file):
   for condition in input_json["conditions"]:
     print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires a management plan:" + Fore.RESET)
     
-    # Merge condition name and text
-    condition = condition["condition_name"] + "\n\n" + condition["condition_text"]
-    print(Fore.CYAN + condition + Fore.RESET)
+    # Account for null condition names
+    condition_name = ""
+    if condition["condition_name"]:
+      condition_name = condition["condition_name"] + "\n\n"
+
+    condition = condition_name + condition["condition_text"]
+    # print(Fore.CYAN + condition + Fore.RESET)
     
     plan_info = extract_management_plan_info(condition)
-    print(Fore.GREEN + plan_info + Fore.RESET)
+    print(Fore.CYAN + plan_info + Fore.RESET)
     # condition["management_plan_info"] = json.loads(plan_info)
     # print(Fore.GREEN + f"Successfully extracted management plan info for condition {condition['condition_number']}!" + Fore.RESET)
