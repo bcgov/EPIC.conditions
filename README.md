@@ -38,4 +38,4 @@ Run the gradio UI by execute the following command in the root of the directory:
 
 ### Multiple PDFs (Batch Processing):
 
-See [batch processing README](https://github.com/bcgov/EPIC.conditions/tree/batch/batch_api_calling)
+See [batch processing README](./batch_api_calling)
