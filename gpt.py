@@ -440,6 +440,7 @@ def check_for_subconditions(input_condition_text):
     model="gpt-4o-2024-05-13",
     messages=messages,
     tools=tools,
+    temperature=0.0,
     tool_choice={"type": "function", "function": {"name": "extract_subconditions"}}
   )
 
@@ -514,7 +515,7 @@ def management_plan_required(input_condition_text):
 
             "requires_plan": {
               "type": "boolean",
-              "description": "Does the condition explicitly state than an external plan should be written? For example: management plan, action plan, etc. True only if required details about the plan are mentioned in the condition."
+              "description": "Does the condition explicitly state than an external plan should be written? For example: management plan, action plan, etc. True only if required details about the plan are mentioned in the condition. Returns False for conditions that merely describe what a management plan should include without requiring a new plan to be created."
             },
 
           },
@@ -529,6 +530,7 @@ def management_plan_required(input_condition_text):
     model="gpt-4o-2024-05-13",
     messages=messages,
     tools=tools,
+    temperature=0.0,
     tool_choice={"type": "function", "function": {"name": "extract_plan_info"}}
   )
 
