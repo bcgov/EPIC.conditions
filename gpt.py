@@ -575,7 +575,7 @@ def extract_management_plan_info_using_gpt(condition_text):
               },
               "related_phase": {
                 "type": "string",
-                "description": "The phase of the project that the plan is related to. E.g. construction, operation, decommissioning, etc."
+                "description": "The phase of the project that the plan's due date is related to. E.g. Construction, Operation, Decommissioning, etc. Write it in title case."
               },
               "days_prior_to_commencement": {
                 "type": "integer",
