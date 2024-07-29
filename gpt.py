@@ -507,7 +507,7 @@ def management_plan_required(input_condition_text):
       "type": "function",
       "function": {
         "name": "extract_plan_info",
-        "description": "If the input condition requires an external plan/program to be written, extract the info related to the plan.",
+        "description": "If the input condition requires an external plan document to be written, extract the info related to the plan.",
 
         "parameters": {
           "type": "object",
@@ -515,7 +515,7 @@ def management_plan_required(input_condition_text):
 
             "requires_plan": {
               "type": "boolean",
-              "description": "Does the condition explicitly state that an external plan/program should be written? For example: air quality management plan, wildlife action plan, pollution mitigation plan, etc. Some conditions outline requirements for how plans should be written and handled, but do not specifically say that a plan must be written. In these cases, this should be False."
+              "description": "Does the condition explicitly state that an external plan document should be written? For example: air quality management plan, wildlife action plan, pollution mitigation plan, etc. Some conditions outline requirements for how plans should be written and handled, but do not specifically say that a plan must be written. In these cases, this should be False."
             },
 
           },
