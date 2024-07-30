@@ -16,7 +16,7 @@ def extract_management_plans(jsons_folder_path, output_folder_path):
             if os.path.exists(output_file_path):
                 print(f"Skipping {file} as it already exists in the output folder")
                 continue
-            print(Fore.CYAN + f"Extracting management plan info from {file}" + Style.RESET_ALL)
+            print(Fore.CYAN + f"\n\nExtracting management plan info from {file}" + Style.RESET_ALL)
             input_file_path = os.path.join(jsons_folder_path, file)
             extract_management_plan_info_from_json(input_file_path, output_file_path)
 
