@@ -566,12 +566,9 @@ def extract_management_plan_info_using_gpt(condition_text):
                 "enum": ["Acceptance", "Satisfaction"],
                 "description": "If the plan is to the acceptance of or to the satisfaction of the Environmental Assessment Office (EAO)."
               },
-              "stakeholders_to_consult": {
-                "type": "array",
-                "items": {
-                    "type": "string",
-                    "description": "The names of the stakeholders that the plan must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
-                },
+              "fn_consultation_required": {
+                "type": "boolean",
+                "description": "Whether the plan requires consultation with indigenous nations/First Nations/aboriginal peoples, etc. False if not explicitly specified."
               },
               "related_phase": {
                 "type": "string",
@@ -619,7 +616,7 @@ def extract_management_plan_info_from_json(input_file_path, output_file_path):
         management_plan_info = extract_management_plan_info(condition_text)
         
         if management_plan_info is not None:
-            condition["management_plan"] = json.loads(management_plan_info)
+            condition["required_plan"] = json.loads(management_plan_info)
           
     with open(output_file_path, "w") as f:
         json.dump(input_json, f, indent=4)
