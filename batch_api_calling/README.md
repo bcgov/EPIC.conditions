@@ -99,13 +99,24 @@ Folder `/condition_jsons` containing a JSON with extracted conditions for each P
 ```
 python extract_management_plans.py --jsons_folder_path ./condition_jsons --output_folder_path ./condition_jsons_with_management_plans
 ```
-
 **Description:**
 Detects conditions that require a management plan and extracts the management plan information from each JSON in the specified input folder. Saves new JSONs with extracted management plan info to the output folder.<br>
 **Output:**
 Folder `/condition_jsons_with_management_plans` containing updated JSONs with extracted management plan information.
 
 **NOTE 1: You may run into rate limits that causes the script to exit before extracting the management plan info in every file. Simply wait a few minutes and run the script again to have it continue where it left off. (It will skip any JSONs that had their management plan info extracted)**
+
+## 7.
+```
+python extract_first_nations.py --jsons_folder_path ./condition_jsons_with_management_plans --pdfs_folder_path ../test_documents/pdfs_for_batch_processing --output_folder_path ./condition_jsons_with_first_nations
+```
+**Description:**
+Extracts the names of indigenous nations/First Nations/aboriginal peoples that need to be consulted from each PDF and adds this information to the corresponding JSON file.<br>
+**Output:**
+Folder /condition_jsons_with_first_nations containing updated JSONs with the extracted First Nations information.
+
+NOTE: Similar to previous steps, you may run into rate limits. If this happens, wait a few minutes and run the script again to continue from where it left off.
+
 
 # Extras
 ```
