@@ -8,7 +8,8 @@ folders_to_clean = [
     "batch_requests_jsonl_files_length_fix",
     "batch_responses_jsonl_files",
     "batch_responses_jsonl_files_length_fix",
-    "condition_jsons"
+    "condition_jsons",
+    "condition_jsons_with_management_plans"
 ]
 
 files_to_delete = [
