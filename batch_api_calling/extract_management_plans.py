@@ -74,6 +74,13 @@ def extract_management_plan_info_using_gpt(condition_text):
                 "enum": ["Acceptance", "Satisfaction"],
                 "description": "If the plan is to the acceptance of or to the satisfaction of the Environmental Assessment Office (EAO)."
               },
+              "stakeholders_to_consult": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "description": "The names of the stakeholders that the plan must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
+                },
+              },
               "fn_consultation_required": {
                 "type": "boolean",
                 "description": "Whether the plan requires consultation with indigenous nations/First Nations/aboriginal peoples, etc. False if not explicitly specified."
