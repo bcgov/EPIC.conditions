@@ -13,23 +13,25 @@ def lookup_metadata_from_doc_name(document_name, everything_json):
         document_id_from_big_json = project["_id"]
 
         if document_id_from_big_json == document_name:
+            project_id = project["project"]
             display_name = project["displayName"]
             document_file_name = project["documentFileName"]
             document_id = project["_id"]
             date_issued = project["datePosted"]
             act = project["legislation"]
 
+            print(Fore.GREEN + f"Project ID: {Fore.CYAN}{project_id}{Style.RESET_ALL}")
             print(Fore.GREEN + f"Display Name: {Fore.CYAN}{display_name}{Style.RESET_ALL}")
             print(Fore.GREEN + f"Document File Name: {Fore.CYAN}{document_file_name}{Style.RESET_ALL}")
             print(Fore.GREEN + f"Document ID: {Fore.CYAN}{document_id}{Style.RESET_ALL}")
             print(Fore.GREEN + f"Date Issued: {Fore.CYAN}{date_issued}{Style.RESET_ALL}")
             print(Fore.GREEN + f"Act: {Fore.CYAN}{act}{Style.RESET_ALL}")
 
-            return display_name, document_file_name, document_id, date_issued, act
+            return project_id, display_name, document_file_name, document_id, date_issued, act
 
     print(Fore.RED + "Document ID not found in everything.json" + Style.RESET_ALL)
 
-    return None, None, None, None, None
+    return None, None, None, None, None, None
 
 def get_info_from_batch_id(batch_id, batch_statuses_json, missing_docs):
     with open(batch_statuses_json, "r") as f:
@@ -40,21 +42,19 @@ def get_info_from_batch_id(batch_id, batch_statuses_json, missing_docs):
             print(Fore.GREEN + f"Batch ID: {Fore.CYAN}{batch['batch_id']}{Style.RESET_ALL}")
             batch_name = batch["batch_name"]
             print(Fore.GREEN + f"Batch Name: {Fore.CYAN}{batch_name}{Style.RESET_ALL}")
-            project_id = batch_name.split("_")[0]
-            print(Fore.GREEN + f"Project ID: {Fore.CYAN}{project_id}{Style.RESET_ALL}")
             document_name = "_".join(batch_name.split("_")[1:])
             document_name = document_name.replace(".jsonl", "")
             print(Fore.GREEN + f"Document ID: {Fore.CYAN}{document_name}{Style.RESET_ALL}")
 
-            display_name, document_file_name, document_id, date_issued, act = lookup_metadata_from_doc_name(document_name, "everything.json")
+            project_id, display_name, document_file_name, document_id, date_issued, act = lookup_metadata_from_doc_name(document_name, "everything.json")
 
             if display_name is None:
                 missing_docs.append(batch_name)
 
-            return project_id, display_name, document_file_name, document_id, date_issued, act
-    return None, None, None, None, None, None
+            return project_id, display_name, document_file_name, document_id, date_issued, act, batch_name
+    return None, None, None, None, None, None, None
 
-def merge_responses_into_json(batch_file_path, batch_id, missing_docs):
+def merge_responses_into_json(batch_file_path, batch_id, missing_docs, batch_name):
     conditions = []
 
     with open(batch_file_path, "r") as file:
@@ -68,20 +68,25 @@ def merge_responses_into_json(batch_file_path, batch_id, missing_docs):
 
     merged_conditions = {"conditions": conditions}
 
-    project_id, display_name, document_file_name, document_id, date_issued, act = get_info_from_batch_id(batch_id, "BATCH_STATUSES.json", missing_docs)
+    project_id, display_name, document_file_name, document_id, date_issued, act, _ = get_info_from_batch_id(batch_id, "BATCH_STATUSES.json", missing_docs)
 
-    merged_conditions["project_id"] = project_id if project_id else None
-    merged_conditions["document_id"] = document_id if document_id else None
-    merged_conditions["display_name"] = display_name if display_name else None
-    merged_conditions["document_file_name"] = document_file_name if document_file_name else None
-    merged_conditions["date_issued"] = date_issued if date_issued else None
-    merged_conditions["act"] = act if act else None
+    merged_conditions["project_id"] = project_id
+    merged_conditions["document_id"] = document_id
+    merged_conditions["display_name"] = display_name
+    merged_conditions["document_file_name"] = document_file_name
+    merged_conditions["date_issued"] = date_issued
+    merged_conditions["act"] = act
 
     # Create the subfolder if it doesn't exist
     subfolder = "condition_jsons"
     os.makedirs(subfolder, exist_ok=True)
 
-    merged_file_path = os.path.join(subfolder, f"{project_id}_{document_id}.json")
+    # Determine the merged file path
+    if project_id and document_id:
+        merged_file_path = os.path.join(subfolder, f"{project_id}_{document_id}.json")
+    else:
+        pdf_file_name = batch_name.replace(".jsonl", ".json")
+        merged_file_path = os.path.join(subfolder, pdf_file_name)
 
     with open(merged_file_path, "w") as file:
         json.dump(merged_conditions, file, indent=4)
@@ -113,7 +118,7 @@ def merge_all_into_json(batch_responses_jsonl_files_path):
                     length_error_files.append(batch_name)
                     break
 
-                merge_responses_into_json(jsonl_file_path, batch_id, missing_docs)
+                merge_responses_into_json(jsonl_file_path, batch_id, missing_docs, batch_name)
                 break
 
     if length_error_files:
