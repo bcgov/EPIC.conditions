@@ -30,9 +30,13 @@ def extract_first_nation_from_pdf(pdf_file_path):
                 "items": {
                   "type": "string",
                 },
+              },
+              "consultation_records_required": {
+                "type": "boolean",
+                "description": "Does the document state that consultation records are required to be kept?",
+              },
             },
-          },
-          "required": ["first_nations"],
+          "required": ["first_nations", "consultation_records_required"],
         },
       }
     }
@@ -71,13 +75,12 @@ def extract_first_nations(jsons_folder_path, pdfs_folder_path, output_folder_pat
 
             first_nations_json = json.loads(first_nations)
             old_json['first_nations'] = first_nations_json['first_nations']
+            old_json['consultation_records_required'] = first_nations_json['consultation_records_required']
             with open(output_file_path, 'w') as f:
                 json.dump(old_json, f, indent=4)
 
     print(Fore.GREEN + f"SUCCESS: All first nations extracted to new JSONs in {output_folder_path}" + Style.RESET_ALL)
-            
 
-   
 
 
 if __name__ == '__main__':
