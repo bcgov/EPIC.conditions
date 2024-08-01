@@ -111,9 +111,9 @@ Folder `/condition_jsons_with_management_plans` containing updated JSONs with ex
 python extract_first_nations.py --jsons_folder_path ./condition_jsons_with_management_plans --pdfs_folder_path ../test_documents/pdfs_for_batch_processing --output_folder_path ./condition_jsons_with_first_nations
 ```
 **Description:**
-Extracts the names of indigenous nations/First Nations/aboriginal peoples that need to be consulted from each PDF and adds this information to the corresponding JSON file.<br>
+Extracts the names of indigenous nations/First Nations/aboriginal peoples that need to be consulted from each PDF and adds this information to the corresponding JSON file. Also extracts whether consultation records are required.<br>
 **Output:**
-Folder /condition_jsons_with_first_nations containing updated JSONs with the extracted First Nations information.
+Folder `/condition_jsons_with_first_nations` containing updated JSONs with the extracted First Nations information (first_nations and consultation_records_required).
 
 NOTE: Similar to previous steps, you may run into rate limits. If this happens, wait a few minutes and run the script again to continue from where it left off.
 
