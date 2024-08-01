@@ -20,7 +20,6 @@ def extract_management_plans(jsons_folder_path, output_folder_path):
             input_file_path = os.path.join(jsons_folder_path, file)
             extract_management_plan_info_from_json(input_file_path, output_file_path)
 
-# all caps
     print(Fore.GREEN + f"SUCCESS: All management plans extracted to new JSONs in {output_folder_path}" + Style.RESET_ALL)
 
 if __name__ == '__main__':
