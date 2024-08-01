@@ -56,7 +56,13 @@ def generate_condition_count_json(condition_documents_folder_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a JSON with PDF names and their condition counts")
-    parser.add_argument("condition_documents_folder", type=str, help="Path to the folder containing condition documents")
+    parser.add_argument(
+        "condition_documents_folder", 
+        type=str, 
+        nargs='?',
+        default="../test_documents/pdfs_for_batch_processing", 
+        help="Path to the folder containing condition documents"
+    )
     args = parser.parse_args()
 
     generate_condition_count_json(args.condition_documents_folder)

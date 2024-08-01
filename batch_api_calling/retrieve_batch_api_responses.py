@@ -142,9 +142,21 @@ def retrieve_batch_api_responses(batch_id, output_folder):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Retrieve batch API responses from OpenAI")
-    parser.add_argument("batch_statuses_json", type=str, help="Batch statuses JSON file")
-     # Optional output folder argument
-    parser.add_argument("--output", type=str, default="batch_responses_jsonl_files", help="Name of the output folder")
+    parser.add_argument(
+        "batch_statuses_json", 
+        type=str, 
+        nargs='?',
+        default="./BATCH_STATUSES.json", 
+        help="Batch statuses JSON file"
+    )
+    
+    # Optional output folder argument
+    parser.add_argument(
+        "--output", 
+        type=str, 
+        default="batch_responses_jsonl_files", 
+        help="Name of the output folder"
+    )
     args = parser.parse_args()
 
 

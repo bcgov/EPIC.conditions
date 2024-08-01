@@ -134,8 +134,14 @@ def merge_all_into_json(batch_responses_jsonl_files_path):
             print(Fore.RED + doc + Style.RESET_ALL)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Merge batch response jsonls into condition jsons")
-    parser.add_argument("batch_responses_jsonl_files_path", type=str, help="Path to the folder containing batch response JSONL files")
+    parser = argparse.ArgumentParser(description="Merge batch response JSONLs into condition JSONs")
+    parser.add_argument(
+        "batch_responses_jsonl_files_path", 
+        type=str, 
+        nargs='?',
+        default="./batch_responses_jsonl_files", 
+        help="Path to the folder containing batch response JSONL files"
+    )
     args = parser.parse_args()
 
     merge_all_into_json(args.batch_responses_jsonl_files_path)

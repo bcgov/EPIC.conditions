@@ -79,7 +79,13 @@ def send_all_batches(jsonl_folder, output_filename):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send multiple batch API requests to OpenAI")
-    parser.add_argument("jsonl_folder", type=str, help="Path to the folder containing JSONL files")
+    parser.add_argument(
+        "jsonl_folder", 
+        type=str, 
+        nargs='?',
+        default="./batch_requests_jsonl_files", 
+        help="Path to the folder containing JSONL files"
+    )
     
     # Optional output file name argument
     parser.add_argument("--output", type=str, default="BATCH_STATUSES.json", help="Name of the output JSON file")

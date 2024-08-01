@@ -108,7 +108,13 @@ def generate_all_batch_input_jsonls(condition_count_json_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a JSONL file for batch API requests")
-    parser.add_argument("condition_count_json", type=str, help="Path to the CONDITION_COUNT.json file")
+    parser.add_argument(
+        "condition_count_json", 
+        type=str, 
+        nargs='?',
+        default="CONDITION_COUNT.json", 
+        help="Path to the CONDITION_COUNT.json file"
+    )
     args = parser.parse_args()
 
     generate_all_batch_input_jsonls(args.condition_count_json)
