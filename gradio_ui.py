@@ -1,5 +1,5 @@
 import gradio as gr
-from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, merge_json_chunks, extract_subcondition, extract_management_plan_info, extract_management_plan_info_from_json
+from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, extract_subcondition
 import read_pdf
 
 with gr.Blocks() as demo:
@@ -141,33 +141,33 @@ with gr.Blocks() as demo:
 
     
 
-    with gr.Tab("Plan info extractor"):
-        # default rows for subcondition extraction
-        condition = gr.Textbox(label="Condition", lines=10)
+    # with gr.Tab("Plan info extractor"):
+    #     # default rows for subcondition extraction
+    #     condition = gr.Textbox(label="Condition", lines=10)
 
-        # set default value for condition
+    #     # set default value for condition
 
-        condition.value = "Air Quality\n\nThe Holder must develop, in consultation with MOE, MOH, OGC, VCH and Aboriginal Groups, an air quality mitigation and monitoring plan, which must include at a minimum:\n Measures to monitor liquefaction facility air emissions and contaminants of concern for sources modelled in the Application;\n Procedures for regular reporting of liquefaction facility air emission data gathered, including reporting to the appropriate government agencies, Aboriginal Groups and the public; and\n An adaptive management plan to address effects of the Project related to air quality from liquefaction facility emissions in the event (i) those effects are not mitigated to the extent identified in the Application, or (ii) effects related to air quality occur that were not predicted in the Application.\n\nA Qualified Professional must develop the plan and supervise the implementation of the plan. The Holder must provide the plan to EAO, MOE, MOH, OGC, VCH and Aboriginal Groups no less than 30 days prior to the Holder’s planned date to commence Commissioning. The Holder must implement the plan to the satisfaction of EAO."
+    #     condition.value = "Air Quality\n\nThe Holder must develop, in consultation with MOE, MOH, OGC, VCH and Aboriginal Groups, an air quality mitigation and monitoring plan, which must include at a minimum:\n Measures to monitor liquefaction facility air emissions and contaminants of concern for sources modelled in the Application;\n Procedures for regular reporting of liquefaction facility air emission data gathered, including reporting to the appropriate government agencies, Aboriginal Groups and the public; and\n An adaptive management plan to address effects of the Project related to air quality from liquefaction facility emissions in the event (i) those effects are not mitigated to the extent identified in the Application, or (ii) effects related to air quality occur that were not predicted in the Application.\n\nA Qualified Professional must develop the plan and supervise the implementation of the plan. The Holder must provide the plan to EAO, MOE, MOH, OGC, VCH and Aboriginal Groups no less than 30 days prior to the Holder’s planned date to commence Commissioning. The Holder must implement the plan to the satisfaction of EAO."
 
-        submit_button = gr.Button("Submit")
-        subconditions = gr.JSON(label="Extracted Plan Info")
+    #     submit_button = gr.Button("Submit")
+    #     subconditions = gr.JSON(label="Extracted Plan Info")
 
-        submit_button.click(
-            fn=extract_management_plan_info,
-            inputs=[condition],
-            outputs=[subconditions]
+    #     submit_button.click(
+    #         fn=extract_management_plan_info,
+    #         inputs=[condition],
+    #         outputs=[subconditions]
 
-        )
+    #     )
 
 
-        json_input = gr.File(label="JSON Input")
-        json_submit_button = gr.Button("Submit")
+    #     json_input = gr.File(label="JSON Input")
+    #     json_submit_button = gr.Button("Submit")
 
-        json_submit_button.click(
-            fn=extract_management_plan_info_from_json,
-            inputs=[json_input]
-            # outputs=[subconditions]
-        )
+    #     json_submit_button.click(
+    #         fn=extract_management_plan_info_from_json,
+    #         inputs=[json_input]
+    #         # outputs=[subconditions]
+    #     )
 
 
 
