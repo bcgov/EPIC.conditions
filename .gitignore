@@ -183,3 +183,6 @@ batch_api_calling/manual_verification/pdfs/*.pdf
 
 batch_api_calling/condition_jsons_with_management_plans/*.json
 batch_api_calling/condition_jsons_with_first_nations/*.json
+
+batch_api_calling/tests/condition_jsons/*.json
+batch_api_calling/tests/condition_jsons_with_management_plans/*.json
