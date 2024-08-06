@@ -23,7 +23,7 @@ def management_plan_required(input_condition_text):
 
             "requires_plan": {
               "type": "boolean",
-              "description": "Does the condition explicitly state that a specific external plan document should be written? For example: air quality management plan, wildlife action plan, pollution mitigation plan, etc. Some conditions outline requirements for how plans should be written/developed/handled, but do not say a specific plan must be written. In these cases, this should be False."
+              "description": "Does the condition explicitly state that a specific external plan document should be written? For example: air quality management plan, wildlife action plan, pollution mitigation plan, etc. Some conditions outline requirements for how plans should be written/developed/handled, but do not say a specific plan must be written. In these cases, this should be False. Some conditions reference existing plans. In these cases, this should be False. Only set to True if the condition explicitly states that a specific plan must be written.",
             },
 
           },
@@ -91,7 +91,7 @@ def extract_management_plan_info_using_gpt(condition_text):
               },
               "days_prior_to_commencement": {
                 "type": "integer",
-                "description": "The number of days prior to the planned commencement that the plan must be provided to the EAO."
+                "description": "The number of days prior to the planned commencement that the plan must be provided to the EAO. Is null if not specified."
               },
           },
           "required": ["plan_name", "approval_type", "stakeholders_to_consult", "related_phase", "days_prior_to_commencement"],
