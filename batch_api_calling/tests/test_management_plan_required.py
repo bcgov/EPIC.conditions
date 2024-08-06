@@ -47,7 +47,7 @@ def test_check_for_subconditions(file, expected_conditions, setup_environment):
     actual_conditions_with_required_plan = [
         condition.get("condition_number")
         for condition in data.get("conditions", [])
-        if "required_plan" in condition
+        if "deliverables" in condition
     ]
 
     assert sorted(expected_conditions) == sorted(actual_conditions_with_required_plan), (

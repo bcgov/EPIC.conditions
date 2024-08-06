@@ -14,8 +14,8 @@ def management_plan_required(input_condition_text):
     {
       "type": "function",
       "function": {
-        "name": "extract_plan_info",
-        "description": "If the input condition requires a specific external plan document to be written, extract the info related to the plan.",
+        "name": "extract_info",
+        "description": "If the condition requires a specific external plan/report/proposal/etc. document to be written, extract the info related to the document.",
 
         "parameters": {
           "type": "object",
@@ -23,11 +23,11 @@ def management_plan_required(input_condition_text):
 
             "requires_plan": {
               "type": "boolean",
-              "description": "Does the condition explicitly state that a specific external plan document (e.g., air quality management plan, wildlife action plan, pollution mitigation plan) should be written? If a condition only outlines how plans should be written/developed/handled or simply references a management plan without requiring one to be written, it should be marked False. Do not count proposals; these should be marked False.",
+              "description": "Does the condition explicitly state that a specific external plan/report/proposal/etc. document (e.g., air quality management plan, wildlife action plan, pollution mitigation plan, mountain goat proposal, frog monitoring report) should be written/submitted? If a condition only outlines how plans should be written/developed/handled or simply references a management plan without requiring one to be written, it should be marked False.",
             },
 
           },
-          "required": ["requires_plan"],
+          "required": ["extract_info"],
         },
 
       }
@@ -39,7 +39,7 @@ def management_plan_required(input_condition_text):
     messages=messages,
     tools=tools,
     temperature=0.0,
-    tool_choice={"type": "function", "function": {"name": "extract_plan_info"}}
+    tool_choice={"type": "function", "function": {"name": "extract_info"}}
   )
 
   # print(completion)
@@ -65,43 +65,63 @@ def extract_management_plan_info_using_gpt(condition_text):
         "parameters": {
           "type": "object",
           "properties": {
-              "plan_name": {
-                "type": "string",
-                "description": "The name of the plan that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring plan, etc. Write it in title case."
-              },
-              "approval_type": {
-                "type": "string", 
-                "enum": ["Acceptance", "Satisfaction"],
-                "description": "If the plan is to the acceptance of or to the satisfaction of the Environmental Assessment Office (EAO). Is null if not specified."
-              },
-              "stakeholders_to_consult": {
-                "type": "array",
-                "items": {
-                    "type": "string",
-                    "description": "The names of the stakeholders that the condition explicitly states that the plan must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
-                },
-              },
-              "stakeholders_to_submit_to": {
-                "type": "array",
-                "items": {
-                    "type": "string",
-                    "description": "The names of the stakeholders that the condition explicitly states should receive the plan. Often includes the EAO, other government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
-                },
-              },
-              "fn_consultation_required": {
-                "type": "boolean",
-                "description": "Whether the plan requires consultation with indigenous nations/First Nations/aboriginal peoples, etc. False if not explicitly specified."
-              },
-              "related_phase": {
-                "type": "string",
-                "description": "The phase of the project that the plan's due date is related to. E.g. Construction, Operation, Decommissioning, etc. Write it in title case. Is null if not specified."
-              },
-              "days_prior_to_commencement": {
-                "type": "integer",
-                "description": "The number of days prior to the planned commencement that the plan must be provided to the EAO. Is null if not specified."
-              },
+            "deliverables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                  "properties": {
+                      "deliverable_name": {
+                        "type": "string",
+                        "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring plan, etc. Write it in title case."
+                      },
+                      "deliverable_type": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "description": "The type of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Management Plan, Monitoring Plan, Control Plan, Report, Proposal, etc. Write it in title case."                      
+                        }
+                      },
+                      "is_draft": {
+                        "type": "boolean",
+                        "description": "Whether the plan/report/proposal/etc. is required to be submitted as a draft. False if not specified."
+                      },
+                      "approval_type": {
+                        "type": "string", 
+                        "enum": ["Acceptance", "Satisfaction"],
+                        "description": "If the plan/report/proposal/etc. is to the acceptance of or to the satisfaction of the Environmental Assessment Office (EAO). Is null if not specified."
+                      },
+                      "stakeholders_to_consult": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "The names of the stakeholders that the condition explicitly states that the plan/report/proposal/etc. must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
+                        },
+                      },
+                      "stakeholders_to_submit_to": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "The names of the stakeholders that the condition explicitly states should receive the plan/report/proposal/etc.. Often includes the EAO, other government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
+                        },
+                      },
+                      "fn_consultation_required": {
+                        "type": "boolean",
+                        "description": "Whether the plan/report/proposal/etc. requires consultation with indigenous nations/First Nations/aboriginal peoples, etc. False if not explicitly specified."
+                      },
+                      "related_phase": {
+                        "type": "string",
+                        "description": "The phase of the project that the plan/report/proposal/etc.'s due date is related to. E.g. Construction, Operation, Decommissioning, etc. Write it in title case. Is null if not specified."
+                      },
+                      "days_prior_to_commencement": {
+                        "type": "integer",
+                        "description": "The number of days prior to the planned commencement that the plan/report/proposal/etc. must be provided to the EAO. Is null if not specified."
+                      },
+                  },
+                  "required": ["deliverable_name", "approval_type", "stakeholders_to_consult", "related_phase", "days_prior_to_commencement"],
+              }
+            }
           },
-          "required": ["plan_name", "approval_type", "stakeholders_to_consult", "related_phase", "days_prior_to_commencement"],
+          "required": ["deliverables"],
         },
       }
     }
@@ -138,7 +158,7 @@ def extract_management_plan_info_from_json(input_file_path, output_file_path):
         management_plan_info = extract_management_plan_info(condition_text)
         
         if management_plan_info is not None:
-            condition["required_plan"] = json.loads(management_plan_info)
+            condition["deliverables"] = json.loads(management_plan_info)["deliverables"]
           
     with open(output_file_path, "w") as f:
         json.dump(input_json, f, indent=4)
