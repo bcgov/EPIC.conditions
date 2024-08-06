@@ -1,0 +1,79 @@
+{
+    "conditions": [
+        {
+            "condition_name": "Compliance Notification",
+            "condition_number": 1,
+            "condition_text": "The Holder must notify the EAO: \na) As soon as practical; and \nb) In any event, no more than 72 hours, \nafter the Holder determines that the Holder has not, or may not have, fully complied with this Order.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Compliance Verification",
+            "condition_number": 2,
+            "condition_text": "The Holder must provide to the EAO any documents, data or information requested by the EAO for the purposes of compliance inspection and verification. The Holder must provide these documents, data or information requested within the timeframe and in the manner specified by the EAO.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Project Status Notification",
+            "condition_number": 3,
+            "condition_text": "The Holder must notify the EAO in writing that the Project is operational. The notification must be received by the EAO within 30 days of the commencement of Operations. Should the primary contact for the Project change, the Holder must notify the EAO, in writing, within 30 days of such change and provide the physical address, e-mail address and phone number(s) of the new primary contact.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Transfer of Order",
+            "condition_number": 4,
+            "condition_text": "a) Except as provided below, neither this Order nor any interest in it may be transferred to any person. This Order will be effectively transferred if the proposed Holder acknowledges that, upon transfer, it will be responsible for complying with the conditions of the Order, and both the proposed Holder and the Holder: \ni) Obtain consent for the transfer from the Executive Director; and \nii) Confirm by written notice to the Executive Director, within 14 days of the completion of all aspects of the transfer transaction other than this notice, that the transfer has been completed. \nb) An interest in this Order may be transferred by way of a grant of security to lenders or financers without consent. \nc) A transfer of this Order to a trustee in bankruptcy, by a receiver or a trustee in bankruptcy pursuant to a court approved sale, or as part of a court approved arrangement under the Company Creditors Arrangement Act may occur without consent. \n\nIf this Order is transferred without consent pursuant to paragraphs b) or c) of this condition, the new and former Holder must notify the Executive Director within 30 days of the transfer and apply within the time specified by the Executive Director for any Orders to this Order that the Executive Director deems necessary to ensure compliance with and enforceability of this Order and to otherwise reflect the proposed transfer.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Transfer of Interest in Project",
+            "condition_number": 5,
+            "condition_text": "a) Except in connection with the granting of security to Project lenders or financers, prior to the Holder transferring a significant interest in the Project, the Holder and proposed transferee must obtain consent for the transfer from the Executive Director. \nb) A transfer to a trustee in bankruptcy, by a receiver or a trustee in bankruptcy pursuant to a court approved sale or as part of a court approved arrangement under the Company Creditors Arrangement Act may occur without consent. \n\nIf a significant interest in the Project is transferred without consent pursuant to paragraph b) of this condition, the Holder must notify the Executive Director within 30 days of the transfer and apply within the time specified by the Executive Director for any Orders to this Order that the Executive Director deems necessary to ensure compliance with and enforceability of this Order and to otherwise reflect the proposed transfer.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Document Review and Implementation",
+            "condition_number": 6,
+            "condition_text": "Where a condition of this Order requires the Holder to provide a plan, program or other document, the Holder must provide the plan, program or other document to the EAO in the timeframe referenced in such condition, unless otherwise approved by the EAO. The EAO may, within 60 days of receiving a copy of such plan, program or other document, advise that:\na) The Holder may proceed to implement the plan, program or other document with or without revisions; or\nb) A revised plan, program, or other document must be provided for approval of the EAO prior to a specified activity or milestone.\n\nIf the EAO advises pursuant to paragraphs (a) or (b) that changes are required to a plan, program, or other document, then the Holder must follow the instructions of the EAO in that regard.\n\nIf the EAO does not advise on a) or b) within 60 days of the EAO receiving a plan, program, or other document, the Holder may proceed to implement the plan, program or other document. The Holder may, or the EAO may require the Holder to, revise any plan, program or other document if the Holder or the EAO determines that the implementation of the plan, program or other document is not:\nc) Meeting one or more objectives of the plan, program or other document set out in the relevant condition of this Order;\nd) Having the effects contemplated or intended, as set out in the plan, program or other document itself;\ne) Consistent with the Order; or\nf) Consistent with changes in industry best practices or technology.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Plan Development",
+            "condition_number": 7,
+            "condition_text": "1. Where a condition of this Order requires the Holder to develop a plan, program or other document, any such plan, program or other document must, at a minimum, include the following information:\na) Purpose and objectives of the plan, program or other document;\nb) Roles and responsibilities of the Holder, project personnel and contractors;\nc) Names and, if applicable, professional certifications and professional stamps/seals, of those responsible for the preparation of the plan, program or other document;\nd) Schedule for implementing the plan, program or other document throughout the relevant Project phases;\ne) Means by which the effectiveness of the mitigation measures will be evaluated including the method and schedule for evaluating effectiveness, including monitoring;\nf) An adaptive management plan to address effects of the Project if the monitoring conducted under section (2) of this condition shows that those effects:\ni. Are not mitigated to the extent contemplated in the PER application or any supplementary information filed by the Holder for the purposes of completing the application; or\nii. Are not predicted in the PER application or any supplementary information filed by the Holder for the purposes of completing the application;\ng) Schedules and methods for the submission of reporting to specific agencies, Indigenous Group(s) and the public, and the required form and content of those reports; and\nh) Process and timing for updating and revising the plan, program or other document, including any consultation with agencies and Indigenous Groups that would occur in connection with such updates and revisions.\n2. Where a plan, program or other document includes monitoring requirements, the plan, program or other document must include:\na) Description of baseline information that will be used to support monitoring of the effectiveness of mitigation;\nb) Methods, location, frequency, timing and duration of monitoring; and\nc) Scope, content and frequency of reporting of the monitoring results.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Consultation",
+            "condition_number": 8,
+            "condition_text": "Where a condition of this Order requires the Holder to consult a particular party or parties regarding the content of a plan, program or other document, the Holder must, to the satisfaction of the EAO:\na) Provide written notice to each such party that:\ni) Includes a copy of the plan, program or other document;\nii) Invites the party to provide its views on the content of such plan, program or other document; and\niii) Indicates:\ni. If a timeframe providing such views to the Holder is specified in the relevant condition of this Order, that the party may provide such views to the Holder within such time frame; or\nii. If a timeframe providing such views to the Holder is not specified in the relevant condition of this Order, specifies a reasonable period during which the party may submit such views to the Holder;\nb) Undertake a full and impartial consideration of any views and other information provided by a party in accordance with the timelines specified in a notice given pursuant to paragraph (a);\nc) Provide a written explanation to each such party that provided comments in accordance with a notice given pursuant to paragraph (a) as to:\ni) How the views and information provided by such party to the Holder have been considered and addressed in a revised version of the plan, program or other document; or\nii) Why such views and information have not been addressed in a revised version of the plan, program or other document;\nd) Maintain a record of consultation with each such party regarding the plan, program or other document; and\ne) Provide a copy of such consultation record to the EAO, the relevant party, or both, promptly upon the written request of the EAO or such party. The copy of such consultation record must be provided to the EAO, relevant party, or both, no later than 15 days after the Holder receives the request for a copy of the consultation record, unless otherwise authorized by the EAO.",
+            "topic_tags": [],
+            "subtopic_tags": []
+        },
+        {
+            "condition_name": "Air Emissions Monitoring Program",
+            "condition_number": 9,
+            "condition_text": "The Holder must cause a Qualified Professional to develop an air emissions monitoring program (Program) for Operations. The Program must be developed in consultation with Metro Vancouver, Vancouver Coastal Health Authority and Indigenous Groups. The Program, in addition to meeting all the requirements set out in the Vancouver Fraser Port Authority Condition #79 of the Project and Environmental Review Project Permit # 15-012, must include at least the following:\na) The methods by which the monitoring of air emissions, including but not limited to Criteria Air Contaminants, will be conducted;\nb) The methods by which the collection of pre-Operations baseline data will occur;\nc) The locations of air emissions monitoring stations on a map or diagram; and\nd) A description of how the locations were selected, including a rationale for the locations selected.\n\nThe air emissions from the Project, as measured by (a), must be consistent with the Canadian Ambient Air Quality Standards (Canadian Council of Ministers of the Environment, 2014, or as updated or replaced, from time to time) and Metro Vancouver\u2019s Ambient Air Quality Objectives (Metro Vancouver, 2016, or as updated or replaced, from time to time). The Program monitoring results must be provided, at a minimum, annually in a report to the EAO, Metro Vancouver, Vancouver Coastal Health Authority and Indigenous Groups, and must be made available to the public.\n\nThe Holder must provide a draft of the Program to the EAO for review a minimum of 60 days prior to the planned commencement of Operation, unless otherwise authorized by the EAO. A copy of the draft Program must be provided to Metro Vancouver, Vancouver Coastal Health Authority, and Indigenous Groups a minimum of 60 days prior to the planned commencement of Operations. The Program, and any amendments thereto, must be implemented to the satisfaction of a Qualified Professional and to the satisfaction of the EAO.",
+            "topic_tags": [
+                "Environment",
+                "Health"
+            ],
+            "subtopic_tags": [
+                "Air Quality",
+                "Human Health"
+            ]
+        }
+    ],
+    "project_id": "5c50eee297a31e0024f07c1f",
+    "document_id": "5d2e310d340b690021fc09f3",
+    "display_name": "Exemption Order - Schedule B - Table of Conditions",
+    "document_file_name": "Centerm Expansion - Exemption Order - Schedule B - 2019-01-29.pdf",
+    "date_issued": "2019-01-29T08:00:00",
+    "act": 2002
+}

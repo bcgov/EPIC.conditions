@@ -1,0 +1,572 @@
+{
+    "conditions": [
+        {
+            "condition_name": "CONSTRUCTION ENVIRONMENTAL MANAGEMENT PLAN",
+            "condition_number": 1,
+            "condition_text": "The Holders must prepare a Construction Environmental Management Plan (CEMP). The CEMP must include the following plans:\n\n- Access Management Plan\n- Accidents, Malfunctions and Emergency Response\n- ARD/ML Monitoring and Control Plan\n- Air Quality and Dust Control Plan\n- Archaeological Sites Management Plan\n- Avalanche Control (Safety) Plan\n- Blast Management Plan\n- Clearing Plan\n- Communication Strategy\n- Environmental Education and Awareness Plan\n- Erosion Prevention and Sediment Control Plan\n- Fire Preparedness Plan\n- Fish Salvage Plan\n- Hazardous Materials Management Plan\n- Human-Wildlife Interaction Management Plan, including:\n  - Grizzly Bear Management Plan\n  - Mountain Goat Management Plan\n  - Western Toad Adaptive Management Plan\n  - Rubber Boa Relocation Plan\n  - Northern Goshawk Recovery Plan\n  - Active Migratory Birds Nest Survey Plan\n- Invasive Pest Management Plan\n- Landslide Safety Plan\n- Soil Salvage, Site Reclamation and Landscape Restoration Plan\n- Spill Prevention and Emergency Response Plan\n- Surface Water Quality Protection Plan\n- Traffic Management Plan\n- Waste Management Plan, including:\n  - Liquid Waste Management Plan\n  - Solid Waste Management Reduction and Recycling Plan\n- Windthrow Management Plan\n\nThe CEMP must include details for ensuring that construction activities must comply with the Environmental Assessment Certificate, regulatory approvals, applicable legislation, and applicable industry Best Management Practices (BMPs).\n\nThe draft CEMP must be provided to Ministry of Forests, Lands and Natural Resource Operations (FLNR) and EAO for review and comment. The Holders must obtain approval of the final CEMP from FLNR and Environmental Assessment Office (EAO) at least 30 days before commencement of construction of any Project Hydroelectric Facility (HEF) except where EAO and FLNR agree to approve separate plans for different facilities, in which case the Holders will obtain approval from FLNR and EAO for the relevant plans prior to commencing construction of the relevant Project HEF.\n\nLil\u2019wat Nation must be provided with copies of draft and final plans.\n\nThe Holders must adhere to the requirements of the CEMP and component plans. The Holders are jointly responsible for preparation of the CEMP that applies to all aspects of the Project unless EAO approves separate plans for different facilities. If required, the CEMP and/or component plans may be revised with approval from EAO and FLNR.",
+            "topic_tags": [
+                "Environment",
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Accidents & Malfunctions",
+                "Air Quality",
+                "Fish & Fish Habitat",
+                "Human Health",
+                "Land & Resource Use",
+                "Recreation",
+                "Surface Water",
+                "Vegetation",
+                "Wildlife"
+            ],
+            "required_plan": {
+                "plan_name": "Construction Environmental Management Plan",
+                "approval_type": "Acceptance",
+                "stakeholders_to_consult": [
+                    "Ministry of Forests, Lands and Natural Resource Operations",
+                    "Environmental Assessment Office",
+                    "Lil\u2019wat Nation"
+                ],
+                "fn_consultation_required": true,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": 30
+            }
+        },
+        {
+            "condition_name": "TESTING AND COMMISSIONING",
+            "condition_number": 2,
+            "condition_text": "In relation to each Project HEF, the relevant Holder must prepare a Testing and Commissioning Plan, and obtain the approval of FLNR and EAO at least 30 days prior to commissioning of the HEF. The Plan must include procedures for headpond filling, waterway flushing and filling, ramping rate test protocol with a fish salvage plan and commissioning activities. Each Holder must adhere to the requirements of their Testing and Commissioning Plan.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Fish & Fish Habitat"
+            ],
+            "required_plan": {
+                "plan_name": "Testing And Commissioning Plan",
+                "approval_type": "Satisfaction",
+                "stakeholders_to_consult": [
+                    "FLNR"
+                ],
+                "fn_consultation_required": false,
+                "related_phase": "Commissioning",
+                "days_prior_to_commencement": 30
+            }
+        },
+        {
+            "condition_name": "OPERATIONAL PARAMETERS AND PROCEDURES AND OPERATIONAL ENVIRONMENTAL MONITORING PLAN",
+            "condition_number": 3,
+            "condition_text": "The Holders must jointly prepare an Operational Environmental Monitoring Plan (OEMP) for the Project at least 30 days prior to commissioning any HEF.\n\nIn relation to each Project HEF, the relevant Holder must prepare an Operational Parameters and Procedures (OPP) document at least 30 days prior to commissioning the HEF.\n\nThe OPPs must include the following components:\n\n- OPERATING PARAMETERS\n  - Design Parameters\n  - Environmental Parameters\n    - Instream Flow Requirements (IFR)\n    - Ramping Rates\n    - Sediment Transport\n  - Social Parameters\n    - General Site Safety\n    - Recreational Safety\n- STANDARD OPERATING PROCEDURES\n  - Headpond Filling\n  - Penstock Filling\n  - Intake Water Level Management\n  - Start-up Procedures\n  - Shut-down Procedures\n  - Maintenance and Inspection Program\n- MONITORING AND REPORTING\n  - Monitoring and Control Procedures\n  - Environmental Reporting Requirements\n\nThe OPPs also must document mitigation measures to be followed during routine maintenance activities, which must include measures to ensure compliance with all applicable regulatory requirements, standards, and approval terms and conditions, and to minimize environmental effects associated with the operation of the Project (including those arising from malfunctions and accidents, such as instream flow blockage).\n\nThe Holders must provide the draft OPPs, OEMP and component plans to FLNR, EAO and Fisheries and Oceans Canada (DFO) for review and comment.\n\nLil\u2019wat Nation must be provided with copies of draft and final plans, unless they indicate otherwise.\n\nThe Holders must obtain the approval of OEMP from FLNR prior to commencing operations on any Project HEF. Prior to commencing operations of a Project HEF, the relevant Holder must obtain approval of the OPP relating to the HEF from FLNR.\n\nThe OEMP must specify follow-up and monitoring programs (including duration and methods) to confirm compliance with applicable regulatory requirements, standards, and/or approval terms and conditions, and to assess the effectiveness of mitigation measures (particular where there is uncertainty or potential for significant adverse effects).\n\nThe OEMP must include the following monitoring plans, which must be completed to the satisfaction of EAO and the noted agency prior to commencing operations:\n\n- Coastal Tailed Frog Monitoring Plan \u2013 FLNR\n- Harlequin Duck Monitoring Plan \u2013 Canadian Wildlife Service\n- Fish Monitoring Plan \u2013 FLNR and DFO\n\nBaseline data must be collected before operations.\n\nThe Holders must provide all monitoring reports required by OEMP and OPP to DFO (for fish) and FLNR (all) in a format and frequency acceptable to those agencies. The Holders must make all monitoring reports prepared during operations available to the public on the project website for the duration of the Project.\n\nThe relevant Holder(s) must provide EAO with all incident reports that are required to be provided to DFO, FLNR or any other regulatory agency during all phases of the Project.\n\nThe relevant Holder must retain stream flow data for 15 minute intervals for the duration of its HEF. The data must be made available to provincial or federal agencies upon request.\n\nTemperature and frazil ice monitoring must occur for the life of the Project.\n\nThe Holders must adhere to the requirements of the OPPs and OEMP.\n\nThe Holders are jointly responsible for preparation of plans that apply to all aspects of the Project unless EAO approves separate plans for different facilities.",
+            "topic_tags": [
+                "Environment",
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Accidents & Malfunctions",
+                "Fish & Fish Habitat",
+                "Recreation",
+                "Surface Water"
+            ],
+            "required_plan": {
+                "plan_name": "Operational Environmental Monitoring Plan",
+                "approval_type": "Satisfaction",
+                "stakeholders_to_consult": [
+                    "FLNR",
+                    "EAO",
+                    "Fisheries and Oceans Canada (DFO)",
+                    "Lil\u2019wat Nation"
+                ],
+                "fn_consultation_required": true,
+                "related_phase": "Operation",
+                "days_prior_to_commencement": 30
+            }
+        },
+        {
+            "condition_name": "INDEPENDENT ENVIRONMENTAL MONITOR",
+            "condition_number": 4,
+            "condition_text": "The information and reports produced by the Independent Environmental Monitor (IEM), who the Holders must retain during the construction phase as required under the Water Act, must be provided to EAO.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Accidents & Malfunctions"
+            ]
+        },
+        {
+            "condition_name": "DECOMMISSIONING AND ABANDONMENT PLAN",
+            "condition_number": 5,
+            "condition_text": "At least one year prior to the end of each HEF\u2019s operations, the relevant Holder must develop a decommissioning and abandonment plan. The plan must identify how each component will be assessed to determine whether all or only some of the components should be removed in order for the aquatic and terrestrial components to achieve habitat functions that are safe and maintenance-free. The plan must identify all activities associated with decommissioning, as consistent with regulatory requirements in effect at that time, and, subject to approval by regulatory agencies and EAO, must include:\n\n- removal of instream works associated with the intake and tail race where considered desirable\n- removal of salvageable components, equipment, and materials from the intake, powerhouse, switchyard, and ancillary facilities\n- permanent closure of the waterway (penstock and/or tunnel) at all access points\n- removal of above ground transmission lines\n- closure of all private access roads\n- reclamation of disturbed areas\n\nOnce prepared, the draft plan must be shared with EAO, identified federal and provincial agencies, and Lil\u2019wat First Nation for review and comment. EAO must approve the final plan.\n\nThe Holders must implement the plan.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Accidents & Malfunctions",
+                "Fish & Fish Habitat",
+                "Surface Water",
+                "Vegetation",
+                "Wildlife"
+            ],
+            "required_plan": {
+                "plan_name": "Decommissioning And Abandonment Plan",
+                "approval_type": "Satisfaction",
+                "stakeholders_to_consult": [
+                    "Federal Agencies",
+                    "Provincial Agencies",
+                    "Lil\u2019wat First Nation"
+                ],
+                "fn_consultation_required": true,
+                "related_phase": "Decommissioning",
+                "days_prior_to_commencement": 365
+            }
+        },
+        {
+            "condition_name": "TEMPORARY ROADS AND BRIDGES",
+            "condition_number": 6,
+            "condition_text": "Following the completion of construction of each HEF and each jointly operated facility, a qualified professional must review all the temporary access roads and bridges and determine the appropriate level of deactivation in consultation with industrial users and for the review and approval of FLNR. The qualified professional must then prepare site specific deactivation plans, oversee the deactivation and provide professional signoff that the works have been completed satisfactorily.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Land & Resource Use",
+                "Services & Infrastructure"
+            ],
+            "required_plan": {
+                "plan_name": "Temporary Roads And Bridges Deactivation Plan",
+                "approval_type": "Approval",
+                "stakeholders_to_consult": [
+                    "Industrial Users",
+                    "FLNR"
+                ],
+                "fn_consultation_required": false,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": null
+            }
+        },
+        {
+            "condition_name": "PUBLIC COMMUNICATIONS",
+            "condition_number": 7,
+            "condition_text": "Once any Holder receives the Land Act and Water Act authorizations required to commence construction, the Holders must jointly establish and maintain for the life of the Project a dedicated publicly available Project website. The website must be used for communicating information on Project status in order to ensure public awareness of ongoing activities and construction schedules, and to ensure general safety in and surrounding the Project area. Information must be kept up to date to ensure the above goals are achieved.",
+            "topic_tags": [
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Community Well-being",
+                "Services & Infrastructure"
+            ]
+        },
+        {
+            "condition_name": "INFORMATION SHARING WITH GOVERNMENT",
+            "condition_number": 8,
+            "condition_text": "Prior to construction and throughout the life of the Project the Holders must develop and maintain access to a protected file transfer protocol (FTP) site or equivalent protected medium containing all Project reports and documents identified in the Table of Conditions. Access to the site or other protected electronic medium must be provided to all provincial and federal agencies requiring access, including EAO, FLNR, MOE, DFO and Transportation Canada.",
+            "topic_tags": [
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Community Well-being",
+                "Services & Infrastructure"
+            ]
+        },
+        {
+            "condition_name": "HABITAT COMPENSATION",
+            "condition_number": 9,
+            "condition_text": "At least 30 days prior to construction of any HEF, the Holders must prepare a Habitat Compensation Plan and provide it to DFO for review and approval. FLNR and EAO must be provided with copies of any draft and final plans provided to DFO. The Holders are jointly responsible for preparation of plans that apply to all aspects of the Project unless EAO approves separate plans for different facilities.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Fish & Fish Habitat"
+            ],
+            "required_plan": {
+                "plan_name": "Habitat Compensation Plan",
+                "approval_type": null,
+                "stakeholders_to_consult": [
+                    "DFO",
+                    "FLNR",
+                    "EAO"
+                ],
+                "fn_consultation_required": false,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": 30
+            }
+        },
+        {
+            "condition_name": "FLOW RAMPING",
+            "condition_number": 10,
+            "condition_text": "The Holder must adhere to DFO\u2019s general flow ramping guidelines (Fisheries and Oceans Canada Flow Ramping Study: Study of Flow Ramping Rates for Hydropower Developments, Knight Piesold, 2005) unless otherwise authorized by DFO.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Aquatic Resources",
+                "Fish & Fish Habitat"
+            ]
+        },
+        {
+            "condition_name": "INSTREAM FLOW REQUIREMENTS",
+            "condition_number": 11,
+            "condition_text": "During Project operations, for each Project HEF the relevant Holder must maintain at least the following instream flow requirements (IFR) and diversion rates during the periods specified below, as measured immediately below the point of diversion:\n\nHydroelectric Facility IFR (m3/s) Maximum Rate of Diversion (m3/s)\nUpper Lillooet River October to March: 2.3 April: 3.8 May to September: 4.5 53\nBoulder Creek 0.7 11.3\nNorth Creek 0.3 5.4\n\nThe relevant Holder must cease diverting water if they are unable to maintain the minimum IFR. If minimum IFR is not maintained, the relevant Holder must report this failure to DFO, FLNR and EAO.\n\nThe relevant Holder must not divert water at a rate greater than the maximum rate of diversion set out above during operations and commissioning. If a Holder diverts water greater than the maximum rate, the Holder must contact DFO and FLNR within 24 hours of occurrence.\n\nAll plants must be shut down and flows not diverted when flows meet or exceed a 1:10 year flood event.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Aquatic Resources",
+                "Surface Water"
+            ]
+        },
+        {
+            "condition_name": "GRIZZLY BEAR",
+            "condition_number": 12,
+            "condition_text": "The Holders must follow the following measures in relation to Grizzly Bear:\n\nA qualified professional must ground-truth suitable forage habitat that overlaps with the Project prior to clearing. The qualified professional or the IEM must identify appropriate measures that must be taken by the Holders to avoid or minimize impacts to suitable Class 1 or Class 2 Grizzly Bear seasonal forage habitats, if the habitat is confirmed as suitable Class 1 or 2 habitat by the qualified professional, the IEM or the Province. FLNR must be provided with an opportunity to review and comment on these findings and recommended mitigation measures.\n\nThe IEM must oversee clearing within suitable Class 1 and Class 2 habitat to ensure that clearing boundaries are minimized.\n\nConstruction of the transmission line through the Wildlife Habitat Area (WHA) 2-399 must not take place during April 1 to June 1 (spring forage).\n\nConstruction of the transmission line into and across the Ryan River drainage must occur from June 1 to September 1.\n\nConstruction of the transmission line within 500 m of Leanna Creek, 29.2 km Tributary, South Creek, Rohb Creek, Sampson Creek and Railroad Creek must be conducted outside the following salmon migration periods:\nLeanna Creek, 29.2 km Tributary, South Creek and Rohb Creek: October 15 to December 31; and\nSampson Creek and Railroad Creek: August 15 to December 31.\n\nA buffer of at least 5 m, of either existing or managed vegetation, must be left adjacent to all suitable Class 1 and Class 2 forage habitats identified by the 1:20,000 Terrestrial Ecosystem Mapping data or field verified, unless otherwise approved by EAO.\n\nVegetated screens, either existing or managed vegetation, must be maintained between high-value habitats (classified as suitable Class 1 and Class 2 suitable foraging habitat) along roads and transmission line rights-of-way and construction sites, unless otherwise approved by EAO. EAO must be informed of locations where it is deemed not feasible.\n\nA visual vegetated screen must be maintained where the transmission line right-of-way intersects WHA 2-399.\n\nThe Holders must develop and implement a grizzly bear plan based on best practices, as part of the Human-Wildlife Interaction Plan. The plan must identify means to reduce the potential negative impacts of the construction camp and construction activities on grizzly bears mortality risk. The plan must be approved by EAO and FLNR prior to construction. The Holders are jointly responsible for preparation of a plan that applies to all aspects of the Project unless EAO approves separate plans for different facilities.\n\nEach Holder must participate in FLNR\u2019s development of a regional Grizzly Bear monitoring plan. The Holders must contribute funds to the regional Grizzly Bear project as part of the OEMP, based on a contribution agreement to the satisfaction of FLNR and EAO. The contribution agreement must be developed prior to construction. The Holders are jointly responsible for the contribution of funds under an agreement unless the agreement provides otherwise.\n\nAs requested, the Holders must participate in multi-stakeholder access management or land use planning undertaken by the Province.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Mammals"
+            ],
+            "required_plan": {
+                "plan_name": "Grizzly Bear Plan",
+                "approval_type": "Acceptance",
+                "stakeholders_to_consult": [
+                    "FLNR"
+                ],
+                "fn_consultation_required": false,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": 0
+            }
+        },
+        {
+            "condition_name": "WOLVERINE",
+            "condition_number": 13,
+            "condition_text": "The Holders must follow the following mitigation measures in relation to Wolverine:\n\nIf evidence of a Wolverine den is observed by IEM or qualified professional within the construction footprint, construction noise disturbance must be avoided within 1 km of the den during the denning period, or until the suspected den is confirmed to not be occupied by a Wolverine. If construction activities could destroy the den site, those construction activities must cease until appropriate mitigation or design changes can be developed and approved by FLNR. FLNR must be contacted within 24 hours of den discovery as detailed in the Human-Wildlife Interaction Management Plan.\n\nDuring winter construction and operations (Nov 1 to June 15), access to Boulder Creek HEF intake must be gated at least 500 m from the original Ungulate Winter Range (UWR) u-2-002 UL 12 to restrict motorized public access to the UWR, unless otherwise directed by FLNR.\n\nAll construction-related activities at the Boulder Creek HEF intake and above the Upper Lillooet River HEF powerhouse must be suspended from March 1 to April 30 (the period associated with den emergence).\n\nPublic access during the winter must be controlled by Project staff within active construction areas.\n\nA winter carrion removal program must be implemented along roadway and verges within active construction areas.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Mammals"
+            ]
+        },
+        {
+            "condition_name": "UNGULATE WINTER RANGE REPLACEMENT AREAS",
+            "condition_number": 14,
+            "condition_text": "At least 30 days prior to any construction of any part of the Project, each relevant Holder must submit a proposal to FLNR that identifies and proposes UWR replacement areas to compensate for the anticipated loss of legal UWR (Mountain Goat UWR, Mule Deer winter range retention area, and Moose winter range core area) associated with the construction and operation of the relevant Project HEF for initial review. FLNR will confirm which project activities within UWRs require UWR amendments and replacement areas, and which are compatible with the UWR\u2019s management objectives. The relevant Holder must consult with forest tenure holders prior to submitting the final proposal to FLNR for review, comment and approval.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "MOUNTAIN GOATS",
+            "condition_number": 15,
+            "condition_text": "At least 30 days prior to any construction of any part of the Project, the Holders must jointly update the Upper Lillooet Hydro Project Mountain Goat Management Plan v.1.0 to include the following commitments:\n\nNo blasting activity in or within 500 m, and no helicopter activity in or within 1500 m of Mountain Goat UWR u-2-002 UL12 and UWR u-2-002 RY 14 will be conducted during the critical wintering and natal periods (Nov 15 \u2013 June 15). All other construction activities in or within 500 m of UWR u-2-002 UL 12 and UWR u-2-002 RY 14 will be conducted outside of the critical wintering period (Nov 15 \u2013 Apr 30). Any changes to the timing restrictions must be approved by FLNR prior to the commencement of activities.\n\nAll drilling and associated activities at the Upper Lillooet River HEF portal near Truckwash Creek will cease for at least 2 consecutive week periods after the first significant snowfall in the fall and the start of snow melt in the spring following the snow monitoring protocol within the Mountain Goat Management Plan.\n\nDuring November and May construction must not occur before sunrise and after sunset in areas in or within 200 m of goat UWR and identified migration corridors.\n\nThe IEM must be on-site when clearing within established Mountain Goat UWR and within known migration corridors to minimize habitat loss and to identify if goats are within 500 m line of sight of activities. If a goat is observed within 500 m line of sight of construction activities, and/or moving towards the migration corridor from approved monitoring location(s), construction must cease for at least 48 hours, or as directed by the IEM, in accordance to the Mountain Goat Management Plan. IEM must record and submit all goat observations to FLNR within 48 hours.\n\nConstruction noise (as defined in the approved Mountain Goat Management Plan) must be minimized within 500 m of legally established UWR during the winter to the satisfaction of IEM or designate.\n\nPrior to Upper Lillooet HEF tunnel construction, ULRPLP must engage a qualified professional to design and oversee the establishment of a visual and partial auditory barrier between the Upper Lillooet River HEF downstream tunnel portal and Truckwash Creek. It must create a visual and partial auditory barrier between the portal and the migration route and assist with the migration of Mountain Goats.\n\nDuring winter construction and operations (Nov 1 to June 15), access to Boulder Creek HEF intake must be gated at least 500 m from the original UWR u-2-002 UL 12 to restrict motorized public access to the UWR, unless otherwise directed by FLNR.\n\nThe updated Mountain Goat Management Plan must identify additional measures to address access and disturbance associated with the Boulder Creek HEF, particularly options to minimize the impact of winter operations access. The updated plan must ensure that transmission line Option B (as outlined in the Application and presented in the Certified Project Description) is designed in a manner that is consistent with the management requirements of the goat UWR (RY 14).\n\nThe updated plan must be provided to FLNR and EAO for review and approval before any construction.\n\nThe Holders must adhere to the approved Mountain Goat Management Plan.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Mammals"
+            ],
+            "required_plan": {
+                "plan_name": "Mountain Goat Management Plan",
+                "approval_type": "Approval",
+                "stakeholders_to_consult": [
+                    "FLNR",
+                    "EAO"
+                ],
+                "fn_consultation_required": false,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": 30
+            }
+        },
+        {
+            "condition_name": "MULE DEER AND DEER WINTER RANGE",
+            "condition_number": 16,
+            "condition_text": "The Holders must follow the following measures in relation to Mule Deer and Deer Winter Range:\n\n- Construction of the transmission line and any upgrades to the existing access road occurring through or within 200 m of the Deer Winter Range \u2013 Retention or Deer Winter Range \u2013 Rotation, referred to maps contained in the approved Human-Wildlife Interaction Management Plan, must not occur during November 1 to February 28 (critical winter) and March 1 to May 15 (late winter).\n- Construction activity must not occur within 200 m of the migration pinch point at Mowich Creek during critical spring and fall migration.\n- All large-scale maintenance activities (i.e. intake/penstock repairs) and vegetation maintenance conducted within 200 m of legally established deer winter range must be conducted outside of the periods November 1 to February 28 (critical winter) and March 1 to May 15 (late winter).\n- Transmission line Option B (as identified in the Application) must be constructed to avoid affecting DWRRE U-2-005:J4 6-74-RE.\n- Snow clearing during construction along roads within Deer Winter Range must leave gaps in snow banks every 100 m, except around blind corners, to allow movement across the road. Snow clearing will be conducted in accordance to the approved Human-Wildlife Interaction Management Plan.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "MOOSE AND MOOSE WINTER RANGE",
+            "condition_number": 17,
+            "condition_text": "The Holders must follow the following measures in relation to Moose and Moose Winter Range:\n\n- Construction of the transmission line and North Creek HEF through or within 200 m of the Moose Core Winter Ranges or Moose Winter Forage Management Zones, referred to maps contained in the approved Human-Wildlife Interaction Management Plan, must not occur during November 1 to February 28 (sensitive winter) or March 1 to May 15 (late winter).\n- Construction noise (as defined in the approved Mountain Goats Management Plan) must be minimized within 500 m of legally established moose winter range during the winter to the satisfaction of IEM.\n- All large-scale maintenance activities (i.e. intake/penstock repairs) within 200 m of legally established moose winter range must be conducted outside of November 1 to February 28 (sensitive winter) and March 1 to May 15 (late winter).\n- During the winter operation period, the Holders must not plow Project roads and the Lillooet River FSR and North Creek FSR to access the Project unless prior approval is received by FLNR.\n- Snow clearing during construction along roads within Moose Winger Range must leave gaps in snow banks every 100 m, except around blind corners, to allow movement across the road. Snow clearing will be conducted in accordance to the approved Human-Wildlife Interaction Management Plan.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "BREEDING BIRDS",
+            "condition_number": 18,
+            "condition_text": "(a) Subject to paragraph (b), vegetation clearing must take place outside of the breed bird season (May 1 to July 31) to prevent disturbance of bird nests;\n\n(b) If clearing must take place during the breeding season, qualified professionals must complete nest surveys following Active Migratory Birds Nest Surveys prior to construction to determine if nesting is occurring in the area. If nests are located clearing must be delayed until approval is received from IEM or designate. 20 to 30 m non-clearing buffers must be maintained around active nests until young are fledged or setback buffers for disturbance are established.\n\nThe Holders must install bird diverters, marker balls or high visibility paint on the transmission line at the Ryan River and Upper Lillooet River crossings.\n\nThe Holders must design the transmission line to mitigate bird strikes by the power poles having a minimum spacing between conductors of 5.5 m and a conductor to pole clearance of 2.8 m.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Birds"
+            ]
+        },
+        {
+            "condition_name": "HARLEQUIN DUCKS",
+            "condition_number": 19,
+            "condition_text": "Prior to clearing and headpond filling at any facility, the relevant Holder must have a Harlequin Duck nest survey conducted by a qualified professional in accordance with current standards and guidelines, including the Active Migratory Birds Nest Surveys protocol. The study area must include all areas within 30 m of suitable Harlequin Duck nesting habitat at the Upper Lillooet River intake, along the Lillooet River, and at the Ryan River and Upper Lillooet River crossings, and must be conducted during the period May 1 to August 1 (breeding season). If a nest is located, a 50 m non-clearing buffer must be maintained until the nest is no longer active.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Birds"
+            ]
+        },
+        {
+            "condition_name": "RAPTOR NESTS",
+            "condition_number": 20,
+            "condition_text": "(a) Subject to paragraph (b), in areas near known nests (active or inactive) and areas with suitable raptor nesting habitat, construction activities, including clearing, blasting, and creation of earthworks, must take place outside of the raptor nesting season (in accordance to the approved Human-Wildlife Interaction Management Plan);\n\n(b) If activities must take place during the raptor nesting season, a qualified professional must complete raptor nest surveys, following Resources Inventory Committee (RIC) Guidelines (2001), Inventory Methods for Raptors, to detect raptor nests prior to construction to determine if nesting is occurring in the area. If nests are located, construction activities must be delayed until approval is received from IEM or designate. An appropriate buffer must be maintained around active nests until young are fledged or setback buffers for disturbance as per Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia, BC MOE, 2013 or Develop with Care Guidelines, BC MOE, 2012. Specifically the Holders must do the following:\n\n- A raptor survey must be conducted to locate the Sharp-shinned Hawk nest near the Upper Lillooet River HEF powerhouse, preferably during the nest initiation period. No clearing must occur within 300 m of this nest while it is active (MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia).\n- Clearing and construction activities must not take place within 300 m of either of the two known Osprey nests located near km 26 along the Upper Lillooet FSR and along the Lillooet South FSR near Alexander Creek from April 21 to September 5 if the nests are active (MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia).\n- Clearing and construction activities must not take place within 300 m of the known Bald Eagle nest located approximately 500 m downstream of the transmission line crossing over the Lillooet River from February 5 to August 31 if the nest is active (MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia).\n- Bald eagle roosts near Leanna Creek, 29.2 km Tributary, South Creek and Rohb Creek must not be disturbed during period October 15 to December 31 and those near Sampson Creek and Railroad Creek during August 15 to December 31.\n\n(c) Subject to paragraph (d), commissioning activities near known raptor nests must take place outside of the species specific nesting season;\n\n(d) If commissioning activities must take place near known raptor nests, a noise and activity free buffer must be maintained around known active nests as approved by IEM. A minimum noise-free buffer (vegetated buffer plus breading season disturbance buffer) of 300 m for eagles and species specific buffers (MOE 2012, Develop with Care Guidelines and MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia) for other raptor species must be maintained between identified nests and commissioning activities, unless otherwise authorized by FLNR.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Birds"
+            ]
+        },
+        {
+            "condition_name": "SPOTTED OWL",
+            "condition_number": 21,
+            "condition_text": "The Holders must have a qualified professional or IEM on-site when conducting clearing, vegetation maintenance and large scale maintenance activities in suitable Spotted Owl habitat within the breeding season, including the period of March 18 to July 27.\n\nActivities must be conducted at least 1250 m from active nests during the breeding season, March 18 to July 27 (MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia).\n\nThe Holders must report any observation or detection of Spotted Owl presence within the project area to MOE within 24 hours for consultation.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "WESTERN SCREECH-OWL",
+            "condition_number": 22,
+            "condition_text": "(a) Subject to paragraph (b), construction, including clearing, blasting and construction of earthworks, within 600 m of Western Screech-Owl suitable nesting habitat must take place outside of March 17 to August 25 (Western Screech-Owl breeding season) (refer to maps within the approved Human-Wildlife Interaction Management Plan) (MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia);\n\n(b) If activities must take place during the breeding season, a qualified professional must be on-site when clearing suitable Western Screech-Owl habitat. If Western Screech-Owls are seen or heard, the Holders must follow Resource Inventory Standards Committee Guidelines 2006, Inventory Methods for Owl Surveys, if there is a nest in the area that may be affected by sensory disturbance. If a nest is identified, construction activities must be delayed until approval is received from IEM or designate and a 600 m buffer must be maintained around active nests until the young have fledged.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "NORTHERN GOSHAWK",
+            "condition_number": 23,
+            "condition_text": "(a) Subject to paragraph (b), construction activities, including clearing, blasting, and construction of earthworks, must take place outside of April 7 to August 21 (Northern Goshawk breeding season) (refer to maps within the approved Human-Wildlife Interaction Management Plan);\n\n(b) If activities must take place during the breeding season, a qualified professional must be on-site when clearing moderate or highly suitable Northern Goshawk habitat. If Northern Goshawks are seen or heard, the Holders must follow Resource Inventory Committee 2001, Inventory Methods for Raptors, to determine if there is a nest in the areas that may be affected by sensory disturbance. If a nest is identified, construction activities must be delayed until approval is received from IEM or designate and a 700 m buffer must be maintained around active nests until the young have fledged. (MOE 2013, Guidelines for Raptor Conservation during the Urban and Rural Land Development in British Columbia).",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "PEREGRINE FALCONS",
+            "condition_number": 24,
+            "condition_text": "(a) Subject to paragraph (b), construction activities (i.e. clearing, blasting, earthworks and large scale activities) and vegetation maintenance within or 600 m from eyries and highly suitable Peregrine Falcon nesting habitat must take place outside of the breeding season (March 30 to July 20) to prevent disturbance (refer to maps within the approved Human-Wildlife Interaction) (MOE 2013, Guidelines for Raptor Conservation during Urban and Rural Land Development in British Columbia);\n\n(b) If activities must take place during the breeding season, a qualified professional must complete surveys of moderate and highly suitable Peregrine Falcon nesting habitat following RIC Guidelines (2001) prior to construction to determine if nesting is occurring in the area. If nests are located, construction activities must be delayed until approval is received by IEM or a qualified professional and a 600 m buffer must be maintained around active nests until young are fledged.\n\nThe Holders must place the transmission line poles 100m away from the two suitable nesting ledges identified along the Lillooet River FSR (refer to maps within the approved Human-Wildlife Interaction Management Plan).",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "COASTAL TAILED FROG",
+            "condition_number": 25,
+            "condition_text": "The Holders must follow the following measures in relation to Coastal Tailed Frog:\n\n- Adhere to the Human-Wildlife Interaction Management Plan and Coastal Tailed Frog monitoring program. Monitoring reports must be submitted to FLNR and EAO for review and comment.\n- Construction must not be initiated in creek crossings that were confirmed by a Holder\u2019s qualified professional to have Coastal Tailed Frog (refer to maps within the approved Human-Wildlife Interaction Management Plan) during the period June 1 to October 31, to the satisfaction of FLNR. If unavoidable, as identified in the CEMP, construction will occur while implementing measures outlined in the Human-Wildlife Interaction Management Plan, including appropriate salvage.\n- Clearing and earthworks within 100 m of suitable Coastal Tailed Frog streams must be overseen by IEM. Vehicles and construction machinery must not ford known Coastal Tailed Frog streams at any time.\n- Water diverted around construction site must be returned to the same stream immediately downstream of the work site when Coastal Tailed Frog tadpoles are observed.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife",
+                "Amphibians"
+            ]
+        },
+        {
+            "condition_name": "Western Toad",
+            "condition_number": 26,
+            "condition_text": "The Holders must prepare a Western Toad Adaptive Management Plan as a component of the Human-Wildlife Interaction Management Plan. A copy must be provided to FLNR and EAO.\n\nThe Holders must adhere to the Western Toad Adaptive Management Plan.\n\nThe Holders must follow the following measures in relation to Western Toad along the transmission line and at the Upper Lillooet River HEF, if active breeding is occurring:\n(a) Subject to paragraph (b), construction activities (i.e. clearing, blasting, earthworks and large scale activities) must be conducted a minimum of 150 m away from wetlands and other known active breeding areas (see Application Appendix AL Map 10). These areas must be protected and isolated from construction activities by adhering to the mitigation strategies outlined in Develop with Care (MOE 2012) and Best Management Practices for Amphibians and Reptiles in Urban and Rural Environments in British Columbia (MWLAP 2004);\n\n(b) If construction activities must occur within 150 m of occupied wetlands and other known active breeding areas, the Holders must install fencing or other protective measures during the period March 1 to August 31 (breeding) under the direction of IEM. The Holders must monitor these measures during peak Western Toad activity to ensure they are effective;\n\n(c) If water in flush water storage ponds is contaminated (i.e., does not meet the potable water standards established by the Ministry of Health), it must be pumped out and transported to an appropriate facility for waste management, unless otherwise authorized by FLNR; and\n\n(d) If the activities in paragraph (c) result in newly created areas of standing water, including temporary storage ponds, the Holders must ensure these areas do not provide breeding habitat for Western Toads.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Amphibians"
+            ],
+            "required_plan": {
+                "plan_name": "Western Toad Adaptive Management Plan",
+                "approval_type": null,
+                "stakeholders_to_consult": [
+                    "FLNR",
+                    "EAO"
+                ],
+                "fn_consultation_required": false,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": null
+            }
+        },
+        {
+            "condition_name": "Vivid Dancer",
+            "condition_number": 27,
+            "condition_text": "The workforce must be educated during the Environmental Orientation regarding the sensitive Vivid Dancer habitat located at the Pebble Creek Hot Springs.\n\nConstruction workforce must not access the Pebble Creek Hot Springs during the construction phase, unless authorized by IEM, as part of the Human-Wildlife Interaction Management Plan.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        },
+        {
+            "condition_name": "Old Growth Management Area Replacement Areas",
+            "condition_number": 28,
+            "condition_text": "At least 30 days prior to construction of any part of the Project, the Holders must submit a proposal to FLNR that identifies and proposes Old Growth Management Area replacement areas that meet landscape unit management objectives and contain equal or superior ecological values to the areas being impacted by the Project (see Application Appendix Y) and consult with forest tenure holders prior to submitting the proposal to FLNR for review, comment and approval.\n\nThe Holders are jointly responsible for preparation of a proposal that applies to all aspects of the Project unless FLNR approves separate plans for different facilities.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Vegetation"
+            ]
+        },
+        {
+            "condition_name": "Rare and Endangered Ecosystems and Rare Plants",
+            "condition_number": 29,
+            "condition_text": "At least 30 days prior to construction of any part of the Project, the Holders must submit a proposal that identifies and proposes to FLNR red listed ecosystem replacement areas (by expanding existing reserve areas with similar habitat in the Regional Study Area (see Application Figure 4.2) to compensate (at a 1:1 ratio) for the residual effects to cleared red listed ecosystems as predicted by the Holders in Application Appendix V (Figures 8-15) (the total area requiring compensation is approximately 0.13 km2). Any changes in habitat compensation requirements must be approved by EAO and FLNR.\n\nThe Holders are jointly responsible for preparation of a proposal that applies to all aspects of the Project unless FLNR approves separate plans for different facilities.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Rare Plants"
+            ]
+        },
+        {
+            "condition_name": "Smooth Willowherb",
+            "condition_number": 30,
+            "condition_text": "The ULRPLP will engage a qualified professional to conduct a survey to confirm the presence of Smooth Willowherb identified near the Upper Lillooet River HEF intake (refer to maps within the approved Human-Wildlife Interaction Management Plan) prior to commencing clearing. If the species is present then the mitigations prescribed in the approved Human-Wildlife Interaction Management Plan will be implemented. The Human-Wildlife Interaction Management Plan will ensure that:\n\n- Temporary fencing must be established around the Smooth Willowherb plant(s) with an additional 10 m buffer. If not feasible, a qualified biologist will develop an alternative mitigation plan. No works will occur within 10m of Smooth Willowherb plant(s) until EAO and FLNR approval of the alternative mitigation plan.\n- Machinery or people must be excluded in the area referenced in the bullet above except to monitor the health of the Smooth Willowherb population.\n- Tree debris must not be allowed to fall into the area as the result of clearing activities.\n- The condition of the Smooth Willowherb sub-population, and its critical habitat, must be assessed during the first growing season after the temporary diversion channel has been constructed and after the decommissioning of the temporary diversion channel as part of the CEMP, and reported to FLNR and EAO.\n- A qualified biologist must determine the location of the temporary fencing and assess the condition of the sub-population and its critical habitat.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Rare Plants"
+            ]
+        },
+        {
+            "condition_name": "LOCAL OPPORTUNITIES",
+            "condition_number": 31,
+            "condition_text": "The Holders must:\n\n- Provide Project information related to job opportunities and subcontracting business opportunities to the Pemberton Chamber of Commerce and Lil\u2019wat Nation Business Corporations.\n- Update the list of local service providers set out in Table 3 of Application Appendix AQ, and have it reviewed by both the Pemberton Chamber of Commerce and Lil\u2019wat Nation for accuracy prior to the selection process (or processes) for the General Contractor(s).\n- Host at least one job fair in Pemberton and at least one job fair in Mount Currie at least 30 days prior to construction.",
+            "topic_tags": [
+                "Economic"
+            ],
+            "subtopic_tags": [
+                "Employment & Income"
+            ]
+        },
+        {
+            "condition_name": "NOTIFICATION OF ROAD CLOSURES OR DELAYS",
+            "condition_number": 32,
+            "condition_text": "The Holders must provide information to industrial users and the public of temporary road closures or adverse road conditions in effect, and the timing of construction activities including, blasting, helicopter use, and wide load hauling. The Holders must provide this information on clear signage posted at the entrance to FSRs, notices posted in the local newspapers, and on the project website.",
+            "topic_tags": [
+                "Economic"
+            ],
+            "subtopic_tags": [
+                "Transportation & Access"
+            ]
+        },
+        {
+            "condition_name": "ACCESS MANAGEMENT",
+            "condition_number": 33,
+            "condition_text": "At least 30 days prior to construction of the Upper Lillooet River HEF, the Holders must identify and propose to FLNR a new crossing of Truckwash Creek, upstream of the existing crossing, to reduce conflicts between construction activity and access to the Upper Lillooet Valley, consult with industrial users and obtain approval from FLNR.\n\nThe Holders must ensure that access is maintained to trapping operations during winter construction to the satisfaction of EAO.\n\nAs requested, each Holder must participate in multi-stakeholder access management planning undertaken by the Province.\n\nPublic access during winter construction must be monitored and/or controlled to the satisfaction of FLNR.\n\nSuspected illegal hunting activity and suspected motorized access into Upper Lillooet Provincial Park must be reported to MOE.",
+            "topic_tags": [
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Land & Resource Use",
+                "L&RU Traditional Purposes"
+            ]
+        },
+        {
+            "condition_name": "TRANSMISSION LINE",
+            "condition_number": 34,
+            "condition_text": "The final transmission line right-of-way must meet the Visual Quality Objectives for the Visual Landscape Inventory polygons based on the visual condition at the time of the Application.",
+            "topic_tags": [
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Visual Quality"
+            ]
+        },
+        {
+            "condition_name": "PEBBLE CREEK HOT SPRINGS",
+            "condition_number": 35,
+            "condition_text": "Prior to operations of the Upper Lillooet River HEF, the ULRPLP must install an alarm or other signaling system acceptable to FLNR at the Pebble Creek Hot Springs and at the powerhouse locations to warn of potentially dangerous flow releases. The ULRPLP must post signs at Pebble Creek Hot Springs and at the powerhouses informing the public of how to respond to the signals.\n\nBefore completion of the Lillooet River FSR realignment at Truckwash Creek the Holders must create a new trail to access the Upper Lillooet River near the Pebble Creek Hot Springs acceptable to FLNR.",
+            "topic_tags": [
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Recreation"
+            ]
+        },
+        {
+            "condition_name": "Navigation",
+            "condition_number": 36,
+            "condition_text": "ULRPLP must provide real time flow measurement, downstream of the intake, for the Upper Lillooet River to the public via the Project website, subject to reasonable outage periods for maintenance and repair.",
+            "topic_tags": [
+                "Social"
+            ],
+            "subtopic_tags": [
+                "Services & Infrastructure"
+            ]
+        },
+        {
+            "condition_name": "Archaeological Sites",
+            "condition_number": 37,
+            "condition_text": "The Archaeological Sites Management Plan referred to Condition 1 must include measures to protect, monitor, assess and recover artifacts from archaeological sites that are found in the Project area during Project construction. The Plan must identify all areas of at least moderate archaeological potential. The Holders must provide the plan to Lil\u2019wat First Nation and FLNR for review and comment.\n\nDuring Project construction, the Holders must implement the plan and ensure that if any artifacts are discovered that they are recovered under the direction of a qualified archaeological professional.\n\nDuring Project construction, and as specified in the Archaeological Resources Monitoring Plan, the Holders must retain a qualified archaeological professional to monitor activities involving ground disturbance or excavation in any areas identified as having at least moderate archaeological potential.",
+            "topic_tags": [
+                "Heritage/Culture"
+            ],
+            "subtopic_tags": [
+                "Heritage Resources"
+            ],
+            "required_plan": {
+                "plan_name": "Archaeological Sites Management Plan",
+                "approval_type": null,
+                "stakeholders_to_consult": [
+                    "Lil\u2019wat First Nation",
+                    "FLNR"
+                ],
+                "fn_consultation_required": true,
+                "related_phase": "Construction",
+                "days_prior_to_commencement": null
+            }
+        },
+        {
+            "condition_name": "Temporary Minor Works along the Transmission Line \u2013 Nov to Dec 2013",
+            "condition_number": 38,
+            "condition_text": "Despite Conditions 12, 17, 20, until December 31, 2013, the Holders may construct a foot access trail, having a maximum length of 3.0 km, and up to 12 helicopter pads, with maximum area of 600 m2 each (collectively, the \u201cminor works\u201d) along the portion of the transmission line located above the Lillooet South Forest Service road between transmission line pole structures 142 to 152, subject to the following requirements:\n\n- A qualified professional or IEM must oversee all construction activity;\n- Vegetation clearing must be performed by hand felling only;\n- Helicopter flights to transport field personnel must not exceed two flights per day;\n- Helicopter flight paths and vegetation clearing activities must be selected in order to avoid, as much as possible, wildlife and wildlife habitat within the vicinity of the proposed work, and to avoid any sensitive areas, as determined by a qualified professional;\n- Prior to commencing the minor works, a qualified professional or IEM will confirm that Moose are not occupying the Moose Winter Range Forest Management Zone (MWRFMZ)(u-2-005 J55/54-204-RO);\n- Construction or use of the minor works must be suspended immediately if Moose are observed within that portion of the MWRFMZ adjacent to the minor works or within 500 m of clearing activities;\n- If Moose are observed or snow fall exceeds the criteria within the MWRFMZ, the Holders must contact the FLNR, for direction before the minor works can proceed; and\n- If Grizzly Bears or Bald Eagles are observed within the lower reached of Rohb Creek, construction or use of the minor works within 500 m of Rohb Creek must be suspended, and the Holders must contact FLNR Ecosystems manager, Resource Stewardship, for direction before the minor works can proceed.",
+            "topic_tags": [
+                "Environment"
+            ],
+            "subtopic_tags": [
+                "Wildlife"
+            ]
+        }
+    ],
+    "project_id": "5885118faaecd9001b822018",
+    "document_id": "5887e07df64627133ae5b080",
+    "display_name": "Table of Conditions - Schedule B",
+    "document_file_name": "Table of Conditions - Schedule B.pdf",
+    "date_issued": "2014-06-20T19:00:00",
+    "act": 2002
+}

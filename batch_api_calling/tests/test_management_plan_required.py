@@ -8,6 +8,7 @@ known_conditions_with_required_plan = {
     "5c50eee297a31e0024f07c1f_5d2e310d340b690021fc09f3.json": [9],
     "5c35249ec45524002403a89f_5cf6f84f3de7b9001bd36438.json": [10, 11],
     "5885118faaecd9001b822018_5887e07df64627133ae5b080.json": [1, 2, 3, 5, 6, 9, 12, 15, 26, 37],
+    "588511e1aaecd9001b8272e7_58869290e036fb01057690b9.json": [4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21]
 }
 
 def remove_all_files_in_folder(folder_path):
