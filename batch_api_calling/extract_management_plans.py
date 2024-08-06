@@ -24,7 +24,6 @@ def management_plan_required(input_condition_text):
             "requires_plan": {
               "type": "boolean",
               "description": "Does the condition explicitly state that a specific external plan document (e.g., air quality management plan, wildlife action plan, pollution mitigation plan) should be written? If a condition only outlines how plans should be written/developed/handled or simply references a management plan without requiring one to be written, it should be marked False. Do not count proposals; these should be marked False.",
-              # "description": "Does the condition explicitly state that a specific external plan document should be written? For example: air quality management plan, wildlife action plan, pollution mitigation plan, etc. Some conditions outline requirements for how plans should be written/developed/handled, but do not say a specific plan must be written. In these cases, this should be False. If a condition simply references a management plan but doesn't specifically require one to be written, this should be False. Do not count proposals (this should be false).",
             },
 
           },
