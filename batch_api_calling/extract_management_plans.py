@@ -78,7 +78,14 @@ def extract_management_plan_info_using_gpt(condition_text):
                 "type": "array",
                 "items": {
                     "type": "string",
-                    "description": "The names of the stakeholders that the plan must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
+                    "description": "The names of the stakeholders that the condition explicitly states that the plan must be developed in consultation with. Often includes government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
+                },
+              },
+              "stakeholders_to_submit_to": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "description": "The names of the stakeholders that the condition explicitly states should receive the plan. Often includes the EAO, other government agencies, First Nations, etc. E.g. MOE, MOH, OGC, VCH, Aboriginal Groups, Semiahmoo First Nation, etc."
                 },
               },
               "fn_consultation_required": {
