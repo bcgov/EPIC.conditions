@@ -45,20 +45,32 @@
                 "Air Quality",
                 "Human Health"
             ],
-            "required_plan": {
-                "plan_name": "Air Quality Mitigation And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "MOE",
-                    "MOH",
-                    "OGC",
-                    "VCH",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Commissioning",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Air Quality Mitigation and Monitoring Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "MOE",
+                        "MOH",
+                        "OGC",
+                        "VCH",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "MOE",
+                        "MOH",
+                        "OGC",
+                        "VCH",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Commissioning",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Instream Flow Requirements",
@@ -70,16 +82,21 @@
             "subtopic_tags": [
                 "Surface Water"
             ],
-            "required_plan": {
-                "plan_name": "Instream Flow Requirements Report",
-                "approval_type": null,
-                "stakeholders_to_consult": [
-                    "FLNR"
-                ],
-                "fn_consultation_required": false,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Instream Flow Requirements Report",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNR"
+                    ],
+                    "stakeholders_to_submit_to": [],
+                    "fn_consultation_required": false,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Marine Water Quality \u2013 Construction",
@@ -94,21 +111,34 @@
                 "Human Health",
                 "Marine Resources"
             ],
-            "required_plan": {
-                "plan_name": "Marine Water Quality Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "MOE",
-                    "MOH",
-                    "DFO",
-                    "OGC",
-                    "VCH",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Marine Water Quality Management and Monitoring Plan for Construction",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "MOE",
+                        "MOH",
+                        "DFO",
+                        "OGC",
+                        "VCH",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "MOE",
+                        "MOH",
+                        "DFO",
+                        "OGC",
+                        "VCH",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Marine Water Quality \u2013 Operations",
@@ -121,19 +151,31 @@
                 "Aquatic Resources",
                 "Marine Resources"
             ],
-            "required_plan": {
-                "plan_name": "Marine Water Quality Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "MOE",
-                    "DFO",
-                    "OGC",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Operations",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Marine Water Quality Management and Monitoring Plan for Operations",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "MOE",
+                        "DFO",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "MOE",
+                        "DFO",
+                        "EC",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Marine Fish and Fish Habitat",
@@ -146,17 +188,27 @@
                 "Fish & Fish Habitat",
                 "Marine Resources"
             ],
-            "required_plan": {
-                "plan_name": "Marine Fish And Fish Habitat Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "DFO",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Marine Fish And Fish Habitat Management And Monitoring Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "DFO",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "DFO",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Marine Mammals",
@@ -168,18 +220,28 @@
             "subtopic_tags": [
                 "Marine Mammals"
             ],
-            "required_plan": {
-                "plan_name": "Marine Mammal Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "DFO",
-                    "OGC",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Marine Mammal Management and Monitoring Plan for Construction",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "DFO",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "DFO",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Invasive Plant Management",
@@ -191,18 +253,28 @@
             "subtopic_tags": [
                 "Vegetation"
             ],
-            "required_plan": {
-                "plan_name": "Invasive Plant Management Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "FLNR",
-                    "OGC",
-                    "Squamish Nation"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Invasive Plant Management Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNR",
+                        "OGC",
+                        "Squamish Nation"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "FLNR",
+                        "OGC",
+                        "Squamish Nation"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Wildlife \u2013 Construction",
@@ -215,19 +287,30 @@
                 "Wildlife",
                 "Birds"
             ],
-            "required_plan": {
-                "plan_name": "Wildlife Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "EC",
-                    "FLNR",
-                    "OGC",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Wildlife Management and Monitoring Plan for Construction",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "EC",
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "EC",
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Wildlife \u2013 Operations",
@@ -240,19 +323,30 @@
                 "Wildlife",
                 "Birds"
             ],
-            "required_plan": {
-                "plan_name": "Wildlife Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "EC",
-                    "FLNR",
-                    "OGC",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Operations",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Wildlife Management and Monitoring Plan for Operations",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "EC",
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "EC",
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Local Economic Opportunities",
@@ -276,18 +370,28 @@
             "subtopic_tags": [
                 "Services & Infrastructure"
             ],
-            "required_plan": {
-                "plan_name": "Community Services And Infrastructure Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "Aboriginal Groups",
-                    "Local Governments",
-                    "Provincial Government Infrastructure And Service Providers"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Adaptive Management and Monitoring Plan for Services and Infrastructure",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "Aboriginal Groups",
+                        "Local Governments",
+                        "Provincial Government Infrastructure and Service Providers"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "Local Governments",
+                        "Provincial Government Infrastructure and Service Providers",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Transportation",
@@ -299,17 +403,26 @@
             "subtopic_tags": [
                 "Transportation & Access"
             ],
-            "required_plan": {
-                "plan_name": "Traffic Control Management Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "MOTI",
-                    "DOS"
-                ],
-                "fn_consultation_required": false,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Traffic Control Management Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "MOTI",
+                        "DOS"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "MOTI",
+                        "DOS"
+                    ],
+                    "fn_consultation_required": false,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Marine Transportation \u2013 Construction",
@@ -324,23 +437,38 @@
                 "Transportation & Access",
                 "Recreation"
             ],
-            "required_plan": {
-                "plan_name": "Marine Transport Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "TC",
-                    "DFO",
-                    "CCG",
-                    "Pacific Pilotage Authority",
-                    "DOS",
-                    "BC Ferries",
-                    "Squamish Terminals",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Marine Transport Management and Monitoring Plan for Construction",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "TC",
+                        "DFO",
+                        "CCG",
+                        "Pacific Pilotage Authority",
+                        "DOS",
+                        "BC Ferries",
+                        "Squamish Terminals",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "TC",
+                        "CCG",
+                        "Pacific Pilotage Authority",
+                        "DFO",
+                        "DOS",
+                        "BC Ferries",
+                        "Squamish Terminals",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                }
+            ]
         },
         {
             "condition_name": "Marine Transportation \u2013 Operations",
@@ -355,20 +483,35 @@
                 "Transportation & Access",
                 "Recreation"
             ],
-            "required_plan": {
-                "plan_name": "Marine Transport Management And Monitoring Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "TC",
-                    "CCG",
-                    "Pacific Pilotage Authority",
-                    "DFO",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Operations",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Marine Transport Management and Monitoring Plan for Operations",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "TC",
+                        "CCG",
+                        "Pacific Pilotage Authority",
+                        "DFO",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "TC",
+                        "CCG",
+                        "Pacific Pilotage Authority",
+                        "DFO",
+                        "DOS",
+                        "BC Ferries",
+                        "Squamish Terminals",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Marine Transportation \u2013 Wake",
@@ -383,17 +526,28 @@
                 "Transportation & Access",
                 "Recreation"
             ],
-            "required_plan": {
-                "plan_name": "Wake Verification Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "Pacific Pilotage Authority",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Operations",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Wake Verification Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "Pacific Pilotage Authority",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "TC",
+                        "Pacific Pilotage Authority",
+                        "Aboriginal Groups",
+                        "Potentially Affected Local Governments"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Engagement with Forest Tenure Holders",
@@ -406,6 +560,22 @@
             "subtopic_tags": [
                 "Land & Resource Use",
                 "L&RU Traditional Purposes"
+            ],
+            "deliverables": [
+                {
+                    "deliverable_name": "Engagement With Forest Tenure Holders Report",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [],
+                    "stakeholders_to_submit_to": [
+                        "FLNR",
+                        "EAO"
+                    ],
+                    "fn_consultation_required": false,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                }
             ]
         },
         {
@@ -420,20 +590,25 @@
                 "Visual Quality",
                 "Land & Resource Use"
             ],
-            "required_plan": {
-                "plan_name": "Visual Quality Management Plan",
-                "approval_type": null,
-                "stakeholders_to_consult": [
-                    "FLNR",
-                    "OGC",
-                    "Aboriginal Groups",
-                    "Tourism Squamish",
-                    "Sea to Sky Gondola"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Operation",
-                "days_prior_to_commencement": null
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Visual Quality Management Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups",
+                        "Tourism Squamish",
+                        "Sea to Sky Gondola"
+                    ],
+                    "stakeholders_to_submit_to": [],
+                    "fn_consultation_required": true,
+                    "related_phase": null,
+                    "days_prior_to_commencement": null
+                }
+            ]
         },
         {
             "condition_name": "Environmental Management Plans",
@@ -445,18 +620,48 @@
             "subtopic_tags": [
                 "Ecosystems"
             ],
-            "required_plan": {
-                "plan_name": "Construction Environmental Management Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "FLNR",
-                    "OGC",
-                    "Aboriginal Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 30
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Construction Environmental Management Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 30
+                },
+                {
+                    "deliverable_name": "Operations Environmental Management Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "FLNR",
+                        "OGC",
+                        "Aboriginal Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         },
         {
             "condition_name": "Aboriginal Consultation",
@@ -467,6 +672,38 @@
             ],
             "subtopic_tags": [
                 "Aboriginal Interests"
+            ],
+            "deliverables": [
+                {
+                    "deliverable_name": "Aboriginal Consultation Summary Report",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 730
+                },
+                {
+                    "deliverable_name": "Aboriginal Consultation Summary Report",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "Aboriginal Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 365
+                }
             ]
         },
         {

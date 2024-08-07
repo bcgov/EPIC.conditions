@@ -68,18 +68,28 @@
                 "Air Quality",
                 "Human Health"
             ],
-            "required_plan": {
-                "plan_name": "Air Emissions Monitoring Program",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "Metro Vancouver",
-                    "Vancouver Coastal Health Authority",
-                    "Indigenous Groups"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Operations",
-                "days_prior_to_commencement": 60
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Air Emissions Monitoring Program",
+                    "is_plan": true,
+                    "is_draft": true,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "Metro Vancouver",
+                        "Vancouver Coastal Health Authority",
+                        "Indigenous Groups"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "Metro Vancouver",
+                        "Vancouver Coastal Health Authority",
+                        "Indigenous Groups"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 60
+                }
+            ]
         }
     ],
     "project_id": "5c50eee297a31e0024f07c1f",

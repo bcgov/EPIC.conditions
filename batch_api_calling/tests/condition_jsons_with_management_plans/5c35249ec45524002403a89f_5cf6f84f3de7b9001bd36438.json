@@ -65,6 +65,52 @@
             ],
             "subtopic_tags": [
                 "Ecosystems"
+            ],
+            "deliverables": [
+                {
+                    "deliverable_name": "IEM Terms of Engagement",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Acceptance",
+                    "stakeholders_to_consult": [
+                        "FLNRORD",
+                        "Indigenous Nations"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 45
+                },
+                {
+                    "deliverable_name": "IEM Detailed Work Plan for Construction",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Acceptance",
+                    "stakeholders_to_consult": [],
+                    "stakeholders_to_submit_to": [
+                        "EAO"
+                    ],
+                    "fn_consultation_required": false,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 45
+                },
+                {
+                    "deliverable_name": "IEM Report Upon Completion of Construction",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": null,
+                    "stakeholders_to_consult": [],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "FLNRORD",
+                        "Indigenous Nations"
+                    ],
+                    "fn_consultation_required": false,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 0
+                }
             ]
         },
         {
@@ -82,17 +128,26 @@
                 "Wildlife",
                 "Human Health"
             ],
-            "required_plan": {
-                "plan_name": "Construction Environmental Management Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "FLNRORD",
-                    "Indigenous Nations"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 45
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Construction Environmental Management Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNRORD",
+                        "Indigenous Nations"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "FLNRORD",
+                        "Indigenous Nations"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 45
+                }
+            ]
         },
         {
             "condition_name": "Fish and Fish Habitat Monitoring and Mitigation Plan",
@@ -104,17 +159,26 @@
             "subtopic_tags": [
                 "Fish & Fish Habitat"
             ],
-            "required_plan": {
-                "plan_name": "Fish And Fish Habitat Monitoring And Mitigation Plan",
-                "approval_type": "Satisfaction",
-                "stakeholders_to_consult": [
-                    "FLNRORD",
-                    "Indigenous Nations"
-                ],
-                "fn_consultation_required": true,
-                "related_phase": "Construction",
-                "days_prior_to_commencement": 45
-            }
+            "deliverables": [
+                {
+                    "deliverable_name": "Fish and Fish Habitat Monitoring and Mitigation Plan",
+                    "is_plan": true,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [
+                        "FLNRORD",
+                        "Indigenous Nations"
+                    ],
+                    "stakeholders_to_submit_to": [
+                        "EAO",
+                        "FLNRORD",
+                        "Indigenous Nations"
+                    ],
+                    "fn_consultation_required": true,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 45
+                }
+            ]
         }
     ],
     "project_id": "5c35249ec45524002403a89f",
