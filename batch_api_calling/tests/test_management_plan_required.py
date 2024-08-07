@@ -4,7 +4,7 @@ import shutil
 import json
 from extract_management_plans import extract_all_management_plans
 
-known_conditions_with_required_plan = {
+known_conditions_with_deliverables = {
     "5c50eee297a31e0024f07c1f_5d2e310d340b690021fc09f3.json": [9],
     "5c35249ec45524002403a89f_5cf6f84f3de7b9001bd36438.json": [9, 10, 11], #9
     "5885118faaecd9001b822018_5887e07df64627133ae5b080.json": [1, 2, 3, 5, 6, 9, 12, 14, 15, 26, 28, 29, 37], #14, 28, 29,
@@ -27,7 +27,7 @@ def remove_all_files_in_folder(folder_path):
 
 def get_test_files():
     return [
-        (file, known_conditions_with_required_plan.get(file, []))
+        (file, known_conditions_with_deliverables.get(file, []))
         for file in os.listdir("./tests/condition_jsons")
         if file.endswith('.json')
     ]
