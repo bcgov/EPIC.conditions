@@ -15,7 +15,7 @@ def management_plan_required(input_condition_text):
       "type": "function",
       "function": {
         "name": "extract_info",
-        "description": "If the condition requires a specific external plan/report/proposal/etc. document to be written, extract the info related to the document.",
+        "description": "If the condition requires a specific external plan/report/proposal/summary/etc. document to be written, extract the info related to the document.",
 
         "parameters": {
           "type": "object",
@@ -72,14 +72,11 @@ def extract_management_plan_info_using_gpt(condition_text):
                   "properties": {
                       "deliverable_name": {
                         "type": "string",
-                        "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring plan, etc. Write it in title case."
+                        "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring plan for Operations, etc. Write it in title case."
                       },
-                      "deliverable_type": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "The type of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Management Plan, Monitoring Plan, Control Plan, Report, Proposal, etc. Write it in title case."                      
-                        }
+                      "is_plan": {
+                        "type": "boolean",
+                        "description": "Whether or not the deliverable is a \"Plan\" document (e.g., Management Plan, Monitoring Plan, Mitigation Plan, etc.). False if not specified."
                       },
                       "is_draft": {
                         "type": "boolean",
