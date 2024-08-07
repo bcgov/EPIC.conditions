@@ -72,7 +72,7 @@ def extract_management_plan_info_using_gpt(condition_text):
                   "properties": {
                       "deliverable_name": {
                         "type": "string",
-                        "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring plan for Operations, etc. Write it in title case."
+                        "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring Plan for Operations, etc. Write it in title case (E.g. The Catcher in the Rye)."
                       },
                       "is_plan": {
                         "type": "boolean",
