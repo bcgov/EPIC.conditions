@@ -50,7 +50,7 @@
             ],
             "deliverables": [
                 {
-                    "deliverable_name": "Testing And Commissioning Plan",
+                    "deliverable_name": "Testing and Commissioning Plan",
                     "is_plan": true,
                     "is_draft": false,
                     "approval_type": "Acceptance",
@@ -83,15 +83,15 @@
                 {
                     "deliverable_name": "Operational Environmental Monitoring Plan",
                     "is_plan": true,
-                    "is_draft": true,
-                    "approval_type": "Acceptance",
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
                     "stakeholders_to_consult": [
                         "FLNR",
                         "EAO",
                         "Fisheries and Oceans Canada"
                     ],
                     "stakeholders_to_submit_to": [
-                        "Lil\u2019wat Nation"
+                        "FLNR"
                     ],
                     "fn_consultation_required": true,
                     "related_phase": "Operation",
@@ -101,14 +101,14 @@
                     "deliverable_name": "Operational Parameters and Procedures",
                     "is_plan": false,
                     "is_draft": true,
-                    "approval_type": "Acceptance",
+                    "approval_type": "Satisfaction",
                     "stakeholders_to_consult": [
                         "FLNR",
                         "EAO",
                         "Fisheries and Oceans Canada"
                     ],
                     "stakeholders_to_submit_to": [
-                        "Lil\u2019wat Nation"
+                        "FLNR"
                     ],
                     "fn_consultation_required": true,
                     "related_phase": "Operation",
@@ -117,6 +117,7 @@
                 {
                     "deliverable_name": "Coastal Tailed Frog Monitoring Plan",
                     "is_plan": true,
+                    "is_draft": false,
                     "approval_type": "Satisfaction",
                     "stakeholders_to_consult": [
                         "FLNR"
@@ -127,6 +128,7 @@
                 {
                     "deliverable_name": "Harlequin Duck Monitoring Plan",
                     "is_plan": true,
+                    "is_draft": false,
                     "approval_type": "Satisfaction",
                     "stakeholders_to_consult": [
                         "Canadian Wildlife Service"
@@ -137,6 +139,7 @@
                 {
                     "deliverable_name": "Fish Monitoring Plan",
                     "is_plan": true,
+                    "is_draft": false,
                     "approval_type": "Satisfaction",
                     "stakeholders_to_consult": [
                         "FLNR",
@@ -179,7 +182,8 @@
                     "is_draft": true,
                     "approval_type": "Acceptance",
                     "stakeholders_to_consult": [
-                        "Identified Federal And Provincial Agencies",
+                        "Federal Agencies",
+                        "Provincial Agencies",
                         "Lil\u2019wat First Nation"
                     ],
                     "stakeholders_to_submit_to": [
@@ -260,7 +264,7 @@
                     "deliverable_name": "Habitat Compensation Plan",
                     "is_plan": true,
                     "is_draft": true,
-                    "approval_type": "Approval",
+                    "approval_type": "Acceptance",
                     "stakeholders_to_consult": [
                         "DFO"
                     ],
@@ -401,7 +405,9 @@
                     "is_plan": true,
                     "is_draft": false,
                     "approval_type": "Approval",
-                    "stakeholders_to_consult": [],
+                    "stakeholders_to_consult": [
+                        "FLNR"
+                    ],
                     "stakeholders_to_submit_to": [
                         "FLNR",
                         "EAO"
@@ -549,7 +555,7 @@
                     ],
                     "fn_consultation_required": false,
                     "related_phase": "Construction",
-                    "days_prior_to_commencement": null
+                    "days_prior_to_commencement": 0
                 }
             ]
         },
@@ -714,7 +720,7 @@
                     "deliverable_name": "Archaeological Sites Management Plan",
                     "is_plan": true,
                     "is_draft": false,
-                    "approval_type": "Satisfaction",
+                    "approval_type": null,
                     "stakeholders_to_consult": [
                         "Lil\u2019wat First Nation",
                         "FLNR"

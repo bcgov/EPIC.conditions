@@ -439,7 +439,7 @@
             ],
             "deliverables": [
                 {
-                    "deliverable_name": "Marine Transport Management and Monitoring Plan for Construction",
+                    "deliverable_name": "Marine Transport Management and Monitoring Plan",
                     "is_plan": true,
                     "is_draft": false,
                     "approval_type": "Satisfaction",
@@ -563,7 +563,7 @@
             ],
             "deliverables": [
                 {
-                    "deliverable_name": "Engagement With Forest Tenure Holders Report",
+                    "deliverable_name": "Engagement with Forest Tenure Holders Report",
                     "is_plan": false,
                     "is_draft": false,
                     "approval_type": "Satisfaction",
@@ -605,8 +605,8 @@
                     ],
                     "stakeholders_to_submit_to": [],
                     "fn_consultation_required": true,
-                    "related_phase": null,
-                    "days_prior_to_commencement": null
+                    "related_phase": "Operation",
+                    "days_prior_to_commencement": 0
                 }
             ]
         },
@@ -726,6 +726,34 @@
             ],
             "subtopic_tags": [
                 "Community Well-being"
+            ],
+            "deliverables": [
+                {
+                    "deliverable_name": "Public Consultation Summary Report",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [],
+                    "stakeholders_to_submit_to": [
+                        "EAO"
+                    ],
+                    "fn_consultation_required": false,
+                    "related_phase": "Construction",
+                    "days_prior_to_commencement": 730
+                },
+                {
+                    "deliverable_name": "Public Consultation Summary Report",
+                    "is_plan": false,
+                    "is_draft": false,
+                    "approval_type": "Satisfaction",
+                    "stakeholders_to_consult": [],
+                    "stakeholders_to_submit_to": [
+                        "EAO"
+                    ],
+                    "fn_consultation_required": false,
+                    "related_phase": "Operations",
+                    "days_prior_to_commencement": 365
+                }
             ]
         },
         {

@@ -95,21 +95,6 @@
                     "fn_consultation_required": false,
                     "related_phase": "Construction",
                     "days_prior_to_commencement": 45
-                },
-                {
-                    "deliverable_name": "IEM Report Upon Completion of Construction",
-                    "is_plan": false,
-                    "is_draft": false,
-                    "approval_type": null,
-                    "stakeholders_to_consult": [],
-                    "stakeholders_to_submit_to": [
-                        "EAO",
-                        "FLNRORD",
-                        "Indigenous Nations"
-                    ],
-                    "fn_consultation_required": false,
-                    "related_phase": "Construction",
-                    "days_prior_to_commencement": 0
                 }
             ]
         },
