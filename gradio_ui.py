@@ -2,7 +2,7 @@ import gradio as gr
 from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, extract_subcondition
 import read_pdf
 
-with gr.Blocks() as app:
+with gr.Blocks(theme=gr.themes.Soft()) as app:
 
     with gr.Tab("Condition Extractor"):
 
