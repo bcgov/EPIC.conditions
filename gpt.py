@@ -26,25 +26,25 @@ def compare_documents(model, prompt, file1, doc_type1, file2, doc_type2):
 
     # Read the first file
     file1_text = None
-    with open(file1.name, "r") as f:
+    with open(file1.name, "rb") as f:
 
         # If file is a PDF, convert it to text
         if file1.name.endswith(".pdf"):
             file1_text = read_pdf.read_pdf(file1.name)
         elif file1.name.endswith(".txt"):
-            file1_text = f.read()
+            file1_text = f.read().decode('utf-8', errors='ignore')
         else:
             return "File 1 is not a PDF or TXT file"
 
     #  Read the second file
     file2_text = None
-    with open(file2.name, "r") as f:
+    with open(file2.name, "rb") as f:
 
         # If file is a PDF, convert it to text
         if file2.name.endswith(".pdf"):
             file2_text = read_pdf.read_pdf(file2.name)
         elif file2.name.endswith(".txt"):
-            file2_text = f.read()
+            file2_text = f.read().decode('utf-8', errors='ignore')
         else:
             return "File 2 is not a PDF or TXT file"
 
@@ -79,13 +79,13 @@ def count_conditions(file_input):
   - Only PDF and TXT file types are supported. If the file is not one of these types, the function will return an error message.
   """
   file_text = None
-  with open(file_input.name, "r") as f:
+  with open(file_input.name, "rb") as f:
 
       # If file is a PDF, convert it to text
       if file_input.name.endswith(".pdf"):
           file_text = read_pdf.read_pdf(file_input.name)
       elif file_input.name.endswith(".txt"):
-          file_text = f.read()
+          file_text = f.read().decode('utf-8', errors='ignore')
       else:
           return "File 1 is not a PDF or TXT file"
       
@@ -172,13 +172,14 @@ def extract_info(file_input, starting_condition_number, ending_condition_number)
   expected_count = ending_condition_number - starting_condition_number + 1
 
   file_text = None
-  with open(file_input.name, "r") as f:
+  with open(file_input.name, "rb") as f:
 
       # If file is a PDF, convert it to text
       if file_input.name.endswith(".pdf"):
           file_text = read_pdf.read_pdf(file_input.name)
       elif file_input.name.endswith(".txt"):
-          file_text = f.read()
+          file_text = f.read().decode('utf-8', errors='ignore')
+
       else:
           return "File 1 is not a PDF or TXT file"
 
