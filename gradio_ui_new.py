@@ -1,6 +1,7 @@
 import gradio as gr
 from gpt import compare_documents, extract_info, count_conditions, extract_all_conditions, extract_all_subconditions, extract_subcondition
 from batch_api_calling.extract_management_plans import extract_management_plan_info_from_json
+from batch_api_calling.extract_first_nations import process_single_pdf
 
 import json
 import os
@@ -63,11 +64,10 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
 
         with gr.Column():
                 submit_button = gr.Button("Submit")
-                merged_chunks = gr.JSON(label="Merged Chunks")
-                extract_deliverables_button = gr.Button("Extract Deliverables")
-                deliverables = gr.JSON(label="Extracted Deliverables")
-                extract_subconditions_button = gr.Button("Extract Subconditions")
-                subconditions = gr.JSON(label="Extracted Subconditions")
+                merged_chunks = gr.JSON(label="Conditions")
+                deliverables = gr.JSON(label="Conditions with Extracted Deliverables")
+                first_nations = gr.JSON(label="Conditions with Extracted First Nations")
+                subconditions = gr.JSON(label="Conditions with Extracted Subconditions")
                 
     with gr.Tab("JSON Editor"):
         save_button = gr.Button("Save Changes 💾")
@@ -87,8 +87,12 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         inputs=[merged_chunks],
         outputs=[deliverables]
     ).then(
+        fn=process_single_pdf,
+        inputs=[file_input, deliverables],
+        outputs=[first_nations]
+    ).then(
         fn=extract_all_subconditions,
-        inputs=[deliverables],
+        inputs=[first_nations],
         outputs=[subconditions]
     ).then(
         fn=save_json_locally,
