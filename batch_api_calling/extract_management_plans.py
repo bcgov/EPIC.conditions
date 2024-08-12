@@ -85,7 +85,7 @@ def extract_management_plan_info_using_gpt(condition_text):
                       "approval_type": {
                         "type": "string", 
                         "enum": ["Acceptance", "Satisfaction"],
-                        "description": "If the plan/report/proposal/etc. is to the acceptance of or to the satisfaction of the Environmental Assessment Office (EAO). Is null if not specified."
+                        "description": "If the plan/report/proposal/etc. is explicitly stated to be to either the \"acceptance\" of or to the \"satisfaction\" of the Environmental Assessment Office (EAO). Is null if not specified."
                       },
                       "stakeholders_to_consult": {
                         "type": "array",
