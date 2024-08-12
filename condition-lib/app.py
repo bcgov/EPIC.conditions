@@ -30,6 +30,7 @@ def search_records(project_id):
     schema = os.getenv("DB_SCHEMA", "condition")
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Ensure project_id is extracted properly and passed as a string
     query = f"""
     SELECT a.condition_number, a.condition_name, a.condition_text 
     FROM {schema}.conditions a 
@@ -37,23 +38,30 @@ def search_records(project_id):
     ON a.project_id = b.project_id 
     WHERE b.project_id = %s::text;
     """
-    cursor.execute(query, (project_id,))
+    cursor.execute(query, (str(project_id),))  # Convert project_id to string explicitly
     results = cursor.fetchall()
     cursor.close()
     conn.close()
     return results if results else [["No results found.", ""]]
+
+# Function to update the dropdown with the latest projects
+def update_dropdown():
+    projects = fetch_projects()
+    if projects:
+        return gr.update(choices=[(name, id) for name, id in projects], value=projects[0][1], interactive=True)
+    else:
+        return gr.update(choices=[], value=None, interactive=False), "No projects available. Please add a project to the database."
 
 # Define the Gradio interface using Blocks
 def search(project_id):
     results = search_records(project_id)
     return results
 
-projects = fetch_projects()
-
 with gr.Blocks() as demo:
-    project_dropdown = gr.Dropdown(label="Select a project", choices=[(name, id) for name, id in projects], value=projects[0][1])
+    project_dropdown = gr.Dropdown(label="Select a project")
     output_table = gr.Dataframe(headers=["Condition Number", "Condition Name", "Condition Text"], wrap=True)
     
     project_dropdown.change(fn=search, inputs=project_dropdown, outputs=output_table)
+    demo.load(fn=update_dropdown, outputs=project_dropdown)
 
 demo.launch(server_name="0.0.0.0", server_port=7860)

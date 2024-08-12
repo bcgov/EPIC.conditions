@@ -1,6 +1,6 @@
-# SUBMIT-API
+# CONDITION-LIBRARY-API
 
-A submit Python flask API application to be used as a template.
+A gradio application.
 
 ## Getting Started
 
@@ -9,42 +9,14 @@ A submit Python flask API application to be used as a template.
     - [Python](https://www.python.org/)
     - [Docker](https://www.docker.com/)
     - [Docker-Compose](https://docs.docker.com/compose/install/)
-* Install Dependencies
-    - Run `make setup` in the root of the project (submit-api)
-* Start the databases
-    - Run `docker-compose up` in the root of the project (submit-api)
+* Start the application
+    - Run `python -m venv venv` to create a python virtual environment.
+    - Run `.\venv\Scripts\activate`(on Windows) or `. venv/bin/activate`(on Linux) to create a python virtual environment.
+    - Run `docker-compose up --build` in the root of the project (condition-lib)
 
 ## Environment Variables
 
 The development scripts for this application allow customization via an environment file in the root directory called `.env`. See an example of the environment variables that can be overridden in `sample.env`.
 
-## Commands
-
-### Development
-
-The following commands support various development scenarios and needs.
-Before running the following commands run `. venv/bin/activate` to enter into the virtual env.
-
-
-> `make run`
->
-> Runs the python application and runs database migrations.  
-Open [http://localhost:5000/api](http://localhost:5000/api) to view it in the browser.<br/>
-> The page will reload if you make edits.<br/>
-> You will also see any lint errors in the console.
-
-> `make test`
->
-> Runs the application unit tests<br>
-
-> `make lint`
->
-> Lints the application code.
-
-## Debugging in the Editor
-
-### Visual Studio Code
-
-Ensure the latest version of [VS Code](https://code.visualstudio.com) is installed.
-
-The [`launch.json`](.vscode/launch.json) is already configured with a launch task (SUBMIT-API Launch) that allows you to launch chrome in a debugging capacity and debug through code within the editor. 
+> Run the application.  
+Open [http://localhost:7860/](http://localhost:7860/) to view it in the browser.<br/>

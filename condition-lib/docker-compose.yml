@@ -25,6 +25,8 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "54337:5432"  # Map container's 5432 to host's 54337
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount the SQL file
     restart: unless-stopped
     networks:
       - mynetwork
