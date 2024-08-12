@@ -40,7 +40,7 @@ def handle_save_json(content, input_filename):
 with gr.Blocks(theme=gr.themes.Soft()) as app:
 
     file_input = gr.File(label="File Input")
-    
+
     with gr.Tab("Condition Extractor"):
 
 
@@ -66,7 +66,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         status_output = gr.Textbox(label="Save Status", lines=1, interactive=False)
 
         with gr.Row():
-            json_editor = gr.Textbox(label="JSON Content Editor", lines=300, max_lines=9999)
+            json_editor = gr.Textbox(label="JSON Content Editor", lines=300)
             json_viewer = gr.JSON(label="JSON Viewer")
 
     # Set up the submit button click event
