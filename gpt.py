@@ -352,7 +352,7 @@ def extract_subcondition(condition_text):
 
                   "clauses": {
                       "type": "array",
-                      "description": "The main, most outermost clauses/paragraphs of the condition. If there are no subconditions, this will be the only array of clauses.",
+                      "description": "The main, most outermost clause(s)/paragraph(s) of the condition.",
                       "items": {
                           "type": "object",
                           "properties": {
@@ -364,14 +364,14 @@ def extract_subcondition(condition_text):
                                       "type": "object",
                                       "properties": {
                                           "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
-                                          "subcondition_text": {"type": "string", "description": "The text of the subcondition. Do not skip any words or punctuation at the end (e.g. and, or, etc.)."},
+                                          "subcondition_text": {"type": "string", "description": "The text of the subcondition. Write it word for word as provided. Do not skip any words or punctuation at the end (e.g. and, or, ;, etc.)."},
                                           "subconditions": {
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "subcondition_identifier": {"type": "string", "description": "The number, letter, or other identifier of the subcondition. E.g. 1), 1 a), i, etc. Write it exactly as it appears in the text (i.e. include brackets)."},
-                                                    "subcondition_text": {"type": "string", "description": "The text of the subcondition. Do not skip any words or punctuation at the end (e.g. and, or, etc.)."},
+                                                    "subcondition_text": {"type": "string", "description": "The text of the subcondition. Write it word for word as provided. Do not skip any words or punctuation at the end (e.g. and, or, ;, etc.)."},
                                                     
                                                 },
                                             },
@@ -482,7 +482,8 @@ def extract_all_subconditions(input_json):
     print(Fore.CYAN + f"\nChecking for subconditions in condition {condition['condition_number']}:" + Fore.RESET)
     has_subconditions = check_for_subconditions(condition["condition_text"])
 
-    if has_subconditions:
+    # if has_subconditions:
+    if True:
       print(Fore.GREEN + "This condition has subconditions!" + Fore.RESET)
     else:
       print(Fore.RED + "This condition does not have subconditions." + Fore.RESET)
