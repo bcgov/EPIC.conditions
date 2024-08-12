@@ -143,10 +143,7 @@ def extract_management_plan_info(condition_text):
         print(Fore.RED + "This condition does not require a management plan." + Fore.RESET)
         return None
 
-def extract_management_plan_info_from_json(input_file_path, output_file_path):
-    with open(input_file_path, "r") as f:
-        input_json = json.load(f)
-
+def extract_management_plan_info_from_json(input_json):
     for condition in input_json["conditions"]:
         print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires a management plan:" + Fore.RESET)
         
@@ -156,12 +153,10 @@ def extract_management_plan_info_from_json(input_file_path, output_file_path):
         
         if management_plan_info is not None:
             condition["deliverables"] = json.loads(management_plan_info)["deliverables"]
-          
-    with open(output_file_path, "w") as f:
-        json.dump(input_json, f, indent=4)
+
+    return input_json
 
 def extract_all_management_plans(jsons_folder_path, output_folder_path):
-
     if not os.path.exists(output_folder_path):
         os.makedirs(output_folder_path)
 
@@ -173,7 +168,17 @@ def extract_all_management_plans(jsons_folder_path, output_folder_path):
                 continue
             print(Fore.CYAN + f"\n\nExtracting management plan info from {file}" + Style.RESET_ALL)
             input_file_path = os.path.join(jsons_folder_path, file)
-            extract_management_plan_info_from_json(input_file_path, output_file_path)
+            
+            # Read the input JSON file
+            with open(input_file_path, 'r') as f:
+                input_json = json.load(f)
+            
+            # Process the JSON
+            updated_json = extract_management_plan_info_from_json(input_json)
+            
+            # Write the updated JSON to the output file
+            with open(output_file_path, 'w') as f:
+                json.dump(updated_json, f, indent=4)
 
     print(Fore.GREEN + f"SUCCESS: All management plans extracted to new JSONs in {output_folder_path}" + Style.RESET_ALL)
 
