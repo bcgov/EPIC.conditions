@@ -74,8 +74,8 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         status_output = gr.Textbox(label="Save Status", lines=1, interactive=False)
 
         with gr.Row():
-            json_editor = gr.Textbox(label="JSON Content Editor", lines=300)
             json_viewer = gr.JSON(label="JSON Viewer")
+            json_editor = gr.Textbox(label="JSON Content Editor", lines=500)
 
     # Set up the submit button click event
     submit_button.click(
