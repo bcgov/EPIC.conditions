@@ -10,15 +10,21 @@ import read_pdf
 def save_json_locally(json_data, input_filename):
     base_name = os.path.splitext(os.path.basename(input_filename))[0]
     output_filename = f"{base_name}.json"
-    with open(output_filename, 'w') as f:
+    
+    # Create the gradio_jsons directory if it doesn't exist
+    os.makedirs("./gradio_jsons", exist_ok=True)
+    
+    output_path = os.path.join("./gradio_jsons", output_filename)
+    with open(output_path, 'w') as f:
         json.dump(json_data, f, indent=4)
-    return {"message": f"File saved as {output_filename}"}, json.dumps(json_data, indent=4), json_data
+    return {"message": f"File saved as {output_path}"}, json.dumps(json_data, indent=4), json_data
 
 def display_json(input_filename):
     base_name = os.path.splitext(os.path.basename(input_filename))[0]
     json_filename = f"{base_name}.json"
+    json_path = os.path.join("./gradio_jsons", json_filename)
     try:
-        with open(json_filename, "r") as file:
+        with open(json_path, "r") as file:
             content = file.read()
         return content, json.loads(content)
     except FileNotFoundError:
@@ -27,10 +33,12 @@ def display_json(input_filename):
 def handle_save_json(content, input_filename):
     base_name = os.path.splitext(os.path.basename(input_filename))[0]
     json_filename = f"{base_name}.json"
+    json_path = os.path.join("./gradio_jsons", json_filename)
     try:
-        with open(json_filename, "w") as file:
+        os.makedirs("./gradio_jsons", exist_ok=True)
+        with open(json_path, "w") as file:
             json.dump(json.loads(content), file, indent=4)
-        status = "Save Successful"
+        status = f"Save Successful: {json_path}"
         content_dict = json.loads(content)
     except Exception as e:
         status = f"Save Failed: {str(e)}"
