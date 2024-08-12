@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 7860
 
 # Run app.py when the container launches
-CMD ["python", "gradio_ui.py"]
+CMD ["python", "gradio_ui_new.py"]
