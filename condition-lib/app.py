@@ -32,7 +32,7 @@ def search_records(project_id):
     cursor = conn.cursor()
     # Ensure project_id is extracted properly and passed as a string
     query = f"""
-    SELECT a.condition_number, a.condition_name, a.condition_text 
+    SELECT a.condition_number, a.condition_name, a.condition_text, a.deliverable_name 
     FROM {schema}.conditions a 
     INNER JOIN {schema}.projects b 
     ON a.project_id = b.project_id 
@@ -59,7 +59,8 @@ def search(project_id):
 
 with gr.Blocks() as demo:
     project_dropdown = gr.Dropdown(label="Select a project")
-    output_table = gr.Dataframe(headers=["Condition Number", "Condition Name", "Condition Text"], wrap=True)
+    output_table = gr.Dataframe(headers=["Condition Number", "Condition Name", "Condition Text",
+                                         "Deliverable Name"], wrap=True)
     
     project_dropdown.change(fn=search, inputs=project_dropdown, outputs=output_table)
     demo.load(fn=update_dropdown, outputs=project_dropdown)

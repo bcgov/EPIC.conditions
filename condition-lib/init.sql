@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS condition.projects
     document_file_name text COLLATE pg_catalog."default",
     date_issued date,
     act integer,
+    first_nations text[] COLLATE pg_catalog."default",
+    consultation_records_required boolean,
     CONSTRAINT projects_pkey PRIMARY KEY (id),
     CONSTRAINT projects_project_id_document_id_key UNIQUE (project_id, document_id)
 )
@@ -76,6 +78,7 @@ CREATE TABLE IF NOT EXISTS condition.conditions
     topic_tags text[] COLLATE pg_catalog."default",
     subtopic_tags text[] COLLATE pg_catalog."default",
 	is_approved boolean,  
+    deliverable_name text COLLATE pg_catalog."default",
     CONSTRAINT conditions_pkey PRIMARY KEY (id),
     CONSTRAINT conditions_project_id_document_id_fkey FOREIGN KEY (document_id, project_id)
         REFERENCES condition.projects (document_id, project_id) MATCH SIMPLE

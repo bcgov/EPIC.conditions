@@ -19,4 +19,4 @@ A gradio application.
 The development scripts for this application allow customization via an environment file in the root directory called `.env`. See an example of the environment variables that can be overridden in `sample.env`.
 
 > Run the application.  
-Open [http://localhost:7860/](http://localhost:7860/) to view it in the browser.<br/>
+Open [http://localhost:7861/](http://localhost:7861/) to view it in the browser.<br/>
