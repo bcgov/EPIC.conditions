@@ -2,13 +2,16 @@ import os
 import json
 import psycopg2
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Database connection
 conn = psycopg2.connect(
-    dbname="app",
-    user="condition",
-    password="condition",
-    host="localhost",
-    port="54337"
+    dbname=os.getenv("DB_NAME", "app"),
+    user=os.getenv("DB_USER", "condition"),
+    password=os.getenv("DB_PASSWORD", "condition"),
+    host=os.getenv("DB_HOST", "localhost"),
+    port=os.getenv("DB_PORT", "54337")  # Specify the port
 )
 cur = conn.cursor()
 
