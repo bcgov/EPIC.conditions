@@ -185,3 +185,5 @@ batch_api_calling/condition_jsons_with_management_plans/*.json
 batch_api_calling/condition_jsons_with_first_nations/*.json
 
 gradio_jsons/*.json
+
+condition-lib/condition_jsons/*.json
