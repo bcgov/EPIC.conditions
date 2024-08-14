@@ -169,7 +169,7 @@ def handle_insert_or_update_db(content, input_filename, user_project_id):
     return status, content_dict
 
 with gr.Blocks(theme=gr.themes.Soft()) as app:
-
+    print("Starting the application")
     file_input = gr.File(label="File Input")
 
     with gr.Tab("Condition Extractor"):
