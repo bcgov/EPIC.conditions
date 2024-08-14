@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "7861:7860"
+    environment:
+      - DB_NAME=admin
+      - DB_USER=condition
+      - DB_PASSWORD=condition
+      - DB_HOST=db
+      - DB_PORT=5432  # Internal PostgreSQL port
+      - DB_SCHEMA=condition
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: admin
+      POSTGRES_USER: condition
+      POSTGRES_PASSWORD: condition
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "54337:5432"  # Map container's 5432 to host's 54337
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount the SQL file
+    restart: unless-stopped
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
