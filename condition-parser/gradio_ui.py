@@ -20,6 +20,10 @@ def save_json_locally(json_data, input_filename):
         json.dump(json_data, f, indent=4)
     return {"message": f"File saved as {output_path}"}, json.dumps(json_data, indent=4), json_data
 
+def send_to_json_editor(json_data):
+    return json.dumps(json_data, indent=4), json_data
+
+
 def display_json(input_filename):
     base_name = os.path.splitext(os.path.basename(input_filename))[0]
     json_filename = f"{base_name}.json"
@@ -191,10 +195,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
             subconditions = gr.JSON(label="Conditions with Extracted Subconditions")
                 
     with gr.Tab("JSON Editor"):
-        project_input = gr.Textbox(label="Project", placeholder="Enter project ID (optional)")  # Moved here
+        project_input = gr.Textbox(label="Project", placeholder="Enter project ID (optional)")
+        
+        with gr.Row():
+            save_button = gr.Button("Save Changes 💾")
+            upload_button = gr.Button("Upload to Conditions Database 📤", variant="secondary")
 
-        save_button = gr.Button("Save Changes 💾")
-        status_output = gr.Textbox(label="Save Status", lines=1, interactive=False)
+        status_output = gr.Textbox(label="Status", lines=1, interactive=False)
 
         with gr.Row():
             json_viewer = gr.JSON(label="JSON Viewer")
@@ -217,6 +224,17 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         fn=extract_all_subconditions,
         inputs=[first_nations],
         outputs=[subconditions]
+    ).then(
+        fn=send_to_json_editor,
+        inputs=[subconditions],
+        outputs=[json_editor, json_viewer]
+    )
+
+    # Set up the save button click event
+    save_button.click(
+        fn=lambda x: x,  # Directly pass the edited JSON to the viewer
+        inputs=json_editor,
+        outputs=json_viewer
     )
 
     # Load and display the JSON content when a file is uploaded
@@ -227,7 +245,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
     )
 
     # Set up the save button click event
-    save_button.click(
+    upload_button.click(
         fn=handle_insert_or_update_db,
         inputs=[json_editor, file_input, project_input],
         outputs=[status_output, json_viewer]
