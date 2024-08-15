@@ -117,6 +117,17 @@ Folder `/condition_jsons_with_first_nations` containing updated JSONs with the e
 
 NOTE: Similar to previous steps, you may run into rate limits. If this happens, wait a few minutes and run the script again to continue from where it left off.
 
+## 8.
+```
+python extract_subconditions.py --jsons_folder_path ./condition_jsons_with_first_nations --output_folder_path ./condition_jsons_with_subconditions
+```
+**Description:**
+Splits the condition text into clauses and subconditions (e.g. 1, A, ii.).<br>
+**Output:**
+Folder `/condition_jsons_with_subconditions` containing updated JSONs with the nested clauses and subconditions.
+
+NOTE: Similar to previous steps, you may run into rate limits. If this happens, wait a few minutes and run the script again to continue from where it left off.
+
 
 # Extras
 ```

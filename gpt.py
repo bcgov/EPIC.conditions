@@ -502,4 +502,5 @@ def extract_all_subconditions(input_json):
     
 
   # Return new JSON with subconditions
-  return json.dumps(input_json)
+  # return json.dumps(input_json)
+  return input_json
