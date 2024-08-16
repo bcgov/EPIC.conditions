@@ -133,15 +133,15 @@ def extract_management_plan_info_using_gpt(condition_text):
 
 def extract_management_plan_info(condition_text):
     if management_plan_required(condition_text):
-        print(Fore.GREEN + "This condition requires a management plan!" + Fore.RESET)
+        print(Fore.GREEN + "This condition requires a deliverable!" + Fore.RESET)
         return extract_management_plan_info_using_gpt(condition_text)
     else:
-        print(Fore.RED + "This condition does not require a management plan." + Fore.RESET)
+        print(Fore.RED + "This condition does not require a deliverable." + Fore.RESET)
         return None
 
 def extract_management_plan_info_from_json(input_json):
     for condition in input_json["conditions"]:
-        print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires a management plan:" + Fore.RESET)
+        print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires deliverable(s):" + Fore.RESET)
         
         condition_name = condition["condition_name"] + "\n\n" if condition["condition_name"] else ""
         condition_text = condition_name + condition["condition_text"]
