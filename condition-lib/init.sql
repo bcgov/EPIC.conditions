@@ -100,3 +100,40 @@ CREATE TRIGGER update_conditions_updated_date
     ON condition.conditions
     FOR EACH ROW
     EXECUTE FUNCTION condition.update_updated_date();
+
+
+-- Table: condition.deliverables
+CREATE TABLE IF NOT EXISTS condition.deliverables
+(
+    id serial PRIMARY KEY,
+    condition_id integer NOT NULL,
+    deliverable_name text,
+    is_plan boolean,
+    approval_type text,
+    stakeholders_to_consult text[],
+    stakeholders_to_submit_to text[],
+    fn_consultation_required boolean,
+    related_phase text,
+    days_prior_to_commencement integer,
+    FOREIGN KEY (condition_id) REFERENCES condition.conditions(id) ON DELETE CASCADE
+);
+
+-- -- Table: condition.clauses
+-- CREATE TABLE IF NOT EXISTS condition.clauses
+-- (
+--     id serial PRIMARY KEY,
+--     condition_id integer NOT NULL,
+--     clause_identifier text,
+--     clause_text text,
+--     FOREIGN KEY (condition_id) REFERENCES condition.conditions(id) ON DELETE CASCADE
+-- );
+
+-- -- Table: condition.subconditions
+-- CREATE TABLE IF NOT EXISTS condition.subconditions
+-- (
+--     id serial PRIMARY KEY,
+--     clause_id integer NOT NULL,
+--     subcondition_identifier text,
+--     subcondition_text text,
+--     FOREIGN KEY (clause_id) REFERENCES condition.clauses(id) ON DELETE CASCADE
+-- );

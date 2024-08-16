@@ -32,17 +32,25 @@ def search_records(project_id):
     cursor = conn.cursor()
     # Ensure project_id is extracted properly and passed as a string
     query = f"""
-    SELECT a.condition_number, a.condition_name, a.condition_text, a.deliverable_name 
+    SELECT 
+        a.condition_number, 
+        a.condition_name, 
+        a.condition_text, 
+        string_agg(c.deliverable_name, ', ') as deliverable_names
     FROM {schema}.conditions a 
     INNER JOIN {schema}.projects b 
     ON a.project_id = b.project_id 
-    WHERE b.project_id = %s::text;
+    LEFT JOIN {schema}.deliverables c 
+    ON a.id = c.condition_id
+    WHERE b.project_id = %s::text
+    GROUP BY a.condition_number, a.condition_name, a.condition_text;
     """
     cursor.execute(query, (str(project_id),))  # Convert project_id to string explicitly
     results = cursor.fetchall()
     cursor.close()
     conn.close()
-    return results if results else [["No results found.", ""]]
+    return results if results else [["No results found.", "", "", ""]]
+
 
 # Function to update the dropdown with the latest projects
 def update_dropdown():

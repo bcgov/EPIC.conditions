@@ -28,6 +28,8 @@ def load_data(folder_path):
             with open(os.path.join(folder_path, filename), 'r') as file:
                 data = json.load(file)
 
+            print(f"Loading {filename}...")
+
             project_id = data['project_id']
             document_id = data['document_id']
 
@@ -39,13 +41,17 @@ def load_data(folder_path):
                 print(f"Skipping {filename} due to matching project_id and document_id.")
                 continue
 
+            # If project_name is not provided, use the filename
+            project_name = data.get('project_name', filename.split('.')[0])
+
+
             # Insert into projects table
             cur.execute("""
                 INSERT INTO projects (
                     project_id, project_name, document_id, display_name, document_file_name, date_issued, act
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (
-                project_id, data['project_name'], document_id, data['display_name'], data['document_file_name'],
+                project_id, project_name, document_id, data['display_name'], data['document_file_name'],
                 data['date_issued'], data['act']
             ))
 
@@ -54,15 +60,50 @@ def load_data(folder_path):
                 topic_tags_pg = convert_to_pg_array(condition['topic_tags'])
                 subtopic_tags_pg = convert_to_pg_array(condition['subtopic_tags'])
 
+                # Insert into conditions table
                 cur.execute("""
-                    INSERT INTO conditions (
+                    INSERT INTO condition.conditions (
                         project_id, document_id, condition_name, condition_number, condition_text,
-                        topic_tags, subtopic_tags
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        topic_tags, subtopic_tags, is_approved, deliverable_name
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
                 """, (
                     project_id, document_id, condition['condition_name'], condition['condition_number'],
-                    condition['condition_text'], topic_tags_pg, subtopic_tags_pg
+                    condition['condition_text'], topic_tags_pg, subtopic_tags_pg, condition.get('is_approved', False), condition.get('deliverable_name')
                 ))
+
+                # Get the ID of the inserted condition to link deliverables
+                condition_id = cur.fetchone()[0]
+
+
+
+                # Insert into deliverables table
+                if 'deliverables' in condition:
+                    for deliverable in condition['deliverables']:
+                        
+                        stakeholders_to_consult_pg = convert_to_pg_array(deliverable.get('stakeholders_to_consult', []))
+                        stakeholders_to_submit_to_pg = convert_to_pg_array(deliverable.get('stakeholders_to_submit_to', []))
+
+                        cur.execute("""
+                            INSERT INTO condition.deliverables (
+                                condition_id, deliverable_name, is_plan, approval_type, 
+                                stakeholders_to_consult, stakeholders_to_submit_to,
+                                fn_consultation_required, related_phase, days_prior_to_commencement
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (
+                            condition_id, 
+                            deliverable.get('deliverable_name'), 
+                            deliverable.get('is_plan'), 
+                            deliverable.get('approval_type'),
+                            stakeholders_to_consult_pg, 
+                            stakeholders_to_submit_to_pg,
+                            deliverable.get('fn_consultation_required'), 
+                            deliverable.get('related_phase'),
+                            deliverable.get('days_prior_to_commencement')
+                        ))
+
+
+
 
     conn.commit()
 
