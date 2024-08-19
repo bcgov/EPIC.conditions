@@ -99,7 +99,7 @@ def extract_management_plan_info_using_gpt(condition_text):
                       },
                       "related_phase": {
                         "type": "string",
-                        "description": "The phase of the project that the plan/report/proposal/etc.'s due date is related to. E.g. Construction, Operation, Decommissioning, etc. Write it in title case. Is null if not specified."
+                        "description": "The phase of the project that the plan/report/proposal/etc.'s due date is related to. E.g. Construction, Construction of Upgrades, Operation, Decommissioning, etc. Write it in title case. Is null if not specified."
                       },
                       "days_prior_to_commencement": {
                         "type": "integer",
