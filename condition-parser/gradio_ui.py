@@ -23,6 +23,9 @@ def save_json_locally(json_data, input_filename):
 def send_to_json_editor(json_data):
     return json.dumps(json_data, indent=4), json_data
 
+def convert_to_pg_array(json_array):
+    """Convert a JSON array to PostgreSQL array format."""
+    return '{' + ','.join(json.dumps(item) for item in json_array) + '}'
 
 def display_json(input_filename):
     base_name = os.path.splitext(os.path.basename(input_filename))[0]
@@ -87,7 +90,7 @@ def insert_or_update_project_in_db(project_id, first_nations, consultation_recor
 
 def insert_or_update_condition_in_db(project_id, condition_number, condition_text,
                                      deliverable_names_str, condition_name,
-                                     topic_tags, subtopic_tags):
+                                     topic_tags, subtopic_tags, deliverables):
     try:
         conn = psycopg2.connect(
             host=os.getenv("DB_HOST"),
@@ -101,35 +104,69 @@ def insert_or_update_condition_in_db(project_id, condition_number, condition_tex
 
         # Check if the condition exists
         cursor.execute(
-            sql.SQL(f"SELECT EXISTS(SELECT 1 FROM {schema}.conditions WHERE project_id = %s AND condition_number = %s)"),
+            sql.SQL(f"SELECT id FROM {schema}.conditions WHERE project_id = %s AND condition_number = %s"),
             [project_id, condition_number]
         )
-        exists = cursor.fetchone()[0]
+        condition_id = cursor.fetchone()
 
-        if exists:
+        if condition_id:
+            condition_id = condition_id[0]
             # Update the condition text
-            query = sql.SQL("""
-                UPDATE conditions 
+            query = sql.SQL(f"""
+                UPDATE {schema}.conditions 
                 SET condition_text = %s, deliverable_name = %s, condition_name = %s
-                WHERE project_id = %s AND condition_number = %s
+                WHERE id = %s
             """)
-            params = [condition_text, deliverable_names_str, condition_name, project_id, condition_number]
+            params = [condition_text, deliverable_names_str, condition_name, condition_id]
             cursor.execute(query, params)
             conn.commit()
             status = "Condition updated successfully in the database."
+
+            # Delete existing deliverables associated with this condition (optional)
+            cursor.execute(
+                sql.SQL(f"DELETE FROM {schema}.deliverables WHERE condition_id = %s"),
+                [condition_id]
+            )
+            conn.commit()
+
         else:
-            # Insert a new record into the table
+            # Insert a new condition record into the table
             query = sql.SQL(f"""
                 INSERT INTO {schema}.conditions (project_id, document_id, condition_name, condition_number, condition_text, topic_tags, subtopic_tags, deliverable_name)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
             """)
-            
-            # Assuming you have project_name available as a variable
             params = [project_id, project_id, condition_name, condition_number, condition_text,
                       topic_tags, subtopic_tags, deliverable_names_str]
             cursor.execute(query, params)
+            condition_id = cursor.fetchone()[0]
             conn.commit()
-            status = "Condition successfully inserted in to the database."
+            status = "Condition successfully inserted into the database."
+
+        # Insert the deliverables for this condition
+        for deliverable in deliverables:
+            stakeholders_to_consult_pg = convert_to_pg_array(deliverable.get('stakeholders_to_consult', []))
+            stakeholders_to_submit_to_pg = convert_to_pg_array(deliverable.get('stakeholders_to_submit_to', []))
+
+            cursor.execute(sql.SQL(f"""
+                INSERT INTO {schema}.deliverables (
+                    condition_id, deliverable_name, is_plan, approval_type, 
+                    stakeholders_to_consult, stakeholders_to_submit_to,
+                    fn_consultation_required, related_phase, days_prior_to_commencement
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """), (
+                condition_id,
+                deliverable.get('deliverable_name'), 
+                deliverable.get('is_plan'), 
+                deliverable.get('approval_type'),
+                stakeholders_to_consult_pg, 
+                stakeholders_to_submit_to_pg,
+                deliverable.get('fn_consultation_required'), 
+                deliverable.get('related_phase'),
+                deliverable.get('days_prior_to_commencement')
+            ))
+
+        conn.commit()
 
         cursor.close()
         conn.close()
@@ -163,7 +200,7 @@ def handle_insert_or_update_db(content, input_filename, user_project_id):
             if condition_number is not None and condition_text is not None:
                 status = insert_or_update_condition_in_db(project_id, condition_number, condition_text,
                                                           deliverable_names_str, condition_name,
-                                                          topic_tags, subtopic_tags)
+                                                          topic_tags, subtopic_tags, deliverables)
                 status_list.append(f"Condition {condition_number}: {status}")
         
         status = " | ".join(status_list)
