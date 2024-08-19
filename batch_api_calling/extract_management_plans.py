@@ -74,10 +74,6 @@ def extract_management_plan_info_using_gpt(condition_text):
                         "type": "string",
                         "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring Plan for Operations, etc. Write it in title case (E.g. The Catcher in the Rye)."
                       },
-                      "is_plan": {
-                        "type": "boolean",
-                        "description": "Whether or not the deliverable is a \"Plan\" document (e.g., Management Plan, Monitoring Plan, Mitigation Plan, etc.). False if not specified."
-                      },
                       "approval_type": {
                         "type": "string", 
                         "enum": ["Acceptance", "Satisfaction", "Other"],
@@ -110,7 +106,7 @@ def extract_management_plan_info_using_gpt(condition_text):
                         "description": "The number of days prior to the planned commencement that the plan/report/proposal/etc. must be provided to the EAO. Is negative if due after commencement. Is 0 if simple due before commencement without a specific number of days. Is null if not specified."
                       },
                   },
-                  "required": ["deliverable_name", "is_plan", "approval_type", "stakeholders_to_consult", "stakeholders_to_submit_to", "fn_consultation_required", "related_phase", "days_prior_to_commencement"]
+                  "required": ["deliverable_name", "approval_type", "stakeholders_to_consult", "stakeholders_to_submit_to", "fn_consultation_required", "related_phase", "days_prior_to_commencement"]
               }
             }
           },
