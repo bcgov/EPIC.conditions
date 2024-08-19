@@ -111,8 +111,9 @@ with gr.Blocks() as demo:
         verification_status_output = gr.HTML()
         with gr.Row():
             status_output = gr.Textbox(label="Save Status", lines=1, interactive=False)
-        json_editor = gr.Textbox(label="JSON Content Editor", lines=20)
-        json_viewer = gr.JSON(label="JSON Viewer")
+        with gr.Row():
+            json_viewer = gr.JSON(label="JSON Viewer")
+            json_editor = gr.Textbox(label="JSON Content Editor", lines=500)
 
         # Define the event to load and display JSON content
         def display_json(file_name):
