@@ -167,4 +167,4 @@ with gr.Blocks() as demo:
         next_button.click(handle_next, inputs=file_dropdown, outputs=[file_dropdown, json_editor, json_viewer, verification_status_output])
         previous_button.click(handle_previous, inputs=file_dropdown, outputs=[file_dropdown, json_editor, json_viewer, verification_status_output])
 
-demo.launch()
+demo.launch(server_port=7862)
