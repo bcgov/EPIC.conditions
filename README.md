@@ -41,3 +41,7 @@ Follow the [condition-lib README](./condition-lib) to add the extracted JSON to 
 ### Multiple PDFs (Batch Processing):
 
 See [batch processing README](./batch_api_calling)
+
+
+### Demo Presentation Slides
+[Sharepoint](https://bcgov.sharepoint.com/:b:/t/04612/ERr2QDvCCa5ImPtp5_voevEB9SahnJKkNa0eWcfJVioIpg?e=cWr7Cn)
