@@ -32,9 +32,11 @@
 
 ### Individual PDFs:
 
-Run the gradio UI by execute the following command in the root of the directory:
+Follow the [condition-parser README](./condition-parser) to extract info and get a JSON
 
-`python gradio_ui.py`
+Follow the [condition-lib README](./condition-lib) to add the extracted JSON to the PostgreSQL database
+
+*Note: gradio_ui.py in this directory is depreciated.* 
 
 ### Multiple PDFs (Batch Processing):
 

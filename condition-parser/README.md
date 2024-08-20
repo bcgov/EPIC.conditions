@@ -32,10 +32,6 @@
 
 ### Individual PDFs:
 
-Run the gradio UI by execute the following command in the root of the directory:
+Run the gradio UI by executing the following command in the root of the directory (/condition-parser):
 
 `python gradio_ui.py`
-
-### Multiple PDFs (Batch Processing):
-
-See [batch processing README](./batch_api_calling)
