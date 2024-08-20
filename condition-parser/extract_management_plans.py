@@ -78,10 +78,6 @@ def extract_management_plan_info_using_gpt(condition_text):
                         "type": "boolean",
                         "description": "Whether or not the deliverable is a \"Plan\" document (e.g., Management Plan, Monitoring Plan, Mitigation Plan, etc.). False if not specified."
                       },
-                      "is_draft": {
-                        "type": "boolean",
-                        "description": "Whether the plan/report/proposal/etc. is required to be submitted as a draft. False if not specified."
-                      },
                       "approval_type": {
                         "type": "string", 
                         "enum": ["Acceptance", "Satisfaction"],
