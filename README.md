@@ -32,15 +32,17 @@
 
 ### Individual PDFs:
 
-Follow the [condition-parser README](./condition-parser) to extract info and get a JSON
+Follow the [condition-parser README](./condition-parser) to extract info and get a JSON.
 
-Follow the [condition-lib README](./condition-lib) to add the extracted JSON to the PostgreSQL database
+Follow the [condition-lib README](./condition-lib) to add the extracted JSON to the PostgreSQL database.
 
 *Note: gradio_ui.py in this directory is depreciated.* 
 
 ### Multiple PDFs (Batch Processing):
 
-See [batch processing README](./batch_api_calling)
+See [batch processing README](./batch_api_calling).
+
+For verifying the output of a batch, see [manual verification README](./batch_api_calling/manual_verification/).
 
 
 ## Demo Presentation Slides
