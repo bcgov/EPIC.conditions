@@ -1,6 +1,5 @@
 # Manual Verification UI
 
-
 ## Usage
 
 ### Start Gradio UI
@@ -11,7 +10,7 @@
 4. Navigate to *http://127.0.0.1:7862/*
 
 ### Use Gradio UI
-1. Run `python generate_verification_status_json.py` to generate *VERIFICATION_STATUSES.json*. It contains an entry for each JSON and wether or not it has been flagged as verified.
+1. Run `python generate_verification_status_json.py` to generate *VERIFICATION_STATUSES.json*. It contains an entry for each JSON and whether or not it has been flagged as verified.
 2. Select a JSON from the dropdown
 3. Use **◀️ Previous** and **Next ▶️** buttons  to cycle between JSONs
 4. Click **Open Corresponding PDF 🗎** to open corresponding PDF
