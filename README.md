@@ -45,5 +45,14 @@ See [batch processing README](./batch_api_calling).
 For verifying the output of a batch, see [manual verification README](./batch_api_calling/manual_verification/).
 
 
-## Demo Presentation Slides
-[Sharepoint](https://bcgov.sharepoint.com/:b:/t/04612/ERr2QDvCCa5ImPtp5_voevEB9SahnJKkNa0eWcfJVioIpg?e=cWr7Cn)
+## Demo
+[![Condition Extractor Demo](https://github.com/user-attachments/assets/a25b0093-b04b-4ddb-89cd-153ddaa582cd)](https://bcgov.sharepoint.com/:b:/t/04612/ERr2QDvCCa5ImPtp5_voevEB9SahnJKkNa0eWcfJVioIpg?e=cWr7Cn)
+[Recording]() - [(Slides)](https://bcgov.sharepoint.com/:b:/t/04612/ERr2QDvCCa5ImPtp5_voevEB9SahnJKkNa0eWcfJVioIpg?e=cWr7Cn)
+
+## Resources
+- [AI crashcourse presentation](https://bcgov.sharepoint.com/:v:/t/04612/EX_-99Ne-IJPlyOr09vqRZgBCvCGLNEmWr5baMlF5VgraQ?e=Xw8rB2) - [(Slides)](https://bcgov.sharepoint.com/:b:/t/04612/EdJII7T6wfJCl3xOS9ANGKYB0w8oYdEgroBIoOVZPMmCNg?e=K0W55d)
+- [Sample Output JSONs (August 2024)](https://bcgov.sharepoint.com/:f:/t/04612/EnKdD_vryA5JrSXxcloZUi8BQzcUhJjHAK4pDeGy1PuK2w?e=n4cJ5l)
+- [API Cost Analysis (Out of date)](https://bcgov.sharepoint.com/:x:/t/04612/ETA885_P64BBhUWoGvWHT_ABuYQZC2jjLCC-q8zGOr4MeA?e=WG5ZeX)
+
+- [OpenAI function calling documentation](https://platform.openai.com/docs/guides/function-calling)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat)
