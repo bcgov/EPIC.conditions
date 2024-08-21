@@ -55,4 +55,5 @@ For verifying the output of a batch, see [manual verification README](./batch_ap
 - [API Cost Analysis (Out of date)](https://bcgov.sharepoint.com/:x:/t/04612/ETA885_P64BBhUWoGvWHT_ABuYQZC2jjLCC-q8zGOr4MeA?e=WG5ZeX)
 
 - [OpenAI function calling documentation](https://platform.openai.com/docs/guides/function-calling)
-- [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat)
+- [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat)[.](https://github.com/user-attachments/assets/cac337de-097d-4bfb-b946-56b98a2f1e1d)
+
