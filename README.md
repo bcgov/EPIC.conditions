@@ -52,7 +52,7 @@ For verifying the output of a batch, see [manual verification README](./batch_ap
 ## Resources
 - [AI crashcourse presentation](https://bcgov.sharepoint.com/:v:/t/04612/EX_-99Ne-IJPlyOr09vqRZgBCvCGLNEmWr5baMlF5VgraQ?e=Xw8rB2) - [(Slides)](https://bcgov.sharepoint.com/:b:/t/04612/EdJII7T6wfJCl3xOS9ANGKYB0w8oYdEgroBIoOVZPMmCNg?e=K0W55d)
 - [Sample output JSONs (August 2024)](https://bcgov.sharepoint.com/:f:/t/04612/EnKdD_vryA5JrSXxcloZUi8BQzcUhJjHAK4pDeGy1PuK2w?e=n4cJ5l)
-- [API cost analysis (Out of date)](https://bcgov.sharepoint.com/:x:/t/04612/ETA885_P64BBhUWoGvWHT_ABuYQZC2jjLCC-q8zGOr4MeA?e=WG5ZeX)
+- [API cost analysis (out of date)](https://bcgov.sharepoint.com/:x:/t/04612/ETA885_P64BBhUWoGvWHT_ABuYQZC2jjLCC-q8zGOr4MeA?e=WG5ZeX)
 
 - [OpenAI function calling documentation](https://platform.openai.com/docs/guides/function-calling)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat)[.](https://github.com/user-attachments/assets/cac337de-097d-4bfb-b946-56b98a2f1e1d)
