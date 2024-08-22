@@ -1,5 +1,9 @@
 # Batch Processing
-This guide provides step-by-step instructions for extracting conditions from a large number of PDFs using the OpenAI API. The process involves several stages, from counting the conditions in each PDF to generating, sending, and retrieving API requests, and finally merging the responses into formatted JSON files. Below are the steps you need to follow to complete the batch processing:
+This guide provides step-by-step instructions for extracting conditions from a large number of PDFs using the OpenAI API. The process involves several stages, from counting the conditions in each PDF to generating, sending, and retrieving API requests, and finally merging the responses into formatted JSON files. 
+
+Official Documentation: [OpenAI Batch API Requests](https://platform.openai.com/docs/guides/batch/getting-started)
+
+Below are the steps you need to follow to complete the batch processing:
 
 ## 0.
 Start by adding any PDF files you want to extract conditions from to /test_documents/pdfs_for_batch_processing. Also extract all_docs_info.zip so that everything.json is in /batch_api_calling. Next, paste in and run the following scripts one by one:
