@@ -9,7 +9,9 @@ folders_to_clean = [
     "batch_responses_jsonl_files",
     "batch_responses_jsonl_files_length_fix",
     "condition_jsons",
-    "condition_jsons_with_management_plans"
+    "condition_jsons_with_management_plans",
+    "condition_jsons_with_first_nations",
+    "condition_jsons_with_subconditions"
 ]
 
 files_to_delete = [
