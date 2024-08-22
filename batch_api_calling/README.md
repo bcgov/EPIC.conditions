@@ -132,6 +132,8 @@ Folder `/condition_jsons_with_subconditions` containing updated JSONs with the n
 
 NOTE: Similar to previous steps, you may run into rate limits. If this happens, wait a few minutes and run the script again to continue from where it left off.
 
+# Verify the Output JSONs
+See [README](./manual_verification) in /manual_verification.
 
 # Extras
 ```
