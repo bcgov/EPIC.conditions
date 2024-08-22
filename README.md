@@ -46,8 +46,8 @@ For verifying the output of a batch, see [manual verification README](./batch_ap
 
 
 ## Demo
-[![Condition extractor demo](https://github.com/user-attachments/assets/a25b0093-b04b-4ddb-89cd-153ddaa582cd)](https://bcgov.sharepoint.com/:b:/t/04612/ERr2QDvCCa5ImPtp5_voevEB9SahnJKkNa0eWcfJVioIpg?e=cWr7Cn)
-[Recording]() - [(Slides)](https://bcgov.sharepoint.com/:b:/t/04612/ERr2QDvCCa5ImPtp5_voevEB9SahnJKkNa0eWcfJVioIpg?e=cWr7Cn)
+[![Condition extractor demo](https://github.com/user-attachments/assets/a25b0093-b04b-4ddb-89cd-153ddaa582cd)](https://bcgov.sharepoint.com/:b:/t/04612/EYzyqtlP82BJt8ocy2AISNwBwiS-2BgJ23NqRZts-Nn6jw?e=CM1Nt3)
+[Recording]() - [(Slides)](https://bcgov.sharepoint.com/:b:/t/04612/EYzyqtlP82BJt8ocy2AISNwBwiS-2BgJ23NqRZts-Nn6jw?e=CM1Nt3)
 
 ## Resources
 - [AI crashcourse presentation](https://bcgov.sharepoint.com/:v:/t/04612/EX_-99Ne-IJPlyOr09vqRZgBCvCGLNEmWr5baMlF5VgraQ?e=Xw8rB2) - [(Slides)](https://bcgov.sharepoint.com/:b:/t/04612/EdJII7T6wfJCl3xOS9ANGKYB0w8oYdEgroBIoOVZPMmCNg?e=K0W55d)
