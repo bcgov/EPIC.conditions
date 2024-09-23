@@ -19,3 +19,4 @@ from .db import db, ma, migrate
 from .project import Project
 from .condition import Condition
 from .deliverable import Deliverable
+from .subcondition import Subcondition

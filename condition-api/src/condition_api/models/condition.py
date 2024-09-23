@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKeyConstraint, ARRAY
+from sqlalchemy.orm import relationship
 from .base_model import BaseModel
 
 class Condition(BaseModel):
@@ -14,7 +15,10 @@ class Condition(BaseModel):
     topic_tags = Column(ARRAY(Text), nullable=True)
     subtopic_tags = Column(ARRAY(Text), nullable=True)
     is_approved = Column(Boolean, nullable=True)
-    deliverable_name = Column(Text, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=False)
+
+    # Establish a one-to-many relationship with subcondition
+    subcondition = relationship('Subcondition', back_populates='condition', cascade='all, delete-orphan')
 
     __table_args__ = (
         ForeignKeyConstraint(

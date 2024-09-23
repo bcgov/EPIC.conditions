@@ -17,7 +17,7 @@ class Deliverable(BaseModel):
     approval_type = Column(Text)
     stakeholders_to_consult = Column(ARRAY(Text))
     stakeholders_to_submit_to = Column(ARRAY(Text))
-    fn_consultation_required = Column(Boolean)
+    consultation_required = Column(Boolean)
     related_phase = Column(Text)
     days_prior_to_commencement = Column(Integer)
 
