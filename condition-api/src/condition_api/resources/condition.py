@@ -42,7 +42,7 @@ class ConditionDetailsResource(Resource):
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
     def get(project_id, document_id, condition_number):
-        """Fetch conditions and deliverables by project ID."""
+        """Fetch conditions and condition requirements by project ID."""
         try:
             condition_details = ConditionService.get_condition_details(project_id, document_id, condition_number)
             if not condition_details:

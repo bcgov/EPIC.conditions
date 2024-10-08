@@ -1,7 +1,10 @@
 """Service for condition management."""
+from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 from condition_api.models.condition import Condition
-from condition_api.models.deliverable import Deliverable
+from condition_api.models.subcondition import Subcondition
+from condition_api.models.condition_requirement import ConditionRequirement
+from condition_api.models.document import Document
 from condition_api.models.db import db
 from condition_api.models.project import Project
 
@@ -10,44 +13,58 @@ class ConditionService:
 
     @staticmethod
     def get_condition_details(project_id, document_id, condition_number):
-        """Fetch condition details along with related deliverables by project ID."""
+        """Fetch condition details along with related condition requirements by project ID."""
 
         # Aliases for the tables
         projects = aliased(Project)
-        conditions = Condition
-        deliverables = aliased(Deliverable)
+        documents = aliased(Document)
+        conditions = aliased(Condition)
+        subconditions = aliased(Subcondition)
+        condition_requirements = aliased(ConditionRequirement)
 
-        # Query the deliverables with associated conditions
         condition_data = (
             db.session.query(
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
-                conditions.deliverable_name,
                 conditions.is_approved,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
-                deliverables.deliverable_name,
-                deliverables.is_plan,
-                deliverables.approval_type,
-                deliverables.stakeholders_to_consult,
-                deliverables.stakeholders_to_submit_to,
-                deliverables.fn_consultation_required,
-                deliverables.related_phase,
-                deliverables.days_prior_to_commencement,
+                condition_requirements.deliverable_name,
+                condition_requirements.is_plan,
+                condition_requirements.approval_type,
+                condition_requirements.stakeholders_to_consult,
+                condition_requirements.stakeholders_to_submit_to,
+                condition_requirements.consultation_required,
+                condition_requirements.related_phase,
+                condition_requirements.days_prior_to_commencement,
+                subconditions.id.label('subcondition_id'),
+                subconditions.subcondition_identifier,
+                subconditions.subcondition_text,
+                subconditions.parent_subcondition_id
             )
             .outerjoin(
-                deliverables,
-                conditions.id == deliverables.condition_id,
+                condition_requirements,
+                and_(
+                        conditions.id == condition_requirements.condition_id,
+                        conditions.document_id == condition_requirements.document_id
+                )
+            )
+            .outerjoin(
+                subconditions,
+                conditions.id == subconditions.condition_id,
+            )
+            .outerjoin(
+                documents,
+                conditions.document_id == documents.document_id
             )
             .outerjoin(
                 projects,
-                (projects.project_id == conditions.project_id)
-                & (projects.document_id == conditions.document_id),
+                projects.project_id == documents.project_id
             )
             .filter(
                 (projects.project_id == project_id)
-                & (projects.document_id == document_id)
+                & (documents.document_id == document_id)
                 & (conditions.condition_number == condition_number)
             )
             .all()
@@ -56,29 +73,52 @@ class ConditionService:
         if not condition_data:
             return None
 
-        # Extract condition details and deliverables
+        # Extract condition details
         condition = {
             "condition_name": condition_data[0].condition_name,
             "condition_number": condition_data[0].condition_number,
             "condition_text": condition_data[0].condition_text,
             "is_approved": condition_data[0].is_approved,
-            "deliverable_name": condition_data[0].deliverable_name,
             "topic_tags": condition_data[0].topic_tags,
             "subtopic_tags": condition_data[0].subtopic_tags,
-            "deliverables": []
+            "condition_requirements": [],
+            "subconditions": []
         }
 
-        # Append deliverables to the project
-        for deliverable in condition_data:
-            condition["deliverables"].append({
-                "deliverable_name": deliverable.deliverable_name,
-                "is_plan": deliverable.is_plan,
-                "approval_type": deliverable.approval_type,
-                "stakeholders_to_consult": deliverable.stakeholders_to_consult,
-                "stakeholders_to_submit_to": deliverable.stakeholders_to_submit_to,
-                "fn_consultation_required": deliverable.fn_consultation_required,
-                "related_phase": deliverable.related_phase,
-                "days_prior_to_commencement": deliverable.days_prior_to_commencement
-            })
+        subcondition_map = {}
+        # Extract condition_requirements and subconditions
+        for row in condition_data:
+            subcond_id = row.subcondition_id
+            # Handle the hierarchical subcondition structure
+            if subcond_id:
+                # Store each subcondition and its potential parent reference
+                subcondition = {
+                    "subcondition_identifier": row.subcondition_identifier,
+                    "subcondition_text": row.subcondition_text,
+                    "subconditions": [],
+                }
+                subcondition_map[subcond_id] = subcondition
+
+                # If the subcondition has a parent, append it to the parent's subcondition list
+                if row.parent_subcondition_id:
+                    parent = subcondition_map.get(row.parent_subcondition_id)
+                    if parent:
+                        parent["subconditions"].append(subcondition)
+                else:
+                    # If there is no parent, it's a top-level subcondition for this condition
+                    condition["subconditions"].append(subcondition)
+
+            # Add condition requirements to the condition
+            if row.deliverable_name:
+                condition["condition_requirements"].append({
+                    "deliverable_name": row.deliverable_name,
+                    "is_plan": row.is_plan,
+                    "approval_type": row.approval_type,
+                    "stakeholders_to_consult": row.stakeholders_to_consult,
+                    "stakeholders_to_submit_to": row.stakeholders_to_submit_to,
+                    "consultation_required": row.consultation_required,
+                    "related_phase": row.related_phase,
+                    "days_prior_to_commencement": row.days_prior_to_commencement
+                })
 
         return condition
