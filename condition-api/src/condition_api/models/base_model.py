@@ -18,10 +18,6 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from .db import db
 
-
-TENANT_ID = 'tenant_id'
-
-
 class BaseModel(db.Model):
     """This class manages all of the base model functions."""
 

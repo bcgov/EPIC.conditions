@@ -2,8 +2,9 @@
 
 Manages the project
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text, Date, ARRAY
+from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
 from .base_model import BaseModel
@@ -15,18 +16,14 @@ class Project(BaseModel):
     __tablename__ = 'projects'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    project_id = Column(String(255), nullable=False)
+    project_id = Column(String(255), nullable=False, unique=True)
     project_name = Column(Text)
-    document_id = Column(String(255), nullable=False)
-    display_name = Column(Text)
-    document_file_name = Column(Text)
-    date_issued = Column(Date)
-    act = Column(Integer)
-    first_nations = Column(ARRAY(Text))
-    consultation_records_required = Column(Boolean)
+
+    # Establish a one-to-many relationship with the Document table
+    documents = relationship('Document', back_populates='project', cascade='all, delete-orphan')
 
     __table_args__ = (
-        UniqueConstraint('project_id', 'document_id', name='uq_project_document'),
+        UniqueConstraint('project_id', name='uq_project'),
         {'schema': 'condition'},
     )
 
