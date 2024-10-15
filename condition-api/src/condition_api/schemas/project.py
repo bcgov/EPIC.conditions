@@ -14,8 +14,8 @@ class SubconditionSchema(Schema):
     # Recursively define subconditions (i.e., subconditions can have child subconditions)
     subconditions = fields.List(fields.Nested(lambda: SubconditionSchema()), data_key="subconditions")
 
-class DeliverableSchema(Schema):
-    """Deliverable schema."""
+class ConditionRequirementSchema(Schema):
+    """Condition Requirement schema."""
     deliverable_name = fields.Str(data_key="deliverable_name")
     is_plan = fields.Bool(data_key="is_plan")
     approval_type = fields.Str(data_key="approval_type")
@@ -34,9 +34,9 @@ class ConditionSchema(Schema):
     topic_tags = fields.List(fields.Str(), data_key="topic_tags")
     subtopic_tags = fields.List(fields.Str(), data_key="subtopic_tags")
 
-    # Add subconditions and deliverables to the condition
+    # Add subconditions and condition requirements to the condition
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
-    deliverables = fields.List(fields.Nested(DeliverableSchema), data_key="deliverables")
+    condition_requirements = fields.List(fields.Nested(ConditionRequirementSchema), data_key="condition_requirements")
 
 
 class DocumentSchema(Schema):
@@ -44,6 +44,11 @@ class DocumentSchema(Schema):
     document_id = fields.Str(data_key="document_id")
     display_name = fields.Str(data_key="display_name")
     document_file_name = fields.Str(data_key="document_file_name")
+    document_type = fields.Str(data_key="document_type")
+    date_issued = fields.Str(data_key="date_issued")
+    act = fields.Int(data_key="act")
+    first_nations = fields.List(fields.Str(), data_key="first_nations")
+    consultation_records_required = fields.Bool(data_key="consultation_records_required")
     
     # Each document can have multiple conditions
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")

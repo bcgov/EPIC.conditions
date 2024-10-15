@@ -23,124 +23,133 @@ class ProjectService:
         subconditions = aliased(Subcondition)
         condition_requirements = aliased(ConditionRequirement)
 
-        # Query the project with associated documents, conditions, subconditions, and condition requirements
-        project_data = (
-            db.session.query(
-                projects.project_id,
-                projects.project_name,
-                documents.document_id,
-                documents.display_name,
-                documents.document_file_name,
-                conditions.id.label('condition_id'),
-                conditions.condition_name,
-                conditions.condition_number,
-                conditions.condition_text,
-                conditions.topic_tags,
-                conditions.subtopic_tags,
-                subconditions.id.label('subcondition_id'),
-                subconditions.subcondition_identifier,
-                subconditions.subcondition_text,
-                subconditions.parent_subcondition_id,
-                condition_requirements.deliverable_name,
-                condition_requirements.is_plan,
-                condition_requirements.approval_type,
-                condition_requirements.stakeholders_to_consult,
-                condition_requirements.stakeholders_to_submit_to,
-                condition_requirements.consultation_required,
-                condition_requirements.related_phase,
-                condition_requirements.days_prior_to_commencement,
-            )
-            .outerjoin(documents, projects.project_id == documents.project_id)
-            .outerjoin(conditions, (documents.document_id == conditions.document_id))
-            .outerjoin(subconditions, (conditions.id == subconditions.condition_id))
-            .outerjoin(condition_requirements,
-                        and_(
-                                conditions.id == condition_requirements.condition_id,
-                                conditions.document_id == condition_requirements.document_id
-                            )
-                       )
-            .filter(projects.project_id == project_id)
-            .all()
-        )
+        # Step 1: Fetch Project details
+        project_data = db.session.query(
+            projects.project_id,
+            projects.project_name,
+        ).filter(projects.project_id == project_id).first()
 
         if not project_data:
             return None
 
-        # Extract project details and initialize the project structure
+        # Initialize the project structure
         project = {
-            "project_id": project_data[0].project_id,
-            "project_name": project_data[0].project_name,
+            "project_id": project_data.project_id,
+            "project_name": project_data.project_name,
             "documents": [],
         }
 
-        # Organize data into hierarchical structure
+        # Step 2: Fetch Document details based on project_id
+        document_data = db.session.query(
+            documents.document_id,
+            documents.display_name,
+            documents.document_file_name,
+            documents.document_type,
+            documents.date_issued,
+            documents.act,
+            documents.first_nations,
+            documents.consultation_records_required,
+        ).filter(documents.project_id == project_id).all()
+
+        # Create a map to hold documents
         document_map = {}
+        for doc in document_data:
+            document_map[doc.document_id] = {
+                "document_id": doc.document_id,
+                "display_name": doc.display_name,
+                "document_file_name": doc.document_file_name,
+                "document_type": doc.document_type,
+                "date_issued": doc.date_issued,
+                "act": doc.act,
+                "first_nations": doc.first_nations,
+                "consultation_records_required": doc.consultation_records_required,
+                "conditions": [],
+            }
+            # Append each document to the project documents array
+            project["documents"].append(document_map[doc.document_id])
+
+        # Step 3: Fetch Condition details based on document IDs
+        document_ids = [doc["document_id"] for doc in project["documents"]]
+        condition_data = db.session.query(
+            conditions.id.label('condition_id'),
+            conditions.condition_name,
+            conditions.condition_number,
+            conditions.condition_text,
+            conditions.topic_tags,
+            conditions.subtopic_tags,
+            conditions.document_id,
+        ).filter(conditions.document_id.in_(document_ids)).all()
+
+        # Add conditions to the corresponding document
+        condition_map = {}
+        for cond in condition_data:
+            condition_map[cond.condition_id] = {
+                "condition_id": cond.condition_id,
+                "condition_name": cond.condition_name,
+                "condition_number": cond.condition_number,
+                "condition_text": cond.condition_text,
+                "topic_tags": cond.topic_tags,
+                "subtopic_tags": cond.subtopic_tags,
+                "subconditions": [],
+                "condition_requirements": [],
+            }
+            # Append condition to its respective document
+            document_map[cond.document_id]["conditions"].append(condition_map[cond.condition_id])
+
+        # Step 4: Fetch Subcondition details based on condition IDs
+        condition_ids = [cond["condition_id"] for cond in condition_map.values()]
+        subcondition_data = db.session.query(
+            subconditions.id.label('subcondition_id'),
+            subconditions.subcondition_identifier,
+            subconditions.subcondition_text,
+            subconditions.condition_id,
+            subconditions.parent_subcondition_id,
+        ).filter(subconditions.condition_id.in_(condition_ids)).all()
+
+        # Create a map to handle hierarchical subconditions
         subcondition_map = {}
+        for subcond in subcondition_data:
+            subcondition = {
+                "subcondition_id": subcond.subcondition_id,
+                "subcondition_identifier": subcond.subcondition_identifier,
+                "subcondition_text": subcond.subcondition_text,
+                "subconditions": [],
+            }
+            subcondition_map[subcond.subcondition_id] = subcondition
 
-        for row in project_data:
-            doc_id = row.document_id
-            cond_id = row.condition_id
-            subcond_id = row.subcondition_id
+            if subcond.parent_subcondition_id:
+                # Append to parent subcondition
+                parent = subcondition_map.get(subcond.parent_subcondition_id)
+                if parent:
+                    parent["subconditions"].append(subcondition)
+            else:
+                # Append top-level subcondition to the condition
+                condition_map[subcond.condition_id]["subconditions"].append(subcondition)
 
-            # Add documents to project if not already present
-            if doc_id not in document_map:
-                document_map[doc_id] = {
-                    "document_id": doc_id,
-                    "display_name": row.display_name,
-                    "document_file_name": row.document_file_name,
-                    "conditions": [],
-                }
-                project["documents"].append(document_map[doc_id])
+        # Step 5: Fetch Condition Requirement details
+        condition_requirement_data = db.session.query(
+            condition_requirements.condition_id,
+            condition_requirements.deliverable_name,
+            condition_requirements.is_plan,
+            condition_requirements.approval_type,
+            condition_requirements.stakeholders_to_consult,
+            condition_requirements.stakeholders_to_submit_to,
+            condition_requirements.consultation_required,
+            condition_requirements.related_phase,
+            condition_requirements.days_prior_to_commencement,
+        ).filter(condition_requirements.condition_id.in_(condition_ids)).all()
 
-            condition_map = {c["condition_id"]: c for c in document_map[doc_id]["conditions"]}
-
-            # Add conditions to the document
-            if cond_id not in condition_map:
-                condition_map[cond_id] = {
-                    "condition_id": cond_id,
-                    "condition_name": row.condition_name,
-                    "condition_number": row.condition_number,
-                    "condition_text": row.condition_text,
-                    "topic_tags": row.topic_tags,
-                    "subtopic_tags": row.subtopic_tags,
-                    "subconditions": [],
-                    "condition_requirements": [],
-                }
-                document_map[doc_id]["conditions"].append(condition_map[cond_id])
-
-            condition = condition_map[cond_id]
-
-            # Handle the hierarchical subcondition structure
-            if subcond_id:
-                # Store each subcondition and its potential parent reference
-                subcondition = {
-                    "subcondition_id": subcond_id,
-                    "subcondition_identifier": row.subcondition_identifier,
-                    "subcondition_text": row.subcondition_text,
-                    "subconditions": [],
-                }
-                subcondition_map[subcond_id] = subcondition
-
-                # If the subcondition has a parent, append it to the parent's subcondition list
-                if row.parent_subcondition_id:
-                    parent = subcondition_map.get(row.parent_subcondition_id)
-                    if parent:
-                        parent["subconditions"].append(subcondition)
-                else:
-                    # If there is no parent, it's a top-level subcondition for this condition
-                    condition["subconditions"].append(subcondition)
-
-            # Add condition requirements to the condition
-            if row.deliverable_name:
-                condition["condition_requirements"].append({
-                    "deliverable_name": row.deliverable_name,
-                    "is_plan": row.is_plan,
-                    "approval_type": row.approval_type,
-                    "stakeholders_to_consult": row.stakeholders_to_consult,
-                    "stakeholders_to_submit_to": row.stakeholders_to_submit_to,
-                    "consultation_required": row.consultation_required,
-                    "related_phase": row.related_phase,
-                    "days_prior_to_commencement": row.days_prior_to_commencement,
-                })
+        # Add condition requirements to the corresponding condition
+        for cr in condition_requirement_data:
+            condition_map[cr.condition_id]["condition_requirements"].append({
+                "deliverable_name": cr.deliverable_name,
+                "is_plan": cr.is_plan,
+                "approval_type": cr.approval_type,
+                "stakeholders_to_consult": cr.stakeholders_to_consult,
+                "stakeholders_to_submit_to": cr.stakeholders_to_submit_to,
+                "consultation_required": cr.consultation_required,
+                "related_phase": cr.related_phase,
+                "days_prior_to_commencement": cr.days_prior_to_commencement,
+            })
 
         return project
