@@ -5,6 +5,8 @@ Revises:
 Create Date: 2024-10-02 13:59:58.613976
 
 """
+from datetime import datetime
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -91,10 +93,11 @@ def upgrade():
     sa.Column('first_name', sa.String(length=50), nullable=False),
     sa.Column('middle_name', sa.String(length=50), nullable=True),
     sa.Column('last_name', sa.String(length=50), nullable=False),
-    sa.Column('email_address', sa.String(length=100), nullable=False),
-    sa.Column('contact_number', sa.String(length=50), nullable=False),
-    sa.Column('username', sa.String(length=100), nullable=True),
-    sa.Column('external_id', sa.String(length=50), nullable=False),
+    sa.Column('full_name', sa.String(length=200), nullable=True),
+    sa.Column('position', sa.String(length=100), nullable=False),
+    sa.Column('work_email_address', sa.String(length=100), nullable=False),
+    sa.Column('work_contact_number', sa.String(length=50), nullable=False),
+    sa.Column('auth_guid', sa.String(length=100), nullable=True),
     sa.Column('status_id', sa.Integer(), nullable=False),
     sa.Column('created_date', sa.DateTime(), nullable=False),
     sa.Column('updated_date', sa.DateTime(), nullable=True),
@@ -102,11 +105,11 @@ def upgrade():
     sa.Column('updated_by', sa.String(length=50), nullable=True),
     sa.ForeignKeyConstraint(['status_id'], ['condition.user_status.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('external_id'),
+    sa.UniqueConstraint('auth_guid'),
     schema='condition'
     )
     with op.batch_alter_table('staff_users', schema='condition') as batch_op:
-        batch_op.create_index(batch_op.f('ix_staff_users_username'), ['username'], unique=True)
+        batch_op.create_index(batch_op.f('ix_staff_users_auth_guid'), ['auth_guid'], unique=True)
 
     op.create_table('condition_requirements',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -158,6 +161,22 @@ def upgrade():
     op.execute("""
         GRANT UPDATE ON SEQUENCE condition.projects_id_seq TO condition;
     """)
+
+    user_status = sa.table('user_status',
+                           sa.column('id', sa.Integer),
+                           sa.column('status_name', sa.String),
+                           sa.column('description', sa.String),
+                           sa.column('created_date', sa.DateTime),
+                           sa.column('updated_date', sa.DateTime),
+                           schema='condition')
+
+    # Use op.bulk_insert with the table object
+    op.bulk_insert(user_status, [
+        {'id': 1, 'status_name': 'ACTIVE', 'description': 'Active User', 'created_date': datetime.utcnow(),
+         'updated_date': datetime.utcnow()},
+        {'id': 2, 'status_name': 'INACTIVE', 'description': 'Inactive User', 'created_date': datetime.utcnow(),
+         'updated_date': datetime.utcnow()}
+    ])
     # ### end Alembic commands ###
 
 
