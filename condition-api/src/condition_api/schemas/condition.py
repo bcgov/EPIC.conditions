@@ -5,17 +5,26 @@ Manages the condition
 
 from marshmallow import Schema, fields
 
-class DeliverableSchema(Schema):
-    """Deliverable schema."""
+class ConditionRequirementsSchema(Schema):
+    """Condition Requirements schema."""
 
     deliverable_name = fields.Str(data_key="deliverable_name")
     is_plan = fields.Bool(data_key="is_plan")
     approval_type = fields.Str(data_key="approval_type")
     stakeholders_to_consult = fields.List(fields.Str(), data_key="stakeholders_to_consult")
     stakeholders_to_submit_to = fields.List(fields.Str(), data_key="stakeholders_to_submit_to")
-    fn_consultation_required = fields.Bool(data_key="fn_consultation_required")
+    consultation_required = fields.Bool(data_key="consultation_required")
     related_phase = fields.Str(data_key="related_phase")
     days_prior_to_commencement = fields.Int(data_key="days_prior_to_commencement")
+
+class SubConditionSchema(Schema):
+    """Recursive schema for subconditions."""
+    subcondition_id = fields.Str(data_key="subcondition_id")
+    subcondition_identifier = fields.Str(data_key="subcondition_identifier")
+    subcondition_text = fields.Str(data_key="subcondition_text")
+    
+    # Recursively define subconditions (i.e., subconditions can have child subconditions)
+    subconditions = fields.List(fields.Nested(lambda: SubConditionSchema()), data_key="subconditions")
 
 class ConditionSchema(Schema):
     """Condition schema."""
@@ -27,4 +36,8 @@ class ConditionSchema(Schema):
     subtopic_tags = fields.List(fields.Str(), data_key="subtopic_tags")
     is_approved = fields.Bool(data_key="is_approved")
     deliverable_name = fields.Str(data_key="deliverable_name")
-    deliverables = fields.List(fields.Nested(DeliverableSchema), data_key="deliverables")
+    condition_requirements = fields.List(fields.Nested(ConditionRequirementsSchema),
+                                         data_key="condition_requirements")
+    
+    # Condition can also have its own subconditions (recursive nesting)
+    subconditions = fields.List(fields.Nested(SubConditionSchema), data_key="subconditions")

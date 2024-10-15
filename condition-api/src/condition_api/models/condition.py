@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKeyConstraint, ARRAY
+from sqlalchemy import Column, DateTime, Integer, String, Text, Boolean, ForeignKey, ARRAY
+from sqlalchemy.orm import relationship
 from .base_model import BaseModel
 
 class Condition(BaseModel):
@@ -6,22 +7,22 @@ class Condition(BaseModel):
     __tablename__ = 'conditions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    project_id = Column(String, nullable=False)
-    document_id = Column(String, nullable=False)
+    project_id = Column(String, ForeignKey('condition.projects.project_id', ondelete='CASCADE'), nullable=False)
+    document_id = Column(String, ForeignKey('condition.documents.document_id', ondelete='CASCADE'), nullable=False)
     condition_name = Column(Text, nullable=True)
     condition_number = Column(Integer, nullable=True)
     condition_text = Column(Text, nullable=True)
     topic_tags = Column(ARRAY(Text), nullable=True)
     subtopic_tags = Column(ARRAY(Text), nullable=True)
+    effective_from = Column(DateTime, nullable=True)
+    effective_to = Column(DateTime, nullable=True)
     is_approved = Column(Boolean, nullable=True)
-    deliverable_name = Column(Text, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=False)
+
+    # Establish a one-to-many relationship with subcondition
+    subconditions = relationship('Subcondition', back_populates='condition', cascade='all, delete-orphan')
 
     __table_args__ = (
-        ForeignKeyConstraint(
-            ['project_id', 'document_id'],
-            ['condition.projects.project_id', 'condition.projects.document_id'],
-            ondelete='CASCADE'
-        ),
         {'schema': 'condition'}
     )
 
