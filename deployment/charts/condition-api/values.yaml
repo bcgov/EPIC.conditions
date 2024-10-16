@@ -1,0 +1,45 @@
+replicaCount: 1
+
+image:
+  repository: image-registry.openshift-image-registry.svc:5000/c8b80a-tools/condition-api
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+resources:
+  cpu:
+    limit: 100m
+    request: 75m
+  memory:
+    limit: 384Mi
+    request: 256Mi
+
+database:
+  secret: condition-patroni
+  service:
+    name: condition-patroni
+    port: 5432
+
+
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+auth:
+  jwt:
+    alg: RS256
+    aud: condition-web
+    cacheEnabled: true
+    issuer: https://test.loginproxy.gov.bc.ca/auth/realms/eao-epic
+    cacheTimeout: "300"
+    wellKnownConfig: https://test.loginproxy.gov.bc.ca/auth/realms/eao-epic/.well-known/openid-configuration
+  keycloak:
+    uri: https://test.loginproxy.gov.bc.ca
+    realm: eao-epic
+    adminClientId:
+    adminClientSecret:
+python:
+  pythonBuffered: 1
+  connectTimeout: 60

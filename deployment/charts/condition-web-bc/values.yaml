@@ -1,0 +1,15 @@
+image:
+  tag: latest
+resources:
+  cpu:
+    request: 500m
+    limit: 1500m
+  memory:
+    request: 2Gi
+    limit: 4Gi
+repository:
+  ref: main
+  url: https://github.com/bcgov/EPIC.conditions.git
+context:
+  dir: /condition-web
+
