@@ -1,0 +1,26 @@
+app:
+  name: condition
+  url: condition-web-{{ .Release.Namespace }}.apps.gold.devops.gov.bc.ca
+  api: https://condition-api-{{ .Release.Namespace }}.apps.gold.devops.gov.bc.ca
+  env: dev
+resources:
+  cpu:
+    limit: 200m
+    request: 200m
+  memory:
+    limit: 200Mi
+    request: 100Mi
+image:
+  name: condition-web
+  tag: latest
+  repository: image-registry.openshift-image-registry.svc:5000/c8b80a-tools/
+keycloak:
+  url: "https://dev.loginproxy.gov.bc.ca"
+  realm: eao-epic
+  client: epic-condition
+service:
+  port: 8080
+replicas:
+  count: 1
+mountPath: /usr/share/nginx/html/config/
+
