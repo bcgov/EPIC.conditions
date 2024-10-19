@@ -1,8 +1,27 @@
-import { Condition } from "./Condition";
+import { ConditionModel } from "./Condition";
 
-export interface Document {
+export interface DocumentModel {
   document_id: string;
   display_name: string;
   document_file_name: string;
-  conditions?: Condition[];  // Multiple conditions per document
+  document_type: string;
+  date_issued: string;
+  act: string;
+  status: string;
+  conditions?: ConditionModel[];  // Multiple conditions per document
 }
+
+export type DocumentStatus = "true" | "false";
+export const DOCUMENT_STATUS: Record<
+  DocumentStatus,
+  { value: DocumentStatus; label: string }
+> = {
+  true: {
+    value: "true",
+    label: "Approved",
+  },
+  false: {
+    value: "false",
+    label: "Pending",
+  },
+};

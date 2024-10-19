@@ -18,6 +18,7 @@ class Project(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(String(255), nullable=False, unique=True)
     project_name = Column(Text)
+    project_type = Column(Text)
 
     # Establish a one-to-many relationship with the Document table
     documents = relationship('Document', back_populates='project', cascade='all, delete-orphan')

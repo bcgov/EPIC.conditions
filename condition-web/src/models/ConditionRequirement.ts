@@ -1,4 +1,4 @@
-export interface ConditionRequirement {
+export interface ConditionRequirementModel {
   deliverable_name: string;
   is_plan: boolean;
   approval_type: string;

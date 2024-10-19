@@ -64,10 +64,10 @@ def load_data(folder_path):
             # Insert into the 'projects' table (if not exists)
             cur.execute("""
                 INSERT INTO condition.projects (
-                    project_id, project_name, created_date
-                ) VALUES (%s, %s, NOW())
+                    project_id, project_name, project_type, created_date
+                ) VALUES (%s, %s, %s, NOW())
                 ON CONFLICT (project_id) DO NOTHING
-            """, (project_id, data.get('project_name', filename.split('.')[0])))
+            """, (project_id, data['project_name'], data['project_type']))
 
             # Insert into the 'documents' table
             cur.execute("""
@@ -76,7 +76,7 @@ def load_data(folder_path):
                     date_issued, act, first_nations, consultation_records_required, project_id, created_date
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
             """, (
-                document_id, 'Schedule B', data['display_name'], data['document_file_name'],
+                document_id, data['document_type'], data['display_name'], data['document_file_name'],
                 data['date_issued'], data['act'], convert_to_pg_array(data.get('first_nations', [])),
                 data.get('consultation_records_required', False), project_id
             ))

@@ -1,7 +1,7 @@
-import { Document } from "./Document";
+import { DocumentModel } from "./Document";
 
-export interface Project {
+export interface ProjectModel {
   project_id: string;
   project_name: string;
-  documents?: Document[];    // Multiple documents per project
+  documents?: DocumentModel[];    // Multiple documents per project
 }

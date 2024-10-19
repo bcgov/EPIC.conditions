@@ -1,6 +1,6 @@
 import { OnErrorType, OnSuccessType, submitRequest } from "@/utils/axiosUtils";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { StaffUser } from "@/models/StaffUser";
+import { StaffUserModel } from "@/models/StaffUser";
 
 
 type GetUserResponse = {
@@ -27,7 +27,7 @@ export const useGetUserByGuid = ({ guid }: { guid?: string }) => {
   });
 };
 
-const addStaffUser = (user: Omit<StaffUser, "id">) => {
+const addStaffUser = (user: Omit<StaffUserModel, "id">) => {
   return submitRequest({ url: "/users", method: "post", data: user });
 };
 
