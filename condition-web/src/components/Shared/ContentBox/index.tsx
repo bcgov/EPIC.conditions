@@ -17,7 +17,7 @@ export const ContentBox = ({
     <Paper
       elevation={2}
       {...rest}
-      sx={{ boxShadow: BCDesignTokens.surfaceShadowMedium, maxWidth: "1448px" }}
+      sx={{ boxShadow: BCDesignTokens.surfaceShadowMedium, maxWidth: "1648px" }}
     >
       <Box
         sx={{

@@ -1,12 +1,12 @@
-import { Subcondition } from "./Subcondition";
-import { ConditionRequirement } from "./ConditionRequirement";
+import { SubconditionModel } from "./Subcondition";
+import { ConditionRequirementModel } from "./ConditionRequirement";
 
-export interface Condition {
+export interface ConditionModel {
   condition_name: string;
   condition_number: number;
   condition_text: string;
   topic_tags: string[];
   subtopic_tags: string[];
-  subconditions?: Subcondition[];   // Nested subconditions
-  condition_requirement?: ConditionRequirement[];     // Associated deliverables
+  subconditions?: SubconditionModel[];   // Nested subconditions
+  condition_requirement?: ConditionRequirementModel[];     // Associated deliverables
 }

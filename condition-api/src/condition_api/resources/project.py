@@ -17,10 +17,11 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.project import ProjectSchema
+from condition_api.schemas.project import AllProjectsSchema, ProjectSchema
 from condition_api.services.project_service import ProjectService
 from condition_api.utils.util import cors_preflight
 
+from ..auth import auth
 from .apihelper import Api as ApiHelper
 
 API = Namespace("projects", description="Endpoints for Project Management")
@@ -31,6 +32,10 @@ project_list_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, ProjectSchema(), "Project"
 )
 
+projects_model = ApiHelper.convert_ma_schema_to_restx_model(
+    API, AllProjectsSchema(), "Projects"
+)
+
 @cors_preflight("GET, OPTIONS")
 @API.route("/<string:project_id>", methods=["GET", "OPTIONS"])
 class ProjectDetailsResource(Resource):
@@ -38,8 +43,9 @@ class ProjectDetailsResource(Resource):
 
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Get projects by account id")
-    @API.response(code=HTTPStatus.CREATED, model=project_list_model, description="Get projects")
+    @API.response(code=HTTPStatus.OK, model=project_list_model, description="Get projects")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
     @cors.crossdomain(origin="*")
     def get(project_id):
         """Fetch project details and conditions by project ID."""
@@ -53,5 +59,33 @@ class ProjectDetailsResource(Resource):
 
             # Call dump on the schema instance
             return project_details_schema.dump(project_details), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
+@API.route("", methods=["GET", "OPTIONS"])
+class ProjectsResource(Resource):
+    """Resource for fetching all projects."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get all projects")
+    @API.response(code=HTTPStatus.OK, model=projects_model, description="Get projects")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
+    @cors.crossdomain(origin="*")
+    def get():
+        """Fetch projects and related documents."""
+        try:
+            project_data = ProjectService.get_all_projects()
+            if not project_data:
+                return {"message": "No projects found"}, HTTPStatus.NOT_FOUND
+
+            data_for_schema = {"projects": project_data}
+            # Instantiate the schema
+            projects_schema = AllProjectsSchema()
+
+            # Call dump on the schema instance
+            return projects_schema.dump(data_for_schema), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

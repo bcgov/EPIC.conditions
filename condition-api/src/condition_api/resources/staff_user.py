@@ -45,6 +45,7 @@ class Users(Resource):
     @API.expect(user_model)
     @API.response(code=HTTPStatus.CREATED, model=user_model, description="Staff user Created")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
     @cors.crossdomain(origin="*")
     def post():
         """Create a staff user."""

@@ -1,4 +1,4 @@
-export interface StaffUser {
+export interface StaffUserModel {
     id: number;
     first_name: string;
     last_name: string;

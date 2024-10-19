@@ -11,7 +11,7 @@ export const AdminRoute: RouteType = {
 };
 
 export const ProjectRoute: RouteType = {
-  name: "All Projects",
+  name: "Home",
   path: "/projects",
 };
 
