@@ -43,9 +43,9 @@ export default function ProjectTableRow({
             onClick={() => {}}
           >
             <Typography
-              variant="h6"
               color={BCDesignTokens.themeBlue90}
-              fontWeight={"500"}
+              fontWeight={"bold"}
+              fontSize={18}
               sx={{ mr: 0.5 }}
             >
               {document.document_type ?? "--"}

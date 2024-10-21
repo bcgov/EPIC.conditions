@@ -1,4 +1,4 @@
-import { Box, Divider, styled } from "@mui/material";
+import { Box, styled } from "@mui/material";
 import { BCDesignTokens } from "epic.theme";
 import { ProjectModel } from "@/models/Project";
 import DocumentTable from "./DocumentTable";
@@ -32,17 +32,11 @@ export const Project = ({ project }: ProjectParam) => {
                 }}
             >
                 <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
-                    <Divider
-                        sx={{
-                        ml: BCDesignTokens.layoutPaddingSmall,
-                        mb: BCDesignTokens.layoutPaddingXsmall,
-                        }}
-                    />
-                        <CardInnerBox
-                            sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
-                        >
-                            <DocumentTable documents={project.documents || []} />
-                        </CardInnerBox>
+                    <CardInnerBox
+                        sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
+                    >
+                        <DocumentTable documents={project.documents || []} />
+                    </CardInnerBox>
                 </Box>
             </Box>
         </ContentBox>
