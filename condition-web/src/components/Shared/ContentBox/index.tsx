@@ -30,7 +30,7 @@ export const ContentBox = ({
         }}
       >
         <Typography
-          variant="h3"
+          variant="h5"
           sx={{
             fontWeight: "bold",
           }}
