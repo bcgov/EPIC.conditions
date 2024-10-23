@@ -4,6 +4,7 @@ export interface DocumentModel {
   document_id: string;
   display_name: string;
   document_file_name: string;
+  project_id: string;
   document_type: string;
   date_issued: string;
   act: string;

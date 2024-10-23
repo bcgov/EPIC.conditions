@@ -41,3 +41,9 @@ class ConditionSchema(Schema):
     
     # Condition can also have its own subconditions (recursive nesting)
     subconditions = fields.List(fields.Nested(SubConditionSchema), data_key="subconditions")
+
+class ProjectDocumentConditionSchema(Schema):
+    """Top-level schema to include project and document names."""
+    project_name = fields.Str(data_key="project_name")
+    document_type = fields.Str(data_key="document_type")
+    conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")

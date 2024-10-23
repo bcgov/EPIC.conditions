@@ -49,6 +49,7 @@ class ProjectService:
             documents.document_type,
             documents.date_issued,
             documents.act,
+            documents.project_id,
             documents.first_nations,
             documents.consultation_records_required,
         ).filter(documents.project_id == project_id).all()
@@ -63,6 +64,7 @@ class ProjectService:
                 "document_type": doc.document_type,
                 "date_issued": doc.date_issued,
                 "act": doc.act,
+                "project_id": doc.project_id,
                 "first_nations": doc.first_nations,
                 "consultation_records_required": doc.consultation_records_required,
                 "conditions": [],
@@ -191,6 +193,7 @@ class ProjectService:
                 documents.document_type,
                 documents.date_issued,
                 documents.act,
+                documents.project_id,
                 documents.first_nations,
                 documents.consultation_records_required,
                 # Subquery to check if all related conditions have is_approved=True
@@ -204,6 +207,7 @@ class ProjectService:
                 documents.document_type,
                 documents.date_issued,
                 documents.act,
+                documents.project_id,
                 documents.first_nations,
                 documents.consultation_records_required
             ).all()
@@ -221,6 +225,7 @@ class ProjectService:
                     "document_type": doc.document_type,
                     "date_issued": doc.date_issued,
                     "act": doc.act,
+                    "project_id": doc.project_id,
                     "first_nations": doc.first_nations,
                     "consultation_records_required": doc.consultation_records_required,
                     "status": status,
