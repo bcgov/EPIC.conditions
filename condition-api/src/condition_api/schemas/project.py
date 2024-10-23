@@ -54,6 +54,7 @@ class DocumentSchema(BaseSchema):
     document_type = fields.Str(data_key="document_type")
     date_issued = fields.Str(data_key="date_issued")
     act = fields.Int(data_key="act")
+    project_id = fields.Str(data_key="project_id")
     first_nations = fields.List(fields.Str(), data_key="first_nations")
     consultation_records_required = fields.Bool(data_key="consultation_records_required")
     status = fields.Bool(data_key="status")

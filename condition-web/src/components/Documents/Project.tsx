@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/material";
 import { BCDesignTokens } from "epic.theme";
 import { ProjectModel } from "@/models/Project";
-import DocumentTable from "./DocumentTable";
+import DocumentTable from "../Documents/DocumentTable";
 import { ContentBox } from "../Shared/ContentBox";
 
 export const CardInnerBox = styled(Box)({

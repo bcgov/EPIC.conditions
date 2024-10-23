@@ -3,15 +3,25 @@ import { Link, TableCell, TableRow, Typography } from "@mui/material";
 import { BCDesignTokens } from "epic.theme";
 import DocumentStatusChip from "./DocumentStatusChip";
 import { DocumentModel, DocumentStatus } from "@/models/Document";
+import { useNavigate } from "@tanstack/react-router";
 
-interface ProjectRowProps {
+interface DocumentRowProps {
   document: DocumentModel;
 }
 const border = `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`;
 
-export default function ProjectTableRow({
+export default function DocumentTableRow({
     document,
-}: ProjectRowProps) {
+}: DocumentRowProps) {
+
+  const navigate = useNavigate();
+
+  const handleOnDocumentClick = (projectId: string, documentId: string) => {
+    navigate({
+      to: `/projects/${projectId}/document/${documentId}`,
+    });
+  };
+
   return (
     <>
       <TableRow
@@ -40,7 +50,7 @@ export default function ProjectTableRow({
               alignItems: "center",
             }}
             component={"button"}
-            onClick={() => {}}
+            onClick={() => handleOnDocumentClick(document.project_id, document.document_id)}
           >
             <Typography
               color={BCDesignTokens.themeBlue90}

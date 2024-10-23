@@ -16,6 +16,7 @@ import { Route as ErrorImport } from './routes/error'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/_dashboard'
 import { Route as AuthenticatedDashboardProjectsIndexImport } from './routes/_authenticated/_dashboard/projects/index'
+import { Route as AuthenticatedDashboardProjectsProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/document/$documentId/index'
 
 // Create/Update Routes
 
@@ -42,6 +43,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardImport.update({
 const AuthenticatedDashboardProjectsIndexRoute =
   AuthenticatedDashboardProjectsIndexImport.update({
     path: '/projects/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+
+const AuthenticatedDashboardProjectsProjectIdDocumentDocumentIdIndexRoute =
+  AuthenticatedDashboardProjectsProjectIdDocumentDocumentIdIndexImport.update({
+    path: '/projects/$projectId/document/$documentId/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 
@@ -84,6 +91,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardProjectsIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
+    '/_authenticated/_dashboard/projects/$projectId/document/$documentId/': {
+      id: '/_authenticated/_dashboard/projects/$projectId/document/$documentId/'
+      path: '/projects/$projectId/document/$documentId'
+      fullPath: '/projects/$projectId/document/$documentId'
+      preLoaderRoute: typeof AuthenticatedDashboardProjectsProjectIdDocumentDocumentIdIndexImport
+      parentRoute: typeof AuthenticatedDashboardImport
+    }
   }
 }
 
@@ -93,6 +107,7 @@ export const routeTree = rootRoute.addChildren({
   AuthenticatedRoute: AuthenticatedRoute.addChildren({
     AuthenticatedDashboardRoute: AuthenticatedDashboardRoute.addChildren({
       AuthenticatedDashboardProjectsIndexRoute,
+      AuthenticatedDashboardProjectsProjectIdDocumentDocumentIdIndexRoute,
     }),
   }),
   ErrorRoute,
@@ -128,11 +143,16 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_authenticated/_dashboard.tsx",
       "parent": "/_authenticated",
       "children": [
-        "/_authenticated/_dashboard/projects/"
+        "/_authenticated/_dashboard/projects/",
+        "/_authenticated/_dashboard/projects/$projectId/document/$documentId/"
       ]
     },
     "/_authenticated/_dashboard/projects/": {
       "filePath": "_authenticated/_dashboard/projects/index.tsx",
+      "parent": "/_authenticated/_dashboard"
+    },
+    "/_authenticated/_dashboard/projects/$projectId/document/$documentId/": {
+      "filePath": "_authenticated/_dashboard/projects/$projectId/document/$documentId/index.tsx",
       "parent": "/_authenticated/_dashboard"
     }
   }

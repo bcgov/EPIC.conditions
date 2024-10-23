@@ -3,14 +3,16 @@ import { Grid } from "@mui/material";
 import { useGetProjects } from "@/hooks/api/useProjects";
 
 import { Else, If, Then } from "react-if";
-import { Projects, ProjectsSkeleton } from "@/components/Projects";
+import { Projects, ProjectsSkeleton } from "@/components/Documents";
 import { useEffect } from "react";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PageGrid } from "@/components/Shared/PageGrid";
 
 export const Route = createFileRoute("/_authenticated/_dashboard/projects/")({
   component: ProjectsPage,
-  meta: () => [{ title: "Home" }],
+  meta: () => [
+    { title: "Home", path: "/_authenticated/_dashboard/projects/" },
+  ],
 });
 
 export function ProjectsPage() {
