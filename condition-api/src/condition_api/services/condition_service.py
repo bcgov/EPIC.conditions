@@ -181,6 +181,7 @@ class ConditionService:
             .filter(
                 (projects.project_id == project_id)
                 & (documents.document_id == document_id)
+                & (conditions.is_active == True)
             )
             .all()
         )

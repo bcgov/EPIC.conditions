@@ -2,7 +2,6 @@ import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
 import { Box, styled, Stack, Typography } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
-import { Navigate } from "@tanstack/react-router";
 import { ContentBox } from "../Shared/ContentBox";
 import ConditionTable from "../Conditions/ConditionsTable";
 
@@ -22,7 +21,6 @@ type ConditionsParam = {
 };
 
 export const Conditions = ({ projectName, documentName, conditions }: ConditionsParam) => {
-  if (!conditions) return <Navigate to={"/error"} />;
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>

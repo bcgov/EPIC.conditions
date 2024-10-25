@@ -9,6 +9,7 @@ class Condition(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(String, ForeignKey('condition.projects.project_id', ondelete='CASCADE'), nullable=False)
     document_id = Column(String, ForeignKey('condition.documents.document_id', ondelete='CASCADE'), nullable=False)
+    amended_document_id = Column(String, ForeignKey('condition.amendments.amended_document_id', ondelete='CASCADE'), nullable=True)
     condition_name = Column(Text, nullable=True)
     condition_number = Column(Integer, nullable=True)
     condition_text = Column(Text, nullable=True)
@@ -17,7 +18,7 @@ class Condition(BaseModel):
     effective_from = Column(DateTime, nullable=True)
     effective_to = Column(DateTime, nullable=True)
     is_approved = Column(Boolean, nullable=True)
-    is_active = Column(Boolean, nullable=False, default=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     # Establish a one-to-many relationship with subcondition
     subconditions = relationship('Subcondition', back_populates='condition', cascade='all, delete-orphan')

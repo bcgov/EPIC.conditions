@@ -43,5 +43,5 @@ class Document(BaseModel):
 
     @classmethod
     def get_by_id(cls, document_id):
-        """Get project by document_id."""
+        """Get document by document_id."""
         return cls.query.filter_by(document_id=document_id).first()

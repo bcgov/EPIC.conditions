@@ -18,7 +18,7 @@ export default function DocumentTableRow({
 
   const handleOnDocumentClick = (projectId: string, documentId: string) => {
     navigate({
-      to: `/projects/${projectId}/document/${documentId}`,
+      to: `/amendments/project/${projectId}/document/${documentId}`,
     });
   };
 
