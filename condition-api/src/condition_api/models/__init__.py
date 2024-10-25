@@ -23,3 +23,4 @@ from .subcondition import Subcondition
 from .condition_requirement import ConditionRequirement
 from .user_status import UserStatus
 from .staff_user import StaffUser
+from .amendment import Amendment

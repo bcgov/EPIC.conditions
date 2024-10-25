@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from .base_model import BaseModel
 
@@ -8,9 +8,11 @@ class Subcondition(BaseModel):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     condition_id = Column(Integer, ForeignKey('condition.conditions.id', ondelete='CASCADE'))
+    amended_document_id = Column(String, ForeignKey('condition.amendments.amended_document_id', ondelete='CASCADE'), nullable=True)
     subcondition_identifier = Column(String, nullable=True)
     subcondition_text = Column(Text, nullable=True)
     parent_subcondition_id = Column(Integer, ForeignKey('condition.subconditions.id', ondelete='CASCADE'), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     # Self-referencing relationship to allow subconditions to have sub subconditions
     subsubconditions = relationship('Subcondition', backref='parent', remote_side=[id])

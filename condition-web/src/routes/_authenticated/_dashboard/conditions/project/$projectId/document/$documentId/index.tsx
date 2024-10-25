@@ -9,7 +9,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 
 export const Route = createFileRoute(
-  "/_authenticated/_dashboard/projects/$projectId/document/$documentId/"
+  "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/"
 )({
   component: ConditionPage,
   notFoundComponent: () => {
@@ -18,7 +18,7 @@ export const Route = createFileRoute(
   meta: ({ params }) => [
     { title: "Home", path: "/projects/" },
     { title: `${params.projectId}`, path: `/projects/` }, // Fixed Projects path
-    { title: `${params.documentId}`, path: `/_authenticated/_dashboard/projects/${params.projectId}/document/${params.documentId}/` } // Path to the specific document
+    { title: `${params.documentId}`, path: `/_authenticated/_dashboard/conditions/project/${params.projectId}/document/${params.documentId}/` } // Path to the specific document
   ],
 });
 
@@ -26,6 +26,7 @@ function ConditionPage() {
   const { projectId: projectIdParam, documentId: documentIdParam } = useParams({ strict: false });
   const projectId = String(projectIdParam);
   const documentId = String(documentIdParam);
+
   const {
     data: documentConditions,
     isPending: isConditionsLoading,

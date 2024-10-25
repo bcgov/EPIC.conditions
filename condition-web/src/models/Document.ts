@@ -26,3 +26,16 @@ export const DOCUMENT_STATUS: Record<
     label: "Pending",
   },
 };
+
+export interface AllDocumentModel {
+  document_id: string;
+  document_name: string;
+  year_issued: string;
+  status: boolean;
+}
+
+export interface ProjectDocumentAllAmendmentsModel {
+  project_name: string;
+  document_type: string;
+  amendments?: AllDocumentModel[];
+}
