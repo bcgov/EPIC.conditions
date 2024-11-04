@@ -10,12 +10,16 @@ import {
   import { ConditionModel } from "@/models/Condition";
   import { StyledTableHeadCell } from "../Shared/Table/common";
   import ConditionTableRow from "./ConditionTableRow";
-  
+
   export default function ConditionTable({
     conditions,
+    projectId,
+    documentId,
     headless,
   }: {
     conditions: Array<ConditionModel>;
+    projectId: string;
+    documentId: string;
     headless?: boolean;
   }) {
     return (
@@ -54,6 +58,8 @@ import {
                 <ConditionTableRow
                     key={condition.condition_number}
                     condition={condition}
+                    projectId={projectId}
+                    documentId={documentId}
                 />
             ))}
             </TableBody>

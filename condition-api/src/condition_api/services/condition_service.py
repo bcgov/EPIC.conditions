@@ -1,12 +1,14 @@
 """Service for condition management."""
-from sqlalchemy import and_
+from sqlalchemy import and_, case, func, extract
 from sqlalchemy.orm import aliased
+from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
 from condition_api.models.subcondition import Subcondition
 from condition_api.models.condition_requirement import ConditionRequirement
 from condition_api.models.document import Document
 from condition_api.models.db import db
 from condition_api.models.project import Project
+from condition_api.utils.constants import DOCUMENT_TYPE_MAPPING
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -24,6 +26,14 @@ class ConditionService:
 
         condition_data = (
             db.session.query(
+                projects.project_name,
+                case(
+                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
+                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
+                    else_=documents.document_type
+                ).label('document_type'),
+                extract('year', documents.date_issued).label('year_issued'),
+                documents.display_name,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -66,12 +76,18 @@ class ConditionService:
                 (projects.project_id == project_id)
                 & (documents.document_id == document_id)
                 & (conditions.condition_number == condition_number)
+                & (conditions.is_active == True)
             )
+            .order_by(subconditions.id)
             .all()
         )
 
         if not condition_data:
             return None
+
+        project_name = condition_data[0].project_name if condition_data else None
+        document_type = condition_data[0].document_type if condition_data else None
+        display_name = condition_data[0].display_name if condition_data else None
 
         # Extract condition details
         condition = {
@@ -81,6 +97,7 @@ class ConditionService:
             "is_approved": condition_data[0].is_approved,
             "topic_tags": condition_data[0].topic_tags,
             "subtopic_tags": condition_data[0].subtopic_tags,
+            "year_issued": condition_data[0].year_issued,
             "condition_requirements": [],
             "subconditions": []
         }
@@ -93,6 +110,7 @@ class ConditionService:
             if subcond_id:
                 # Store each subcondition and its potential parent reference
                 subcondition = {
+                    "subcondition_id": row.subcondition_id,
                     "subcondition_identifier": row.subcondition_identifier,
                     "subcondition_text": row.subcondition_text,
                     "subconditions": [],
@@ -121,7 +139,12 @@ class ConditionService:
                     "days_prior_to_commencement": row.days_prior_to_commencement
                 })
 
-        return condition
+        return {
+            "project_name": project_name,
+            "document_type": document_type,
+            "display_name": display_name,
+            "condition": condition
+        }
 
 
     @staticmethod
@@ -131,21 +154,42 @@ class ConditionService:
         # Aliases for the tables
         projects = aliased(Project)
         documents = aliased(Document)
+        amendments = aliased(Amendment)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
         condition_requirements = aliased(ConditionRequirement)
+
+        amendment_subquery = (
+            db.session.query(
+                conditions.condition_number,
+                func.string_agg(amendments.amendment_name.distinct(), ', ').label('amendment_names')
+            )
+            .join(conditions, conditions.amended_document_id == amendments.amended_document_id)  # Join amendments to conditions
+            .join(documents, conditions.document_id == documents.document_id)  # Join conditions to documents
+            .join(projects, projects.project_id == documents.project_id)  # Join documents to projects
+            .filter(
+                (projects.project_id == project_id) & (documents.document_id == document_id)
+            )
+            .group_by(conditions.condition_number)
+            .subquery()
+        )
 
         # Query for all conditions and their related subconditions and requirements
         condition_data = (
             db.session.query(
                 projects.project_name,
-                documents.document_type,
+                case(
+                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
+                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
+                    else_=documents.document_type
+                ).label('document_type'),
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
                 conditions.is_approved,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
+                amendment_subquery.c.amendment_names,
                 condition_requirements.deliverable_name,
                 condition_requirements.is_plan,
                 condition_requirements.approval_type,
@@ -157,7 +201,8 @@ class ConditionService:
                 subconditions.id.label('subcondition_id'),
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
-                subconditions.parent_subcondition_id
+                subconditions.parent_subcondition_id,
+                extract('year', documents.date_issued).label('year_issued')
             )
             .outerjoin(
                 condition_requirements,
@@ -178,10 +223,38 @@ class ConditionService:
                 projects,
                 projects.project_id == documents.project_id
             )
+            .outerjoin(
+                amendment_subquery,
+                conditions.condition_number == amendment_subquery.c.condition_number
+            )
             .filter(
                 (projects.project_id == project_id)
                 & (documents.document_id == document_id)
                 & (conditions.is_active == True)
+            )
+            .group_by(
+                projects.project_name,
+                documents.document_type,
+                conditions.condition_name,
+                conditions.condition_number,
+                conditions.condition_text,
+                conditions.is_approved,
+                conditions.topic_tags,
+                conditions.subtopic_tags,
+                condition_requirements.deliverable_name,
+                condition_requirements.is_plan,
+                condition_requirements.approval_type,
+                condition_requirements.stakeholders_to_consult,
+                condition_requirements.stakeholders_to_submit_to,
+                condition_requirements.consultation_required,
+                condition_requirements.related_phase,
+                condition_requirements.days_prior_to_commencement,
+                subconditions.id,
+                subconditions.subcondition_identifier,
+                subconditions.subcondition_text,
+                subconditions.parent_subcondition_id,
+                amendment_subquery.c.amendment_names,
+                documents.date_issued
             )
             .all()
         )
@@ -208,6 +281,8 @@ class ConditionService:
                     "is_approved": row.is_approved,
                     "topic_tags": row.topic_tags,
                     "subtopic_tags": row.subtopic_tags,
+                    "amendment_names": row.amendment_names,
+                    "year_issued": row.year_issued,
                     "condition_requirements": [],
                     "subconditions": []
                 }

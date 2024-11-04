@@ -1,6 +1,7 @@
 import { ProjectModel } from "@/models/Project";
 import { submitRequest } from "@/utils/axiosUtils";
 import { useQuery } from "@tanstack/react-query";
+import { defaultUseQueryOptions } from "./constants";
 
 const loadProjectsByProjectId = (projectId?: string) => {
   if (!projectId) {
@@ -17,6 +18,7 @@ export const useLoadProjectsByProjectId = (projectId?: string) => {
     queryFn: () => loadProjectsByProjectId(projectId),
     enabled: Boolean(projectId),
     retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 
@@ -28,5 +30,7 @@ export const useGetProjects = () => {
   return useQuery({
     queryKey: ["projects"],
     queryFn: fetchProjects,
+    retry: false,
+    ...defaultUseQueryOptions,
   });
 };

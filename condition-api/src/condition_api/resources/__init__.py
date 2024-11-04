@@ -29,6 +29,7 @@ from .amendment import API as AMENDMENT_API
 from .condition import API as CONDITION_API
 from .project import API as PROJECT_API
 from .staff_user import API as STAFF_USER_API
+from .subcondition import API as SUBCONDITION_API
 
 
 __all__ = ('API_BLUEPRINT', 'OPS_BLUEPRINT')
@@ -59,3 +60,4 @@ API.add_namespace(AMENDMENT_API)
 API.add_namespace(CONDITION_API)
 API.add_namespace(PROJECT_API)
 API.add_namespace(STAFF_USER_API)
+API.add_namespace(SUBCONDITION_API)

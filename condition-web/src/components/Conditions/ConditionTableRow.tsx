@@ -4,17 +4,27 @@ import { BCDesignTokens } from "epic.theme";
 import DocumentStatusChip from "../Documents/DocumentStatusChip";
 import { DocumentStatus } from "@/models/Document";
 import { ConditionModel } from "@/models/Condition";
+import { useNavigate } from "@tanstack/react-router";
 
 interface ConditionRowProps {
   condition: ConditionModel;
+  projectId: string;
+  documentId: string;
 }
 const border = `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`;
 
 export default function ConditionTableRow({
     condition,
+    projectId,
+    documentId,
 }: ConditionRowProps) {
 
-  const handleOnDocumentClick = () => {};
+  const navigate = useNavigate();
+  const handleOnDocumentClick = (projectId: string, documentId: string, conditionNumber: number) => {
+    navigate({
+      to: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionNumber}`,
+    });
+  };
 
   return (
     <>
@@ -44,7 +54,7 @@ export default function ConditionTableRow({
               alignItems: "center",
             }}
             component={"button"}
-            onClick={() => handleOnDocumentClick()}
+            onClick={() => handleOnDocumentClick(projectId, documentId, condition.condition_number)}
           >
             <Typography
               color={BCDesignTokens.themeBlue90}
@@ -67,7 +77,7 @@ export default function ConditionTableRow({
             py: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
-          {"--"}
+          {condition.amendment_names ?? "--"}
         </TableCell>
         <TableCell
           colSpan={2}
@@ -89,7 +99,7 @@ export default function ConditionTableRow({
             py: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
-          {"--"}
+          {condition.year_issued ?? "--"}
         </TableCell>
         <TableCell
           colSpan={2}
@@ -100,7 +110,7 @@ export default function ConditionTableRow({
             py: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
-          <DocumentStatusChip status={condition.is_approved as DocumentStatus} />
+          <DocumentStatusChip status={String(condition.is_approved) as DocumentStatus} />
         </TableCell>
       </TableRow>
       <TableRow key={`empty-row-${condition.condition_number}`} sx={{ py: 1 }}>

@@ -10,7 +10,7 @@ class DocumentSchema(Schema):
 
     document_id = fields.Str(data_key="document_id")
     document_name = fields.Str(data_key="document_name")
-    year_issued = fields.Str(data_key="year_issued")
+    year_issued = fields.Int(data_key="year_issued")
     status = fields.Bool(data_key="status")
 
 class ProjectDocumentAllAmendmentsSchema(Schema):

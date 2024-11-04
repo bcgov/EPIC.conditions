@@ -5,6 +5,7 @@ from condition_api.models.condition import Condition
 from condition_api.models.document import Document
 from condition_api.models.project import Project
 from condition_api.models.db import db
+from condition_api.utils.constants import DOCUMENT_TYPE_MAPPING
 
 class DocumentService:
     """Service for managing document-related operations."""
@@ -16,7 +17,11 @@ class DocumentService:
         # Fetch the original document
         documents_query = db.session.query(
             Project.project_name.label('project_name'),
-            Document.document_type.label('document_type'),
+            case(
+                (Document.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
+                (Document.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
+                else_=Document.document_type
+            ).label('document_type'),
             Document.id.label('id'),
             Document.document_id.label('document_id'),
             Document.display_name.label('document_name'),

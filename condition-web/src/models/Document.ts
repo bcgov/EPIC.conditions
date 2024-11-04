@@ -8,7 +8,8 @@ export interface DocumentModel {
   document_type: string;
   date_issued: string;
   act: string;
-  status: string;
+  status: boolean;
+  amendment_count: number;
   conditions?: ConditionModel[];  // Multiple conditions per document
 }
 
@@ -30,7 +31,7 @@ export const DOCUMENT_STATUS: Record<
 export interface AllDocumentModel {
   document_id: string;
   document_name: string;
-  year_issued: string;
+  year_issued: number;
   status: boolean;
 }
 

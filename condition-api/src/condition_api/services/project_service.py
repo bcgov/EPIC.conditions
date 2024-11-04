@@ -1,12 +1,14 @@
 """Service for project management."""
-from sqlalchemy import func, case
+from sqlalchemy import func, case, select
 from sqlalchemy.orm import aliased
+from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
 from condition_api.models.subcondition import Subcondition
 from condition_api.models.condition_requirement import ConditionRequirement
 from condition_api.models.document import Document
 from condition_api.models.db import db
 from condition_api.models.project import Project
+from condition_api.utils.constants import DOCUMENT_TYPE_MAPPING
 
 
 class ProjectService:
@@ -181,6 +183,14 @@ class ProjectService:
         # Step 2: Initialize the result list to store project data along with documents
         result = []
 
+        # Subquery for counting amendments related to each document
+        amendment_count_subquery = (
+            select(func.count(Amendment.document_id))
+            .where(Amendment.document_id == documents.id)
+            .correlate(documents)
+            .label("amendment_count")
+        )
+
         # Step 3: Iterate over each project and fetch related documents
         for project in project_data:
             project_id = project.project_id
@@ -190,17 +200,24 @@ class ProjectService:
                 documents.document_id,
                 documents.display_name,
                 documents.document_file_name,
-                documents.document_type,
+                case(
+                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
+                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
+                    else_=documents.document_type
+                ).label('document_type'),
                 documents.date_issued,
                 documents.act,
                 documents.project_id,
                 documents.first_nations,
                 documents.consultation_records_required,
                 # Subquery to check if all related conditions have is_approved=True
-                func.min(case((conditions.is_approved == False, 0), else_=1)).label('all_approved')
+                func.min(case((conditions.is_approved == False, 0), else_=1)).label('all_approved'),
+                # Count of related amendments
+                amendment_count_subquery
             ).outerjoin(conditions, conditions.document_id == documents.document_id
             ).filter(documents.project_id == project_id
             ).group_by(
+                documents.id,
                 documents.document_id,
                 documents.display_name,
                 documents.document_file_name,
@@ -229,6 +246,7 @@ class ProjectService:
                     "first_nations": doc.first_nations,
                     "consultation_records_required": doc.consultation_records_required,
                     "status": status,
+                    "amendment_count": doc.amendment_count,
                 }
                 # Append each document to the project's document array
                 project_documents.append(document_map[doc.document_id])

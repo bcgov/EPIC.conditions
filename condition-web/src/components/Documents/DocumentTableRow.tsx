@@ -27,19 +27,19 @@ export default function DocumentTableRow({
       <TableRow
         key={`row-${document.document_id}`}
         sx={{
-          my: 1,
           "&:hover": {
             backgroundColor: BCDesignTokens.surfaceColorMenusHover,
           },
         }}
       >
         <TableCell
-          colSpan={6}
           align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
+            paddingLeft: BCDesignTokens.layoutPaddingXsmall,
+            width: '40%',
           }}
         >
           <Link
@@ -64,37 +64,38 @@ export default function DocumentTableRow({
           </Link>
         </TableCell>
         <TableCell
-          colSpan={2}
           align="right"
           sx={{
             borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
+            width: '20%',
           }}
         >
-          {"--"}
+          {document.amendment_count}
         </TableCell>
         <TableCell
-          colSpan={2}
           align="right"
           sx={{
             borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
+            width: '20%',
           }}
         >
           {document.date_issued ? new Date(document.date_issued).getFullYear() : "--"}
         </TableCell>
         <TableCell
-          colSpan={2}
-          align="center"
+          align="right"
           sx={{
             borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
+            paddingRight: BCDesignTokens.layoutPaddingXsmall,
+            width: '20%',
           }}
         >
-          <DocumentStatusChip status={document.status as DocumentStatus} />
+          <DocumentStatusChip status={String(document.status) as DocumentStatus} />
         </TableCell>
       </TableRow>
       <TableRow key={`empty-row-${document.document_id}`} sx={{ py: 1 }}>

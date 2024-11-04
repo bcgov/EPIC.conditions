@@ -17,7 +17,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionSchema
+from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.util import cors_preflight
 
@@ -33,7 +33,7 @@ project_list_model = ApiHelper.convert_ma_schema_to_restx_model(
 )
 
 @cors_preflight("GET, OPTIONS")
-@API.route("/<string:project_id>/<string:document_id>/<int:condition_number>", methods=["GET", "OPTIONS"])
+@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_number>", methods=["GET", "OPTIONS"])
 class ConditionDetailsResource(Resource):
     """Resource for fetching condition details by project_id."""
 
@@ -41,6 +41,7 @@ class ConditionDetailsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
     @API.response(code=HTTPStatus.CREATED, model=project_list_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
     @cors.crossdomain(origin="*")
     def get(project_id, document_id, condition_number):
         """Fetch conditions and condition requirements by project ID."""
@@ -50,13 +51,12 @@ class ConditionDetailsResource(Resource):
                 return {"message": "Condition not found"}, HTTPStatus.NOT_FOUND
 
             # Instantiate the schema
-            condition_details_schema = ConditionSchema()
+            condition_details_schema = ProjectDocumentConditionDetailSchema()
 
             # Call dump on the schema instance
             return condition_details_schema.dump(condition_details), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
-
 
 
 @cors_preflight("GET, OPTIONS")
