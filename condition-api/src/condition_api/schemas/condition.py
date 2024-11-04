@@ -34,6 +34,8 @@ class ConditionSchema(Schema):
     condition_text = fields.Str(data_key="condition_text")
     topic_tags = fields.List(fields.Str(), data_key="topic_tags")
     subtopic_tags = fields.List(fields.Str(), data_key="subtopic_tags")
+    amendment_names = fields.Str(data_key="amendment_names")
+    year_issued = fields.Int(data_key="year_issued")
     is_approved = fields.Bool(data_key="is_approved")
     deliverable_name = fields.Str(data_key="deliverable_name")
     condition_requirements = fields.List(fields.Nested(ConditionRequirementsSchema),
@@ -47,3 +49,10 @@ class ProjectDocumentConditionSchema(Schema):
     project_name = fields.Str(data_key="project_name")
     document_type = fields.Str(data_key="document_type")
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")
+
+class ProjectDocumentConditionDetailSchema(Schema):
+    """Top-level schema to include project and document names."""
+    project_name = fields.Str(data_key="project_name")
+    document_type = fields.Str(data_key="document_type")
+    display_name = fields.Str(data_key="display_name")
+    condition = fields.Nested(ConditionSchema, data_key="condition")

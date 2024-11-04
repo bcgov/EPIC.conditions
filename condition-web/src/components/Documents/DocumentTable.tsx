@@ -23,27 +23,48 @@ import {
             <Table sx={{ tableLayout: "fixed", border: 0 }} aria-label="simple table">
             {!headless && (
                 <TableHead
-                sx={{
-                    border: 0,
-                    ".MuiTableCell-root": {
-                    p: BCDesignTokens.layoutPaddingXsmall,
-                    },
-                }}
-                >
-                <TableRow>
-                    <StyledTableHeadCell colSpan={6}>
-                        Document Type
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="right">
-                        Amendment Count
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="right">
-                        Year Issued
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="center">
-                        Status
-                    </StyledTableHeadCell>
-                </TableRow>
+                    sx={{
+                        border: 0,
+                        ".MuiTableCell-root": {
+                            p: BCDesignTokens.layoutPaddingXsmall,
+                        },
+                    }}
+                    >
+                    <TableRow>
+                        <StyledTableHeadCell
+                            align="left"
+                            sx={{
+                                width: '40%',
+                                paddingLeft: BCDesignTokens.layoutPaddingXsmall,
+                            }}
+                        >
+                            Document Type
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell
+                            align="right"
+                            sx={{
+                                width: '20%',
+                            }}
+                        >
+                            Amendment Count
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell
+                            align="right"
+                            sx={{
+                                width: '20%',
+                            }}
+                        >
+                            Year Issued
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell
+                            align="right"
+                            sx={{
+                                width: '20%',
+                            }}
+                        >
+                            Status
+                        </StyledTableHeadCell>
+                    </TableRow>
                 </TableHead>
             )}
             <TableBody>

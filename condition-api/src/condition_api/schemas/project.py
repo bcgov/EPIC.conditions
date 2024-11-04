@@ -58,6 +58,7 @@ class DocumentSchema(BaseSchema):
     first_nations = fields.List(fields.Str(), data_key="first_nations")
     consultation_records_required = fields.Bool(data_key="consultation_records_required")
     status = fields.Bool(data_key="status")
+    amendment_count = fields.Int(data_key="amendment_count")
     
     # Each document can have multiple conditions
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")

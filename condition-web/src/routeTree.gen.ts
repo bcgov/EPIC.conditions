@@ -14,10 +14,12 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as OidcCallbackImport } from './routes/oidc-callback'
 import { Route as ErrorImport } from './routes/error'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
+import { Route as IndexImport } from './routes/index'
 import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/_dashboard'
 import { Route as AuthenticatedDashboardProjectsIndexImport } from './routes/_authenticated/_dashboard/projects/index'
 import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/index'
 import { Route as AuthenticatedDashboardAmendmentsProjectProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/amendments/project/$projectId/document/$documentId/index'
+import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/index'
 
 // Create/Update Routes
 
@@ -33,6 +35,11 @@ const ErrorRoute = ErrorImport.update({
 
 const AuthenticatedRoute = AuthenticatedImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const IndexRoute = IndexImport.update({
+  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -63,10 +70,25 @@ const AuthenticatedDashboardAmendmentsProjectProjectIdDocumentDocumentIdIndexRou
     } as any,
   )
 
+const AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexRoute =
+  AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport.update(
+    {
+      path: '/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/',
+      getParentRoute: () => AuthenticatedDashboardRoute,
+    } as any,
+  )
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -116,17 +138,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
+    '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/': {
+      id: '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/'
+      path: '/conditions/project/$projectId/document/$documentId/condition/$conditionNumber'
+      fullPath: '/conditions/project/$projectId/document/$documentId/condition/$conditionNumber'
+      preLoaderRoute: typeof AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport
+      parentRoute: typeof AuthenticatedDashboardImport
+    }
   }
 }
 
 // Create and export the route tree
 
 export const routeTree = rootRoute.addChildren({
+  IndexRoute,
   AuthenticatedRoute: AuthenticatedRoute.addChildren({
     AuthenticatedDashboardRoute: AuthenticatedDashboardRoute.addChildren({
       AuthenticatedDashboardProjectsIndexRoute,
       AuthenticatedDashboardAmendmentsProjectProjectIdDocumentDocumentIdIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRoute,
+      AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexRoute,
     }),
   }),
   ErrorRoute,
@@ -141,10 +172,14 @@ export const routeTree = rootRoute.addChildren({
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/",
         "/_authenticated",
         "/error",
         "/oidc-callback"
       ]
+    },
+    "/": {
+      "filePath": "index.tsx"
     },
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
@@ -164,7 +199,8 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/_authenticated/_dashboard/projects/",
         "/_authenticated/_dashboard/amendments/project/$projectId/document/$documentId/",
-        "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/"
+        "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/",
+        "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/"
       ]
     },
     "/_authenticated/_dashboard/projects/": {
@@ -177,6 +213,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/": {
       "filePath": "_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/index.tsx",
+      "parent": "/_authenticated/_dashboard"
+    },
+    "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/": {
+      "filePath": "_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/index.tsx",
       "parent": "/_authenticated/_dashboard"
     }
   }
