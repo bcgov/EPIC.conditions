@@ -31,13 +31,16 @@ export const Conditions = ({ projectName, projectId, documentName, documentId, c
 
   const navigate = useNavigate();
   const [isToggled, setIsToggled] = useState(true);
+  const [hasAmendments, setHasAmendments] = useState(false);
 
   const [isToggleEnabled, setIsToggleEnabled] = useState(false);
   useEffect(() => {
     // Check if all conditions have status as true
     if (conditions && conditions.length > 0) {
       const allApproved = conditions.every((condition) => condition.is_approved === true);
+      const conditionHasAmendments = conditions.some(condition => condition.amendment_names != null);
       setIsToggleEnabled(allApproved);
+      setHasAmendments(conditionHasAmendments);
     }
   }, [conditions]);
 
@@ -54,7 +57,16 @@ export const Conditions = ({ projectName, projectId, documentName, documentId, c
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
       {/* Showing results message */}
-      <ContentBox mainLabel={projectName} label={""}>
+      <ContentBox
+        mainLabel={
+          <Box component="span">
+            <Typography component="span" variant="h5" fontWeight="normal">
+              {projectName}
+            </Typography>
+          </Box>
+        }
+        label={""}
+      >
         <Box
           sx={{
             borderRadius: "3px",
@@ -79,9 +91,11 @@ export const Conditions = ({ projectName, projectId, documentName, documentId, c
                     alignItems: "center", // Vertically center the elements
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center" }}> {/* Add horizontal padding to the document name */}
+                  <Box sx={{ display: "flex", alignItems: "center", mr: 1 }}> {/* Add horizontal padding to the document name */}
                     {documentName}
-                    <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
+                    {hasAmendments && (
+                        <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1 }} />
+                    )}
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
                     <DocumentStatusChip status={String(isToggleEnabled) as DocumentStatus} />
