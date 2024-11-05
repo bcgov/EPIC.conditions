@@ -66,7 +66,8 @@ export const Project = ({ project }: ProjectParam) => {
                 }}
             >
                 <Button
-                    variant="text"
+                    variant="contained"
+                    color="secondary"
                     onClick={handleViewConsolidatedConditions}
                     disabled={!project || !certificateDocument || !allDocumentsStatusTrue}
                     sx={{
