@@ -52,7 +52,16 @@ export const Amendments = ({ projectName, projectId, documentName, documentId, a
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
       {/* Showing results message */}
-      <ContentBox mainLabel={projectName} label={""}>
+      <ContentBox
+        mainLabel={
+          <Box component="span">
+            <Typography component="span" variant="h5" fontWeight="normal">
+              {projectName}
+            </Typography>
+          </Box>
+        }
+        label={""}
+      >
         <Box
           sx={{
             borderRadius: "3px",
