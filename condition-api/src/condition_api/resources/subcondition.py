@@ -30,7 +30,7 @@ API = Namespace("subconditions", description="Endpoints for Sub Condition Manage
 """
 
 subcondition_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, SubConditionSchema(), "Submission"
+    API, SubConditionSchema(), "SubCondition"
 )
 
 @cors_preflight("PATCH, OPTIONS")
