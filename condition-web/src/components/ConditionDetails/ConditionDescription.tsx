@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, TextField } from "@mui/material";
 import { ConditionModel } from "@/models/Condition";
 import { SubconditionModel } from "@/models/Subcondition";
 import { theme } from "@/styles/theme";
+import { useLoadConditionDetails } from "@/hooks/api/useConditions";
 import { useUpdateSubconditions } from "@/hooks/api/useSubConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 
 // Recursive component to render each subcondition
-const SubconditionComponent: React.FC<{ 
+const SubconditionComponent: React.FC<{
   subcondition: SubconditionModel; 
   indentLevel: number; 
   isEditing: boolean; 
   onEdit: (id: string, newIdentifier: string, newText: string) => void; 
-  identifierValue: string; // Added prop for identifier value
-  textValue: string; // Added prop for text value
+  identifierValue: string;
+  textValue: string;
 }> = ({ subcondition, indentLevel, isEditing, onEdit, identifierValue, textValue }) => {
   
   const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +43,7 @@ const SubconditionComponent: React.FC<{
           <>
             <TextField 
               variant="outlined" 
-              value={identifierValue} // Use the edited value
+              value={identifierValue}
               onChange={handleIdentifierChange}
               sx={{ width: '100px' }}
             />
@@ -50,7 +51,7 @@ const SubconditionComponent: React.FC<{
               variant="outlined" 
               multiline 
               fullWidth 
-              value={textValue} // Use the edited value
+              value={textValue}
               onChange={handleTextChange}
               InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
             />
@@ -73,8 +74,8 @@ const SubconditionComponent: React.FC<{
           indentLevel={indentLevel + 1} 
           isEditing={isEditing}
           onEdit={onEdit} 
-          identifierValue={nestedSub.subcondition_identifier} // Pass the identifier
-          textValue={nestedSub.subcondition_text} // Pass the text
+          identifierValue={nestedSub.subcondition_identifier}
+          textValue={nestedSub.subcondition_text}
         />
       ))}
     </>
@@ -82,23 +83,38 @@ const SubconditionComponent: React.FC<{
 };
 
 // Main component to render the condition and its subconditions
-const ConditionDescription: React.FC<{ condition?: ConditionModel }> = ({ condition }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const ConditionDescription: React.FC<{
+  editMode: boolean,
+  condition?: ConditionModel
+  projectId: String,
+  documentId: String,
+  conditionNumber: Number
+}> = ({ editMode, condition, projectId, documentId, conditionNumber }) => {
+  const [isEditing, setIsEditing] = useState(editMode);
   const [updatedCondition, setUpdatedCondition] = useState<ConditionModel | undefined>(condition);
   const [changedValues, setChangedValues] = useState<{ [key: string]: Partial<SubconditionModel> }>({});
 
   const onCreateFailure = () => {
-    notify.error("Failed to save submission");
+    notify.error("Failed to save condition");
   };
 
   const onCreateSuccess = () => {
-    notify.success("Submission saved successfully");
+    notify.success("Condition saved successfully");
+    refetchConditionDetails();
   };
+
+  const { data: conditionDetails, refetch: refetchConditionDetails } = useLoadConditionDetails(projectId.toString(), documentId.toString(), parseInt(conditionNumber.toString()));
+
+  useEffect(() => {
+    if (conditionDetails) {
+      setUpdatedCondition(conditionDetails.condition); // Update local state when condition details are loaded
+    }
+  }, [conditionDetails]);
 
   // useUpdateSubconditions hook to update subconditions
   const { mutate: updateSubconditionsMutate } = useUpdateSubconditions({
     subconditions: Object.entries(changedValues).map(([id, data]) => ({
-      subcondition_id: id,  // Convert id to number here
+      subcondition_id: id,
       subcondition_identifier: data.subcondition_identifier || '',
       subcondition_text: data.subcondition_text || '',
     })),
@@ -111,14 +127,14 @@ const ConditionDescription: React.FC<{ condition?: ConditionModel }> = ({ condit
   if (!condition) {
     return <Typography>No condition available</Typography>;
   }
-
-  const toggleEditing = () => {
-    setIsEditing(!isEditing);
+  
+  useEffect(() => {
+    setIsEditing(editMode);
     if (isEditing) {
       // On save, submit changedValues to the backend
       saveChanges();
     }
-  };
+  }, [editMode]);
 
   const handleEdit = (id: string, newIdentifier: string, newText: string) => {
     if (!updatedCondition) return;
@@ -146,32 +162,13 @@ const ConditionDescription: React.FC<{ condition?: ConditionModel }> = ({ condit
   };
 
   const saveChanges = () => {
-    updateSubconditionsMutate();  // Trigger the mutation for updating subconditions
+    updateSubconditionsMutate();
   };
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, gap: 1 }}>
-        <Button
-            variant="contained"
-            color="primary"
-            sx={{ minWidth: '120px' }}
-            onClick={() => console.log('Approved')}
-        >
-          Approve
-        </Button>
-        <Button
-            variant="contained"
-            color="secondary"
-            sx={{ minWidth: '120px' }}
-            onClick={toggleEditing}
-        >
-          {isEditing ? 'Save' : 'Edit'}
-        </Button>
-      </Box>
-
       {updatedCondition?.subconditions?.map((sub, index) => {
-        const values = changedValues[sub.subcondition_id] || { // Use changedValues for the identifier and text
+        const values = changedValues[sub.subcondition_id] || {
           subcondition_identifier: sub.subcondition_identifier,
           subcondition_text: sub.subcondition_text,
         };
@@ -182,11 +179,26 @@ const ConditionDescription: React.FC<{ condition?: ConditionModel }> = ({ condit
             indentLevel={1} 
             isEditing={isEditing}
             onEdit={handleEdit}
-            identifierValue={values.subcondition_identifier || ''} // Pass edited identifier value
-            textValue={values.subcondition_text || ''} // Pass edited text value
+            identifierValue={values.subcondition_identifier || ''}
+            textValue={values.subcondition_text || ''}
           />
         );
-      })} 
+      })}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
+        <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            sx={{
+              width: "250px", 
+              padding: "4px 8px",
+              borderRadius: "4px",
+            }}
+            onClick={() => console.log('Approved')}
+        >
+          Approve Condition Description
+        </Button>
+      </Box>
     </Box>
   );
 };

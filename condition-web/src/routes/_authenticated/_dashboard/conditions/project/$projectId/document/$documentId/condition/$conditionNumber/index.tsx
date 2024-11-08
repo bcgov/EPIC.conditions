@@ -18,7 +18,8 @@ export const Route = createFileRoute(
   meta: ({ params }) => [
     { title: "Home", path: "/projects/" },
     { title: `${params.projectId}`, path: `/projects/` }, // Fixed Projects path
-    { title: `${params.documentId}`, path: `/_authenticated/_dashboard/conditions/project/${params.projectId}/document/${params.documentId}/condition/$conditionNumber/` } // Path to the specific document
+    { title: `${params.documentId}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}` }, // Path to the specific document
+    { title: `${params.conditionNumber}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}/condition/${params.conditionNumber}` } // Path to the specific document
   ],
 });
 
@@ -44,13 +45,15 @@ function ConditionPage() {
 
   const META_PROJECT_TITLE = `${projectId}`;
   const META_DOCUMENT_TITLE = `${documentId}`;
+  const META_CONDITION_TITLE = `${conditionDetails?.condition.condition_number}`;
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (conditionDetails) {
       replaceBreadcrumb(META_PROJECT_TITLE, conditionDetails?.project_name || "");
       replaceBreadcrumb(META_DOCUMENT_TITLE, conditionDetails?.document_type || "");
+      replaceBreadcrumb(META_CONDITION_TITLE, conditionDetails?.condition.condition_name || "");
     }
-  }, [conditionDetails, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_TITLE]);
+  }, [conditionDetails, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_TITLE, META_CONDITION_TITLE]);
 
   return (
     <PageGrid>
@@ -63,7 +66,10 @@ function ConditionPage() {
             <ConditionDetails
               projectName = {conditionDetails?.project_name || ""}
               documentName = {conditionDetails?.display_name || ""}
-              condition={conditionDetails?.condition}
+              condition = {conditionDetails?.condition}
+              projectId = {projectId || ""}
+              documentId = {documentId || ""}
+              conditionNumber = {conditionNumber || 0}
             />
           </Else>
         </If>
