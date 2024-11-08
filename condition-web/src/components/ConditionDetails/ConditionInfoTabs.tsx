@@ -85,7 +85,9 @@ const ConditionInfoTabs: React.FC<{
                 {selectedTab === 'description' && (
                     <EditButton variant="contained" size="small" onClick={handleEditClick}>
                         {editMode ? (
-                            'Save Tags'
+                            <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <Box component="span" sx={{ ml: 0.5 }}>Save Condition Description</Box>
+                            </Typography>
                         ) : (
                             <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
                                 <EditIcon fontSize="small" />
