@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { BCDesignTokens } from "epic.theme";
-import { ConditionModel } from "@/models/Condition";
+import { createDefaultCondition, ProjectDocumentConditionDetailModel } from "@/models/Condition";
 import { Box, Stack } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { styled } from "@mui/system";
@@ -16,22 +17,20 @@ export const CardInnerBox = styled(Box)({
 });
 
 type ConditionsParam = {
-  condition?: ConditionModel;
-  projectName: string;
-  documentName: string;
+  initialCondition?: ProjectDocumentConditionDetailModel;
   projectId: string;
   documentId: string;
   conditionNumber: number;
 };
 
 export const ConditionDetails = ({
-  projectName,
-  documentName,
-  condition,
+  initialCondition,
   projectId,
   documentId,
   conditionNumber
 }: ConditionsParam) => {
+
+  const [condition, setCondition] = useState(initialCondition?.condition || createDefaultCondition);
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
@@ -43,12 +42,13 @@ export const ConditionDetails = ({
         }}
       >
         <ConditionHeader
-          projectName={projectName}
-          documentName={documentName} 
-          yearIssued={condition?.year_issued}
-          conditionName={condition?.condition_name}
-          isApproved={condition?.is_approved}
-          topicTags={condition?.topic_tags}
+          projectId={projectId}
+          documentId={documentId}
+          conditionNumber={conditionNumber}
+          projectName={initialCondition?.project_name || ""}
+          documentName={initialCondition?.display_name || ""} 
+          condition={condition}
+          setCondition={setCondition}
         />
       </Box>
 

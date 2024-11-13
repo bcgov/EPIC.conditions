@@ -16,6 +16,7 @@ class ConditionRequirementsSchema(Schema):
     consultation_required = fields.Bool(data_key="consultation_required")
     related_phase = fields.Str(data_key="related_phase")
     days_prior_to_commencement = fields.Int(data_key="days_prior_to_commencement")
+    is_approved = fields.Bool(data_key="is_approved")
 
 class SubConditionSchema(Schema):
     """Recursive schema for subconditions."""
@@ -37,6 +38,7 @@ class ConditionSchema(Schema):
     amendment_names = fields.Str(data_key="amendment_names")
     year_issued = fields.Int(data_key="year_issued")
     is_approved = fields.Bool(data_key="is_approved")
+    is_topic_tags_approved = fields.Bool(data_key="is_topic_tags_approved")
     deliverable_name = fields.Str(data_key="deliverable_name")
     condition_requirements = fields.List(fields.Nested(ConditionRequirementsSchema),
                                          data_key="condition_requirements")

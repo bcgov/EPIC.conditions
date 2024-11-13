@@ -21,6 +21,7 @@ class ConditionRequirement(BaseModel):
     consultation_required = Column(Boolean)
     related_phase = Column(Text)
     days_prior_to_commencement = Column(Integer)
+    is_approved = Column(Boolean, nullable=True)
 
     @classmethod
     def get_all(cls):

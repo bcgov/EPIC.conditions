@@ -1,6 +1,11 @@
-import { ProjectDocumentConditionDetailModel, ProjectDocumentConditionModel } from "@/models/Condition";
+import {
+  ProjectDocumentConditionDetailModel,
+  ProjectDocumentConditionModel,
+  updateTopicTagsModel
+} from "@/models/Condition";
 import { submitRequest } from "@/utils/axiosUtils";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Options } from "./types";
 
 const loadConditions = (projectId?: string, documentId?: string) => {
   if (!projectId) {
@@ -44,5 +49,41 @@ export const useLoadConditionDetails = (projectId?: string, documentId?: string,
     queryFn: () => loadConditionDetails(projectId, documentId, conditionNumber),
     enabled: Boolean(projectId && documentId && conditionNumber),
     retry: false,
+  });
+};
+
+const updateConditionDetails = (
+  projectId: string,
+  documentId: string,
+  conditionNumber: number,
+  conditionDetails: updateTopicTagsModel
+) => {
+  return submitRequest({
+    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionNumber}`,
+    method: "patch",
+    data: conditionDetails,
+  });
+};
+
+export const useUpdateConditionDetails = (
+  projectId?: string,
+  documentId?: string,
+  conditionNumber?: number,
+  options? : Options
+) => {
+  return useMutation({
+    mutationFn: (conditionDetails: updateTopicTagsModel) => {
+      if (!projectId) {
+        return Promise.reject(new Error("Project ID is required"));
+      }
+      if (!documentId) {
+        return Promise.reject(new Error("Document ID is required"));
+      }
+      if (!conditionNumber) {
+        return Promise.reject(new Error("Condition Number is required"));
+      }
+      return updateConditionDetails(projectId, documentId, conditionNumber, conditionDetails);
+    },
+    ...options,
   });
 };

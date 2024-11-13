@@ -1,31 +1,38 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Button, Chip, Grid, Stack, TextField, Typography } from "@mui/material";
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import DocumentStatusChip from "../Documents/DocumentStatusChip";
+import { ConditionModel } from "@/models/Condition";
 import { DocumentStatus } from "@/models/Document";
 import { BCDesignTokens } from "epic.theme";
 import { StyledTableHeadCell } from "../Shared/Table/common";
+import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
+import { notify } from "@/components/Shared/Snackbar/snackbarStore";
+import { updateTopicTagsModel } from "@/models/Condition";
+
 
 type ConditionHeaderProps = {
+    projectId: string;
+    documentId: string;
+    conditionNumber: number;
     projectName: string;
     documentName: string;
-    yearIssued?: number;
-    topicTags?: string[];
-    conditionName?: string;
-    isApproved?: boolean;
+    condition: ConditionModel;
+    setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 };
 
 const ConditionHeader = ({
+    projectId,
+    documentId,
+    conditionNumber,
     projectName,
     documentName,
-    yearIssued,
-    topicTags,
-    conditionName,
-    isApproved,
+    condition,
+    setCondition
 }: ConditionHeaderProps) => {
     const [editMode, setEditMode] = useState(false);
-    const [tags, setTags] = useState<string[]>(topicTags || []);
+    const [tags, setTags] = useState<string[]>(condition?.topic_tags || []);
     const [newTag, setNewTag] = useState("");
 
     const handleEditClick = () => {
@@ -43,45 +50,86 @@ const ConditionHeader = ({
         }
     };
 
+    const onCreateFailure = () => {
+        notify.error("Failed to save condition");
+    };
+
+    const onCreateSuccess = () => {
+        notify.success("Condition saved successfully");
+    };
+
+    const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
+        projectId,
+        documentId,
+        conditionNumber,
+        {
+          onSuccess: onCreateSuccess,
+          onError: onCreateFailure,
+        }
+    );
+
+    useEffect(() => {
+        if (conditionDetails) {
+            setCondition((prevCondition) => ({
+                ...prevCondition,
+                ...conditionDetails,
+            }));
+        }
+    }, [conditionDetails, setCondition]);
+
+    const approveTags = (isApprovalAction = true) => {
+        const data: updateTopicTagsModel = isApprovalAction
+          ? { topic_tags: tags, is_topic_tags_approved: !condition.is_topic_tags_approved }
+          : { topic_tags: tags, is_topic_tags_approved: condition.is_topic_tags_approved };
+      
+        updateConditionDetails(data);
+    };
+
     return (
         <Grid container alignItems="stretch">
             <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center', px: 2.5, py: 1 }}>
-                    <Typography variant="h6">{conditionName}</Typography>
+                    <Typography variant="h6">{condition?.condition_name}</Typography>
                     <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
-                    <DocumentStatusChip status={String(isApproved) as DocumentStatus} />
-                    <Button
-                        variant="contained"
-                        size="small"
-                        onClick={handleEditClick}
-                        sx={{
-                            ml: 'auto',
-                            right: -3,
-                            top: 9,
-                            borderRadius: "4px 4px 0 0",
-                            border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                            backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
-                            color: "black",
-                            '&:hover': {
-                                backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
-                            },
-                        }}
-                    >
-                        {editMode ?
-                            <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <Box component="span" sx={{ ml: 0.5 }}>
-                                    Save Tags
-                                </Box>
-                            </Typography>
-                        : (
-                            <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <EditIcon fontSize="small" />
-                                <Box component="span" sx={{ ml: 0.5 }}>
-                                    Edit/Add Tags
-                                </Box>
-                            </Typography>
-                        )}
-                    </Button>
+                    <DocumentStatusChip status={String(condition?.is_approved) as DocumentStatus} />
+                    {!condition.is_topic_tags_approved && (
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={handleEditClick}
+                            sx={{
+                                ml: 'auto',
+                                right: -3,
+                                top: 9,
+                                borderRadius: "4px 4px 0 0",
+                                border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                                backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                                color: "black",
+                                '&:hover': {
+                                    backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                                },
+                            }}
+                        >
+                            {editMode ?
+                                <Typography
+                                    component="span"
+                                    sx={{ display: 'inline-flex', alignItems: 'center' }}
+                                    onClick={() => approveTags(false)}
+                                >
+                                    <Box component="span" sx={{ ml: 0.5 }}>
+                                        Save Tags
+                                    </Box>
+                                </Typography>
+                            : (
+                                <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                    <EditIcon fontSize="small" />
+                                    <Box component="span" sx={{ ml: 0.5 }}>
+                                        Edit/Add Tags
+                                    </Box>
+                                </Typography>
+                            )}
+                        </Button>
+                    )}
                 </Box>
             </Grid>
 
@@ -117,7 +165,7 @@ const ConditionHeader = ({
                                         </StyledTableHeadCell>
                                         <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                                             <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                {yearIssued}
+                                                {condition?.year_issued}
                                             </Typography>
                                         </StyledTableHeadCell>
                                     </Stack>
@@ -149,7 +197,8 @@ const ConditionHeader = ({
                                 borderRadius: 1,
                                 display: 'flex',
                                 flexDirection: 'column',
-                                height: '100%'
+                                height: '100%',
+                                backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit'
                             }}
                         >
                              <Grid container direction="row">
@@ -209,8 +258,9 @@ const ConditionHeader = ({
                                             color="primary"
                                             size="small"
                                             sx={{ padding: "4px 8px", borderRadius: "4px" }}
+                                            onClick={() => approveTags(true)}
                                         >
-                                            Approve Tags
+                                            {condition.is_topic_tags_approved ? 'Un-approve Tags' : 'Approve Tags'}
                                         </Button>
                                     </Stack>
                                 </Grid>

@@ -7,4 +7,5 @@ export interface ConditionRequirementModel {
   consultation_required: boolean;
   related_phase: string;
   days_prior_to_commencement: number;
+  is_approved: boolean;
 }

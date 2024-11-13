@@ -88,7 +88,7 @@ export default function ConditionTableRow({
             py: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
-          {condition.topic_tags ?? "--"}
+          {condition.topic_tags?.join(', ') ?? "--"}
         </TableCell>
         <TableCell
           colSpan={2}
