@@ -64,9 +64,7 @@ function ConditionPage() {
           </Then>
           <Else>
             <ConditionDetails
-              projectName = {conditionDetails?.project_name || ""}
-              documentName = {conditionDetails?.display_name || ""}
-              condition = {conditionDetails?.condition}
+              initialCondition = {conditionDetails}
               projectId = {projectId || ""}
               documentId = {documentId || ""}
               conditionNumber = {conditionNumber || 0}

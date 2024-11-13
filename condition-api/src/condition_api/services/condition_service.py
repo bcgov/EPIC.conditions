@@ -39,6 +39,7 @@ class ConditionService:
                 conditions.condition_text,
                 conditions.is_approved,
                 conditions.topic_tags,
+                conditions.is_topic_tags_approved,
                 conditions.subtopic_tags,
                 condition_requirements.deliverable_name,
                 condition_requirements.is_plan,
@@ -48,6 +49,7 @@ class ConditionService:
                 condition_requirements.consultation_required,
                 condition_requirements.related_phase,
                 condition_requirements.days_prior_to_commencement,
+                condition_requirements.is_approved.label('condition_requirements_is_approved'),
                 subconditions.id.label('subcondition_id'),
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
@@ -96,6 +98,7 @@ class ConditionService:
             "condition_text": condition_data[0].condition_text,
             "is_approved": condition_data[0].is_approved,
             "topic_tags": condition_data[0].topic_tags,
+            "is_topic_tags_approved": condition_data[0].is_topic_tags_approved,
             "subtopic_tags": condition_data[0].subtopic_tags,
             "year_issued": condition_data[0].year_issued,
             "condition_requirements": [],
@@ -136,7 +139,8 @@ class ConditionService:
                     "stakeholders_to_submit_to": row.stakeholders_to_submit_to,
                     "consultation_required": row.consultation_required,
                     "related_phase": row.related_phase,
-                    "days_prior_to_commencement": row.days_prior_to_commencement
+                    "days_prior_to_commencement": row.days_prior_to_commencement,
+                    "is_approved": row.condition_requirements_is_approved
                 })
 
         return {
@@ -325,3 +329,17 @@ class ConditionService:
             "document_type": document_type,
             "conditions": list(conditions_map.values())
         }
+
+
+    @staticmethod
+    def update_condition(project_id, document_id, condition_number, conditions_data):
+        """Update the approved status of a specific condition topic tag."""
+        condition = db.session.query(Condition).filter_by(
+            project_id=project_id, document_id=document_id, condition_number=condition_number
+            ).first()
+        if "topic_tags" in conditions_data:
+            condition.topic_tags = conditions_data.get("topic_tags")
+        if "is_topic_tags_approved" in conditions_data:
+            condition.is_topic_tags_approved = conditions_data.get("is_topic_tags_approved")
+        db.session.commit()
+        return condition

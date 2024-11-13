@@ -28,18 +28,18 @@ API = Namespace("conditions", description="Endpoints for Condition Management")
 """Custom exception messages
 """
 
-project_list_model = ApiHelper.convert_ma_schema_to_restx_model(
+condition_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, ConditionSchema(), "Condition"
 )
 
-@cors_preflight("GET, OPTIONS")
-@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_number>", methods=["GET", "OPTIONS"])
+@cors_preflight("GET, OPTIONS, PATCH")
+@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_number>", methods=["PATCH", "GET", "OPTIONS"])
 class ConditionDetailsResource(Resource):
     """Resource for fetching condition details by project_id."""
 
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
-    @API.response(code=HTTPStatus.CREATED, model=project_list_model, description="Get conditions")
+    @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.require
     @cors.crossdomain(origin="*")
@@ -58,6 +58,24 @@ class ConditionDetailsResource(Resource):
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Edit condition data")
+    @API.response(
+        code=HTTPStatus.OK, model=condition_model, description="Edit conditions"
+    )
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @cors.crossdomain(origin="*")
+    @auth.require
+    def patch(project_id, document_id, condition_number):
+        """Edit condition data."""
+        try:
+            conditions_data = ConditionSchema().load(API.payload)
+            updated_condition = ConditionService.update_condition(
+                project_id, document_id, condition_number, conditions_data)
+            return ConditionSchema().dump(updated_condition), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
 
 @cors_preflight("GET, OPTIONS")
 @API.route("/project/<string:project_id>/document/<string:document_id>", methods=["GET", "OPTIONS"])
@@ -66,7 +84,7 @@ class ConditionDetailResource(Resource):
 
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id and document id")
-    @API.response(code=HTTPStatus.CREATED, model=project_list_model, description="Get conditions")
+    @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.require
     @cors.crossdomain(origin="*")
