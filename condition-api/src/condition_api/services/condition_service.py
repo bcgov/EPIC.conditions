@@ -333,13 +333,67 @@ class ConditionService:
 
     @staticmethod
     def update_condition(project_id, document_id, condition_number, conditions_data):
-        """Update the approved status of a specific condition topic tag."""
+        """Update the approved status, topic tags, and subconditions of a specific condition."""
         condition = db.session.query(Condition).filter_by(
             project_id=project_id, document_id=document_id, condition_number=condition_number
             ).first()
-        if "topic_tags" in conditions_data:
+
+        if "topic_tags" in conditions_data and not condition.is_topic_tags_approved:
             condition.topic_tags = conditions_data.get("topic_tags")
+
         if "is_topic_tags_approved" in conditions_data:
             condition.is_topic_tags_approved = conditions_data.get("is_topic_tags_approved")
+
+        if conditions_data.get("subconditions"):
+            existing_subcondition_ids = [
+                subcond["subcondition_id"] for subcond in conditions_data["subconditions"]
+                if isinstance(subcond["subcondition_id"], str) and "-" not in subcond["subcondition_id"]
+            ]
+            db.session.query(Subcondition).filter(
+                Subcondition.condition_id == condition.id,
+                Subcondition.id.notin_(existing_subcondition_ids)
+            ).delete(synchronize_session=False)
+            ConditionService.upsert_subconditions(
+                condition.id, conditions_data.get("subconditions"), None)
+
         db.session.commit()
         return condition
+
+
+    @staticmethod
+    def upsert_subconditions(condition_id, subconditions, parent_id=None):
+
+        for subcond_data in subconditions:
+            subcondition_id = subcond_data.get("subcondition_id")
+
+            # Check if the subcondition exists
+            if "-" in str(subcondition_id):
+                existing_subcondition = False
+            else:
+                existing_subcondition = db.session.query(Subcondition).filter_by(
+                    id=subcondition_id, condition_id=condition_id
+                ).first()
+
+            if existing_subcondition:
+                # Update the existing subcondition
+                existing_subcondition.subcondition_identifier = subcond_data.get("subcondition_identifier")
+                existing_subcondition.subcondition_text = subcond_data.get("subcondition_text")
+                existing_subcondition.parent_subcondition_id = parent_id
+            else:
+                # Insert a new subcondition
+                new_subcondition = Subcondition(
+                    condition_id=condition_id,
+                    subcondition_identifier=subcond_data.get("subcondition_identifier"),
+                    subcondition_text=subcond_data.get("subcondition_text"),
+                    parent_subcondition_id=parent_id
+                )
+                db.session.add(new_subcondition)
+                db.session.flush()  # Ensure we get the ID of the newly added subcondition
+
+                # Set the ID for further nested subconditions
+                subcondition_id = new_subcondition.id
+
+            # Recursively handle child subconditions
+            if "subconditions" in subcond_data:
+                ConditionService.upsert_subconditions(
+                    condition_id, subcond_data["subconditions"], parent_id=subcondition_id)

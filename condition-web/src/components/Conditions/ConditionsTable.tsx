@@ -42,7 +42,7 @@ import {
                         Amendment In
                     </StyledTableHeadCell>
                     <StyledTableHeadCell colSpan={2} align="right">
-                        Topic(s)
+                        Tags
                     </StyledTableHeadCell>
                     <StyledTableHeadCell colSpan={2} align="right">
                         Year Issued

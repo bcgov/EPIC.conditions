@@ -60,10 +60,11 @@ export const ConditionDetails = ({
         }}
       >
         <ConditionInfoTabs
-          condition={condition}
           projectId={projectId}
           documentId={documentId}
           conditionNumber={conditionNumber}
+          condition={condition}
+          setCondition={setCondition}
         />
       </Box>
     </Stack>

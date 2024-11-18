@@ -205,7 +205,7 @@ const ConditionHeader = ({
                                 <Grid item xs={12}>
                                     <Stack direction="row" alignItems="flex-start" spacing={-2}>
                                         <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                                            Topic(s):
+                                            Tags:
                                         </StyledTableHeadCell>
                                         <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                                             {editMode ? (

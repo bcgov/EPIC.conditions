@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, TextField } from "@mui/material";
+import { Box, IconButton, Typography, Button, TextField, Stack } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import Delete from "@mui/icons-material/Delete";
 import { ConditionModel } from "@/models/Condition";
 import { SubconditionModel } from "@/models/Subcondition";
 import { theme } from "@/styles/theme";
-import { useLoadConditionDetails } from "@/hooks/api/useConditions";
-import { useUpdateSubconditions } from "@/hooks/api/useSubConditions";
+import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
+import { updateTopicTagsModel } from "@/models/Condition";
+import { BCDesignTokens } from "epic.theme";
 
 // Recursive component to render each subcondition
 const SubconditionComponent: React.FC<{
   subcondition: SubconditionModel; 
   indentLevel: number; 
   isEditing: boolean; 
-  onEdit: (id: string, newIdentifier: string, newText: string) => void; 
+  onEdit: (id: string, newIdentifier: string, newText: string) => void;
+  onDelete: (id: string) => void;
+  onAdd: (parentId: string) => void;
   identifierValue: string;
   textValue: string;
-}> = ({ subcondition, indentLevel, isEditing, onEdit, identifierValue, textValue }) => {
+}> = ({ subcondition, indentLevel, isEditing, onEdit, onDelete, onAdd, identifierValue, textValue }) => {
   
   const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onEdit(subcondition.subcondition_id, e.target.value ?? '', textValue);
@@ -55,6 +60,14 @@ const SubconditionComponent: React.FC<{
               onChange={handleTextChange}
               InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
             />
+            <Box display="flex" alignItems="center" sx={{ paddingLeft: '4px', paddingBottom: 3 }}>
+              <IconButton size="small" onClick={() => onAdd(subcondition.subcondition_id)}>
+                <AddIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={() => onDelete(subcondition.subcondition_id)}>
+                <Delete fontSize="small" />
+              </IconButton>
+            </Box>
           </>
         ) : (
           <Typography variant="body2">
@@ -73,7 +86,9 @@ const SubconditionComponent: React.FC<{
           subcondition={nestedSub} 
           indentLevel={indentLevel + 1} 
           isEditing={isEditing}
-          onEdit={onEdit} 
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onAdd={onAdd}
           identifierValue={nestedSub.subcondition_identifier}
           textValue={nestedSub.subcondition_text}
         />
@@ -82,14 +97,24 @@ const SubconditionComponent: React.FC<{
   );
 };
 
+type ConditionDescriptionProps = {
+  editMode: boolean;
+  projectId: string;
+  documentId: string;
+  conditionNumber: number;
+  condition: ConditionModel;
+  setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
+};
+
 // Main component to render the condition and its subconditions
-const ConditionDescription: React.FC<{
-  editMode: boolean,
-  condition?: ConditionModel
-  projectId: String,
-  documentId: String,
-  conditionNumber: Number
-}> = ({ editMode, condition, projectId, documentId, conditionNumber }) => {
+const ConditionDescription = ({
+  editMode,
+  projectId,
+  documentId,
+  conditionNumber,
+  condition,
+  setCondition
+}: ConditionDescriptionProps) => {
   const [isEditing, setIsEditing] = useState(editMode);
   const [updatedCondition, setUpdatedCondition] = useState<ConditionModel | undefined>(condition);
   const [changedValues, setChangedValues] = useState<{ [key: string]: Partial<SubconditionModel> }>({});
@@ -100,29 +125,26 @@ const ConditionDescription: React.FC<{
 
   const onCreateSuccess = () => {
     notify.success("Condition saved successfully");
-    refetchConditionDetails();
   };
 
-  const { data: conditionDetails, refetch: refetchConditionDetails } = useLoadConditionDetails(projectId.toString(), documentId.toString(), parseInt(conditionNumber.toString()));
+  const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
+    projectId,
+    documentId,
+    conditionNumber,
+    {
+      onSuccess: onCreateSuccess,
+      onError: onCreateFailure,
+    }
+  );
 
   useEffect(() => {
     if (conditionDetails) {
-      setUpdatedCondition(conditionDetails.condition); // Update local state when condition details are loaded
+        setCondition((prevCondition) => ({
+            ...prevCondition,
+            ...conditionDetails,
+        }));
     }
-  }, [conditionDetails]);
-
-  // useUpdateSubconditions hook to update subconditions
-  const { mutate: updateSubconditionsMutate } = useUpdateSubconditions({
-    subconditions: Object.entries(changedValues).map(([id, data]) => ({
-      subcondition_id: id,
-      subcondition_identifier: data.subcondition_identifier || '',
-      subcondition_text: data.subcondition_text || '',
-    })),
-    options: {
-      onSuccess: onCreateSuccess,
-      onError: onCreateFailure,
-    },
-  });
+  }, [conditionDetails, setCondition]);
 
   if (!condition) {
     return <Typography>No condition available</Typography>;
@@ -161,8 +183,80 @@ const ConditionDescription: React.FC<{
     });
   };
 
+  const handleAddParentCondition = () => {
+    if (!updatedCondition) return;
+
+    const newCondition: SubconditionModel = {
+      subcondition_id: `parent-${Date.now()}`,
+      subcondition_identifier: '',
+      subcondition_text: '',
+      subconditions: [],
+    };
+
+    setUpdatedCondition({
+      ...updatedCondition,
+      subconditions: [...(updatedCondition.subconditions || []), newCondition],
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!updatedCondition) return;
+
+    const deleteSubcondition = (subconds: SubconditionModel[]): SubconditionModel[] => {
+      return subconds.filter(sub => sub.subcondition_id !== id).map(sub => ({
+        ...sub,
+        subconditions: sub.subconditions ? deleteSubcondition(sub.subconditions) : sub.subconditions,
+      }));
+    };
+
+    setUpdatedCondition({
+      ...updatedCondition,
+      subconditions: deleteSubcondition(updatedCondition.subconditions || []),
+    });
+  };
+
+  const handleAdd = (targetId: string) => {
+    if (!updatedCondition) return;
+  
+    const addSubcondition = (subconds: SubconditionModel[] | undefined): SubconditionModel[] => {
+
+      return (subconds || []).map((sub) => {
+        if (sub.subcondition_id === targetId) {
+          const newSubcondition: SubconditionModel = {
+            subcondition_id: `${targetId}-${Date.now()}`,
+            subcondition_identifier: '',
+            subcondition_text: '',
+            subconditions: [],
+          };
+  
+          return {
+            ...sub,
+            subconditions: [...(sub.subconditions || []), newSubcondition],
+          };
+        }
+  
+        return {
+          ...sub,
+          subconditions: addSubcondition(sub.subconditions),
+        };
+      });
+    };
+  
+    setUpdatedCondition((prev) => {
+      if (!prev) return prev;
+  
+      return {
+        ...prev,
+        subconditions: addSubcondition(prev.subconditions),
+      };
+    });
+  };   
+  
   const saveChanges = () => {
-    updateSubconditionsMutate();
+    const data: updateTopicTagsModel = {
+      subconditions: updatedCondition?.subconditions
+    };
+    updateConditionDetails(data);
   };
 
   return (
@@ -179,26 +273,48 @@ const ConditionDescription: React.FC<{
             indentLevel={1} 
             isEditing={isEditing}
             onEdit={handleEdit}
+            onDelete={handleDelete}
+            onAdd={handleAdd}
             identifierValue={values.subcondition_identifier || ''}
             textValue={values.subcondition_text || ''}
           />
         );
       })}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
-        <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{
-              width: "250px", 
-              padding: "4px 8px",
-              borderRadius: "4px",
-            }}
-            onClick={() => console.log('Approved')}
-        >
-          Approve Condition Description
-        </Button>
-      </Box>
+      <Stack sx={{ mt: 5 }} direction={"row"}>
+        <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+          {isEditing && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              sx={{
+                padding: "4px 8px",
+                borderRadius: "4px",
+                color: BCDesignTokens.themeGray100,
+                border: `2px solid ${theme.palette.grey[700]}`,
+              }}
+              onClick={handleAddParentCondition}
+            >
+              <AddIcon fontSize="small" /> Add Condition
+            </Button>
+          )}
+        </Box>
+        <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              sx={{
+                width: "250px", 
+                padding: "4px 8px",
+                borderRadius: "4px",
+              }}
+              onClick={() => console.log('Approved')}
+          >
+            Approve Condition Description
+          </Button>
+        </Box>
+      </Stack>
     </Box>
   );
 };
