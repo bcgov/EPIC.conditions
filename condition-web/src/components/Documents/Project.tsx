@@ -20,6 +20,7 @@ type ProjectParam = {
   };
 
 export const Project = ({ project }: ProjectParam) => {
+
     const navigate = useNavigate();
 
     const certificateDocument = project?.documents?.find(

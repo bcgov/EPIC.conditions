@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Box, IconButton, Typography, Button, TextField, Stack } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import Delete from "@mui/icons-material/Delete";
@@ -107,7 +107,7 @@ type ConditionDescriptionProps = {
 };
 
 // Main component to render the condition and its subconditions
-const ConditionDescription = ({
+const ConditionDescription = memo(({
   editMode,
   projectId,
   documentId,
@@ -317,6 +317,6 @@ const ConditionDescription = ({
       </Stack>
     </Box>
   );
-};
+});
 
 export default ConditionDescription;

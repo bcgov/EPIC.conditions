@@ -19,6 +19,7 @@ class Condition(BaseModel):
     effective_to = Column(DateTime, nullable=True)
     is_approved = Column(Boolean, nullable=True)
     is_topic_tags_approved = Column(Boolean, nullable=True)
+    is_condition_attributes_approved = Column(Boolean, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
 
     # Establish a one-to-many relationship with subcondition

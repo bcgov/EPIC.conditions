@@ -21,8 +21,8 @@ class SubconditionSchema(BaseSchema):
     # Recursively define subconditions (i.e., subconditions can have child subconditions)
     subconditions = fields.List(fields.Nested(lambda: SubconditionSchema()), data_key="subconditions")
 
-class ConditionRequirementSchema(BaseSchema):
-    """Condition Requirement schema."""
+class ConditionAttributeSchema(BaseSchema):
+    """Condition Attribute schema."""
     deliverable_name = fields.Str(data_key="deliverable_name")
     is_plan = fields.Bool(data_key="is_plan")
     approval_type = fields.Str(data_key="approval_type")
@@ -41,9 +41,9 @@ class ConditionSchema(BaseSchema):
     topic_tags = fields.List(fields.Str(), data_key="topic_tags")
     subtopic_tags = fields.List(fields.Str(), data_key="subtopic_tags")
 
-    # Add subconditions and condition requirements to the condition
+    # Add subconditions and condition attributes to the condition
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
-    condition_requirements = fields.List(fields.Nested(ConditionRequirementSchema), data_key="condition_requirements")
+    condition_attributes = fields.List(fields.Nested(ConditionAttributeSchema), data_key="condition_attributes")
 
 
 class DocumentSchema(BaseSchema):
@@ -69,7 +69,6 @@ class ProjectSchema(BaseSchema):
 
     project_id = fields.Str(data_key="project_id")
     project_name = fields.Str(data_key="project_name")
-    project_type = fields.Str(data_key="project_type")
     
     # A project can have multiple documents
     documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")

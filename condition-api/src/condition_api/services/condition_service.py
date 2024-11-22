@@ -1,10 +1,10 @@
 """Service for condition management."""
-from sqlalchemy import and_, case, func, extract
+from sqlalchemy import case, func, extract
 from sqlalchemy.orm import aliased
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
 from condition_api.models.subcondition import Subcondition
-from condition_api.models.condition_requirement import ConditionRequirement
+from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.models.document import Document
 from condition_api.models.db import db
 from condition_api.models.project import Project
@@ -15,14 +15,14 @@ class ConditionService:
 
     @staticmethod
     def get_condition_details(project_id, document_id, condition_number):
-        """Fetch condition details along with related condition requirements by project ID."""
+        """Fetch condition details along with related condition attributes by project ID."""
 
         # Aliases for the tables
         projects = aliased(Project)
         documents = aliased(Document)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
-        condition_requirements = aliased(ConditionRequirement)
+        condition_attributes = aliased(ConditionAttribute)
 
         condition_data = (
             db.session.query(
@@ -34,6 +34,7 @@ class ConditionService:
                 ).label('document_type'),
                 extract('year', documents.date_issued).label('year_issued'),
                 documents.display_name,
+                conditions.id,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -41,26 +42,10 @@ class ConditionService:
                 conditions.topic_tags,
                 conditions.is_topic_tags_approved,
                 conditions.subtopic_tags,
-                condition_requirements.deliverable_name,
-                condition_requirements.is_plan,
-                condition_requirements.approval_type,
-                condition_requirements.stakeholders_to_consult,
-                condition_requirements.stakeholders_to_submit_to,
-                condition_requirements.consultation_required,
-                condition_requirements.related_phase,
-                condition_requirements.days_prior_to_commencement,
-                condition_requirements.is_approved.label('condition_requirements_is_approved'),
                 subconditions.id.label('subcondition_id'),
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
                 subconditions.parent_subcondition_id
-            )
-            .outerjoin(
-                condition_requirements,
-                and_(
-                        conditions.id == condition_requirements.condition_id,
-                        conditions.document_id == condition_requirements.document_id
-                )
             )
             .outerjoin(
                 subconditions,
@@ -93,6 +78,7 @@ class ConditionService:
 
         # Extract condition details
         condition = {
+            "condition_id": condition_data[0].id,
             "condition_name": condition_data[0].condition_name,
             "condition_number": condition_data[0].condition_number,
             "condition_text": condition_data[0].condition_text,
@@ -101,12 +87,12 @@ class ConditionService:
             "is_topic_tags_approved": condition_data[0].is_topic_tags_approved,
             "subtopic_tags": condition_data[0].subtopic_tags,
             "year_issued": condition_data[0].year_issued,
-            "condition_requirements": [],
+            "condition_attributes": [],
             "subconditions": []
         }
 
         subcondition_map = {}
-        # Extract condition_requirements and subconditions
+        # Extract condition_attributes and subconditions
         for row in condition_data:
             subcond_id = row.subcondition_id
             # Handle the hierarchical subcondition structure
@@ -129,19 +115,25 @@ class ConditionService:
                     # If there is no parent, it's a top-level subcondition for this condition
                     condition["subconditions"].append(subcondition)
 
-            # Add condition requirements to the condition
-            if row.deliverable_name:
-                condition["condition_requirements"].append({
-                    "deliverable_name": row.deliverable_name,
-                    "is_plan": row.is_plan,
-                    "approval_type": row.approval_type,
-                    "stakeholders_to_consult": row.stakeholders_to_consult,
-                    "stakeholders_to_submit_to": row.stakeholders_to_submit_to,
-                    "consultation_required": row.consultation_required,
-                    "related_phase": row.related_phase,
-                    "days_prior_to_commencement": row.days_prior_to_commencement,
-                    "is_approved": row.condition_requirements_is_approved
-                })
+        attributes_data = (
+            db.session.query(
+                condition_attributes.id,
+                condition_attributes.attribute_key,
+                condition_attributes.attribute_value
+            )
+            .filter(
+                condition_attributes.condition_id == condition_data[0].id,
+                ~condition_attributes.attribute_key.in_(['Parties required to be submitted', 'Deliverable Name'])
+            )
+            .all()
+        )
+
+        transformed_attributes = [
+            {"id": record[0], "key": record[1], "value": record[2]}
+            for record in attributes_data
+        ]
+
+        condition["condition_attributes"] = transformed_attributes if transformed_attributes else []
 
         return {
             "project_name": project_name,
@@ -161,7 +153,6 @@ class ConditionService:
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
-        condition_requirements = aliased(ConditionRequirement)
 
         amendment_subquery = (
             db.session.query(
@@ -178,7 +169,7 @@ class ConditionService:
             .subquery()
         )
 
-        # Query for all conditions and their related subconditions and requirements
+        # Query for all conditions and their related subconditions and attributes
         condition_data = (
             db.session.query(
                 projects.project_name,
@@ -194,26 +185,11 @@ class ConditionService:
                 conditions.topic_tags,
                 conditions.subtopic_tags,
                 amendment_subquery.c.amendment_names,
-                condition_requirements.deliverable_name,
-                condition_requirements.is_plan,
-                condition_requirements.approval_type,
-                condition_requirements.stakeholders_to_consult,
-                condition_requirements.stakeholders_to_submit_to,
-                condition_requirements.consultation_required,
-                condition_requirements.related_phase,
-                condition_requirements.days_prior_to_commencement,
                 subconditions.id.label('subcondition_id'),
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
                 subconditions.parent_subcondition_id,
                 extract('year', documents.date_issued).label('year_issued')
-            )
-            .outerjoin(
-                condition_requirements,
-                and_(
-                    conditions.id == condition_requirements.condition_id,
-                    conditions.document_id == condition_requirements.document_id
-                )
             )
             .outerjoin(
                 subconditions,
@@ -245,14 +221,6 @@ class ConditionService:
                 conditions.is_approved,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
-                condition_requirements.deliverable_name,
-                condition_requirements.is_plan,
-                condition_requirements.approval_type,
-                condition_requirements.stakeholders_to_consult,
-                condition_requirements.stakeholders_to_submit_to,
-                condition_requirements.consultation_required,
-                condition_requirements.related_phase,
-                condition_requirements.days_prior_to_commencement,
                 subconditions.id,
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
@@ -287,22 +255,9 @@ class ConditionService:
                     "subtopic_tags": row.subtopic_tags,
                     "amendment_names": row.amendment_names,
                     "year_issued": row.year_issued,
-                    "condition_requirements": [],
+                    "condition_attributes": [],
                     "subconditions": []
                 }
-
-            # Add condition requirements
-            if row.deliverable_name:
-                conditions_map[cond_num]["condition_requirements"].append({
-                    "deliverable_name": row.deliverable_name,
-                    "is_plan": row.is_plan,
-                    "approval_type": row.approval_type,
-                    "stakeholders_to_consult": row.stakeholders_to_consult,
-                    "stakeholders_to_submit_to": row.stakeholders_to_submit_to,
-                    "consultation_required": row.consultation_required,
-                    "related_phase": row.related_phase,
-                    "days_prior_to_commencement": row.days_prior_to_commencement
-                })
 
             # Handle subconditions
             subcond_id = row.subcondition_id
