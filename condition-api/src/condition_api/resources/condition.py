@@ -44,7 +44,7 @@ class ConditionDetailsResource(Resource):
     @auth.require
     @cors.crossdomain(origin="*")
     def get(project_id, document_id, condition_number):
-        """Fetch conditions and condition requirements by project ID."""
+        """Fetch conditions and condition attributes by project ID."""
         try:
             condition_details = ConditionService.get_condition_details(project_id, document_id, condition_number)
             if not condition_details:
@@ -89,7 +89,7 @@ class ConditionDetailResource(Resource):
     @auth.require
     @cors.crossdomain(origin="*")
     def get(project_id, document_id):
-        """Fetch conditions and condition requirements by project ID."""
+        """Fetch conditions and condition attributes by project ID."""
         try:
             condition_details = ConditionService.get_all_conditions(project_id, document_id)
             if not condition_details:

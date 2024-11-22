@@ -3,6 +3,7 @@ import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
+import ConditionAttribute from './ConditionAttribute';
 import ConditionDescription from './ConditionDescription';
 import { ConditionModel } from "@/models/Condition";
 
@@ -99,7 +100,7 @@ const ConditionInfoTabs: React.FC<{
                 )}
             </Stack>
             <Box sx={{ p: 2 }}>
-                {selectedTab === 'description' && (
+                <Box sx={{ display: selectedTab === 'description' ? 'block' : 'none' }}>
                     <ConditionDescription
                         editMode={editMode}
                         projectId={projectId}
@@ -108,8 +109,13 @@ const ConditionInfoTabs: React.FC<{
                         condition={condition}
                         setCondition={setCondition}
                     />
-                )}
-                {selectedTab === 'attributes' && <Typography variant="body2">Attributes content goes here.</Typography>}
+                </Box>
+                <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
+                    <ConditionAttribute
+                        condition={condition}
+                        setCondition={setCondition}
+                    />
+                </Box>
             </Box>
         </>
     );

@@ -86,7 +86,7 @@ const ConditionHeader = ({
     };
 
     return (
-        <Grid container alignItems="stretch">
+        <Grid container>
             <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center', px: 2.5, py: 1 }}>
                     <Typography variant="h6">{condition?.condition_name}</Typography>
@@ -253,15 +253,17 @@ const ConditionHeader = ({
                                     paddingTop={2}
                                 >
                                     <Stack direction="row" spacing={1}>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            size="small"
-                                            sx={{ padding: "4px 8px", borderRadius: "4px" }}
-                                            onClick={() => approveTags(true)}
-                                        >
-                                            {condition.is_topic_tags_approved ? 'Un-approve Tags' : 'Approve Tags'}
-                                        </Button>
+                                        {!editMode &&
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                size="small"
+                                                sx={{ padding: "4px 8px", borderRadius: "4px" }}
+                                                onClick={() => approveTags(true)}
+                                            >
+                                                {condition.is_topic_tags_approved ? 'Un-approve Tags' : 'Approve Tags'}
+                                            </Button>
+                                        }
                                     </Stack>
                                 </Grid>
                             </Grid>

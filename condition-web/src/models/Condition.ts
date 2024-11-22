@@ -1,7 +1,7 @@
 import { SubconditionModel } from "./Subcondition";
-import { ConditionRequirementModel } from "./ConditionRequirement";
 
 export interface ConditionModel {
+  condition_id: number;
   condition_name: string;
   condition_number: number;
   condition_text: string;
@@ -12,11 +12,16 @@ export interface ConditionModel {
   is_topic_tags_approved: boolean;
   subtopic_tags: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
-  condition_requirement?: ConditionRequirementModel[];     // Associated deliverables
+  condition_attributes?: [{
+    id: number;
+    key: string;
+    value: any;
+  }];     // Associated deliverables
 }
 
 export const createDefaultCondition = (): ConditionModel => {
   return {
+      condition_id: 0,
       condition_name: '',
       condition_number: 0,
       condition_text: '',
@@ -27,7 +32,11 @@ export const createDefaultCondition = (): ConditionModel => {
       is_topic_tags_approved: false,
       subtopic_tags: [],
       subconditions: [],
-      condition_requirement: [],
+      condition_attributes: [{
+        id: 0,
+        key: "",
+        value: "",
+      }],
   };
 };
 

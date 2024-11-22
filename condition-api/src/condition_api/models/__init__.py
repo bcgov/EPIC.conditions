@@ -20,7 +20,7 @@ from .project import Project
 from .document import Document
 from .condition import Condition
 from .subcondition import Subcondition
-from .condition_requirement import ConditionRequirement
+from .condition_attribute import ConditionAttribute
 from .user_status import UserStatus
 from .staff_user import StaffUser
 from .amendment import Amendment

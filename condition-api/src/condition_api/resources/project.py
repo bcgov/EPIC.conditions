@@ -37,33 +37,6 @@ projects_model = ApiHelper.convert_ma_schema_to_restx_model(
 )
 
 @cors_preflight("GET, OPTIONS")
-@API.route("/<string:project_id>", methods=["GET", "OPTIONS"])
-class ProjectDetailsResource(Resource):
-    """Resource for fetching project details by project_id."""
-
-    @staticmethod
-    @ApiHelper.swagger_decorators(API, endpoint_description="Get projects by account id")
-    @API.response(code=HTTPStatus.OK, model=project_list_model, description="Get projects")
-    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
-    @cors.crossdomain(origin="*")
-    def get(project_id):
-        """Fetch project details and conditions by project ID."""
-        try:
-            project_details = ProjectService.get_project_details(project_id)
-            if not project_details:
-                return {"message": "Project not found"}, HTTPStatus.NOT_FOUND
-
-            # Instantiate the schema
-            project_details_schema = ProjectSchema()
-
-            # Call dump on the schema instance
-            return project_details_schema.dump(project_details), HTTPStatus.OK
-        except ValidationError as err:
-            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
-
-
-@cors_preflight("GET, OPTIONS")
 @API.route("", methods=["GET", "OPTIONS"])
 class ProjectsResource(Resource):
     """Resource for fetching all projects."""

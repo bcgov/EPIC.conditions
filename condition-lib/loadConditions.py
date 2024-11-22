@@ -8,8 +8,8 @@ load_dotenv()
 # Database connection
 conn = psycopg2.connect(
     dbname=os.getenv("DB_NAME", "admin"),
-    user=os.getenv("DB_USER", "condition"),
-    password=os.getenv("DB_PASSWORD", "condition"),
+    user=os.getenv("DB_USER", "admin"),
+    password=os.getenv("DB_PASSWORD", "admin"),
     host=os.getenv("DB_HOST", "localhost"),
     port=os.getenv("DB_PORT", "5438")  # Specify the port
 )
@@ -41,6 +41,21 @@ def insert_subconditions(condition_id, parent_subcondition_id, subconditions):
         # Insert any sub-subconditions (recursive)
         if 'subconditions' in subcondition and subcondition['subconditions']:
             insert_subconditions(condition_id, subcondition_id, subcondition['subconditions'])
+
+def reset_tables():
+    """Clear all data from tables and reset ID sequences."""
+    tables = [
+        "condition_attributes",
+        "subconditions",
+        "conditions",
+        "documents",
+        "projects"
+    ]
+    
+    for table in tables:
+        cur.execute(f"TRUNCATE TABLE condition.{table} CASCADE")
+        cur.execute(f"ALTER SEQUENCE condition.{table}_id_seq RESTART WITH 1")
+    print("All tables cleared and ID sequences reset.")
 
 def load_data(folder_path):
     for filename in os.listdir(folder_path):
@@ -122,35 +137,50 @@ def load_data(folder_path):
                     if 'subconditions' in clause and clause['subconditions']:
                         insert_subconditions(condition_id, clause_id, clause['subconditions'])
 
+                key_to_label_map = {
+                    'fn_consultation_required': "Requires consultation",
+                    'is_plan': "Requires management plan",
+                    'approval_type': "Submitted to EAO for",
+                    'related_phase': "Phase related to plan",
+                    'days_prior_to_commencement': "Days prior to next phase to submit",
+                    'stakeholders_to_consult': "Parties required to be consulted",
+                    'deliverable_name': "Deliverable Name",
+                    'stakeholders_to_submit_to': "Parties required to be submitted"
+                }
                 # Insert into condition requirements table
                 if 'deliverables' in condition:
-                    for condition_requirement in condition['deliverables']:
+                    for condition_attribute in condition['deliverables']:
+                        for key, value in condition_attribute.items():
+                            # Skip keys that don't need to be inserted into the table
+                            if key not in key_to_label_map:
+                                continue
 
-                        stakeholders_to_consult_pg = convert_to_pg_array(condition_requirement.get('stakeholders_to_consult', []))
-                        stakeholders_to_submit_to_pg = convert_to_pg_array(condition_requirement.get('stakeholders_to_submit_to', []))
+                            # Get the human-readable label for the attribute key
+                            attribute_label = key_to_label_map.get(key, key)
 
-                        cur.execute("""
-                            INSERT INTO condition.condition_requirements (
-                                condition_id, document_id, deliverable_name, is_plan, approval_type, 
-                                stakeholders_to_consult, stakeholders_to_submit_to,
-                                consultation_required, related_phase, days_prior_to_commencement, created_date
-                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-                        """, (
-                            condition_id,
-                            document_id,
-                            condition_requirement.get('deliverable_name'),
-                            condition_requirement.get('is_plan'),
-                            condition_requirement.get('approval_type'),
-                            stakeholders_to_consult_pg, 
-                            stakeholders_to_submit_to_pg,
-                            condition_requirement.get('consultation_required'), 
-                            condition_requirement.get('related_phase'),
-                            condition_requirement.get('days_prior_to_commencement')
-                        ))
+                            # Convert lists (e.g., stakeholders) to PostgreSQL array string format
+                            if isinstance(value, list):
+                                value = convert_to_pg_array(value)
+
+                            # Convert booleans to string representation for storage
+                            if isinstance(value, bool):
+                                value = 'true' if value else 'false'
+
+                            # Insert each key-value pair into the new table
+                            cur.execute("""
+                                INSERT INTO condition.condition_attributes (
+                                    condition_id, attribute_key, attribute_value, created_date
+                                ) VALUES (%s, %s, %s, NOW())
+                            """, (
+                                condition_id,
+                                attribute_label,  # Use the human-readable label here
+                                value
+                            ))
 
     conn.commit()
 
 # Folder path containing JSON files
+reset_tables()
 folder_path = './condition_jsons'
 load_data(folder_path)
 
