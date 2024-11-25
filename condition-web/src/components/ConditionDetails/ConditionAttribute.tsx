@@ -22,6 +22,7 @@ import {
 import { styled } from "@mui/system";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from "@mui/icons-material/Edit";
+import { Save } from "@mui/icons-material";
 import RemoveIcon from '@mui/icons-material/Remove';
 import { BCDesignTokens } from "epic.theme";
 import { theme } from "@/styles/theme";
@@ -541,6 +542,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
               }}
               onClick={handleSave}
             >
+              <Save fontSize="small" sx={{ mr: 0.4 }}/>
               Save
             </Button>
           ) : (
