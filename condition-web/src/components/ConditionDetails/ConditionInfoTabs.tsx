@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { Save } from "@mui/icons-material";
 import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
 import ConditionAttribute from './ConditionAttribute';
@@ -88,12 +89,13 @@ const ConditionInfoTabs: React.FC<{
                     <EditButton variant="contained" size="small" onClick={handleEditClick}>
                         {editMode ? (
                             <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <Box component="span" sx={{ ml: 0.5 }}>Save Condition Description</Box>
+                                <Save fontSize="small" />
+                                <Box component="span" sx={{ ml: 0.4 }}>Save Condition Description</Box>
                             </Typography>
                         ) : (
                             <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
                                 <EditIcon fontSize="small" />
-                                <Box component="span" sx={{ ml: 0.5 }}>Edit Condition Description</Box>
+                                <Box component="span" sx={{ ml: 0.4 }}>Edit Condition Description</Box>
                             </Typography>
                         )}
                     </EditButton>
@@ -112,6 +114,8 @@ const ConditionInfoTabs: React.FC<{
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
                     <ConditionAttribute
+                        projectId={projectId}
+                        documentId={documentId}
                         condition={condition}
                         setCondition={setCondition}
                     />

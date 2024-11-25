@@ -1,5 +1,5 @@
 export interface ConditionAttributeModel {
-  id: number;
+  id: string;
   key: string;
   value: string;
 }

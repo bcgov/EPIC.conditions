@@ -16,6 +16,7 @@
 
 from .base_model import BaseModel
 from .db import db, ma, migrate
+from .attribute_key import AttributeKey
 from .project import Project
 from .document import Document
 from .condition import Condition

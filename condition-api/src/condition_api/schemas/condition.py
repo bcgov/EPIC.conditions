@@ -6,9 +6,9 @@ Manages the condition
 from marshmallow import Schema, fields
 
 class ConditionAttributeSchema(Schema):
-    id = fields.Int(required=True)
-    key = fields.Str(required=True)
-    value = fields.Raw(required=True)
+    id = fields.Str(required=True, data_key="id")
+    key = fields.Str(required=True, data_key="key")
+    value = fields.Raw(allow_none=True, data_key="value")
 
 class SubConditionSchema(Schema):
     """Recursive schema for subconditions."""
@@ -32,6 +32,7 @@ class ConditionSchema(Schema):
     year_issued = fields.Int(data_key="year_issued")
     is_approved = fields.Bool(data_key="is_approved")
     is_topic_tags_approved = fields.Bool(data_key="is_topic_tags_approved", allow_none=True)
+    is_condition_attributes_approved = fields.Bool(data_key="is_condition_attributes_approved", allow_none=True)
     deliverable_name = fields.Str(data_key="deliverable_name")
     condition_attributes = fields.List(fields.Nested(ConditionAttributeSchema), data_key="condition_attributes")
     

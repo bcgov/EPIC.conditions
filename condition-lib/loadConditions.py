@@ -27,13 +27,14 @@ def insert_subconditions(condition_id, parent_subcondition_id, subconditions):
     for subcondition in subconditions:
         cur.execute("""
             INSERT INTO condition.subconditions (
-                condition_id, parent_subcondition_id, subcondition_identifier, subcondition_text, created_date
-            ) VALUES (%s, %s, %s, %s, NOW())
+                condition_id, parent_subcondition_id, subcondition_identifier, subcondition_text, is_active, created_date
+            ) VALUES (%s, %s, %s, %s, %s, NOW())
             RETURNING id
         """, (
             condition_id, parent_subcondition_id,
             subcondition.get('subcondition_identifier'),
-            subcondition.get('subcondition_text')
+            subcondition.get('subcondition_text'),
+            True
         ))
 
         subcondition_id = cur.fetchone()[0]
@@ -121,13 +122,14 @@ def load_data(folder_path):
                 for clause in condition.get('clauses', []):
                     cur.execute("""
                         INSERT INTO condition.subconditions (
-                            condition_id, parent_subcondition_id, subcondition_identifier, subcondition_text, created_date
-                        ) VALUES (%s, %s, %s, %s, NOW())
+                            condition_id, parent_subcondition_id, subcondition_identifier, subcondition_text, is_active, created_date
+                        ) VALUES (%s, %s, %s, %s, %s, NOW())
                         RETURNING id
                     """, (
                         condition_id, None,  # No parent for the first-level clause
                         clause.get('clause_identifier'),
-                        clause.get('clause_text')
+                        clause.get('clause_text'),
+                        condition.get('is_active', True)
                     ))
 
                     # Get the ID of the inserted clause (subcondition)
@@ -151,12 +153,25 @@ def load_data(folder_path):
                 if 'deliverables' in condition:
                     for condition_attribute in condition['deliverables']:
                         for key, value in condition_attribute.items():
-                            # Skip keys that don't need to be inserted into the table
-                            if key not in key_to_label_map:
+                            attribute_label = key_to_label_map.get(key)
+
+                            if not attribute_label:
+                                # If no mapping exists for the key, skip it
+                                print(f"Skipping unknown key: {key}")
+                                continue
+                            # Check if the key exists in the attribute_key table
+                            cur.execute("""
+                                SELECT id FROM condition.attribute_keys WHERE key_name = %s
+                            """, (attribute_label,))
+                            result = cur.fetchone()
+
+                            if not result:
+                                # If the key does not exist in the attribute_key table, skip it
+                                print(f"Skipping unknown attribute key: {key}")
                                 continue
 
                             # Get the human-readable label for the attribute key
-                            attribute_label = key_to_label_map.get(key, key)
+                            attribute_key_id = result[0]
 
                             # Convert lists (e.g., stakeholders) to PostgreSQL array string format
                             if isinstance(value, list):
@@ -169,11 +184,11 @@ def load_data(folder_path):
                             # Insert each key-value pair into the new table
                             cur.execute("""
                                 INSERT INTO condition.condition_attributes (
-                                    condition_id, attribute_key, attribute_value, created_date
+                                    condition_id, attribute_key_id, attribute_value, created_date
                                 ) VALUES (%s, %s, %s, NOW())
                             """, (
                                 condition_id,
-                                attribute_label,  # Use the human-readable label here
+                                attribute_key_id,  # Use the human-readable label here
                                 value
                             ))
 
