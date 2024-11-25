@@ -51,7 +51,7 @@ class AttributeKeyResource(Resource):
                 return {"message": "Attributes not found"}, HTTPStatus.NOT_FOUND
             # Instantiate the schema
             attribute_key_schema = AttributeKeySchema(many=True)
-            print(attributes)
+
             # Call dump on the schema instance
             return attribute_key_schema.dump(attributes), HTTPStatus.OK
         except ValidationError as err:
