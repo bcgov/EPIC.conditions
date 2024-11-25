@@ -22,6 +22,7 @@ import {
 import { styled } from "@mui/system";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from "@mui/icons-material/Edit";
+import RemoveIcon from '@mui/icons-material/Remove';
 import { BCDesignTokens } from "epic.theme";
 import { theme } from "@/styles/theme";
 import { useUpdateConditionAttributeDetails } from "@/hooks/api/useConditionAttribute";
@@ -182,9 +183,6 @@ const ConditionAttribute = memo(({
                 marginBottom: `15px solid white`,
                 fontSize: '14px',
                 fontWeight: "bold",
-                "&:hover": {
-                  backgroundColor: BCDesignTokens.themeGray70,
-                },
               },
             }}
           >
@@ -203,9 +201,6 @@ const ConditionAttribute = memo(({
                 p: BCDesignTokens.layoutPaddingXsmall,
                 backgroundColor: condition.is_condition_attributes_approved ?'#F7F9FC' : BCDesignTokens.themeGray10,
                 fontSize: '14px',
-                "&:hover": {
-                  backgroundColor: BCDesignTokens.themeGray70,
-                },
               },
             }}
           >
@@ -214,6 +209,7 @@ const ConditionAttribute = memo(({
                 key={attribute.id}
                 conditionAttributeItem={attribute}
                 onSave={handleSave}
+                is_approved={condition.is_condition_attributes_approved}
               />
             ))}
           </TableBody>
@@ -340,10 +336,15 @@ export const ConditionAttributeHeadTableCell = styled(TableCell)(() => ({
 type ConditionAttributeRowProps = {
   conditionAttributeItem: ConditionAttributeModel;
   onSave: (updatedAttribute: ConditionAttributeModel) => void;
+  is_approved: boolean;
 };
 
-const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({ conditionAttributeItem, onSave }) => {
-  const { id, key: conditionKey, value: attributeValue } = conditionAttributeItem;
+const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
+  conditionAttributeItem,
+  onSave,
+  is_approved
+}) => {
+  const { key: conditionKey, value: attributeValue } = conditionAttributeItem;
   const [isEditable, setIsEditable] = useState(false);
   const [editableValue, setEditableValue] = useState(attributeValue);
 
@@ -362,7 +363,10 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({ condition
 
     const updatedValue =
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
-      ? `{${chips.map((chip) => `"${chip}"`).join(",")}}`
+      ? `{${chips
+        .filter((chip) => chip !== null && chip !== "")
+        .map((chip) => `"${chip}"`)
+        .join(",")}}`
       : editableValue;
 
     onSave({ ...conditionAttributeItem, value: updatedValue });
@@ -416,18 +420,20 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({ condition
             width: "100%",
           }}
         >
-          {chips.map((chip, index) => (
-            <Chip
-              key={index}
-              label={chip}
-              onDelete={() => handleDeleteChip(chip)}
-              sx={{
-                marginLeft: 1,
-                backgroundColor: BCDesignTokens.themeGray30,
-                color: "black",
-                fontSize: "14px"
-              }}
-            />
+          {chips
+            .filter((chip) => chip !== null && chip !== "")
+            .map((chip, index) => (
+              <Chip
+                key={index}
+                label={chip}
+                onDelete={() => handleDeleteChip(chip)}
+                sx={{
+                  marginLeft: 1,
+                  backgroundColor: BCDesignTokens.themeGray30,
+                  color: "black",
+                  fontSize: "14px"
+                }}
+              />
           ))}
           <TextField
             value={chipInput}
@@ -488,7 +494,8 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({ condition
       const parsedItems = attributeValue
         .replace(/[{}]/g, "")
         .split(",")
-        .map((item: string) => item.trim().replace(/^"|"$/g, ""));
+        .map((item: string) => item.trim().replace(/^"|"$/g, ""))
+        .filter((item: string) => item !== "");
 
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
@@ -508,24 +515,39 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({ condition
       <ConditionAttributeHeadTableCell align="left">
         {isEditable ? renderEditableField() : renderAttribute()}
       </ConditionAttributeHeadTableCell>
-      <ConditionAttributeHeadTableCell align="left">
-        {isEditable ? (
-          <Button
-            variant="contained"
-            color="secondary"
-            size="small"
-            sx={{
-              borderRadius: "4px",
-              color: BCDesignTokens.themeGray100,
-            }}
-            onClick={handleSave}
-          >
-            Save
-          </Button>
-        ) : (
-          <IconButton size="small" onClick={() => setIsEditable(true)}>
-            <EditIcon />
+      <ConditionAttributeHeadTableCell
+        align="left"
+        sx={{
+          "&:hover": is_approved
+            ? {}
+            : {
+                backgroundColor: BCDesignTokens.themeGray70,
+              },
+        }}
+      >
+        {is_approved ? (
+          <IconButton size="small" disabled sx={{ cursor: "default" }}>
+            <RemoveIcon />
           </IconButton>
+        ) : (
+          isEditable ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              sx={{
+                borderRadius: "4px",
+                color: BCDesignTokens.themeGray100,
+              }}
+              onClick={handleSave}
+            >
+              Save
+            </Button>
+          ) : (
+            <IconButton size="small" onClick={() => setIsEditable(true)}>
+              <EditIcon />
+            </IconButton>
+          )
         )}
       </ConditionAttributeHeadTableCell>
     </PackageTableRow>
