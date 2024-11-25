@@ -10,13 +10,14 @@ export interface ConditionModel {
   is_approved: boolean;
   topic_tags: string[];
   is_topic_tags_approved: boolean;
+  is_condition_attributes_approved: boolean;
   subtopic_tags: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
-  condition_attributes?: [{
-    id: number;
+  condition_attributes?: Array<{
+    id: string;
     key: string;
-    value: any;
-  }];     // Associated deliverables
+    value: string;
+  }>; 
 }
 
 export const createDefaultCondition = (): ConditionModel => {
@@ -30,21 +31,21 @@ export const createDefaultCondition = (): ConditionModel => {
       is_approved: false,
       topic_tags: [],
       is_topic_tags_approved: false,
+      is_condition_attributes_approved: false,
       subtopic_tags: [],
       subconditions: [],
-      condition_attributes: [{
-        id: 0,
-        key: "",
-        value: "",
-      }],
+      condition_attributes: [],
   };
 };
 
 export interface updateTopicTagsModel {
   topic_tags?: string[];
   is_topic_tags_approved?: boolean;
+  is_condition_attributes_approved?: boolean;
   subconditions?: SubconditionModel[],
 }
+
+export type PartialUpdateTopicTagsModel = Partial<updateTopicTagsModel>;
 
 export interface ProjectDocumentConditionModel {
   project_name: string;

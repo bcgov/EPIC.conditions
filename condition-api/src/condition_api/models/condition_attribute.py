@@ -12,7 +12,7 @@ class ConditionAttribute(BaseModel):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     condition_id = Column(Integer, ForeignKey('condition.conditions.id', ondelete='CASCADE'), nullable=False)
-    attribute_key = Column(Text, nullable=False)
+    attribute_key_id = Column(Integer, ForeignKey('condition.attribute_keys.id', ondelete='CASCADE'), nullable=False)
     attribute_value = Column(Text, nullable=True)
 
     @classmethod
@@ -21,6 +21,6 @@ class ConditionAttribute(BaseModel):
         return cls.query.all()
 
     @classmethod
-    def get_by_id(cls, condition_attributes_id):
-        """Get condition attributes by ID."""
-        return cls.query.filter_by(id=condition_attributes_id).first()
+    def get_by_condition_id(cls, condition_id):
+        """Get condition attributes by condition ID."""
+        return cls.query.filter_by(condition_id=condition_id).all()

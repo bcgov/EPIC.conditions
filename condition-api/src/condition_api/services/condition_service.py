@@ -2,6 +2,7 @@
 from sqlalchemy import case, func, extract
 from sqlalchemy.orm import aliased
 from condition_api.models.amendment import Amendment
+from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
 from condition_api.models.subcondition import Subcondition
 from condition_api.models.condition_attribute import ConditionAttribute
@@ -23,6 +24,7 @@ class ConditionService:
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
         condition_attributes = aliased(ConditionAttribute)
+        attribute_keys = aliased(AttributeKey)
 
         condition_data = (
             db.session.query(
@@ -41,6 +43,7 @@ class ConditionService:
                 conditions.is_approved,
                 conditions.topic_tags,
                 conditions.is_topic_tags_approved,
+                conditions.is_condition_attributes_approved,
                 conditions.subtopic_tags,
                 subconditions.id.label('subcondition_id'),
                 subconditions.subcondition_identifier,
@@ -85,6 +88,7 @@ class ConditionService:
             "is_approved": condition_data[0].is_approved,
             "topic_tags": condition_data[0].topic_tags,
             "is_topic_tags_approved": condition_data[0].is_topic_tags_approved,
+            "is_condition_attributes_approved": condition_data[0].is_condition_attributes_approved,
             "subtopic_tags": condition_data[0].subtopic_tags,
             "year_issued": condition_data[0].year_issued,
             "condition_attributes": [],
@@ -118,12 +122,16 @@ class ConditionService:
         attributes_data = (
             db.session.query(
                 condition_attributes.id,
-                condition_attributes.attribute_key,
+                attribute_keys.key_name,
                 condition_attributes.attribute_value
+            )
+			.outerjoin(
+                attribute_keys,
+                condition_attributes.attribute_key_id == attribute_keys.id,
             )
             .filter(
                 condition_attributes.condition_id == condition_data[0].id,
-                ~condition_attributes.attribute_key.in_(['Parties required to be submitted', 'Deliverable Name'])
+                ~condition_attributes.attribute_key_id.in_([2, 4])
             )
             .all()
         )
@@ -298,6 +306,9 @@ class ConditionService:
 
         if "is_topic_tags_approved" in conditions_data:
             condition.is_topic_tags_approved = conditions_data.get("is_topic_tags_approved")
+
+        if "is_condition_attributes_approved" in conditions_data:
+            condition.is_condition_attributes_approved = conditions_data.get("is_condition_attributes_approved")
 
         if conditions_data.get("subconditions"):
             existing_subcondition_ids = [

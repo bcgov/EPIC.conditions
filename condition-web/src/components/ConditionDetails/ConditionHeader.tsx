@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Button, Chip, Grid, Stack, TextField, Typography } from "@mui/material";
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import EditIcon from '@mui/icons-material/Edit';
+import { Save } from "@mui/icons-material";
 import DocumentStatusChip from "../Documents/DocumentStatusChip";
 import { ConditionModel } from "@/models/Condition";
 import { DocumentStatus } from "@/models/Document";
@@ -9,7 +10,7 @@ import { BCDesignTokens } from "epic.theme";
 import { StyledTableHeadCell } from "../Shared/Table/common";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
-import { updateTopicTagsModel } from "@/models/Condition";
+import { PartialUpdateTopicTagsModel } from "@/models/Condition";
 
 
 type ConditionHeaderProps = {
@@ -78,9 +79,9 @@ const ConditionHeader = ({
     }, [conditionDetails, setCondition]);
 
     const approveTags = (isApprovalAction = true) => {
-        const data: updateTopicTagsModel = isApprovalAction
-          ? { topic_tags: tags, is_topic_tags_approved: !condition.is_topic_tags_approved }
-          : { topic_tags: tags, is_topic_tags_approved: condition.is_topic_tags_approved };
+        const data: PartialUpdateTopicTagsModel = isApprovalAction
+          ? { is_topic_tags_approved: !condition.is_topic_tags_approved }
+          : { topic_tags: tags };
       
         updateConditionDetails(data);
     };
@@ -116,6 +117,7 @@ const ConditionHeader = ({
                                     sx={{ display: 'inline-flex', alignItems: 'center' }}
                                     onClick={() => approveTags(false)}
                                 >
+                                    <Save fontSize="small" />
                                     <Box component="span" sx={{ ml: 0.5 }}>
                                         Save Tags
                                     </Box>
