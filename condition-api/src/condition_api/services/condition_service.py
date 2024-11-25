@@ -133,6 +133,7 @@ class ConditionService:
                 condition_attributes.condition_id == condition_data[0].id,
                 ~condition_attributes.attribute_key_id.in_([2, 4])
             )
+            .order_by(condition_attributes.attribute_key_id)
             .all()
         )
 
