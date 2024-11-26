@@ -3,6 +3,12 @@ from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.models.db import db
 
+class AttributeKeyNotFoundError(Exception):
+    """Custom exception for missing attribute key."""
+    def __init__(self, key_name):
+        super().__init__(f"Attribute key '{key_name}' does not exist.")
+        self.key_name = key_name
+
 class ConditionAttributeService:
     """Service for managing condition-attribute related operations."""
 
@@ -15,19 +21,22 @@ class ConditionAttributeService:
 
             attribute_key_entry = db.session.query(AttributeKey).filter_by(key_name=attribute_key_name).first()
             if not attribute_key_entry:
-                attribute_key_entry = AttributeKey(key_name=attribute_key_name)
-                db.session.add(attribute_key_entry)
-                db.session.flush()
+                raise AttributeKeyNotFoundError(attribute_key_name)
 
             attribute_key_id = attribute_key_entry.id
 
             # Check if the condition attribute exists
-            if "-" in str(condition_attribute_id):
-                existing_attribute = False
-            else:
-                existing_attribute = db.session.query(ConditionAttribute).filter_by(
-                    id=condition_attribute_id
-                ).first()
+            existing_attribute = db.session.query(ConditionAttribute).filter_by(
+                condition_id=condition_id, attribute_key_id=attribute_key_id
+            ).first()
+
+            if not existing_attribute:
+                if "-" in str(condition_attribute_id):
+                    existing_attribute = False
+                else:
+                    existing_attribute = db.session.query(ConditionAttribute).filter_by(
+                        id=condition_attribute_id
+                    ).first()
 
             if existing_attribute:
                 # Update the existing condition attribute

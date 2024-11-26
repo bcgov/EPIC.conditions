@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Save } from "@mui/icons-material";
 import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
-import ConditionAttribute from './ConditionAttribute';
+import ConditionAttributeTable from './ConditionAttribute/ConditionAttributeTable';
 import ConditionDescription from './ConditionDescription';
 import { ConditionModel } from "@/models/Condition";
 
@@ -113,7 +113,7 @@ const ConditionInfoTabs: React.FC<{
                     />
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
-                    <ConditionAttribute
+                    <ConditionAttributeTable
                         projectId={projectId}
                         documentId={documentId}
                         condition={condition}
