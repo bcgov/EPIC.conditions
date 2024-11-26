@@ -24,7 +24,7 @@ from condition_api.utils.util import cors_preflight
 from ..auth import auth
 from .apihelper import Api as ApiHelper
 
-API = Namespace("attributes", description="Endpoints for attribute key Management")
+API = Namespace("attributekeys", description="Endpoints for attribute key Management")
 """Custom exception messages
 """
 
@@ -33,7 +33,7 @@ attributes_model = ApiHelper.convert_ma_schema_to_restx_model(
 )
 
 @cors_preflight("GET, OPTIONS")
-@API.route("", methods=["GET", "OPTIONS"])
+@API.route("/condition/<int:condition_id>", methods=["GET", "OPTIONS"])
 class AttributeKeyResource(Resource):
     """Resource for fetching attribute keys."""
 
@@ -43,12 +43,12 @@ class AttributeKeyResource(Resource):
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.require
     @cors.crossdomain(origin="*")
-    def get():
+    def get(condition_id):
         """Fetch attribute keys."""
         try:
-            attributes = AttributeKeyService.get_all_attributes()
+            attributes = AttributeKeyService.get_all_attributes(condition_id)
             if not attributes:
-                return {"message": "Attributes not found"}, HTTPStatus.NOT_FOUND
+                return []
             # Instantiate the schema
             attribute_key_schema = AttributeKeySchema(many=True)
 
