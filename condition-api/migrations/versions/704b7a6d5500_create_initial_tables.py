@@ -241,7 +241,6 @@ def downgrade():
 
     op.drop_table('staff_users', schema='condition')
     op.drop_table('documents', schema='condition')
-    op.drop_table('attribute_values', schema='condition')
     op.drop_table('user_status', schema='condition')
     op.drop_table('projects', schema='condition')
     op.drop_table('attribute_keys', schema='condition')

@@ -58,6 +58,23 @@ def reset_tables():
         cur.execute(f"ALTER SEQUENCE condition.{table}_id_seq RESTART WITH 1")
     print("All tables cleared and ID sequences reset.")
 
+def get_document_category_id(document_type):
+    """Determine the document_category_id based on document_type."""
+    if document_type == "Application Materials":
+        return 1
+    elif document_type == "Order":
+        return 2
+    elif document_type == "Comment/Submission":
+        return 3
+    elif document_type == "Other":
+        return 4
+    elif document_type == "Amendment":
+        return 7
+    elif document_type == "Schedule B/Certificate":
+        return 6
+    elif document_type == "Decision Materials":
+        return 5
+
 def load_data(folder_path):
     for filename in os.listdir(folder_path):
         if filename.endswith('.json'):
@@ -68,6 +85,10 @@ def load_data(folder_path):
 
             project_id = data['project_id']
             document_id = data['document_id']
+            document_type = data['document_type']
+
+            # Determine document_category_id
+            document_type_id = get_document_category_id(document_type)
 
             # Check if the record already exists in the 'documents' table
             cur.execute("""
@@ -88,12 +109,13 @@ def load_data(folder_path):
             # Insert into the 'documents' table
             cur.execute("""
                 INSERT INTO condition.documents (
-                    document_id, document_type, display_name, document_file_name, 
+                    document_id, document_type_id, display_name, document_file_name, 
                     date_issued, act, first_nations, consultation_records_required, project_id, created_date
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
             """, (
-                document_id, data['document_type'], data['display_name'], data['document_file_name'],
-                data['date_issued'], data['act'], convert_to_pg_array(data.get('first_nations', [])),
+                document_id, document_type_id, data['display_name'],
+                data['document_file_name'], data['date_issued'], data['act'],
+                convert_to_pg_array(data.get('first_nations', [])),
                 data.get('consultation_records_required', False), project_id
             ))
 

@@ -7,9 +7,10 @@ from condition_api.models.condition import Condition
 from condition_api.models.subcondition import Subcondition
 from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.models.document import Document
+from condition_api.models.document_type import DocumentType
+from condition_api.models.document_category import DocumentCategory
 from condition_api.models.db import db
 from condition_api.models.project import Project
-from condition_api.utils.constants import DOCUMENT_TYPE_MAPPING
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -21,6 +22,8 @@ class ConditionService:
         # Aliases for the tables
         projects = aliased(Project)
         documents = aliased(Document)
+        document_types = aliased(DocumentType)
+        document_categories = aliased(DocumentCategory)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
         condition_attributes = aliased(ConditionAttribute)
@@ -29,11 +32,7 @@ class ConditionService:
         condition_data = (
             db.session.query(
                 projects.project_name,
-                case(
-                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
-                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
-                    else_=documents.document_type
-                ).label('document_type'),
+                document_categories.category_name.label('document_type'),
                 extract('year', documents.date_issued).label('year_issued'),
                 documents.display_name,
                 conditions.id,
@@ -57,6 +56,14 @@ class ConditionService:
             .outerjoin(
                 documents,
                 conditions.document_id == documents.document_id
+            )
+            .outerjoin(
+                document_types,
+                document_types.id == documents.document_type_id
+            )
+            .outerjoin(
+                document_categories,
+                document_categories.id == document_types.document_category_id
             )
             .outerjoin(
                 projects,
@@ -159,6 +166,8 @@ class ConditionService:
         # Aliases for the tables
         projects = aliased(Project)
         documents = aliased(Document)
+        document_types = aliased(DocumentType)
+        document_categories = aliased(DocumentCategory)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
@@ -182,11 +191,7 @@ class ConditionService:
         condition_data = (
             db.session.query(
                 projects.project_name,
-                case(
-                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
-                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
-                    else_=documents.document_type
-                ).label('document_type'),
+                document_categories.category_name.label('document_type'),
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -201,16 +206,24 @@ class ConditionService:
                 extract('year', documents.date_issued).label('year_issued')
             )
             .outerjoin(
-                subconditions,
-                conditions.id == subconditions.condition_id,
+                documents,
+                documents.project_id == projects.project_id
             )
             .outerjoin(
-                documents,
+                document_types,
+                document_types.id == documents.document_type_id
+            )
+            .outerjoin(
+                document_categories,
+                document_categories.id == document_types.document_category_id
+            )
+            .outerjoin(
+                conditions,
                 conditions.document_id == documents.document_id
             )
             .outerjoin(
-                projects,
-                projects.project_id == documents.project_id
+                subconditions,
+                conditions.id == subconditions.condition_id,
             )
             .outerjoin(
                 amendment_subquery,
@@ -219,11 +232,10 @@ class ConditionService:
             .filter(
                 (projects.project_id == project_id)
                 & (documents.document_id == document_id)
-                & (conditions.is_active == True)
             )
             .group_by(
                 projects.project_name,
-                documents.document_type,
+                document_categories.category_name,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -239,9 +251,6 @@ class ConditionService:
             )
             .all()
         )
-
-        if not condition_data:
-            return None
 
         conditions_map = {}
         subcondition_map = {}

@@ -1,8 +1,9 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
+import { useLoadDocumentType } from "@/hooks/api/useDocuments";
 import { useGetProjects } from "@/hooks/api/useProjects";
 import { Else, If, Then } from "react-if";
-import { Projects, ProjectsSkeleton } from "@/components/Documents";
+import { Projects, ProjectsSkeleton } from "@/components/Projects";
 import { useEffect } from "react";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PageGrid } from "@/components/Shared/PageGrid";
@@ -20,6 +21,10 @@ export function ProjectsPage() {
     isPending: isProjectsLoading,
     isError: isProjectsError,
   } = useGetProjects();
+
+  const {
+    data: documentTypeData,
+  } = useLoadDocumentType();
 
   useEffect(() => {
     if (isProjectsError) {
@@ -39,7 +44,7 @@ export function ProjectsPage() {
             <ProjectsSkeleton />
           </Then>
           <Else>
-            <Projects projects={projectsData} />
+            <Projects projects={projectsData} documentType={documentTypeData} />
           </Else>
         </If>
       </Grid>

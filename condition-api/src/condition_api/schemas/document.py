@@ -5,6 +5,13 @@ Manages the document
 
 from marshmallow import Schema, fields
 
+class DocumentTypeSchema(Schema):
+    """Documents type schema."""
+
+    id = fields.Int(data_key="id")
+    document_category_id = fields.Int(data_key="document_category_id")
+    document_type = fields.Str(data_key="document_type")
+
 class DocumentSchema(Schema):
     """Documents schema."""
 
@@ -16,5 +23,5 @@ class DocumentSchema(Schema):
 class ProjectDocumentAllAmendmentsSchema(Schema):
     """Top-level schema to include all amendments related to a document."""
     project_name = fields.Str(data_key="project_name")
-    document_type = fields.Str(data_key="document_type")
-    amendments = fields.List(fields.Nested(DocumentSchema), data_key="amendments")
+    document_category = fields.Str(data_key="document_category")
+    documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")

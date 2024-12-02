@@ -1,129 +1,137 @@
-import { useState } from "react";
-import { ProjectModel } from "@/models/Project";
-import {
-  Button,
-  Grid,
-  Stack,
-  Pagination,
-  Typography,
-  Box,
-  InputAdornment,
-  IconButton,
-  TextField
-} from "@mui/material";
-import { Project } from "./Project";
+import { useState, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { BCDesignTokens } from "epic.theme";
+import { AllDocumentModel, DocumentStatus } from "@/models/Document";
+import { Box, styled, Stack, FormControlLabel, Typography, Switch, Grid } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
-import { Navigate } from "@tanstack/react-router";
-import TuneIcon from '@mui/icons-material/Tune';
-import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
+import { ContentBox } from "../Shared/ContentBox";
+import DocumentTable from "./DocumentTable";
+import DocumentStatusChip from "../Projects/DocumentStatusChip";
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 
-type ProjectsParams = {
-  projects?: { projects: ProjectModel[] };
+export const CardInnerBox = styled(Box)({
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "center",
+  flexDirection: "column",
+  height: "100%",
+  padding: "0 12px",
+});
+
+type DocumentsParam = {
+  documents?: AllDocumentModel[];
+  projectName: string;
+  projectId: string;
+  documentName: string;
 };
 
-export const Projects = ({ projects }: ProjectsParams) => {
-  const projectArray = projects?.projects || [];
-  const itemsPerPage = 10; // Number of projects per page
-  const [page, setPage] = useState(1); // Current page
-  const [projectSearch, setProjectSearch] = useState("");
+export const Documents = ({ projectName, projectId, documentName, documents }: DocumentsParam) => {
+  const navigate = useNavigate();
+  const [isToggled, setIsToggled] = useState(false);
+  const [isToggleEnabled, setIsToggleEnabled] = useState<boolean | null>(false);
 
-  if (!projects) return <Navigate to={"/error"} />;
-
-  const filteredProjects = projectArray.filter(project =>
-    project.project_name.toLowerCase().includes(projectSearch.toLowerCase())
-  );
-
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  
-  // Calculate the start and end indices for the current page
-  const startIndex = (page - 1) * itemsPerPage + 1;
-  const endIndex = Math.min(startIndex + itemsPerPage - 1, filteredProjects.length);
-
-  // Get the subset of projects for the current page
-  const paginatedProjects = filteredProjects?.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
+  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setIsToggled(checked);
+    if (checked) {
+      navigate({
+        to: `/conditions/project/${projectId}/document/${projectId}`,
+      });
+    }
   };
+
+  useEffect(() => {
+    // Check if all amendments have status as true
+    if (documents && documents.length > 0) {
+      const hasNullStatus = documents.some((document) => document.status === null);
+      if (hasNullStatus) {
+        setIsToggleEnabled(null);
+      } else {
+        const allApproved = documents.every((document) => document.status === true);
+        setIsToggleEnabled(allApproved);
+      }
+    }
+  }, [documents]);
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
-
-    <Grid 
-      container 
-      alignItems="center" 
-      paddingY={1} 
-      paddingRight={2}
-      spacing={2}
-    >
-      <Stack spacing={1} direction={"row"} sx={{ width: '100%' }}>
-        {/* Filter Icon and Text */}
-        <Box
-          display="flex"
-          justifyContent="left"
-          alignItems="center"
-          minWidth={"150px"}
-        >
-          <IconButton color="primary" sx={{ mr: 1 }}><TuneIcon /></IconButton>Open Filters
-        </Box>
-        <TextField
-          variant="outlined"
-          placeholder="Search Projects"
-          size="small"
-          sx={{ width: "100%", paddingRight: "400px" }}
-          value={projectSearch}
-          onChange={(e) => setProjectSearch(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          sx={{
-            width: "50%",
-            height: "70%",
-            borderRadius: "4px",
-            paddingLeft: "2px"
-          }}
-        >
-          <AddIcon fontSize="small" /> Create New Document
-        </Button>
-      </Stack>
-    </Grid>
-
       {/* Showing results message */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="body1">
-          Showing {startIndex} to {endIndex} of {filteredProjects.length} results
-        </Typography>
-        {/* Pagination Component */}
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-        />
-      </Box>
-
-      {paginatedProjects?.map((project) => (
-        <Project key={project.project_id} project={project} />
-      ))}
+      <ContentBox
+        mainLabel={
+          <Box component="span">
+            <Typography component="span" variant="h5" fontWeight="normal">
+              {projectName}
+            </Typography>
+          </Box>
+        }
+        label={""}
+      >
+        <Box
+          sx={{
+            borderRadius: "3px",
+            border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+            boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              px: BCDesignTokens.layoutPaddingXsmall,
+              py: BCDesignTokens.layoutPaddingSmall,
+              borderBottom: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+            }}
+          >
+            <Grid container direction="row" paddingBottom={3}>
+              <Grid item xs={6}>
+                <Box
+                  sx={{
+                    px: 2.5,
+                    display: "flex", // Align items in a row
+                    alignItems: "center", // Vertically center the elements
+                  }}
+                >
+                  {/* Document Name and Icon */}
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    {documentName}
+                    <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
+                    <DocumentStatusChip status={isToggleEnabled === null ? "nodata" : String(isToggleEnabled) as DocumentStatus} />
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid item xs={6} textAlign="right">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      disabled={!isToggleEnabled} // Disable the switch based on the isToggleEnabled state
+                      checked={isToggled}
+                      onChange={handleToggle} // Add onChange handler to toggle and navigate
+                    />
+                  }
+                  label="View Consolidated Certificate"
+                  labelPlacement="end"
+                />
+              </Grid>
+            </Grid>
+            <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
+                <CardInnerBox
+                    sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
+                >
+                    <DocumentTable
+                      projectId={projectId}
+                      documents={documents || []}
+                    />
+                </CardInnerBox>
+            </Box>
+          </Typography>
+        </Box>
+      </ContentBox>
     </Stack>
   );
 };
 
-export const ProjectsSkeleton = () => {
+export const DocumentsSkeleton = () => {
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
       <ContentBoxSkeleton />

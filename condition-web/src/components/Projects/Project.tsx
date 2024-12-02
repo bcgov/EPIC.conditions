@@ -1,7 +1,7 @@
 import { Box, Button, styled } from "@mui/material";
 import { BCDesignTokens } from "epic.theme";
 import { ProjectModel } from "@/models/Project";
-import DocumentTable from "../Documents/DocumentTable";
+import DocumentTable from "./DocumentTable";
 import { ContentBox } from "../Shared/ContentBox";
 import { useNavigate } from "@tanstack/react-router";
 import { theme } from "@/styles/theme";
@@ -24,7 +24,7 @@ export const Project = ({ project }: ProjectParam) => {
     const navigate = useNavigate();
 
     const certificateDocument = project?.documents?.find(
-        (doc) => doc.document_type === "Certificate and Amendments"
+        (doc) => doc.document_category === "Certificate and Amendments"
       );
 
     // Check if all documents have a status of true
@@ -54,7 +54,7 @@ export const Project = ({ project }: ProjectParam) => {
                     <CardInnerBox
                         sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
                     >
-                        <DocumentTable documents={project.documents || []} />
+                        <DocumentTable projectId={project.project_id} documents={project.documents || []} />
                     </CardInnerBox>
                 </Box>
             </Box>
