@@ -15,9 +15,7 @@ export default function DocumentTableRow({
     projectId,
     document,
 }: DocumentRowProps) {
-  console.log(document);
   const navigate = useNavigate();
-  console.log(document);
   const handleOnDocumentClick = (projectId: string, categoryId: number) => {
     navigate({
       to: `/documents/project/${projectId}/document-category/${categoryId}`,

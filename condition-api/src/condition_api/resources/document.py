@@ -55,7 +55,7 @@ class DocumentsResource(Resource):
 
             documents_data = DocumentSchema().load(API.payload)
             created_document = DocumentService.create_document(project_id, documents_data)
-            print(created_document)
+
             # Call dump on the schema instance
             return DocumentSchema().dump(created_document), HTTPStatus.OK
         except ValidationError as err:
