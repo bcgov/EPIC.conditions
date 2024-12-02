@@ -3,9 +3,11 @@ import { ConditionModel } from "./Condition";
 export interface DocumentModel {
   document_id: string;
   display_name: string;
+  document_category_id: number;
+  document_category: string;
   document_file_name: string;
   project_id: string;
-  document_type: string;
+  document_types: string[];
   date_issued: string;
   act: string;
   status: boolean;
@@ -13,7 +15,7 @@ export interface DocumentModel {
   conditions?: ConditionModel[];  // Multiple conditions per document
 }
 
-export type DocumentStatus = "true" | "false";
+export type DocumentStatus = "true" | "false" | "nodata";
 export const DOCUMENT_STATUS: Record<
   DocumentStatus,
   { value: DocumentStatus; label: string }
@@ -25,6 +27,10 @@ export const DOCUMENT_STATUS: Record<
   false: {
     value: "false",
     label: "Pending",
+  },
+  nodata: {
+    value: "nodata",
+    label: "Data Entry Required",
   },
 };
 
@@ -38,5 +44,18 @@ export interface AllDocumentModel {
 export interface ProjectDocumentAllAmendmentsModel {
   project_name: string;
   document_type: string;
-  amendments?: AllDocumentModel[];
+  document_category: string;
+  documents?: AllDocumentModel[];
+}
+
+export interface DocumentTypeModel {
+  id: number;
+  document_category_id: number;
+  document_type: string;
+}
+
+export interface CreateDocumentModel {
+  display_name: string | null;
+  document_type_id?: number | null;
+  date_issued?: string | null;
 }

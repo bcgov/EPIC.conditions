@@ -17,7 +17,7 @@ class Document(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     document_id = Column(String(255), nullable=False)
     amended_id = Column(Integer, ForeignKey('condition.documents.id', ondelete='CASCADE'), nullable=True)
-    document_type = Column(String(100), nullable=False)
+    document_type_id = Column(Integer, ForeignKey('condition.document_types.id', ondelete='CASCADE'), nullable=True)
     display_name = Column(Text)
     document_file_name = Column(Text)
     date_issued = Column(Date)

@@ -19,6 +19,8 @@ from .db import db, ma, migrate
 from .attribute_key import AttributeKey
 from .project import Project
 from .document import Document
+from.document_category import DocumentCategory
+from.document_type import DocumentType
 from .condition import Condition
 from .subcondition import Subcondition
 from .condition_attribute import ConditionAttribute

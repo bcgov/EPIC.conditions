@@ -23,6 +23,14 @@ const statusStyles: Record<DocumentStatus, StyleProps> = {
     },
     label: "Awaiting Approval",
   },
+  nodata: {
+    sx: {
+      borderRadius: 1,
+      border: `2px solid ${BCDesignTokens.themeGold100}`,
+      background: BCDesignTokens.themeGold20,
+    },
+    label: "Data Entry Required",
+  },
 };
 
 export default function DocumentStatusChip({

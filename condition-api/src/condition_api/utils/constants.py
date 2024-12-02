@@ -5,9 +5,9 @@ DOCUMENT_TYPE_MAPPING = {
     "Certificate and Amendments": [
         "Application Materials",
         "Decision Materials",
-        "Certificate Package",
+        "Schedule B/Certificate",
         "Comment/Submission",
-        "Amendment Package",
+        "Amendment",
     ],
     "Other": [
         "Other",

@@ -3,7 +3,7 @@ import { Box, Button, Chip, Grid, Stack, TextField, Typography } from "@mui/mate
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import { Save } from "@mui/icons-material";
-import DocumentStatusChip from "../Documents/DocumentStatusChip";
+import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import { ConditionModel } from "@/models/Condition";
 import { DocumentStatus } from "@/models/Document";
 import { BCDesignTokens } from "epic.theme";

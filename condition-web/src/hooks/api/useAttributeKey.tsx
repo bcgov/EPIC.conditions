@@ -11,7 +11,6 @@ const fetchAttributes = (conditionId?: number) => {
 };
 
 export const useGetAttributes = (conditionId?: number) => {
-  console.log(conditionId);
   return useQuery({
     queryKey: ["conditions", conditionId],
     queryFn: () => fetchAttributes(conditionId),

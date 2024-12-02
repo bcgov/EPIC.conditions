@@ -26,9 +26,10 @@ from flask import Blueprint
 from .apihelper import Api
 from .ops import API as OPS_API
 from .attribute_key import API as ATTRIBUTE_KEY_API
-from .amendment import API as AMENDMENT_API
 from .condition import API as CONDITION_API
 from .condition_attribute import API as CONDITION_ATTRIBUTE_API
+from .document_category import API as DOCUMENT_CATEGORY_API
+from .document import API as DOCUMENT_API
 from .project import API as PROJECT_API
 from .staff_user import API as STAFF_USER_API
 from .subcondition import API as SUBCONDITION_API
@@ -59,9 +60,10 @@ API = Api(
 # HANDLER = ExceptionHandler(API)
 
 API.add_namespace(ATTRIBUTE_KEY_API)
-API.add_namespace(AMENDMENT_API)
 API.add_namespace(CONDITION_API)
 API.add_namespace(CONDITION_ATTRIBUTE_API)
+API.add_namespace(DOCUMENT_CATEGORY_API)
+API.add_namespace(DOCUMENT_API)
 API.add_namespace(PROJECT_API)
 API.add_namespace(STAFF_USER_API)
 API.add_namespace(SUBCONDITION_API)

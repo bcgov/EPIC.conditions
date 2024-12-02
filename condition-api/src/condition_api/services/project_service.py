@@ -1,12 +1,13 @@
 """Service for project management."""
-from sqlalchemy import func, case, select
-from sqlalchemy.orm import aliased
+from sqlalchemy import func, case, String
+from sqlalchemy.dialects.postgresql import ARRAY
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
 from condition_api.models.document import Document
+from condition_api.models.document_category import DocumentCategory
+from condition_api.models.document_type import DocumentType
 from condition_api.models.db import db
 from condition_api.models.project import Project
-from condition_api.utils.constants import DOCUMENT_TYPE_MAPPING
 
 
 class ProjectService:
@@ -14,84 +15,62 @@ class ProjectService:
 
     @staticmethod
     def get_all_projects():
-        """Fetch all projects along with related documents."""
+        """Fetch all projects along with related documents in a single query."""
 
-        # Aliases for the tables
-        projects = aliased(Project)
-        documents = aliased(Document)
-        conditions = aliased(Condition)
-
-        # Step 1: Fetch Projects
-        project_data = db.session.query(
-            projects.project_id,
-            projects.project_name,
+        # Fetch all projects with their related documents, document types, and conditions in one query
+        project_data = (
+            db.session.query(
+                Project.project_id,
+                Project.project_name,
+                DocumentCategory.id.label("document_category_id"),
+                DocumentCategory.category_name.label("document_category"),
+                func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
+                func.max(Document.date_issued).label("date_issued"),
+                # Check if all related conditions are approved
+                case(
+                    (func.count(Condition.id) == 0, None),
+                    else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
+                ).label("all_approved"),
+                # Count amendments related to each document
+                func.count(Amendment.document_id).label("amendment_count"),
+            )
+            .outerjoin(Document, Document.project_id == Project.project_id)
+            .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
+            .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .outerjoin(Condition, Condition.document_id == Document.document_id)
+            .outerjoin(Amendment, Amendment.document_id == Document.id)
+            .group_by(
+                Project.project_id,
+                Project.project_name,
+                DocumentCategory.id,
+                DocumentCategory.category_name
+            )
         ).all()
 
         if not project_data:
             return None
 
-        # Step 2: Initialize the result list to store project data along with documents
-        result = []
-
-        # Subquery for counting amendments related to each document
-        amendment_count_subquery = (
-            select(func.count(Amendment.document_id))
-            .where(Amendment.document_id == documents.id)
-            .correlate(documents)
-            .label("amendment_count")
-        )
-
-        # Step 3: Iterate over each project and fetch related documents
-        for project in project_data:
-            project_id = project.project_id
-
-            # Fetch related documents for the current project
-            document_data = db.session.query(
-                documents.document_id,
-                case(
-                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Exemption Order and Amendments"]), 'Exemption Order and Amendments'),
-                    (documents.document_type.in_(DOCUMENT_TYPE_MAPPING["Certificate and Amendments"]), 'Certificate and Amendments'),
-                    else_=documents.document_type
-                ).label('document_type'),
-                documents.date_issued,
-                documents.project_id,
-                # Subquery to check if all related conditions have is_approved=True
-                func.min(case((conditions.is_approved == False, 0), else_=1)).label('all_approved'),
-                # Count of related amendments
-                amendment_count_subquery
-            ).outerjoin(conditions, conditions.document_id == documents.document_id
-            ).filter(documents.project_id == project_id
-            ).group_by(
-                documents.id,
-                documents.document_id,
-                documents.document_type,
-                documents.date_issued,
-                documents.project_id
-            ).all()
-
-            # Create a document map for the current project
-            document_map = {}
-            project_documents = []
-
-            for doc in document_data:
-                status = bool(doc.all_approved)
-                document_map[doc.document_id] = {
-                    "document_id": doc.document_id,
-                    "document_type": doc.document_type,
-                    "date_issued": doc.date_issued,
-                    "project_id": doc.project_id,
-                    "status": status,
-                    "amendment_count": doc.amendment_count,
+        # Transform query results into the desired structure
+        projects_map = {}
+        for row in project_data:
+            project_id = row.project_id
+            if project_id not in projects_map:
+                projects_map[project_id] = {
+                    "project_id": project_id,
+                    "project_name": row.project_name,
+                    "documents": [],
                 }
-                # Append each document to the project's document array
-                project_documents.append(document_map[doc.document_id])
 
-            # Step 4: Append the project along with its documents to the result list
-            result.append({
-                "project_id": project.project_id,
-                "project_name": project.project_name,
-                "documents": project_documents
-            })
+            if row.document_category_id:  # Ensure there's a document category id associated
+                projects_map[project_id]["documents"].append({
+                    "document_category_id": row.document_category_id,
+                    "document_category": row.document_category,
+                    "document_types": row.document_types,
+                    "date_issued": row.date_issued,
+                    "status": row.all_approved,
+                    "amendment_count": row.amendment_count,
+                })
 
-        # Return the result containing all projects and their related documents
+        # Convert the map to a list of projects
+        result = list(projects_map.values())
         return result

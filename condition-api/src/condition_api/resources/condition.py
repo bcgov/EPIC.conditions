@@ -93,7 +93,7 @@ class ConditionDetailResource(Resource):
         try:
             condition_details = ConditionService.get_all_conditions(project_id, document_id)
             if not condition_details:
-                return {"message": "Condition not found"}, HTTPStatus.NOT_FOUND
+                return {}
             # Instantiate the schema
             condition_details_schema = ProjectDocumentConditionSchema()
 
