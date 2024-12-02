@@ -248,7 +248,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
 
               {/* Project Selector */}
               <Typography variant="body1" marginBottom={"2px"}>
-                Which project does this document belong to?
+                Which Project does this Document belong to?
               </Typography>
               <Autocomplete
                 id="project-selector"
@@ -271,7 +271,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               />
               {/* Document Type Selector */}
               <Typography variant="body1">
-                Which document are you creating?
+                Which Document are you creating?
               </Typography>
               <Autocomplete
                 id="document-type-selector"
