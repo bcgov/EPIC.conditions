@@ -27,7 +27,7 @@ const statusStyles: Record<DocumentStatus, StyleProps> = {
     sx: {
       borderRadius: 1,
       border: `2px solid ${BCDesignTokens.themeGold100}`,
-      background: BCDesignTokens.themeGold20,
+      background: "#FFDEB8",
     },
     label: "Data Entry Required",
   },
