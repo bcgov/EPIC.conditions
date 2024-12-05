@@ -32,9 +32,9 @@ class ConditionService:
         condition_data = (
             db.session.query(
                 projects.project_name,
-                document_categories.category_name.label('document_type'),
+                document_categories.category_name.label('document_category'),
                 extract('year', documents.date_issued).label('year_issued'),
-                documents.display_name,
+                documents.document_label,
                 conditions.id,
                 conditions.condition_name,
                 conditions.condition_number,
@@ -83,8 +83,8 @@ class ConditionService:
             return None
 
         project_name = condition_data[0].project_name if condition_data else None
-        document_type = condition_data[0].document_type if condition_data else None
-        display_name = condition_data[0].display_name if condition_data else None
+        document_category = condition_data[0].document_category if condition_data else None
+        document_label = condition_data[0].document_label if condition_data else None
 
         # Extract condition details
         condition = {
@@ -153,8 +153,8 @@ class ConditionService:
 
         return {
             "project_name": project_name,
-            "document_type": document_type,
-            "display_name": display_name,
+            "document_category": document_category,
+            "document_label": document_label,
             "condition": condition
         }
 
@@ -191,7 +191,9 @@ class ConditionService:
         condition_data = (
             db.session.query(
                 projects.project_name,
-                document_categories.category_name.label('document_type'),
+                document_categories.category_name.label('document_category'),
+                document_categories.id.label('document_category_id'),
+                documents.document_label,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -236,6 +238,7 @@ class ConditionService:
             .group_by(
                 projects.project_name,
                 document_categories.category_name,
+                document_categories.id,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -247,7 +250,8 @@ class ConditionService:
                 subconditions.subcondition_text,
                 subconditions.parent_subcondition_id,
                 amendment_subquery.c.amendment_names,
-                documents.date_issued
+                documents.date_issued,
+                documents.document_label
             )
             .all()
         )
@@ -256,7 +260,9 @@ class ConditionService:
         subcondition_map = {}
 
         project_name = condition_data[0].project_name if condition_data else None
-        document_type = condition_data[0].document_type if condition_data else None
+        document_category = condition_data[0].document_category if condition_data else None
+        document_category_id = condition_data[0].document_category_id if condition_data else None
+        document_label = condition_data[0].document_label if condition_data else None
 
         # Process the query result
         for row in condition_data:
@@ -299,7 +305,9 @@ class ConditionService:
         # Return all conditions
         return {
             "project_name": project_name,
-            "document_type": document_type,
+            "document_category": document_category,
+            "document_category_id": document_category_id,
+            "document_label": document_label,
             "conditions": list(conditions_map.values())
         }
 

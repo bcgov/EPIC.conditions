@@ -18,7 +18,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.condition import SubConditionSchema
+from condition_api.schemas.subcondition import SubconditionSchema
 from condition_api.services.subcondition_service import SubConditionService
 from condition_api.utils.util import cors_preflight
 
@@ -30,7 +30,7 @@ API = Namespace("subconditions", description="Endpoints for Sub Condition Manage
 """
 
 subcondition_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, SubConditionSchema(), "SubCondition"
+    API, SubconditionSchema(), "SubCondition"
 )
 
 @cors_preflight("PATCH, OPTIONS")
@@ -49,8 +49,8 @@ class Subconditions(Resource):
     def patch():
         """Edit multiple subconditions."""
         try:
-            subconditions_data = SubConditionSchema(many=True).load(API.payload)
+            subconditions_data = SubconditionSchema(many=True).load(API.payload)
             updated_subconditions = SubConditionService.update_subconditions(subconditions_data)
-            return SubConditionSchema(many=True).dump(updated_subconditions), HTTPStatus.OK
+            return SubconditionSchema(many=True).dump(updated_subconditions), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

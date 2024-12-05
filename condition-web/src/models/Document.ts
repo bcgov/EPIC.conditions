@@ -2,7 +2,7 @@ import { ConditionModel } from "./Condition";
 
 export interface DocumentModel {
   document_id: string;
-  display_name: string;
+  document_label: string;
   document_category_id: number;
   document_category: string;
   document_file_name: string;
@@ -36,7 +36,7 @@ export const DOCUMENT_STATUS: Record<
 
 export interface AllDocumentModel {
   document_id: string;
-  document_name: string;
+  document_label: string;
   year_issued: number;
   status: boolean;
 }
@@ -55,7 +55,13 @@ export interface DocumentTypeModel {
 }
 
 export interface CreateDocumentModel {
-  display_name: string | null;
+  document_label: string | null;
+  document_link: string | null;
   document_type_id?: number | null;
   date_issued?: string | null;
+}
+
+export enum DocumentType {
+  'ExemptionOrder' = 'Exemption Order',
+  'Certificate' = 'Certificate',
 }

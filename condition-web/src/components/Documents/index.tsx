@@ -22,10 +22,10 @@ type DocumentsParam = {
   documents?: AllDocumentModel[];
   projectName: string;
   projectId: string;
-  documentName: string;
+  documentLabel: string;
 };
 
-export const Documents = ({ projectName, projectId, documentName, documents }: DocumentsParam) => {
+export const Documents = ({ projectName, projectId, documentLabel, documents }: DocumentsParam) => {
   const navigate = useNavigate();
   const [isToggled, setIsToggled] = useState(false);
   const [isToggleEnabled, setIsToggleEnabled] = useState<boolean | null>(false);
@@ -92,7 +92,7 @@ export const Documents = ({ projectName, projectId, documentName, documents }: D
                 >
                   {/* Document Name and Icon */}
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    {documentName}
+                    {documentLabel}
                     <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>

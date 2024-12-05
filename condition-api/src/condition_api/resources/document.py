@@ -19,8 +19,7 @@ from marshmallow import ValidationError
 
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
-from condition_api.schemas.document import DocumentTypeSchema
-from condition_api.schemas.project import DocumentSchema
+from condition_api.schemas.document import DocumentSchema, DocumentTypeSchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.util import cors_preflight
 

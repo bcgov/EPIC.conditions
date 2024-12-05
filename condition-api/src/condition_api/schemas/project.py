@@ -4,68 +4,13 @@ Manages the project
 """
 
 from marshmallow import EXCLUDE, Schema, fields
+from condition_api.schemas.document import DocumentSchema
 
 class BaseSchema(Schema):
     """Base schema to exclude unknown fields in the deserialized output."""
 
     class Meta:
         unknown = EXCLUDE
-
-
-class SubconditionSchema(BaseSchema):
-    """Subcondition schema."""
-    subcondition_id = fields.Str(data_key="subcondition_id")
-    subcondition_identifier = fields.Str(data_key="subcondition_identifier")
-    subcondition_text = fields.Str(data_key="subcondition_text")
-    
-    # Recursively define subconditions (i.e., subconditions can have child subconditions)
-    subconditions = fields.List(fields.Nested(lambda: SubconditionSchema()), data_key="subconditions")
-
-class ConditionAttributeSchema(BaseSchema):
-    """Condition Attribute schema."""
-    deliverable_name = fields.Str(data_key="deliverable_name")
-    is_plan = fields.Bool(data_key="is_plan")
-    approval_type = fields.Str(data_key="approval_type")
-    stakeholders_to_consult = fields.List(fields.Str(), data_key="stakeholders_to_consult")
-    stakeholders_to_submit_to = fields.List(fields.Str(), data_key="stakeholders_to_submit_to")
-    consultation_required = fields.Bool(data_key="consultation_required")
-    related_phase = fields.Str(data_key="related_phase")
-    days_prior_to_commencement = fields.Int(data_key="days_prior_to_commencement")
-
-
-class ConditionSchema(BaseSchema):
-    """Condition schema."""
-    condition_name = fields.Str(data_key="condition_name")
-    condition_number = fields.Int(data_key="condition_number")
-    condition_text = fields.Str(data_key="condition_text")
-    topic_tags = fields.List(fields.Str(), data_key="topic_tags")
-    subtopic_tags = fields.List(fields.Str(), data_key="subtopic_tags")
-
-    # Add subconditions and condition attributes to the condition
-    subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
-    condition_attributes = fields.List(fields.Nested(ConditionAttributeSchema), data_key="condition_attributes")
-
-
-class DocumentSchema(BaseSchema):
-    """Document schema."""
-    document_id = fields.Str(data_key="document_id")
-    display_name = fields.Str(data_key="display_name")
-    document_file_name = fields.Str(data_key="document_file_name")
-    document_category_id = fields.Str(data_key="document_category_id")
-    document_category = fields.Str(data_key="document_category")
-    document_types = fields.List(fields.Str(), data_key="document_types")
-    document_type_id = fields.Int(data_key="document_type_id")
-    date_issued = fields.Str(data_key="date_issued")
-    act = fields.Int(data_key="act")
-    project_id = fields.Str(data_key="project_id")
-    first_nations = fields.List(fields.Str(), data_key="first_nations")
-    consultation_records_required = fields.Bool(data_key="consultation_records_required")
-    status = fields.Bool(data_key="status")
-    amendment_count = fields.Int(data_key="amendment_count")
-    
-    # Each document can have multiple conditions
-    conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")
-
 
 class ProjectSchema(BaseSchema):
     """Project schema, including documents, conditions, subconditions, and deliverables."""

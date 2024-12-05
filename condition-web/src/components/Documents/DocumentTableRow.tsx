@@ -58,7 +58,7 @@ export default function DocumentTableRow({ projectId, document }: DocumentRowPro
               fontSize={18}
               align="left"
             >
-              {document.document_name ?? "--"}
+              {document.document_label ?? "--"}
             </Typography>
             <ArrowForwardIos fontSize="small" />
           </Link>

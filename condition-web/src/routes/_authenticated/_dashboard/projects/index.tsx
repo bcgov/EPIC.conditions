@@ -11,7 +11,7 @@ import { PageGrid } from "@/components/Shared/PageGrid";
 export const Route = createFileRoute("/_authenticated/_dashboard/projects/")({
   component: ProjectsPage,
   meta: () => [
-    { title: "Home", path: "/_authenticated/_dashboard/projects/" },
+    { title: "Home", path: "/projects/" },
   ],
 });
 

@@ -18,7 +18,7 @@ type ConditionHeaderProps = {
     documentId: string;
     conditionNumber: number;
     projectName: string;
-    documentName: string;
+    documentLabel: string;
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 };
@@ -28,7 +28,7 @@ const ConditionHeader = ({
     documentId,
     conditionNumber,
     projectName,
-    documentName,
+    documentLabel,
     condition,
     setCondition
 }: ConditionHeaderProps) => {
@@ -182,7 +182,7 @@ const ConditionHeader = ({
                                             </StyledTableHeadCell>
                                             <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                                                 <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                    {documentName}
+                                                    {documentLabel}
                                                 </Typography>
                                             </StyledTableHeadCell>
                                         </Stack>

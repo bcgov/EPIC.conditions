@@ -17,7 +17,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.condition import ConditionAttributeSchema
+from condition_api.schemas.condition_attribute import ConditionAttributeSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.util import cors_preflight
 

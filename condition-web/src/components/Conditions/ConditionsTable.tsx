@@ -16,11 +16,13 @@ import {
     projectId,
     documentId,
     headless,
+    noConditions,
   }: {
     conditions: Array<ConditionModel>;
     projectId: string;
     documentId: string;
     headless?: boolean;
+    noConditions: boolean;
   }) {
     return (
         <TableContainer component={Box} sx={{ height: "100%" }}>
@@ -54,7 +56,7 @@ import {
                 </TableHead>
             )}
             <TableBody>
-            {conditions?.map((condition) => (
+            {!noConditions && conditions?.map((condition) => (
                 <ConditionTableRow
                     key={condition.condition_number}
                     condition={condition}

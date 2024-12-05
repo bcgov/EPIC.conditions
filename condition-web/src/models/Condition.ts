@@ -49,13 +49,15 @@ export type PartialUpdateTopicTagsModel = Partial<updateTopicTagsModel>;
 
 export interface ProjectDocumentConditionModel {
   project_name: string;
-  document_type: string;
+  document_category: string;
+  document_category_id: number;
+  document_label: string;
   conditions?: ConditionModel[];
 }
 
 export interface ProjectDocumentConditionDetailModel {
   project_name: string;
-  document_type: string;
-  display_name: string;
+  document_category: string;
+  document_label: string;
   condition: ConditionModel;
 }

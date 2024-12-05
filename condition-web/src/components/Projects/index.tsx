@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { DocumentTypeModel } from "@/models/Document";
+import { DocumentType, DocumentTypeModel } from "@/models/Document";
 import { ProjectModel } from "@/models/Project";
 import {
   Autocomplete,
@@ -47,10 +47,11 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectModel | null>(null);
   const [selectedDocumentType, setSelectedDocumentType] = useState<number | null>(null);
-  const [documentName, setDocumentName] = useState("");
+  const [documentLabel, setDocumentLabel] = useState("");
+  const [documentLink, setDocumentLink] = useState("");
   const [dateIssued, setDateIssued] = useState<Date | null>(null);
   const [errors, setErrors] = useState({
-    documentName: false,
+    documentLabel: false,
     dateIssued: false,
   });
 
@@ -82,24 +83,38 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     setOpenModal(false);
     setSelectedProject(null);
     setSelectedDocumentType(null);
-    setDocumentName("");
+    setDocumentLabel("");
+    setDocumentLink("");
     setDateIssued(null);
   }
   const handleCancelCreateNewDocument = () => {
     setSelectedProject(null);
     setSelectedDocumentType(null);
-    setDocumentName("");
+    setDocumentLabel("");
+    setDocumentLink("");
     setDateIssued(null);
   }
 
   const filteredDocumentTypes = documentType.filter((type) => {
     if (!selectedProject || !selectedProject.documents) return true;
 
-    const isExcluded = selectedProject.documents.some((document) =>
-      document.document_types.includes("Schedule B/Certificate")
+    const hasCertificate = selectedProject.documents.some((document) =>
+      document.document_types.includes(DocumentType.Certificate)
     );
 
-    return type.document_type !== "Schedule B/Certificate" || !isExcluded;
+    const hasExemptionOrder = selectedProject.documents.some((document) =>
+      document.document_types.includes(DocumentType.ExemptionOrder)
+    );
+
+    if (type.document_type === DocumentType.Certificate) {
+      return !hasExemptionOrder; // Exclude Certificate if ExemptionOrder is present
+    }
+
+    if (type.document_type === DocumentType.ExemptionOrder) {
+      return !hasCertificate; // Exclude ExemptionOrder if Certificate is present
+    }
+
+    return true;
   });
 
   const onCreateFailure = () => {
@@ -124,7 +139,8 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     : undefined;
 
     const data: CreateDocumentModel = {
-      display_name: documentName,
+      document_label: documentLabel,
+      document_link: documentLink,
       document_type_id: selectedDocumentType,
       date_issued: formattedDateIssued,
     };
@@ -183,14 +199,14 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
           color="primary"
           size="small"
           sx={{
-            width: "50%",
+            width: "30%",
             height: "70%",
             borderRadius: "4px",
             paddingLeft: "2px"
           }}
           onClick={handleOpenCreateNewDocument}
         >
-          <AddIcon fontSize="small" /> Create New Document
+          <AddIcon fontSize="small" /> Add Document
         </Button>
       </Stack>
     </Grid>
@@ -232,7 +248,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             alignItems="center"
             padding={"14px 5px 14px 14px"}
           >
-            <Typography variant="h6">Create New Document</Typography>
+            <Typography variant="h6">Add Document</Typography>
             <IconButton onClick={handleCloseCreateNewDocument}>
               <CloseIcon />
             </IconButton>
@@ -271,7 +287,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               />
               {/* Document Type Selector */}
               <Typography variant="body1">
-                Which Document are you creating?
+                What is the source Document?
               </Typography>
               <Autocomplete
                 id="document-type-selector"
@@ -294,14 +310,24 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 disabled={!selectedProject}
               />
               {/* Document Name Field */}
-              <Typography variant="body1">Document Name</Typography>
+              <Typography variant="body1">Document Label</Typography>
               <TextField
-                value={documentName}
-                onChange={(e) => setDocumentName(e.target.value)}
-                error={errors.documentName}
-                helperText={errors.documentName && "Document name is required"}
+                value={documentLabel}
+                onChange={(e) => setDocumentLabel(e.target.value)}
+                error={errors.documentLabel}
+                helperText={errors.documentLabel && "Document label is required"}
                 fullWidth
-                placeholder="Enter document name"
+                placeholder="Document Label"
+                size="small"
+                disabled={!selectedProject}
+              />
+              {/* Document Link Field */}
+              <Typography variant="body1">Link to Document</Typography>
+              <TextField
+                value={documentLink}
+                onChange={(e) => setDocumentLink(e.target.value)}
+                fullWidth
+                placeholder="Link to Document"
                 size="small"
                 disabled={!selectedProject}
               />
@@ -327,15 +353,19 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             </Stack>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "right", padding: "14px" }}>
-            <Button variant="outlined" onClick={handleCancelCreateNewDocument}>
+            <Button
+              variant="outlined"
+              sx={{ minWidth: "100px" }}
+              onClick={handleCancelCreateNewDocument}
+            >
               Cancel
             </Button>
             <Button
               variant="contained"
-              sx={{ marginLeft: "8px" }}
+              sx={{ marginLeft: "8px", minWidth: "100px" }}
               onClick={handleCreateNewDocument}
             >
-              Create
+              Add
             </Button>
           </Box>
         </Paper>
