@@ -55,7 +55,7 @@ def upgrade():
          'created_date': datetime.utcnow(), 'updated_date': datetime.utcnow()},
         {'id': 2, 'category_name': 'Exemption Order and Amendments',
          'created_date': datetime.utcnow(), 'updated_date': datetime.utcnow()},
-        {'id': 3, 'category_name': 'Other',
+        {'id': 3, 'category_name': 'Other Order',
          'created_date': datetime.utcnow(), 'updated_date': datetime.utcnow()},
     ])
 
