@@ -4,20 +4,8 @@ Manages the condition
 """
 
 from marshmallow import Schema, fields
-
-class ConditionAttributeSchema(Schema):
-    id = fields.Str(required=True, data_key="id")
-    key = fields.Str(required=True, data_key="key")
-    value = fields.Raw(allow_none=True, data_key="value")
-
-class SubConditionSchema(Schema):
-    """Recursive schema for subconditions."""
-    subcondition_id = fields.Str(data_key="subcondition_id")
-    subcondition_identifier = fields.Str(data_key="subcondition_identifier")
-    subcondition_text = fields.Str(data_key="subcondition_text")
-    
-    # Recursively define subconditions (i.e., subconditions can have child subconditions)
-    subconditions = fields.List(fields.Nested(lambda: SubConditionSchema()), data_key="subconditions")
+from condition_api.schemas.condition_attribute import ConditionAttributeSchema
+from condition_api.schemas.subcondition import SubconditionSchema
 
 class ConditionSchema(Schema):
     """Condition schema."""
@@ -37,17 +25,19 @@ class ConditionSchema(Schema):
     condition_attributes = fields.List(fields.Nested(ConditionAttributeSchema), data_key="condition_attributes")
     
     # Condition can also have its own subconditions (recursive nesting)
-    subconditions = fields.List(fields.Nested(SubConditionSchema), data_key="subconditions")
+    subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
 
 class ProjectDocumentConditionSchema(Schema):
     """Top-level schema to include project and document names."""
     project_name = fields.Str(data_key="project_name")
-    document_type = fields.Str(data_key="document_type")
+    document_category = fields.Str(data_key="document_category")
+    document_category_id = fields.Str(data_key="document_category_id")
+    document_label = fields.Str(data_key="document_label")
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")
 
 class ProjectDocumentConditionDetailSchema(Schema):
     """Top-level schema to include project and document names."""
     project_name = fields.Str(data_key="project_name")
-    document_type = fields.Str(data_key="document_type")
-    display_name = fields.Str(data_key="display_name")
+    document_category = fields.Str(data_key="document_category")
+    document_label = fields.Str(data_key="document_label")
     condition = fields.Nested(ConditionSchema, data_key="condition")

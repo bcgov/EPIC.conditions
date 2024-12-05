@@ -50,7 +50,7 @@ function ConditionPage() {
   useEffect(() => {
     if (conditionDetails) {
       replaceBreadcrumb(META_PROJECT_TITLE, conditionDetails?.project_name || "");
-      replaceBreadcrumb(META_DOCUMENT_TITLE, conditionDetails?.document_type || "");
+      replaceBreadcrumb(META_DOCUMENT_TITLE, conditionDetails?.document_category || "");
       replaceBreadcrumb(META_CONDITION_TITLE, conditionDetails?.condition.condition_name || "");
     }
   }, [conditionDetails, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_TITLE, META_CONDITION_TITLE]);

@@ -60,20 +60,14 @@ def reset_tables():
 
 def get_document_category_id(document_type):
     """Determine the document_category_id based on document_type."""
-    if document_type == "Application Materials":
-        return 1
-    elif document_type == "Order":
+    if document_type == "Order":
         return 2
-    elif document_type == "Comment/Submission":
-        return 3
     elif document_type == "Other":
         return 4
     elif document_type == "Amendment":
-        return 7
+        return 3
     elif document_type == "Schedule B/Certificate":
-        return 6
-    elif document_type == "Decision Materials":
-        return 5
+        return 1
 
 def load_data(folder_path):
     for filename in os.listdir(folder_path):
@@ -109,7 +103,7 @@ def load_data(folder_path):
             # Insert into the 'documents' table
             cur.execute("""
                 INSERT INTO condition.documents (
-                    document_id, document_type_id, display_name, document_file_name, 
+                    document_id, document_type_id, document_label, document_file_name, 
                     date_issued, act, first_nations, consultation_records_required, project_id, created_date
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
             """, (

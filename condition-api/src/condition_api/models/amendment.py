@@ -17,7 +17,7 @@ class Amendment(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     document_id = Column(Integer, ForeignKey('condition.documents.id', ondelete='CASCADE'), nullable=False)
     amended_document_id = Column(String(255), nullable=False)
-    document_type = Column(String(100), nullable=False)
+    document_type_id = Column(Integer, ForeignKey('condition.document_types.id', ondelete='CASCADE'), nullable=True)
     amendment_name = Column(Text)
     date_issued = Column(Date)
     act = Column(Integer)

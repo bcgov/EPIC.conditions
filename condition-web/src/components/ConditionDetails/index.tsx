@@ -46,7 +46,7 @@ export const ConditionDetails = ({
           documentId={documentId}
           conditionNumber={conditionNumber}
           projectName={initialCondition?.project_name || ""}
-          documentName={initialCondition?.display_name || ""} 
+          documentLabel={initialCondition?.document_label || ""} 
           condition={condition}
           setCondition={setCondition}
         />

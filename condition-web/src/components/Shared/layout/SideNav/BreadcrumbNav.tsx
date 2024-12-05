@@ -39,16 +39,28 @@ const BreadcrumbNav: React.FC = () => {
     >
       <Breadcrumbs aria-label="breadcrumb">
         {breadcrumbs.map(({ title, path }) => (
-          <Link
-            key={path}
-            style={{
-              color: theme.palette.primary.dark,
-              textDecoration: "underline",
-            }}
-            to={path}
-          >
-            {title}
-          </Link>
+          path ? (
+            <Link
+              key={path}
+              style={{
+                color: theme.palette.primary.dark,
+                textDecoration: "underline",
+              }}
+              to={path}
+            >
+              {title}
+            </Link>
+          ) : (
+            <span
+              key={path}
+              style={{
+                color: theme.palette.primary.dark,
+                textDecoration: "underline",
+              }}
+            >
+              {title}
+            </span>
+          )
         ))}
       </Breadcrumbs>
     </Box>

@@ -13,12 +13,12 @@ export const Route = createFileRoute(
 )({
   component: DocumentPage,
   notFoundComponent: () => {
-    return <p>Document not found!</p>;
+    return <p>Document Category not found!</p>;
   },
   meta: ({ params }) => [
     { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` }, // Fixed Projects path
-    { title: `${params.categoryId}`, path: `/_authenticated/_dashboard/documents/projects/${params.projectId}/document-category/${params.categoryId}/` } // Path to the specific document
+    { title: `${params.projectId}`, path: `/projects/` },
+    { title: `${params.categoryId}`, path: `/projects/` }
   ],
 });
 
@@ -41,14 +41,14 @@ function DocumentPage() {
   if (isAmendmentsError) return <Navigate to="/error" />;
 
   const META_PROJECT_TITLE = `${projectId}`;
-  const META_DOCUMENT_TITLE = `${categoryId}`;
+  const META_DOCUMENT_CATEGORY = `${categoryId}`;
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (allDocuments) {
-      replaceBreadcrumb(META_PROJECT_TITLE, allDocuments?.project_name || "");
-      replaceBreadcrumb(META_DOCUMENT_TITLE, allDocuments?.document_type || "");
+      replaceBreadcrumb(META_PROJECT_TITLE, allDocuments?.project_name || META_PROJECT_TITLE);
+      replaceBreadcrumb(META_DOCUMENT_CATEGORY, allDocuments?.document_category || META_DOCUMENT_CATEGORY);
     }
-  }, [allDocuments, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_TITLE]);
+  }, [allDocuments, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY]);
 
   return (
     <PageGrid>
@@ -61,7 +61,7 @@ function DocumentPage() {
             <Documents
               projectName = {allDocuments?.project_name || ""}
               projectId = {projectId}
-              documentName = {allDocuments?.document_category || ""}
+              documentLabel = {allDocuments?.document_category || ""}
               documents={allDocuments?.documents}
             />
           </Else>

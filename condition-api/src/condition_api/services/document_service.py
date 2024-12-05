@@ -23,7 +23,7 @@ class DocumentService:
             DocumentCategory.category_name.label('document_category'),
             Document.id.label('id'),
             Document.document_id.label('document_id'),
-            Document.display_name.label('document_name'),
+            Document.document_label.label('document_label'),
             extract('year', Document.date_issued).label('year_issued'),
             case(
                 (func.count(Condition.id) == 0, None),
@@ -49,7 +49,7 @@ class DocumentService:
             DocumentCategory.category_name,
             Document.id,
             Document.document_id,
-            Document.display_name,
+            Document.document_label,
             Document.date_issued
         ).all()
 
@@ -65,7 +65,7 @@ class DocumentService:
         # Fetch all amendments associated with the original document
             amendments_query = db.session.query(
                 Amendment.amended_document_id.label('document_id'),
-                Amendment.amendment_name.label('document_name'),
+                Amendment.amendment_name.label('document_label'),
                 extract('year', Amendment.date_issued).label('year_issued'),
                 func.min(case((Condition.is_approved == False, 0), else_=1)).label('status')
             ).outerjoin(
@@ -80,7 +80,7 @@ class DocumentService:
             # Append the main document to the result list
             result.append({
                 'document_id': document.document_id,
-                'document_name': document.document_name,
+                'document_label': document.document_label,
                 'year_issued': document.year_issued,
                 'status': document.status
             })
@@ -89,7 +89,7 @@ class DocumentService:
             for amendment in amendments_query:
                 result.append({
                     'document_id': amendment.document_id,
-                    'document_name': amendment.document_name,
+                    'document_label': amendment.document_label,
                     'year_issued': amendment.year_issued,
                     'status': amendment.status
                 })
@@ -120,7 +120,8 @@ class DocumentService:
             document_id=document_id,
             date_issued=date_issued,
             project_id=project_id,
-            display_name=document.get("display_name"),
+            document_label=document.get("document_label"),
+            document_link=document.get("document_link"),
             document_type_id=document.get("document_type_id")
         )
         db.session.add(new_document)

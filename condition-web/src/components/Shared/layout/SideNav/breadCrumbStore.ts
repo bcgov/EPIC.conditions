@@ -8,7 +8,7 @@ interface BreadCrumb {
 interface BreadCrumbStore {
   breadcrumbs: BreadCrumb[];
   setBreadcrumbs: (breadcrumbs: BreadCrumb[]) => void;
-  replaceBreadcrumb: (oldTitle: string, newTitle: string) => void;
+  replaceBreadcrumb: (oldTitle: string, newTitle: string, newPath?: string) => void;
 }
 
 // Create the Zustand store
@@ -19,11 +19,11 @@ export const useBreadCrumb = create<BreadCrumbStore>((set) => ({
       breadcrumbs,
     }));
   },
-  replaceBreadcrumb: (oldTitle, newTitle) => {
+  replaceBreadcrumb: (oldTitle, newTitle, newPath) => {
     set((state) => ({
       breadcrumbs: state.breadcrumbs.map((breadcrumb) =>
         breadcrumb.title === oldTitle
-          ? { ...breadcrumb, title: newTitle }
+          ? { ...breadcrumb, title: newTitle, path: newPath ?? breadcrumb.path }
           : breadcrumb,
       ),
     }));
