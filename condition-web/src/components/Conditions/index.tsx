@@ -50,7 +50,9 @@ export const Conditions = ({
       setIsToggleEnabled(allApproved);
       setHasAmendments(conditionHasAmendments);
 
-      const invalidConditions = conditions.some(
+      const invalidConditions =
+      conditions.length === 1 &&
+      conditions.some(
         (condition) =>
           !condition.condition_name ||
           !condition.condition_number ||
