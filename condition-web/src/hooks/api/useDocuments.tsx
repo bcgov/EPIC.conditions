@@ -1,4 +1,4 @@
-import { CreateDocumentModel, ProjectDocumentAllAmendmentsModel } from "@/models/Document";
+import { CreateDocumentModel, DocumentModel, ProjectDocumentAllAmendmentsModel } from "@/models/Document";
 import { submitRequest } from "@/utils/axiosUtils";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
@@ -61,5 +61,23 @@ export const useCreateDocument = (
       return createDocument(projectId, documentDetails);
     },
     ...options,
+  });
+};
+
+const loadDocumentsByProject = (projectId?: string) => {
+  if (!projectId) {
+    return Promise.reject(new Error("Project ID is required"));
+  }
+  return submitRequest<DocumentModel>({
+    url: `/documents/project/${projectId}`,
+  });
+};
+
+export const useLoadDocumentsByProject = (shouldLoad: boolean, projectId?: string) => {
+  return useQuery({
+    queryKey: ["projects", projectId],
+    queryFn: () => loadDocumentsByProject(projectId),
+    enabled: Boolean(projectId && shouldLoad),
+    retry: false,
   });
 };

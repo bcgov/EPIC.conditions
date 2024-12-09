@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enum definitions."""
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 
 class UserStatus(IntEnum):
@@ -20,3 +20,8 @@ class UserStatus(IntEnum):
 
     ACTIVE = 1
     INACTIVE = 2
+
+class DocumentType(IntEnum):
+    """User status."""
+
+    Amendment = 3

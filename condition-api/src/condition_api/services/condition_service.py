@@ -187,13 +187,33 @@ class ConditionService:
             .subquery()
         )
 
+        # Check if the document_id exists in the amendments table
+        amendment_exists = (
+            db.session.query(amendments.document_id)
+            .filter(amendments.amended_document_id == document_id)
+            .first()
+        )
+
+        if amendment_exists:
+            # Join conditions to amendments instead of documents
+            document_filter = documents.id == amendment_exists[0]
+            condition_join = amendments.amended_document_id == conditions.amended_document_id
+            document_label_query = amendments.amendment_name.label("document_label")
+            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+        else:
+            # Join conditions directly to documents
+            document_filter = documents.document_id == document_id
+            condition_join = documents.document_id == conditions.document_id
+            document_label_query = documents.document_label
+            date_issued_query = extract("year", documents.date_issued).label("year_issued")
+
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
             db.session.query(
                 projects.project_name,
                 document_categories.category_name.label('document_category'),
                 document_categories.id.label('document_category_id'),
-                documents.document_label,
+                document_label_query,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -205,7 +225,7 @@ class ConditionService:
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
                 subconditions.parent_subcondition_id,
-                extract('year', documents.date_issued).label('year_issued')
+                date_issued_query
             )
             .outerjoin(
                 documents,
@@ -220,8 +240,12 @@ class ConditionService:
                 document_categories.id == document_types.document_category_id
             )
             .outerjoin(
+                amendments,
+                amendments.document_id == documents.id
+            )
+            .outerjoin(
                 conditions,
-                conditions.document_id == documents.document_id
+                condition_join
             )
             .outerjoin(
                 subconditions,
@@ -232,8 +256,7 @@ class ConditionService:
                 conditions.condition_number == amendment_subquery.c.condition_number
             )
             .filter(
-                (projects.project_id == project_id)
-                & (documents.document_id == document_id)
+                (projects.project_id == project_id) & document_filter
             )
             .group_by(
                 projects.project_name,
@@ -250,8 +273,8 @@ class ConditionService:
                 subconditions.subcondition_text,
                 subconditions.parent_subcondition_id,
                 amendment_subquery.c.amendment_names,
-                documents.date_issued,
-                documents.document_label
+                date_issued_query,
+                document_label_query
             )
             .all()
         )

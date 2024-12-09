@@ -67,7 +67,10 @@ class DocumentService:
                 Amendment.amended_document_id.label('document_id'),
                 Amendment.amendment_name.label('document_label'),
                 extract('year', Amendment.date_issued).label('year_issued'),
-                func.min(case((Condition.is_approved == False, 0), else_=1)).label('status')
+                case(
+                    (func.count(Condition.id) == 0, None),
+                    else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
+                ).label("status")
             ).outerjoin(
                 Condition,
                 Condition.amended_document_id == Amendment.amended_document_id
@@ -104,7 +107,6 @@ class DocumentService:
             "documents": list(sorted_result)
         }
 
-
     @staticmethod
     def create_document(project_id, document):
         document_id = document.get("document_id")
@@ -129,3 +131,30 @@ class DocumentService:
 
         db.session.commit()
         return new_document
+
+    @staticmethod
+    def get_all_documents_by_project_id(project_id):
+        """Fetch all documents and its amendments for the given project_id."""
+        documents = db.session.query(
+            Document.id.label('document_id'),
+            Document.document_label
+        ).outerjoin(
+            Project,
+            Project.project_id == Document.project_id
+        ).filter(
+            Project.project_id == project_id
+        )
+
+        if not documents:
+            # If no original document is found, return an empty list
+            return []
+        
+        result = []
+
+        for document in documents:
+            result.append({
+                'document_id': document.document_id,
+                'document_label': document.document_label
+            })
+
+        return result

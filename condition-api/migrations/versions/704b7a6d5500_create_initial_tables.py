@@ -117,6 +117,7 @@ def upgrade():
     sa.Column('amended_document_id', sa.String(length=255), nullable=False),
     sa.Column('document_type', sa.String(length=100), nullable=False),
     sa.Column('amendment_name', sa.Text(), nullable=True),
+    sa.Column('amendment_link', sa.Text(), nullable=True),
     sa.Column('date_issued', sa.Date(), nullable=True),
     sa.Column('act', sa.Integer(), nullable=True),
     sa.Column('created_date', sa.DateTime(), nullable=False),

@@ -34,8 +34,8 @@ document_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, DocumentSchema(), "Document"
 )
 
-@cors_preflight("POST, OPTIONS")
-@API.route("/project/<string:project_id>", methods=["POST", "OPTIONS"])
+@cors_preflight("GET, POST, OPTIONS")
+@API.route("/project/<string:project_id>", methods=["GET", "POST", "OPTIONS"])
 class DocumentsResource(Resource):
     """Resource for Document Management"""
 
@@ -57,6 +57,23 @@ class DocumentsResource(Resource):
 
             # Call dump on the schema instance
             return DocumentSchema().dump(created_document), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents")
+    @API.response(code=HTTPStatus.OK, model=document_model, description="Get all documents")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
+    @cors.crossdomain(origin="*")
+    def get(project_id):
+        """Get all documents."""
+        try:
+            documents = DocumentService.get_all_documents_by_project_id(project_id)
+            if not documents:
+                return {}
+
+            return DocumentSchema(many=True).dump(documents), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
