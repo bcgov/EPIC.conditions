@@ -19,6 +19,7 @@ class Amendment(BaseModel):
     amended_document_id = Column(String(255), nullable=False)
     document_type_id = Column(Integer, ForeignKey('condition.document_types.id', ondelete='CASCADE'), nullable=True)
     amendment_name = Column(Text)
+    amendment_link = Column(Text)
     date_issued = Column(Date)
     act = Column(Integer)
 

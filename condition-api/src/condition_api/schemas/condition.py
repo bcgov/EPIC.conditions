@@ -4,7 +4,7 @@ Manages the condition
 """
 
 from marshmallow import Schema, fields
-from condition_api.schemas.condition_attribute import ConditionAttributeSchema
+from condition_api.schemas.condition_attribute import UpdateConditionAttributeSchema
 from condition_api.schemas.subcondition import SubconditionSchema
 
 class ConditionSchema(Schema):
@@ -22,7 +22,7 @@ class ConditionSchema(Schema):
     is_topic_tags_approved = fields.Bool(data_key="is_topic_tags_approved", allow_none=True)
     is_condition_attributes_approved = fields.Bool(data_key="is_condition_attributes_approved", allow_none=True)
     deliverable_name = fields.Str(data_key="deliverable_name")
-    condition_attributes = fields.List(fields.Nested(ConditionAttributeSchema), data_key="condition_attributes")
+    condition_attributes = fields.List(fields.Nested(UpdateConditionAttributeSchema), data_key="condition_attributes")
     
     # Condition can also have its own subconditions (recursive nesting)
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")

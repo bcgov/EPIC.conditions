@@ -1,7 +1,11 @@
 import React, { memo, useEffect, useState } from "react";
 import {
   Box,
+  Button,
+  Chip,
   CircularProgress,
+  Divider,
+  IconButton,
   Modal,
   Table,
   TableBody,
@@ -10,10 +14,11 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Button,
   Select,
   Stack,
   MenuItem,
+  TextField,
+  Paper
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { BCDesignTokens } from "epic.theme";
@@ -27,6 +32,8 @@ import { updateTopicTagsModel } from "@/models/Condition";
 import { useGetAttributes } from "@/hooks/api/useAttributeKey";
 import ConditionAttributeRow from "./ConditionAttributeRow";
 import { useQueryClient } from "@tanstack/react-query";
+import { CONDITION_KEYS, SELECT_OPTIONS } from "./Constants";
+import CloseIcon from '@mui/icons-material/Close';
 
 type ConditionAttributeTableProps = {
     projectId: string;
@@ -56,7 +63,7 @@ const ConditionAttributeTable = memo(({
       });
     };
   
-    const { data: conditionAttributeDetails, mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
+    const { mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
       condition.condition_id,
       {
         onSuccess: onCreateSuccess,
@@ -96,21 +103,12 @@ const ConditionAttributeTable = memo(({
         is_condition_attributes_approved: !condition.is_condition_attributes_approved }
       updateConditionDetails(data);
     };
-  
-    useEffect(() => {
-      if (conditionAttributeDetails) {
-          setCondition((prevCondition) => ({
-              ...prevCondition,
-              condition_attributes: conditionAttributeDetails,
-          }));
-      }
-    }, [conditionAttributeDetails, setCondition]);
-    
+
     const handleSave = async (updatedAttribute: ConditionAttributeModel) => {
       const updatedAttributes = condition.condition_attributes?.map((attr) =>
         attr.id === updatedAttribute.id ? updatedAttribute : attr
       ) || [];
-  
+
       updateAttributes(updatedAttributes);
   
     };
@@ -137,10 +135,30 @@ const ConditionAttributeTable = memo(({
   
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedAttribute, setSelectedAttribute] = useState("");
-  
+    const [attributeValue, setAttributeValue] = useState("");
+    const [newChip, setNewChip] = useState("");
+
+    const handleAddChip = (chip: string) => {
+      setAttributeValue((prev) => (prev ? `${prev},${chip}` : chip));
+      setNewChip("");
+    };
+    
+    const handleRemoveChip = (index: number) => {
+      const updatedChips = attributeValue
+        .split(",")
+        .filter((_, chipIndex) => chipIndex !== index)
+        .join(",");
+      setAttributeValue(updatedChips);
+    };
+
     const handleCloseModal = () => {
       setModalOpen(false);
       setSelectedAttribute("");
+      setAttributeValue("");
+
+      queryClient.invalidateQueries({
+        queryKey: ["conditions", condition.condition_id],
+      });
     };
   
     const handleAttributeSelection = () => {
@@ -148,13 +166,19 @@ const ConditionAttributeTable = memo(({
         notify.error("Please select an attribute before proceeding");
         return;
       }
-  
       const newAttribute = {
         id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
         key: selectedAttribute,
-        value: "",
+        value: attributeValue,
       };
-  
+
+      updateAttributes([
+        {
+          id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
+          key: selectedAttribute,
+          value: attributeValue,
+        }
+      ]);
       setCondition((prevCondition) => ({
         ...prevCondition,
         condition_attributes: [
@@ -166,9 +190,109 @@ const ConditionAttributeTable = memo(({
       // Close the modal and reset the selection
       setModalOpen(false);
       setSelectedAttribute("");
+      setAttributeValue("");
+    };
+
+    const renderEditableField = () => {
+      if (selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED) {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            {attributeValue
+              .split(",") // Assuming attributeValue is a comma-separated list of parties
+              .filter((chip) => chip.trim() !== "")
+              .map((chip, index) => (
+                <Chip
+                  key={index}
+                  label={chip}
+                  onDelete={() => handleRemoveChip(index)} // Handle chip removal
+                  sx={{
+                    marginLeft: 1,
+                    backgroundColor: BCDesignTokens.themeGray30,
+                    color: "black",
+                    fontSize: "14px"
+                  }}
+                />
+              ))}
+            <TextField
+              placeholder="Add a party"
+              value={newChip} // A new state to hold the value for a new chip
+              onChange={(e) => setNewChip(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newChip.trim() !== "") {
+                  handleAddChip(newChip);
+                  e.preventDefault();
+                }
+              }}
+              fullWidth
+              sx={{
+                "& .MuiInputBase-root": {
+                  padding: "0 8px",
+                  fontSize: "inherit",
+                  lineHeight: "inherit",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                height: "1.5em",
+              }}
+            />
+          </Box>
+        );
+      }
+
+      const options = SELECT_OPTIONS[selectedAttribute];
+      if (options) {
+        return (
+          <Select
+            value={attributeValue}
+            onChange={(e) => setAttributeValue(e.target.value)}
+            fullWidth
+            sx={{
+              fontSize: "inherit",
+              lineHeight: "inherit",
+              width: "100%",
+              "& .MuiSelect-select": {
+                padding: "8px",
+              },
+            }}
+            disabled={!selectedAttribute.trim()}
+          >
+            {options.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        );
+      }
   
-      // Optional: Notify user of success
-      notify.success("Condition attribute added successfully");
+      return (
+        <TextField
+          value={attributeValue}
+          onChange={(e) => setAttributeValue(e.target.value)}
+          fullWidth
+          sx={{
+            "& .MuiInputBase-root": {
+              padding: "0 8px",
+              fontSize: "inherit",
+              lineHeight: "inherit",
+            },
+            "& .MuiOutlinedInput-notchedOutline": {
+              border: "none",
+            },
+            height: "1.5em",
+          }}
+          disabled={!selectedAttribute.trim()}
+        />
+      );
     };
 
     return (
@@ -242,52 +366,89 @@ const ConditionAttributeTable = memo(({
             aria-labelledby="modal-title"
             aria-describedby="modal-description"
           >
-            <Box
+            <Paper
               sx={{
                 position: "absolute",
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                width: 400,
-                bgcolor: "background.paper",
-                boxShadow: 24,
-                p: 4,
-                borderRadius: "8px",
+                width: "90%",
+                maxWidth: "500px",
+                borderRadius: "4px",
+                outline: "none",
               }}
             >
-              <Typography id="modal-title" variant="h6" component="h2" gutterBottom>
-                Select an Attribute
-              </Typography>
-  
-              {isAttributesLoading ? (
-                <CircularProgress size={24} sx={{ display: "block", margin: "16px auto" }} />
-              ) : (
-                <Select
-                  value={selectedAttribute}
-                  onChange={(e) => setSelectedAttribute(e.target.value)}
-                  fullWidth
-                  displayEmpty
-                  sx={{ mb: 2 }}
-                >
-                  <MenuItem value="" disabled>
-                    Select an attribute
-                  </MenuItem>
-                  {attributesData?.map((attribute: any) => (
-                    <MenuItem key={attribute.id} value={attribute.key_name}>
-                      {attribute.key_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-                <Button variant="outlined" onClick={handleCloseModal}>
-                  Cancel
-                </Button>
-                <Button variant="contained" onClick={handleAttributeSelection} disabled={!selectedAttribute}>
-                  Confirm
-                </Button>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                padding={"14px 5px 14px 14px"}
+              >
+                <Typography variant="h6">Add Condition Attribute</Typography>
+                <IconButton onClick={handleCloseModal}>
+                  <CloseIcon />
+                </IconButton>
               </Box>
-            </Box>
+              <Divider />
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                padding={"14px"}
+              >
+                <Stack direction={"column"} sx={{ width: "100%" }}>
+                  <Typography variant="body1" marginBottom={"2px"}>
+                    Select an Attribute
+                  </Typography>
+                  {isAttributesLoading ? (
+                    <CircularProgress size={24} sx={{ display: "block", margin: "16px auto" }} />
+                  ) : (
+                    <Select
+                      value={selectedAttribute}
+                      onChange={(e) => setSelectedAttribute(e.target.value)}
+                      fullWidth
+                      displayEmpty
+                      sx={{
+                        fontSize: "inherit",
+                        lineHeight: "inherit",
+                        width: "100%",
+                        "& .MuiSelect-select": {
+                          padding: "8px",
+                        },
+                        mb: 2
+                      }}
+                    >
+                      {attributesData?.map((attribute: any) => (
+                        <MenuItem key={attribute.id} value={attribute.key_name}>
+                          {attribute.key_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                  <Typography variant="body1">
+                    Select a Value
+                  </Typography>
+                  {renderEditableField()}
+                  <Box sx={{ display: "flex", justifyContent: "right", mt: 2 }}>
+                    <Button
+                      variant="outlined"
+                      sx={{ minWidth: "100px" }}
+                      onClick={handleCloseModal}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      sx={{ marginLeft: "8px", minWidth: "100px" }}
+                      onClick={handleAttributeSelection}
+                      disabled={!selectedAttribute}
+                    >
+                      Confirm
+                    </Button>
+                  </Box>
+                </Stack>
+              </Box>
+            </Paper>
           </Modal>
           <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button

@@ -26,10 +26,13 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import { useCreateDocument } from "@/hooks/api/useDocuments";
+import { useCreateAmendment } from "@/hooks/api/useAmendments";
+import { useCreateDocument, useLoadDocumentsByProject } from "@/hooks/api/useDocuments";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
-import { CreateDocumentModel } from "@/models/Document";
+import { CreateAmendmentModel } from "@/models/Amendment";
+import { CreateDocumentModel, DocumentModel } from "@/models/Document";
 import { useQueryClient } from "@tanstack/react-query";
+import { DocumentTypes } from "@/utils/enums"
 
 
 type ProjectsParams = {
@@ -47,6 +50,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectModel | null>(null);
   const [selectedDocumentType, setSelectedDocumentType] = useState<number | null>(null);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [documentLabel, setDocumentLabel] = useState("");
   const [documentLink, setDocumentLink] = useState("");
   const [dateIssued, setDateIssued] = useState<Date | null>(null);
@@ -83,6 +87,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     setOpenModal(false);
     setSelectedProject(null);
     setSelectedDocumentType(null);
+    setSelectedDocumentId(null);
     setDocumentLabel("");
     setDocumentLink("");
     setDateIssued(null);
@@ -90,6 +95,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const handleCancelCreateNewDocument = () => {
     setSelectedProject(null);
     setSelectedDocumentType(null);
+    setSelectedDocumentId(null);
     setDocumentLabel("");
     setDocumentLink("");
     setDateIssued(null);
@@ -133,31 +139,57 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     }
   );
 
+  const { mutateAsync: createAmendment } = useCreateAmendment(
+    selectedDocumentId ? selectedDocumentId : "",
+    {
+      onSuccess: onCreateSuccess,
+      onError: onCreateFailure,
+    }
+  );
+
   const handleCreateNewDocument = async () => {
     const formattedDateIssued = dateIssued 
     ? new Date(dateIssued).toISOString().split("T")[0]
     : undefined;
 
-    const data: CreateDocumentModel = {
-      document_label: documentLabel,
-      document_link: documentLink,
-      document_type_id: selectedDocumentType,
-      date_issued: formattedDateIssued,
-    };
+    const isAmendment = selectedDocumentType === DocumentTypes.Amendment && selectedDocumentId !== null;
 
-    const response = await createDocument(data);
+    const data = isAmendment
+      ? {
+          amendment_name: documentLabel,
+          amendment_link: documentLink,
+          date_issued: formattedDateIssued,
+        }
+      : {
+          document_label: documentLabel,
+          document_link: documentLink,
+          document_type_id: selectedDocumentType,
+          date_issued: formattedDateIssued,
+        };
 
-    queryClient.invalidateQueries({
-      queryKey: ["projects"],
-    });
 
-    if (response) {
-      navigate({
-        to: `/conditions/project/${response.project_id}/document/${response.document_id}`,
-      });
-    }
-
+        const response = isAmendment
+        ? await createAmendment(data as CreateAmendmentModel)
+        : await createDocument(data as CreateDocumentModel);
+      
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      
+      if (response) {
+        const navigateTo = isAmendment
+          ? `/conditions/project/${selectedProject?.project_id}/document/${response.amended_document_id}`
+          : `/conditions/project/${response.project_id}/document/${response.document_id}`;
+      
+        navigate({ to: navigateTo });
+      }
   };
+
+  const {
+    data: documentData,
+    isPending: isDocumentsLoading
+  } = useLoadDocumentsByProject(
+    selectedDocumentType === DocumentTypes.Amendment,
+    selectedProject?.project_id
+  );
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
@@ -309,6 +341,34 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 }}
                 disabled={!selectedProject}
               />
+              {/* Amended document Selector */}
+              {selectedDocumentType === DocumentTypes.Amendment && !isDocumentsLoading && (
+                <>
+                  <Typography variant="body1">
+                    Which Certificate Document does this Amendment belong to?
+                  </Typography>
+                <Autocomplete
+                  id="document-selector"
+                  options={(documentData || []) as DocumentModel[]}
+                  renderInput={(params) => (
+                      <TextField
+                          {...params}
+                          label=" "
+                          InputLabelProps={{
+                              shrink: false,
+                          }}
+                          fullWidth
+                      />
+                  )}
+                  size="small"
+                  getOptionLabel={(document: DocumentModel) => document.document_label}
+                  onChange={(_e: React.SyntheticEvent<Element, Event>, document: DocumentModel | null) => {
+                    setSelectedDocumentId(document?.document_id || null);
+                  }}
+                  disabled={!selectedProject}
+                />
+              </>
+              )}
               {/* Document Name Field */}
               <Typography variant="body1">Document Label</Typography>
               <TextField
@@ -319,7 +379,11 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 fullWidth
                 placeholder="Document Label"
                 size="small"
-                disabled={!selectedProject}
+                disabled={
+                  !selectedProject || (
+                    selectedDocumentType === DocumentTypes.Amendment && !selectedDocumentId?.trim()
+                  )
+                }
               />
               {/* Document Link Field */}
               <Typography variant="body1">Link to Document</Typography>
@@ -329,7 +393,11 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 fullWidth
                 placeholder="Link to Document"
                 size="small"
-                disabled={!selectedProject}
+                disabled={
+                  !selectedProject || (
+                    selectedDocumentType === DocumentTypes.Amendment && !selectedDocumentId?.trim()
+                  )
+                }
               />
               {/* Date Issued Field */}
               <Typography variant="body1">Date Issued</Typography>
@@ -347,7 +415,11 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                       size="small"
                     />
                   )}
-                  disabled={!selectedProject}
+                  disabled={
+                    !selectedProject || (
+                      selectedDocumentType === DocumentTypes.Amendment && !selectedDocumentId?.trim()
+                    )
+                  }
                 />
               </LocalizationProvider>
             </Stack>
