@@ -1,6 +1,7 @@
 import { ConditionModel } from "./Condition";
 
 export interface DocumentModel {
+  document_record_id: string;
   document_id: string;
   document_label: string;
   document_category_id: number;

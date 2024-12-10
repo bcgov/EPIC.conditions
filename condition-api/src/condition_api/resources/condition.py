@@ -38,7 +38,7 @@ class ConditionDetailsResource(Resource):
     """Resource for fetching condition details by project_id."""
 
     @staticmethod
-    @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.require
@@ -77,10 +77,10 @@ class ConditionDetailsResource(Resource):
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
 
-@cors_preflight("GET, OPTIONS")
-@API.route("/project/<string:project_id>/document/<string:document_id>", methods=["GET", "OPTIONS"])
+@cors_preflight("GET, POST, OPTIONS")
+@API.route("/project/<string:project_id>/document/<string:document_id>", methods=["GET", "POST", "OPTIONS"])
 class ConditionDetailResource(Resource):
-    """Resource for fetching condition details by project_id."""
+    """Resource for fetching or adding condition for a project and document."""
 
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id and document id")
@@ -96,6 +96,46 @@ class ConditionDetailResource(Resource):
                 return {}
             # Instantiate the schema
             condition_details_schema = ProjectDocumentConditionSchema()
+
+            # Call dump on the schema instance
+            return condition_details_schema.dump(condition_details), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Create new condition")
+    @API.response(code=HTTPStatus.OK, model=condition_model, description="Create condition")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
+    @cors.crossdomain(origin="*")
+    def post(project_id, document_id):
+        """Create a new condition."""
+        try:
+            created_condition = ConditionService.create_condition(project_id, document_id)
+            return created_condition, HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS, PATCH")
+@API.route("/create/<int:condition_id>", methods=["PATCH", "GET", "OPTIONS"])
+class ConditionResource(Resource):
+    """Resource for fetching condition details by condition id."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
+    @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @cors.crossdomain(origin="*")
+    def get(condition_id):
+        """Fetch conditions and condition attributes by condition ID."""
+        try:
+            condition_details = ConditionService.get_condition_details_by_id(condition_id)
+            if not condition_details:
+                return {"message": "Condition not found"}, HTTPStatus.NOT_FOUND
+
+            # Instantiate the schema
+            condition_details_schema = ProjectDocumentConditionDetailSchema()
 
             # Call dump on the schema instance
             return condition_details_schema.dump(condition_details), HTTPStatus.OK

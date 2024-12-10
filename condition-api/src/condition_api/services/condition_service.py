@@ -189,16 +189,25 @@ class ConditionService:
 
         # Check if the document_id exists in the amendments table
         amendment_exists = (
-            db.session.query(amendments.document_id)
+            db.session.query(amendments.document_id, amendments.amended_document_id)
             .filter(amendments.amended_document_id == document_id)
             .first()
         )
 
+        amendment_filter = None
+        if amendment_exists:
+            amendment_filter = amendments.amended_document_id == amendment_exists[1]
+
         if amendment_exists:
             # Join conditions to amendments instead of documents
+            amendment_label_subquery = (
+                db.session.query(amendments.amendment_name)
+                .filter(amendments.amended_document_id == amendment_exists[1])
+                .subquery()
+            )
             document_filter = documents.id == amendment_exists[0]
             condition_join = amendments.amended_document_id == conditions.amended_document_id
-            document_label_query = amendments.amendment_name.label("document_label")
+            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
             date_issued_query = extract("year", amendments.date_issued).label("year_issued")
         else:
             # Join conditions directly to documents
@@ -214,6 +223,7 @@ class ConditionService:
                 document_categories.category_name.label('document_category'),
                 document_categories.id.label('document_category_id'),
                 document_label_query,
+                conditions.id.label('condition_id'),
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -256,12 +266,14 @@ class ConditionService:
                 conditions.condition_number == amendment_subquery.c.condition_number
             )
             .filter(
-                (projects.project_id == project_id) & document_filter
+                (projects.project_id == project_id) & document_filter,
+                *([amendment_filter] if amendment_filter else [])
             )
             .group_by(
                 projects.project_name,
                 document_categories.category_name,
                 document_categories.id,
+                conditions.id,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -294,6 +306,7 @@ class ConditionService:
             # Add each condition to the map if not already present
             if cond_num not in conditions_map:
                 conditions_map[cond_num] = {
+                    "condition_id": row.condition_id,
                     "condition_name": row.condition_name,
                     "condition_number": row.condition_number,
                     "condition_text": row.condition_text,
@@ -404,3 +417,127 @@ class ConditionService:
             if "subconditions" in subcond_data:
                 ConditionService.upsert_subconditions(
                     condition_id, subcond_data["subconditions"], parent_id=subcondition_id)
+
+    @staticmethod
+    def create_condition(project_id, document_id):
+        """Create a new condition."""
+        amendment = (
+            db.session.query(Amendment.document_id)
+            .filter(Amendment.amended_document_id == document_id)
+            .first()
+        )
+
+        amended_document_id = document_id if amendment else None
+
+        if amendment:
+            document = (
+                db.session.query(Document.document_id)
+                .filter(Document.id == amendment[0])
+                .first()
+            )
+            final_document_id = document[0]
+        else:
+            final_document_id = document_id
+
+        new_condition = Condition(
+            document_id=final_document_id ,
+            amended_document_id=amended_document_id,
+            project_id=project_id,
+            is_approved=False
+        )
+        db.session.add(new_condition)
+        db.session.flush()
+
+        db.session.commit()
+
+        return {
+            "condition_id": new_condition.id
+        }
+
+    @staticmethod
+    def get_condition_details_by_id(condition_id):
+        """Fetch all conditions and their related details by condition ID."""
+
+        condition_data = (
+            db.session.query(
+                Condition.id,
+                Condition.document_id,
+                Condition.amended_document_id,
+                Condition.condition_name,
+                Condition.condition_number,
+                Condition.condition_text,
+                Condition.is_approved,
+                Condition.topic_tags,
+                Condition.subtopic_tags
+            ).filter(Condition.id == condition_id).first()
+        )
+
+        if not condition_data:
+            return None
+
+        amended_document_id = condition_data.amended_document_id
+
+        if amended_document_id:
+            amendment_data = (
+                db.session.query(
+                    Document.document_id,
+                    Amendment.amendment_name.label("document_label"),
+                    extract("year", Amendment.date_issued).label("year_issued")
+                )
+                .outerjoin(
+                    Document,
+                    Document.id == Amendment.document_id
+                )
+                .filter(Amendment.amended_document_id == amended_document_id)
+                .first()
+            )
+            document_id = amendment_data.document_id if amendment_data else None
+            document_label = amendment_data.document_label if amendment_data else None
+            year_issued = amendment_data.year_issued if amendment_data else None
+        else:
+            document_id = condition_data.document_id
+            document_details = db.session.query(
+                Document.document_label,
+                extract("year", Document.date_issued).label("year_issued")
+            ).filter(Document.document_id == document_id).first()
+
+            document_label = document_details.document_label if document_details else None
+            year_issued = document_details.year_issued if document_details else None
+
+        project_data = db.session.query(
+            Project.project_id,
+            Project.project_name,
+            DocumentType.document_category_id,
+            DocumentCategory.category_name.label("document_category")
+        ).outerjoin(Document, Project.project_id == Document.project_id
+        ).outerjoin(DocumentType, DocumentType.id == Document.document_type_id
+        ).outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
+        ).filter(Document.document_id == document_id).first()
+
+        project_id = project_data.project_id if project_data else None
+        project_name = project_data.project_name if project_data else None
+        document_category = project_data.document_category if project_data else None
+        document_category_id = project_data.document_category_id if project_data else None
+
+        condition_details = {
+            "condition_id": condition_data.id,
+            "condition_name": condition_data.condition_name,
+            "condition_number": condition_data.condition_number,
+            "condition_text": condition_data.condition_text,
+            "is_approved": condition_data.is_approved,
+            "topic_tags": condition_data.topic_tags,
+            "subtopic_tags": condition_data.subtopic_tags,
+            "year_issued": year_issued,
+            "condition_attributes": [],
+            "subconditions": []
+        }
+
+        return {
+            "project_id": project_id,
+            "project_name": project_name,
+            "document_category_id": document_category_id,
+            "document_category": document_category,
+            "document_id": document_id,
+            "document_label": document_label,
+            "condition": condition_details
+        }

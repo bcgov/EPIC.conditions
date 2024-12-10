@@ -17,6 +17,7 @@ import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/_dashboard'
 import { Route as AuthenticatedDashboardProjectsIndexImport } from './routes/_authenticated/_dashboard/projects/index'
+import { Route as AuthenticatedDashboardConditionsCreateConditionIdIndexImport } from './routes/_authenticated/_dashboard/conditions/create/$conditionId/index'
 import { Route as AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexImport } from './routes/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/index'
 import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/index'
 import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/index'
@@ -51,6 +52,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardImport.update({
 const AuthenticatedDashboardProjectsIndexRoute =
   AuthenticatedDashboardProjectsIndexImport.update({
     path: '/projects/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+
+const AuthenticatedDashboardConditionsCreateConditionIdIndexRoute =
+  AuthenticatedDashboardConditionsCreateConditionIdIndexImport.update({
+    path: '/conditions/create/$conditionId/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 
@@ -124,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardProjectsIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
+    '/_authenticated/_dashboard/conditions/create/$conditionId/': {
+      id: '/_authenticated/_dashboard/conditions/create/$conditionId/'
+      path: '/conditions/create/$conditionId'
+      fullPath: '/conditions/create/$conditionId'
+      preLoaderRoute: typeof AuthenticatedDashboardConditionsCreateConditionIdIndexImport
+      parentRoute: typeof AuthenticatedDashboardImport
+    }
     '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/': {
       id: '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/'
       path: '/conditions/project/$projectId/document/$documentId'
@@ -155,6 +169,7 @@ export const routeTree = rootRoute.addChildren({
   AuthenticatedRoute: AuthenticatedRoute.addChildren({
     AuthenticatedDashboardRoute: AuthenticatedDashboardRoute.addChildren({
       AuthenticatedDashboardProjectsIndexRoute,
+      AuthenticatedDashboardConditionsCreateConditionIdIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRoute,
       AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexRoute,
@@ -198,6 +213,7 @@ export const routeTree = rootRoute.addChildren({
       "parent": "/_authenticated",
       "children": [
         "/_authenticated/_dashboard/projects/",
+        "/_authenticated/_dashboard/conditions/create/$conditionId/",
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/",
         "/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/",
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/"
@@ -205,6 +221,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/_authenticated/_dashboard/projects/": {
       "filePath": "_authenticated/_dashboard/projects/index.tsx",
+      "parent": "/_authenticated/_dashboard"
+    },
+    "/_authenticated/_dashboard/conditions/create/$conditionId/": {
+      "filePath": "_authenticated/_dashboard/conditions/create/$conditionId/index.tsx",
       "parent": "/_authenticated/_dashboard"
     },
     "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/": {

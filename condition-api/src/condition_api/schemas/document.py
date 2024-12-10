@@ -16,6 +16,7 @@ class DocumentTypeSchema(Schema):
 class DocumentSchema(Schema):
     """Documents schema."""
 
+    document_record_id = fields.Str(data_key="document_record_id")
     document_id = fields.Str(data_key="document_id")
     document_label = fields.Str(data_key="document_label")
     document_link = fields.Str(data_key="document_link")

@@ -136,7 +136,8 @@ class DocumentService:
     def get_all_documents_by_project_id(project_id):
         """Fetch all documents and its amendments for the given project_id."""
         documents = db.session.query(
-            Document.id.label('document_id'),
+            Document.id.label('document_record_id'),
+            Document.document_id.label('document_id'),
             Document.document_label
         ).outerjoin(
             Project,
@@ -153,6 +154,7 @@ class DocumentService:
 
         for document in documents:
             result.append({
+                'document_record_id': document.document_record_id,
                 'document_id': document.document_id,
                 'document_label': document.document_label
             })
