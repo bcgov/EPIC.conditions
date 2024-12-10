@@ -363,7 +363,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                   size="small"
                   getOptionLabel={(document: DocumentModel) => document.document_label}
                   onChange={(_e: React.SyntheticEvent<Element, Event>, document: DocumentModel | null) => {
-                    setSelectedDocumentId(document?.document_id || null);
+                    setSelectedDocumentId(document?.document_record_id || null);
                   }}
                   disabled={!selectedProject}
                 />

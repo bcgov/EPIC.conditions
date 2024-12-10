@@ -32,7 +32,7 @@ function ConditionPage() {
     data: documentConditions,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useLoadConditions(projectId, documentId);
+  } = useLoadConditions(true, projectId, documentId);
 
   useEffect(() => {
     if (isConditionsError) {

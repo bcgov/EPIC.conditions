@@ -19,11 +19,11 @@ const loadConditions = (projectId?: string, documentId?: string) => {
   });
 };
 
-export const useLoadConditions = (projectId?: string, documentId?: string) => {
+export const useLoadConditions = (shouldLoad: boolean, projectId?: string, documentId?: string) => {
   return useQuery({
     queryKey: ["projects", projectId, "documents", documentId],
     queryFn: () => loadConditions(projectId, documentId),
-    enabled: Boolean(projectId && documentId),
+    enabled: Boolean(projectId && documentId && shouldLoad),
     retry: false,
   });
 };
@@ -85,5 +85,52 @@ export const useUpdateConditionDetails = (
       return updateConditionDetails(projectId, documentId, conditionNumber, conditionDetails);
     },
     ...options,
+  });
+};
+
+const createCondition = (
+  projectId: string,
+  documentId: string
+) => {
+  return submitRequest({
+    url: `/conditions/project/${projectId}/document/${documentId}`,
+    method: "post",
+  });
+};
+
+export const useCreateCondition = (
+  projectId?: string,
+  documentId?: string,
+  options? : Options
+) => {
+  return useMutation({
+    mutationFn: () => {
+      if (!projectId) {
+        return Promise.reject(new Error("Project ID is required"));
+      }
+      if (!documentId) {
+        return Promise.reject(new Error("Document ID is required"));
+      }
+      return createCondition(projectId, documentId);
+    },
+    ...options,
+  });
+};
+
+const loadConditionByID = (conditionId?: string) => {
+  if (!conditionId) {
+    return Promise.reject(new Error("Condition ID is required"));
+  }
+  return submitRequest<ProjectDocumentConditionDetailModel>({
+    url: `/conditions/create/${conditionId}`,
+  });
+};
+
+export const useLoadConditionByID = (conditionId?: string) => {
+  return useQuery({
+    queryKey: ["condition", conditionId],
+    queryFn: () => loadConditionByID(conditionId),
+    enabled: Boolean(conditionId),
+    retry: false,
   });
 };

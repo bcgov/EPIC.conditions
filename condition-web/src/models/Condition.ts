@@ -56,8 +56,11 @@ export interface ProjectDocumentConditionModel {
 }
 
 export interface ProjectDocumentConditionDetailModel {
+  project_id: string;
   project_name: string;
   document_category: string;
+  document_category_id: number;
+  document_id: string;
   document_label: string;
   condition: ConditionModel;
 }

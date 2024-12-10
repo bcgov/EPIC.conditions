@@ -37,7 +37,10 @@ class ProjectDocumentConditionSchema(Schema):
 
 class ProjectDocumentConditionDetailSchema(Schema):
     """Top-level schema to include project and document names."""
+    project_id = fields.Str(data_key="project_id")
     project_name = fields.Str(data_key="project_name")
+    document_category_id = fields.Str(data_key="document_category_id")
     document_category = fields.Str(data_key="document_category")
     document_label = fields.Str(data_key="document_label")
+    document_id = fields.Str(data_key="document_id")
     condition = fields.Nested(ConditionSchema, data_key="condition")
