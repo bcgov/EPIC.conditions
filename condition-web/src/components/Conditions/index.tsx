@@ -339,10 +339,10 @@ export const Conditions = ({
               </Typography>
               <Button
                 variant="contained"
-                sx={{ maxWidth: "50%" }}
+                sx={{ maxWidth: "55%" }}
                 onClick={handleCreateNewCondition}
               >
-                Create New Condition
+                Add New Manual Condition
               </Button>
             </Stack>
           </Box>

@@ -2,7 +2,6 @@ import React, { memo, useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Chip,
   CircularProgress,
   Divider,
   IconButton,
@@ -17,7 +16,6 @@ import {
   Select,
   Stack,
   MenuItem,
-  TextField,
   Paper
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
@@ -34,6 +32,7 @@ import ConditionAttributeRow from "./ConditionAttributeRow";
 import { useQueryClient } from "@tanstack/react-query";
 import { CONDITION_KEYS, SELECT_OPTIONS } from "./Constants";
 import CloseIcon from '@mui/icons-material/Close';
+import DynamicFieldRenderer from "./DynamicFieldRenderer";
 
 type ConditionAttributeTableProps = {
     projectId: string;
@@ -109,8 +108,13 @@ const ConditionAttributeTable = memo(({
         attr.id === updatedAttribute.id ? updatedAttribute : attr
       ) || [];
 
+      setCondition((prevCondition) => ({
+        ...prevCondition,
+        condition_attributes: updatedAttributes,
+        ...conditionDetails,
+      }));
+      console.log(updatedAttributes);
       updateAttributes(updatedAttributes);
-  
     };
   
     const handleAddConditionAttribute = () => {
@@ -136,20 +140,14 @@ const ConditionAttributeTable = memo(({
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedAttribute, setSelectedAttribute] = useState("");
     const [attributeValue, setAttributeValue] = useState("");
-    const [newChip, setNewChip] = useState("");
-
-    const handleAddChip = (chip: string) => {
-      setAttributeValue((prev) => (prev ? `${prev},${chip}` : chip));
-      setNewChip("");
-    };
-    
-    const handleRemoveChip = (index: number) => {
-      const updatedChips = attributeValue
-        .split(",")
-        .filter((_, chipIndex) => chipIndex !== index)
-        .join(",");
-      setAttributeValue(updatedChips);
-    };
+    const [chips, setChips] = useState<string[]>(
+      selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
+        ? attributeValue
+            ?.replace(/[{}]/g, "")
+            .split(",")
+            .map((item) => item.trim().replace(/^"|"$/g, ""))
+        : []
+    );
 
     const handleCloseModal = () => {
       setModalOpen(false);
@@ -169,14 +167,18 @@ const ConditionAttributeTable = memo(({
       const newAttribute = {
         id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
         key: selectedAttribute,
-        value: attributeValue,
+        value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
+        `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
+        :attributeValue,
       };
 
       updateAttributes([
         {
           id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
           key: selectedAttribute,
-          value: attributeValue,
+          value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
+          `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
+          :attributeValue,
         }
       ]);
       setCondition((prevCondition) => ({
@@ -194,103 +196,15 @@ const ConditionAttributeTable = memo(({
     };
 
     const renderEditableField = () => {
-      if (selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED) {
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              alignItems: "center",
-              width: "100%",
-            }}
-          >
-            {attributeValue
-              .split(",") // Assuming attributeValue is a comma-separated list of parties
-              .filter((chip) => chip.trim() !== "")
-              .map((chip, index) => (
-                <Chip
-                  key={index}
-                  label={chip}
-                  onDelete={() => handleRemoveChip(index)} // Handle chip removal
-                  sx={{
-                    marginLeft: 1,
-                    backgroundColor: BCDesignTokens.themeGray30,
-                    color: "black",
-                    fontSize: "14px"
-                  }}
-                />
-              ))}
-            <TextField
-              placeholder="Add a party"
-              value={newChip} // A new state to hold the value for a new chip
-              onChange={(e) => setNewChip(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && newChip.trim() !== "") {
-                  handleAddChip(newChip);
-                  e.preventDefault();
-                }
-              }}
-              fullWidth
-              sx={{
-                "& .MuiInputBase-root": {
-                  padding: "0 8px",
-                  fontSize: "inherit",
-                  lineHeight: "inherit",
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                height: "1.5em",
-              }}
-            />
-          </Box>
-        );
-      }
-
       const options = SELECT_OPTIONS[selectedAttribute];
-      if (options) {
-        return (
-          <Select
-            value={attributeValue}
-            onChange={(e) => setAttributeValue(e.target.value)}
-            fullWidth
-            sx={{
-              fontSize: "inherit",
-              lineHeight: "inherit",
-              width: "100%",
-              "& .MuiSelect-select": {
-                padding: "8px",
-              },
-            }}
-            disabled={!selectedAttribute.trim()}
-          >
-            {options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        );
-      }
-  
       return (
-        <TextField
-          value={attributeValue}
-          onChange={(e) => setAttributeValue(e.target.value)}
-          fullWidth
-          sx={{
-            "& .MuiInputBase-root": {
-              padding: "0 8px",
-              fontSize: "inherit",
-              lineHeight: "inherit",
-            },
-            "& .MuiOutlinedInput-notchedOutline": {
-              border: "none",
-            },
-            height: "1.5em",
-          }}
-          disabled={!selectedAttribute.trim()}
+        <DynamicFieldRenderer
+          attributeKey={selectedAttribute}
+          attributeValue={attributeValue}
+          setAttributeValue={setAttributeValue}
+          chips={chips}
+          setChips={setChips}
+          options={options}
         />
       );
     };

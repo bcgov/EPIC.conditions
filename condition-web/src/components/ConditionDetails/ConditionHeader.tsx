@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Chip, Grid, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Grid, Stack, Typography } from "@mui/material";
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import { Save } from "@mui/icons-material";
@@ -11,7 +11,7 @@ import { StyledTableHeadCell } from "../Shared/Table/common";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PartialUpdateTopicTagsModel } from "@/models/Condition";
-
+import ChipInput from "../Shared/Chips/ChipInput";
 
 type ConditionHeaderProps = {
     projectId: string;
@@ -34,21 +34,9 @@ const ConditionHeader = ({
 }: ConditionHeaderProps) => {
     const [editMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<string[]>(condition?.topic_tags || []);
-    const [newTag, setNewTag] = useState("");
 
     const handleEditClick = () => {
         setEditMode(!editMode);
-    };
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove));
-    };
-
-    const handleAddTag = () => {
-        if (newTag && !tags.includes(newTag)) {
-            setTags([...tags, newTag]);
-            setNewTag("");
-        }
     };
 
     const onCreateFailure = () => {
@@ -211,32 +199,11 @@ const ConditionHeader = ({
                                         </StyledTableHeadCell>
                                         <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                                             {editMode ? (
-                                                <Box>
-                                                    {tags.map(tag => (
-                                                        <Chip
-                                                            key={tag}
-                                                            label={tag}
-                                                            onDelete={() => handleRemoveTag(tag)}
-                                                            sx={{
-                                                                marginLeft: 1,
-                                                                backgroundColor: "#F7F9FC",
-                                                                color: "black",
-                                                                fontSize: "14px"
-                                                            }}
-                                                        />
-                                                    ))}
-                                                    <TextField
-                                                        variant="outlined"
-                                                        size="small"
-                                                        value={newTag}
-                                                        onChange={(e) => setNewTag(e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === "Enter") handleAddTag();
-                                                        }}
-                                                        placeholder="Add tag"
-                                                        sx={{ marginLeft: 1, width: "auto", flexShrink: 0 }}
-                                                    />
-                                                </Box>
+                                                <ChipInput
+                                                    chips={tags}
+                                                    setChips={setTags}
+                                                    placeholder="Add tag"
+                                                />
                                             ) : (
                                                 <Typography variant="body2" sx={{ ml: 1, wordBreak: 'break-word' }}>
                                                     {tags?.join(', ')}

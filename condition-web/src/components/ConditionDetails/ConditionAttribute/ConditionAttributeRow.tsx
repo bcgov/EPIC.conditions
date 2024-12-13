@@ -1,16 +1,5 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Chip,
-  TableCell,
-  TableRow,
-  TableRowProps,
-  IconButton,
-  TextField,
-  Button,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Button, IconButton, TableCell, TableRow, TableRowProps } from "@mui/material";
 import { styled } from "@mui/system";
 import EditIcon from "@mui/icons-material/Edit";
 import { Save } from "@mui/icons-material";
@@ -18,6 +7,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { BCDesignTokens } from "epic.theme";
 import { ConditionAttributeModel } from "@/models/ConditionAttribute";
 import { CONDITION_KEYS, SELECT_OPTIONS } from "./Constants";
+import DynamicFieldRenderer from "./DynamicFieldRenderer";
 
 const StyledTableRow = styled(TableRow)(() => ({}));
 
@@ -65,7 +55,18 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           .map((item) => item.trim().replace(/^"|"$/g, ""))
       : []
   );
-  const [chipInput, setChipInput] = useState("");
+
+  useEffect(() => {
+    setEditableValue(conditionAttributeItem.value);
+    if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
+      setChips(
+        conditionAttributeItem.value
+          ?.replace(/[{}]/g, "")
+          .split(",")
+          .map((item) => item.trim().replace(/^"|"$/g, ""))
+      );
+    }
+  }, [conditionAttributeItem]);
 
   const handleSave = () => {
     setIsEditable(false);
@@ -79,104 +80,27 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       : editableValue;
 
     onSave({ ...conditionAttributeItem, value: updatedValue });
-  };
 
-  const handleAddChip = () => {
-    if (chipInput.trim() && !chips.includes(chipInput)) {
-      setChips([...chips, chipInput]);
-      setChipInput("");
-    }
-  };
-
-  const handleDeleteChip = (chipToDelete: string) => {
-    setChips(chips.filter((chip) => chip !== chipToDelete));
+    if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
+      const parsedChips = updatedValue
+        .replace(/[{}]/g, "")
+        .split(",")
+        .map((item) => item.trim().replace(/^"|"$/g, ""))
+        .filter((item) => item !== "");
+      setChips(parsedChips);
+    };
   };
 
   const renderEditableField = () => {
     const options = SELECT_OPTIONS[conditionKey];
-    if (options) {
-      return (
-        <Select
-          value={editableValue}
-          onChange={(e) => setEditableValue(e.target.value)}
-          fullWidth
-          sx={{
-            fontSize: "inherit",
-            lineHeight: "inherit",
-            width: "40%",
-            "& .MuiSelect-select": {
-              padding: "8px",
-            },
-          }}
-        >
-          {options.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      );
-    }
-
-    if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "8px",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          {chips
-            .filter((chip) => chip !== null && chip !== "")
-            .map((chip, index) => (
-              <Chip
-                key={index}
-                label={chip}
-                onDelete={() => handleDeleteChip(chip)}
-                sx={{
-                  marginLeft: 1,
-                  backgroundColor: BCDesignTokens.themeGray30,
-                  color: "black",
-                  fontSize: "14px"
-                }}
-              />
-          ))}
-          <TextField
-            value={chipInput}
-            onChange={(e) => setChipInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddChip();
-              }
-            }}
-            placeholder="Add a party"
-            size="small"
-            sx={{ marginLeft: 1, paddingTop: 3, width: "auto", flexShrink: 0 }}
-          />
-        </Box>
-      );
-    }
-
     return (
-      <TextField
-        value={editableValue}
-        onChange={(e) => setEditableValue(e.target.value)}
-        fullWidth
-        sx={{
-          "& .MuiInputBase-root": {
-            padding: "0 8px",
-            fontSize: "inherit",
-            lineHeight: "inherit",
-          },
-          "& .MuiOutlinedInput-notchedOutline": {
-            border: "none",
-          },
-          height: "1.5em",
-        }}
+      <DynamicFieldRenderer
+        attributeKey={conditionKey}
+        attributeValue={editableValue}
+        setAttributeValue={setEditableValue}
+        chips={chips}
+        setChips={setChips}
+        options={options}
       />
     );
   };
@@ -187,7 +111,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       const selectedOption = options.find((option) => option.value === editableValue);
     
       return (
-        <div
+        <span
           style={{
             fontSize: "inherit",
             lineHeight: "inherit",
@@ -195,20 +119,14 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           }}
         >
           {selectedOption ? selectedOption.label : "N/A"}
-        </div>
+        </span>
       );
     }
     
     if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
-      const parsedItems = attributeValue
-        .replace(/[{}]/g, "")
-        .split(",")
-        .map((item: string) => item.trim().replace(/^"|"$/g, ""))
-        .filter((item: string) => item !== "");
-
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
-          {parsedItems?.map((item, index) => (
+          {chips?.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>
