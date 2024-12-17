@@ -1,20 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
-import { ConditionModel, ProjectDocumentConditionDetailModel } from "@/models/Condition";
-import {
-  Box,
-  Chip,
-  Grid,
-  InputAdornment,
-  IconButton,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material";
+import { ConditionModel, createDefaultCondition, ProjectDocumentConditionDetailModel } from "@/models/Condition";
+import { Box, Button, Grid, Stack, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { StyledTableHeadCell } from "../../Shared/Table/common";
-import AddIcon from '@mui/icons-material/Add';
 import ConditionInfoTabs from "./ConditionInfoTabs";
+import { useUpdateCondition } from "@/hooks/api/useConditions";
+import { notify } from "@/components/Shared/Snackbar/snackbarStore";
+import ChipInput from "../../Shared/Chips/ChipInput";
+import { useNavigate } from "@tanstack/react-router";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -32,20 +26,60 @@ type ConditionsParam = {
 export const CreateConditionPage = ({
   conditionData
 }: ConditionsParam) => {
-
-  const [condition, setCondition] = useState<ConditionModel | undefined>(conditionData?.condition);
-  const [tags, setTags] = useState<string[]>(condition?.topic_tags ?? []);
-  const [newTag, setNewTag] = useState("");
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+  console.log(conditionData);
+  const navigate = useNavigate();
+  const handleClose = () => {
+    navigate({
+      to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
+    });
   };
 
-  const handleAddTag = () => {
-      if (newTag && !tags.includes(newTag)) {
-          setTags([...tags, newTag]);
-          setNewTag("");
-      }
+  const [condition, setCondition] = useState<ConditionModel>(
+    conditionData?.condition || createDefaultCondition);
+
+  const [tags, setTags] = useState<string[]>(condition?.topic_tags ?? []);
+
+  const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const updatedValue = event.target.value;
+
+    setCondition((prevCondition) => ({
+      ...prevCondition,
+      [key]: updatedValue,
+      }));
+    };
+  
+  useEffect(() => {
+    setCondition((prevCondition) => ({
+        ...prevCondition,
+        topic_tags: tags,
+      }));
+  }, [tags, setTags]);
+
+  const onCreateFailure = () => {
+    notify.error("Failed to save condition");
+  };
+
+  const onCreateSuccess = () => {
+    notify.success("Condition saved successfully");
+  };
+
+  const { mutate: updateCondition } = useUpdateCondition(
+    condition?.condition_id,
+    {
+      onSuccess: onCreateSuccess,
+      onError: onCreateFailure,
+    }
+  );
+
+  const saveChanges = () => {
+    if (!condition) {
+      notify.error("Condition data is incomplete or undefined.");
+      return;
+    }
+    const data: ConditionModel = {
+      ...condition,
+    };
+    updateCondition(data);
   };
 
   return (
@@ -79,7 +113,7 @@ export const CreateConditionPage = ({
                 </Stack>
               </Grid>
             </Grid>
-            <Grid container direction="row" marginBottom={1.5} marginTop={-2}>
+            <Grid container direction="row" marginBottom={2} marginTop={-2}>
               <Grid container direction="row" alignItems="center">
                   <Grid item xs={8} sx={{ height: "60px" }}>
                       <Stack direction="row" alignItems="flex-start" spacing={-2}>
@@ -104,91 +138,46 @@ export const CreateConditionPage = ({
                   Tags:
                 </StyledTableHeadCell>
                 <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                  <Box>
-                    {(tags ?? []).map((tag) => (
-                        <Chip
-                            key={tag}
-                            label={tag}
-                            onDelete={() => handleRemoveTag(tag)}
-                            sx={{
-                                marginLeft: 1,
-                                backgroundColor: "#F7F9FC",
-                                color: "black",
-                                fontSize: "14px"
-                            }}
-                        />
-                    ))}
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleAddTag();
-                        }}
-                        placeholder="Add tag"
-                        sx={{ marginLeft: 1, width: "auto", flexShrink: 0 }}
-                        InputProps={{
-                          endAdornment: newTag ? (
-                            <InputAdornment position="end">
-                              <IconButton
-                                edge="end"
-                                onClick={handleAddTag}
-                                sx={{ padding: 0 }}
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            </InputAdornment>
-                          ) : null,
-                        }}
-                    />
-                  </Box>
+                  <ChipInput
+                    chips={tags}
+                    setChips={setTags}
+                    placeholder="Add tag"
+                    inputWidth="100%"
+                  />
                 </StyledTableHeadCell>
               </Stack>
             </Grid>
           </Box>
         </Grid>
 
-        <Grid item xs={12} sx={{ marginTop: -2, display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
+        <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
           <Stack direction="row" alignItems="flex-start" spacing={-10}>
-            <Stack direction="column" alignItems="flex-start" spacing={-6}>
+            <Stack direction="column" alignItems="flex-start" spacing={-2}>
               <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                 Condition Number
               </StyledTableHeadCell>
               <Box sx={{ paddingLeft: "15px" }}>
-                <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ wordBreak: 'break-word' }}
-                  >
-                    {condition?.condition_number}
-                  </Typography>
-                </StyledTableHeadCell>
                 <TextField
                   variant="outlined"
                   size="small"
                   sx={{ width: '60%' }}
+                  value={condition?.condition_number}
+                  onChange={handleInputChange('condition_number')}
                 />
               </Box>
             </Stack>
 
-            <Stack direction="column" alignItems="flex-start" spacing={-6}>
+            <Stack direction="column" alignItems="flex-start" spacing={-2}>
               <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                 Condition Name
               </StyledTableHeadCell>
               <Box sx={{ paddingLeft: "15px" }}>
-                <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ wordBreak: 'break-word' }}
-                  >
-                    {condition?.condition_number}
-                  </Typography>
-                </StyledTableHeadCell>
                 <TextField
                   variant="outlined"
                   size="small"
                   sx={{ width: '200%' }}
+                  value={condition?.condition_name}
+                  onChange={handleInputChange('condition_name')}
                 />
               </Box>
             </Stack>
@@ -205,9 +194,40 @@ export const CreateConditionPage = ({
             width: "100%"
           }}
         >
-          <ConditionInfoTabs />
+          <ConditionInfoTabs condition={condition} setCondition={setCondition} />
         </Box>
       </Grid>
+
+      <Button
+        variant="contained"
+        color="secondary"
+        size="small"
+        sx={{
+          minWidth: "80px",
+          padding: "4px 8px",
+          borderRadius: "4px",
+          marginTop: "25px",
+          marginRight: "5px",
+        }}
+        onClick={handleClose}
+      >
+        Close
+      </Button>
+
+      <Button
+        variant="contained"
+        color="primary"
+        size="small"
+        sx={{
+          minWidth: "80px",
+          padding: "4px 8px",
+          borderRadius: "4px",
+          marginTop: "25px",
+        }}
+        onClick={saveChanges}
+      >
+        Save
+      </Button>
     </>
   );
 };

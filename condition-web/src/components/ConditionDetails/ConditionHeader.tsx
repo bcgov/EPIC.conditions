@@ -203,6 +203,7 @@ const ConditionHeader = ({
                                                     chips={tags}
                                                     setChips={setTags}
                                                     placeholder="Add tag"
+                                                    inputWidth="100%"
                                                 />
                                             ) : (
                                                 <Typography variant="body2" sx={{ ml: 1, wordBreak: 'break-word' }}>

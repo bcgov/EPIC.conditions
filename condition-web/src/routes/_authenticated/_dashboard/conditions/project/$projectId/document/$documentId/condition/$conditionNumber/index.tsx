@@ -17,7 +17,8 @@ export const Route = createFileRoute(
   },
   meta: ({ params }) => [
     { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` }, // Fixed Projects path
+    { title: `${params.projectId}`, path: `/projects/` },
+    { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category/` },
     { title: `${params.documentId}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}` }, // Path to the specific document
     { title: `${params.conditionNumber}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}/condition/${params.conditionNumber}` } // Path to the specific document
   ],
@@ -44,16 +45,29 @@ function ConditionPage() {
   if (isConditionsError) return <Navigate to="/error" />;
 
   const META_PROJECT_TITLE = `${projectId}`;
+  const META_DOCUMENT_CATEGORY = `Document Category`;
   const META_DOCUMENT_TITLE = `${documentId}`;
   const META_CONDITION_TITLE = `${conditionDetails?.condition.condition_number}`;
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (conditionDetails) {
       replaceBreadcrumb(META_PROJECT_TITLE, conditionDetails?.project_name || "");
-      replaceBreadcrumb(META_DOCUMENT_TITLE, conditionDetails?.document_category || "");
+      replaceBreadcrumb(
+        META_DOCUMENT_CATEGORY,
+        conditionDetails?.document_category || META_DOCUMENT_CATEGORY,
+        `/documents/project/${projectId}/document-category/${conditionDetails.document_category_id}/`
+      );
+      replaceBreadcrumb(META_DOCUMENT_TITLE, conditionDetails?.document_label || "");
       replaceBreadcrumb(META_CONDITION_TITLE, conditionDetails?.condition.condition_name || "");
     }
-  }, [conditionDetails, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_TITLE, META_CONDITION_TITLE]);
+  }, [
+    conditionDetails,
+    replaceBreadcrumb,
+    META_PROJECT_TITLE,
+    META_DOCUMENT_CATEGORY,
+    META_DOCUMENT_TITLE,
+    META_CONDITION_TITLE
+  ]);
 
   return (
     <PageGrid>

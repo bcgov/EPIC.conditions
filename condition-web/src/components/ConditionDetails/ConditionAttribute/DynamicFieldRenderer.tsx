@@ -26,6 +26,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 chips={chips}
                 setChips={setChips}
                 placeholder="Add a party"
+                inputWidth="30%"
             />
         );
     }

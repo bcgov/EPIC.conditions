@@ -6,9 +6,10 @@ type ChipInputProps = {
   chips: string[];
   setChips: (chips: string[]) => void;
   placeholder?: string;
+  inputWidth?: string;
 };
 
-const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "Add a chip" }) => {
+const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "Add a chip", inputWidth = "100%" }) => {
   const [chipInput, setChipInput] = useState("");
 
   const handleAddChip = () => {
@@ -23,7 +24,7 @@ const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "A
   };
 
   return (
-    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", width: "100%" }}>
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", width: inputWidth }}>
       {chips.map((chip, index) => (
         <Chip
           key={index}

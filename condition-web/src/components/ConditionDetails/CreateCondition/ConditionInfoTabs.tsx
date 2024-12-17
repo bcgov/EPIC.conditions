@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Stack, Tab, Tabs, TextField } from '@mui/material';
 import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
 import AddIcon from '@mui/icons-material/Add';
 import { theme } from "@/styles/theme";
+import SubconditionComponent from "../SubCondition";
+import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
+import { ConditionModel } from "@/models/Condition";
 
 const StyledTabs = styled(Tabs)({
     transition: 'none',
@@ -36,12 +39,35 @@ const StyledTab = styled(Tab)(({ theme }) => ({
     },
 }));
 
-const ConditionInfoTabs: React.FC<{}> = ({ }) => {
+const ConditionInfoTabs: React.FC<{
+    condition: ConditionModel;
+    setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
+}> = ({ condition, setCondition }) => {
     const [selectedTab, setSelectedTab] = useState('description');
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
     };
+
+    const {
+        subconditions,
+        handleEdit,
+        handleAdd,
+        handleDelete,
+        handleAddParentCondition,
+        setSubconditions,
+      } = useSubconditionHandler(condition.subconditions || []);
+
+    useEffect(() => {
+        setCondition((prevCondition) => ({
+            ...prevCondition,
+            subconditions: subconditions,
+          }));
+    }, [subconditions]);
+
+    useEffect(() => {
+        setSubconditions(condition.subconditions || []);
+    }, [condition.subconditions, setSubconditions]);
 
     return (
         <>
@@ -60,27 +86,37 @@ const ConditionInfoTabs: React.FC<{}> = ({ }) => {
             </Stack>
             <Box sx={{ p: 2 }}>
                 <Box sx={{ display: selectedTab === 'description' ? 'block' : 'none' }}>
-                    <TextField 
-                        variant="outlined" 
-                        sx={{ width: '5%' }}
-                    />
-                    <TextField
-                        variant="outlined" 
-                        sx={{ width: '93%', paddingLeft: '10px' }}
-                    />
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        sx={{
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            color: BCDesignTokens.themeGray100,
-                            border: `2px solid ${theme.palette.grey[700]}`,
-                        }}
-                    >
-                        <AddIcon fontSize="small" /> Add Condition
-                    </Button>
+                    {subconditions.map((sub, index) => (
+                        <SubconditionComponent
+                            key={index}
+                            subcondition={sub}
+                            indentLevel={1}
+                            isEditing={true}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onAdd={handleAdd}
+                            identifierValue={sub.subcondition_identifier || ""}
+                            textValue={sub.subcondition_text || ""}
+                        />
+                    ))}
+                    <Stack sx={{ mt: 5 }} direction={"row"}>
+                        <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                size="small"
+                                sx={{
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    color: BCDesignTokens.themeGray100,
+                                    border: `2px solid ${theme.palette.grey[700]}`,
+                                }}
+                                onClick={handleAddParentCondition}
+                            >
+                                <AddIcon fontSize="small" /> Add Condition
+                            </Button>
+                        </Box>
+                    </Stack>
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
                     <TextField 

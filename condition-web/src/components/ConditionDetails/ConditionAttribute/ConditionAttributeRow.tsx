@@ -35,7 +35,7 @@ export const ConditionAttributeHeadTableCell = styled(TableCell)(() => ({
 type ConditionAttributeRowProps = {
   conditionAttributeItem: ConditionAttributeModel;
   onSave: (updatedAttribute: ConditionAttributeModel) => void;
-  is_approved: boolean;
+  is_approved?: boolean;
 };
 
 const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
