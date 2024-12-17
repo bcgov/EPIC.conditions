@@ -1,4 +1,5 @@
 import {
+  ConditionModel,
   ProjectDocumentConditionDetailModel,
   ProjectDocumentConditionModel,
   updateTopicTagsModel
@@ -132,5 +133,31 @@ export const useLoadConditionByID = (conditionId?: string) => {
     queryFn: () => loadConditionByID(conditionId),
     enabled: Boolean(conditionId),
     retry: false,
+  });
+};
+
+const updateCondition = (
+  conditionId: number,
+  conditionDetails: ConditionModel
+) => {
+  return submitRequest({
+    url: `/conditions/create/${conditionId}`,
+    method: "patch",
+    data: conditionDetails,
+  });
+};
+
+export const useUpdateCondition = (
+  conditionId?: number,
+  options? : Options
+) => {
+  return useMutation({
+    mutationFn: (conditionDetails: ConditionModel) => {
+      if (!conditionId) {
+        return Promise.reject(new Error("Condition ID is required"));
+      }
+      return updateCondition(conditionId, conditionDetails);
+    },
+    ...options,
   });
 };

@@ -1,17 +1,17 @@
 import { SubconditionModel } from "./Subcondition";
 
 export interface ConditionModel {
-  condition_id: number;
-  condition_name: string;
-  condition_number: number;
-  condition_text: string;
-  amendment_names: string;
-  year_issued: number;
-  is_approved: boolean;
-  topic_tags: string[];
-  is_topic_tags_approved: boolean;
-  is_condition_attributes_approved: boolean;
-  subtopic_tags: string[];
+  condition_id?: number;
+  condition_name?: string;
+  condition_number?: number;
+  condition_text?: string;
+  amendment_names?: string;
+  year_issued?: number;
+  is_approved?: boolean;
+  topic_tags?: string[];
+  is_topic_tags_approved?: boolean;
+  is_condition_attributes_approved?: boolean;
+  subtopic_tags?: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
   condition_attributes?: Array<{
     id: string;

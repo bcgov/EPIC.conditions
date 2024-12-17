@@ -71,7 +71,7 @@ class ConditionDetailsResource(Resource):
         try:
             conditions_data = ConditionSchema().load(API.payload)
             updated_condition = ConditionService.update_condition(
-                project_id, document_id, condition_number, conditions_data)
+                conditions_data, project_id, document_id, condition_number)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
@@ -126,6 +126,7 @@ class ConditionResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
     @cors.crossdomain(origin="*")
     def get(condition_id):
         """Fetch conditions and condition attributes by condition ID."""
@@ -139,5 +140,22 @@ class ConditionResource(Resource):
 
             # Call dump on the schema instance
             return condition_details_schema.dump(condition_details), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Edit condition data")
+    @API.response(
+        code=HTTPStatus.OK, model=condition_model, description="Edit conditions"
+    )
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @cors.crossdomain(origin="*")
+    @auth.require
+    def patch(condition_id):
+        """Edit condition data."""
+        try:
+            conditions_data = ConditionSchema().load(API.payload)
+            updated_condition = ConditionService.update_condition(conditions_data, None, None, None, condition_id)
+            return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

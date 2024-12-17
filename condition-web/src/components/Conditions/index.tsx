@@ -103,7 +103,6 @@ export const Conditions = ({
         (condition) =>
           !condition.condition_name ||
           !condition.condition_number ||
-          !condition.condition_text ||
           condition.is_approved === null
       );
       setNoConditions(invalidConditions);
@@ -117,6 +116,8 @@ export const Conditions = ({
 
   const handleCloseCreateNewCondition = () => {
     setOpenModal(false);
+    setSelectedDocumentId("");
+    setSelectedConditionId(null);
   };
 
   const handleCreateNewCondition = async () => {

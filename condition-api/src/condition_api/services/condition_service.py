@@ -1,6 +1,6 @@
 """Service for condition management."""
-from sqlalchemy import case, func, extract
-from sqlalchemy.orm import aliased
+from sqlalchemy import func, extract
+from sqlalchemy.orm import aliased, join
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
@@ -28,14 +28,39 @@ class ConditionService:
         subconditions = aliased(Subcondition)
         condition_attributes = aliased(ConditionAttribute)
         attribute_keys = aliased(AttributeKey)
+        amendments = aliased(Amendment)
+
+        # Check if the document_id exists in the amendments table
+        amendment_exists = (
+            db.session.query(amendments.document_id, amendments.amended_document_id)
+            .filter(amendments.amended_document_id == document_id)
+            .first()
+        )
+
+        if amendment_exists:
+            document_join = (amendments.amended_document_id == conditions.amended_document_id)
+            document_type_join = (amendments.document_type_id == document_types.id)
+            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+            amendment_label_subquery = (
+                db.session.query(amendments.amendment_name)
+                .filter(amendments.amended_document_id == amendment_exists[1])
+                .subquery()
+            )
+            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
+            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+        else:
+            document_join = (documents.document_id == conditions.document_id)
+            document_type_join = (documents.document_type_id == document_types.id)
+            document_label_query = documents.document_label
+            date_issued_query = extract("year", documents.date_issued).label("year_issued")
 
         condition_data = (
             db.session.query(
-                projects.project_name,
+                document_types.document_category_id,
                 document_categories.category_name.label('document_category'),
-                extract('year', documents.date_issued).label('year_issued'),
-                documents.document_label,
+                document_label_query,
                 conditions.id,
+                date_issued_query,
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
@@ -53,25 +78,18 @@ class ConditionService:
                 subconditions,
                 conditions.id == subconditions.condition_id,
             )
-            .outerjoin(
-                documents,
-                conditions.document_id == documents.document_id
-            )
+            .outerjoin(amendments if amendment_exists else documents, document_join)
             .outerjoin(
                 document_types,
-                document_types.id == documents.document_type_id
+                document_type_join
             )
             .outerjoin(
                 document_categories,
                 document_categories.id == document_types.document_category_id
             )
-            .outerjoin(
-                projects,
-                projects.project_id == documents.project_id
-            )
             .filter(
-                (projects.project_id == project_id)
-                & (documents.document_id == document_id)
+                (amendments.amended_document_id == amendment_exists[1] if amendment_exists
+                 else documents.document_id == document_id)
                 & (conditions.condition_number == condition_number)
                 & (conditions.is_active == True)
             )
@@ -79,12 +97,19 @@ class ConditionService:
             .all()
         )
 
+        project_name_query = (
+            db.session.query(projects.project_name)
+            .filter(projects.project_id == project_id)
+            .first()
+        )
+
         if not condition_data:
             return None
 
-        project_name = condition_data[0].project_name if condition_data else None
+        project_name = project_name_query[0] if project_name_query else None
         document_category = condition_data[0].document_category if condition_data else None
         document_label = condition_data[0].document_label if condition_data else None
+        document_category_id = condition_data[0].document_category_id if condition_data else None
 
         # Extract condition details
         condition = {
@@ -153,11 +178,11 @@ class ConditionService:
 
         return {
             "project_name": project_name,
+            "document_category_id": document_category_id,
             "document_category": document_category,
             "document_label": document_label,
             "condition": condition
         }
-
 
     @staticmethod
     def get_all_conditions(project_id, document_id):
@@ -194,10 +219,6 @@ class ConditionService:
             .first()
         )
 
-        amendment_filter = None
-        if amendment_exists:
-            amendment_filter = amendments.amended_document_id == amendment_exists[1]
-
         if amendment_exists:
             # Join conditions to amendments instead of documents
             amendment_label_subquery = (
@@ -205,21 +226,20 @@ class ConditionService:
                 .filter(amendments.amended_document_id == amendment_exists[1])
                 .subquery()
             )
-            document_filter = documents.id == amendment_exists[0]
-            condition_join = amendments.amended_document_id == conditions.amended_document_id
             document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
+            condition_join = amendments.amended_document_id == conditions.amended_document_id
             date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+            document_type_join = (amendments.document_type_id == document_types.id)
         else:
             # Join conditions directly to documents
-            document_filter = documents.document_id == document_id
             condition_join = documents.document_id == conditions.document_id
             document_label_query = documents.document_label
             date_issued_query = extract("year", documents.date_issued).label("year_issued")
+            document_type_join = (documents.document_type_id == document_types.id)
 
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
             db.session.query(
-                projects.project_name,
                 document_categories.category_name.label('document_category'),
                 document_categories.id.label('document_category_id'),
                 document_label_query,
@@ -238,20 +258,12 @@ class ConditionService:
                 date_issued_query
             )
             .outerjoin(
-                documents,
-                documents.project_id == projects.project_id
-            )
-            .outerjoin(
                 document_types,
-                document_types.id == documents.document_type_id
+                document_type_join
             )
             .outerjoin(
                 document_categories,
                 document_categories.id == document_types.document_category_id
-            )
-            .outerjoin(
-                amendments,
-                amendments.document_id == documents.id
             )
             .outerjoin(
                 conditions,
@@ -266,11 +278,10 @@ class ConditionService:
                 conditions.condition_number == amendment_subquery.c.condition_number
             )
             .filter(
-                (projects.project_id == project_id) & document_filter,
-                *([amendment_filter] if amendment_filter else [])
+                (amendments.amended_document_id == amendment_exists[1] if amendment_exists
+                 else documents.document_id == document_id)
             )
             .group_by(
-                projects.project_name,
                 document_categories.category_name,
                 document_categories.id,
                 conditions.id,
@@ -294,7 +305,13 @@ class ConditionService:
         conditions_map = {}
         subcondition_map = {}
 
-        project_name = condition_data[0].project_name if condition_data else None
+        project_name_query = (
+            db.session.query(projects.project_name)
+            .filter(projects.project_id == project_id)
+            .first()
+        )
+
+        project_name = project_name_query[0] if project_name_query else None
         document_category = condition_data[0].document_category if condition_data else None
         document_category_id = condition_data[0].document_category_id if condition_data else None
         document_label = condition_data[0].document_label if condition_data else None
@@ -349,20 +366,35 @@ class ConditionService:
 
 
     @staticmethod
-    def update_condition(project_id, document_id, condition_number, conditions_data):
-        """Update the approved status, topic tags, and subconditions of a specific condition."""
-        condition = db.session.query(Condition).filter_by(
-            project_id=project_id, document_id=document_id, condition_number=condition_number
+    def update_condition(
+        conditions_data,
+        project_id=None,
+        document_id=None,
+        condition_number=None,
+        condition_id=None,
+    ):
+        """
+        Update the approved status, topic tags, and subconditions of a specific condition.
+
+        This method accepts either:
+        1. project_id, document_id, and condition_number, or
+        2. condition_id as input.
+        """
+        if condition_id:
+            # Query by condition_id
+            condition = db.session.query(Condition).filter_by(id=condition_id).first()
+        elif project_id and document_id and condition_number:
+            # Query by project_id, document_id, and condition_number
+            condition = db.session.query(Condition).filter_by(
+                project_id=project_id,
+                document_id=document_id,
+                condition_number=condition_number
             ).first()
+        else:
+            raise ValueError("You must provide either condition_id or project_id, document_id, and condition_number.")
 
-        if "topic_tags" in conditions_data and not condition.is_topic_tags_approved:
-            condition.topic_tags = conditions_data.get("topic_tags")
-
-        if "is_topic_tags_approved" in conditions_data:
-            condition.is_topic_tags_approved = conditions_data.get("is_topic_tags_approved")
-
-        if "is_condition_attributes_approved" in conditions_data:
-            condition.is_condition_attributes_approved = conditions_data.get("is_condition_attributes_approved")
+        if any(key for key in conditions_data.keys() if key != "subconditions"):
+            ConditionService._update_from_dict(condition, conditions_data)
 
         if conditions_data.get("subconditions"):
             existing_subcondition_ids = [
@@ -376,9 +408,24 @@ class ConditionService:
             ConditionService.upsert_subconditions(
                 condition.id, conditions_data.get("subconditions"), None)
 
-        db.session.commit()
+        condition.commit()
         return condition
 
+    @staticmethod
+    def _update_from_dict(condition_item: Condition, input_dict: dict):
+        """Update a SQLAlchemy model instance from a dictionary."""
+        if not isinstance(condition_item, Condition):
+            raise TypeError(f"Expected a Condition model instance, got {type(condition_item).__name__}")
+
+        allowed_list_keys = {"topic_tags", "subtopic_tags"}
+
+        # Update only attributes that exist on the model
+        for key, value in input_dict.items():
+            if hasattr(condition_item, key):
+                if key in allowed_list_keys:
+                    setattr(condition_item, key, value)
+                elif not isinstance(value, (list, dict)):
+                    setattr(condition_item, key, value)
 
     @staticmethod
     def upsert_subconditions(condition_id, subconditions, parent_id=None):
@@ -480,26 +527,22 @@ class ConditionService:
         if amended_document_id:
             amendment_data = (
                 db.session.query(
-                    Document.document_id,
+                    Amendment.amended_document_id,
                     Amendment.amendment_name.label("document_label"),
                     extract("year", Amendment.date_issued).label("year_issued")
-                )
-                .outerjoin(
-                    Document,
-                    Document.id == Amendment.document_id
                 )
                 .filter(Amendment.amended_document_id == amended_document_id)
                 .first()
             )
-            document_id = amendment_data.document_id if amendment_data else None
+            actual_document_id = amendment_data.amended_document_id if amendment_data else None
             document_label = amendment_data.document_label if amendment_data else None
             year_issued = amendment_data.year_issued if amendment_data else None
         else:
-            document_id = condition_data.document_id
+            actual_document_id = condition_data.document_id
             document_details = db.session.query(
                 Document.document_label,
                 extract("year", Document.date_issued).label("year_issued")
-            ).filter(Document.document_id == document_id).first()
+            ).filter(Document.document_id == actual_document_id).first()
 
             document_label = document_details.document_label if document_details else None
             year_issued = document_details.year_issued if document_details else None
@@ -512,7 +555,7 @@ class ConditionService:
         ).outerjoin(Document, Project.project_id == Document.project_id
         ).outerjoin(DocumentType, DocumentType.id == Document.document_type_id
         ).outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
-        ).filter(Document.document_id == document_id).first()
+        ).filter(Document.document_id == condition_data.document_id).first()
 
         project_id = project_data.project_id if project_data else None
         project_name = project_data.project_name if project_data else None
@@ -532,12 +575,42 @@ class ConditionService:
             "subconditions": []
         }
 
+        sub_condition_data = (
+            db.session.query(
+                Subcondition.id.label('subcondition_id'),
+                Subcondition.subcondition_identifier,
+                Subcondition.subcondition_text,
+                Subcondition.parent_subcondition_id,
+            ).filter(Subcondition.condition_id == condition_id).all()
+        )
+
+        subcondition_map = {}
+
+        for row in sub_condition_data:
+            subcond_id = row.subcondition_id
+            if subcond_id:
+                subcondition = {
+                    "subcondition_identifier": row.subcondition_identifier,
+                    "subcondition_text": row.subcondition_text,
+                    "subconditions": []
+                }
+                subcondition_map[subcond_id] = subcondition
+
+                # If the subcondition has a parent, append it to the parent's subcondition list
+                if row.parent_subcondition_id:
+                    parent = subcondition_map.get(row.parent_subcondition_id)
+                    if parent:
+                        parent["subconditions"].append(subcondition)
+                else:
+                    # Top-level subcondition for this condition
+                    condition_details["subconditions"].append(subcondition)
+
         return {
             "project_id": project_id,
             "project_name": project_name,
             "document_category_id": document_category_id,
             "document_category": document_category,
-            "document_id": document_id,
+            "document_id": actual_document_id,
             "document_label": document_label,
             "condition": condition_details
         }

@@ -113,7 +113,6 @@ const ConditionAttributeTable = memo(({
         condition_attributes: updatedAttributes,
         ...conditionDetails,
       }));
-      console.log(updatedAttributes);
       updateAttributes(updatedAttributes);
     };
   
