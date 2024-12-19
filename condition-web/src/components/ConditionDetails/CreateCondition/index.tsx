@@ -194,7 +194,16 @@ export const CreateConditionPage = ({
             width: "100%"
           }}
         >
-          <ConditionInfoTabs condition={condition} setCondition={setCondition} />
+          {conditionData ? (
+            <ConditionInfoTabs
+              projectId={conditionData.project_id}
+              documentId={conditionData.document_id}
+              condition={condition}
+              setCondition={setCondition}
+            />
+          ) : (
+            <p>No condition details available.</p>
+          )}
         </Box>
       </Grid>
 

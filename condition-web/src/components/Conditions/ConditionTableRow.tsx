@@ -20,7 +20,7 @@ export default function ConditionTableRow({
 }: ConditionRowProps) {
 
   const navigate = useNavigate();
-  const handleOnDocumentClick = (projectId: string, documentId: string, conditionNumber: number) => {
+  const handleOnDocumentClick = (projectId: string, documentId: string, conditionNumber?: number) => {
     navigate({
       to: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionNumber}`,
     });

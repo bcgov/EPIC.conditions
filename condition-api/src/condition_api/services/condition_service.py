@@ -1,6 +1,7 @@
 """Service for condition management."""
+from datetime import datetime
 from sqlalchemy import func, extract
-from sqlalchemy.orm import aliased, join
+from sqlalchemy.orm import aliased
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
@@ -278,8 +279,11 @@ class ConditionService:
                 conditions.condition_number == amendment_subquery.c.condition_number
             )
             .filter(
-                (amendments.amended_document_id == amendment_exists[1] if amendment_exists
-                 else documents.document_id == document_id)
+                (
+                    (amendments.amended_document_id == amendment_exists[1])
+                    if amendment_exists
+                    else (documents.document_id == document_id)
+                ) & (conditions.is_active == True)
             )
             .group_by(
                 document_categories.category_name,
@@ -466,7 +470,7 @@ class ConditionService:
                     condition_id, subcond_data["subconditions"], parent_id=subcondition_id)
 
     @staticmethod
-    def create_condition(project_id, document_id):
+    def create_condition(project_id, document_id, conditions_data):
         """Create a new condition."""
         amendment = (
             db.session.query(Amendment.document_id)
@@ -486,20 +490,64 @@ class ConditionService:
         else:
             final_document_id = document_id
 
+        # Check if a condition exists with the given document_id and condition_number
+        existing_condition = (
+            db.session.query(Condition)
+            .filter(
+                Condition.document_id == final_document_id,
+                Condition.condition_number == conditions_data.get("condition_number"),
+            )
+            .first()
+        )
+
+        # If it exists, update is_active to False
+        if existing_condition:
+            existing_condition.is_active = False
+            existing_condition.effective_to = datetime.utcnow()
+            db.session.add(existing_condition)
+
         new_condition = Condition(
-            document_id=final_document_id ,
+            document_id=final_document_id,
             amended_document_id=amended_document_id,
             project_id=project_id,
-            is_approved=False
+            is_approved=False,
+            condition_name=conditions_data.get("condition_name"),
+            condition_number=conditions_data.get("condition_number"),
+            condition_text=conditions_data.get("condition_text"),
+            topic_tags=conditions_data.get("topic_tags"),
+            subtopic_tags=conditions_data.get("subtopic_tags"),
+            effective_from=datetime.utcnow()
         )
         db.session.add(new_condition)
         db.session.flush()
+
+        if conditions_data.get("subconditions"):
+            ConditionService.create_subconditions(
+                new_condition.id, conditions_data.get("subconditions"), None)
 
         db.session.commit()
 
         return {
             "condition_id": new_condition.id
         }
+
+    @staticmethod
+    def create_subconditions(condition_id, subconditions, parent_id=None):
+        for subcond_data in subconditions:
+            new_subcondition = Subcondition(
+                condition_id=condition_id,
+                subcondition_identifier=subcond_data.get("subcondition_identifier"),
+                subcondition_text=subcond_data.get("subcondition_text"),
+                parent_subcondition_id=parent_id
+            )
+            db.session.add(new_subcondition)
+            db.session.flush()
+
+            subcondition_id = new_subcondition.id
+
+            if "subconditions" in subcond_data:
+                ConditionService.upsert_subconditions(
+                    condition_id, subcond_data["subconditions"], parent_id=subcondition_id)
 
     @staticmethod
     def get_condition_details_by_id(condition_id):
@@ -590,6 +638,7 @@ class ConditionService:
             subcond_id = row.subcondition_id
             if subcond_id:
                 subcondition = {
+                    "subcondition_id": row.subcondition_id,
                     "subcondition_identifier": row.subcondition_identifier,
                     "subcondition_text": row.subcondition_text,
                     "subconditions": []
