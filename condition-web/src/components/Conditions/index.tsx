@@ -72,6 +72,7 @@ export const Conditions = ({
   const onCreateSuccess = () => {
     notify.success("Condition created successfully");
   };
+
   const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, {
     onSuccess: onCreateSuccess,
     onError: onCreateFailure,
@@ -120,9 +121,9 @@ export const Conditions = ({
     setSelectedConditionId(null);
   };
 
-  const handleCreateNewCondition = async () => {
+  const handleCreateNewCondition = async (conditionDetails?: ConditionModel) => {
     try {
-      const response = await createCondition();
+      const response = await createCondition(conditionDetails);
       if (response) {
         navigate({
           to: `/conditions/create/${response.condition_id}`,
@@ -341,7 +342,7 @@ export const Conditions = ({
               <Button
                 variant="contained"
                 sx={{ maxWidth: "55%" }}
-                onClick={handleCreateNewCondition}
+                onClick={() => handleCreateNewCondition()}
               >
                 Add New Manual Condition
               </Button>
@@ -359,7 +360,13 @@ export const Conditions = ({
             <Button
               variant="contained"
               sx={{ marginLeft: "8px", minWidth: "100px" }}
-              onClick={handleCloseCreateNewCondition}
+              onClick={() =>
+                handleCreateNewCondition(
+                  documentConditions?.conditions?.find(
+                    (condition) => condition.condition_id === selectedConditionId
+                  )
+                )
+              }
             >
               Next
             </Button>

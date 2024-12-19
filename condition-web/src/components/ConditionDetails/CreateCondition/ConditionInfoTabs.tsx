@@ -7,6 +7,7 @@ import { theme } from "@/styles/theme";
 import SubconditionComponent from "../SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
 import { ConditionModel } from "@/models/Condition";
+import ConditionAttributeTable from '../ConditionAttribute/ConditionAttributeTable';
 
 const StyledTabs = styled(Tabs)({
     transition: 'none',
@@ -40,9 +41,11 @@ const StyledTab = styled(Tab)(({ theme }) => ({
 }));
 
 const ConditionInfoTabs: React.FC<{
+    projectId: string;
+    documentId: string;
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
-}> = ({ condition, setCondition }) => {
+}> = ({ projectId, documentId, condition, setCondition }) => {
     const [selectedTab, setSelectedTab] = useState('description');
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -119,13 +122,11 @@ const ConditionInfoTabs: React.FC<{
                     </Stack>
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
-                    <TextField 
-                        variant="outlined" 
-                        sx={{ width: '5%' }}
-                    />
-                    <TextField
-                        variant="outlined" 
-                        sx={{ width: '93%', paddingLeft: '10px' }}
+                    <ConditionAttributeTable
+                        projectId={projectId}
+                        documentId={documentId}
+                        condition={condition}
+                        setCondition={setCondition}
                     />
                 </Box>
             </Box>

@@ -91,11 +91,13 @@ export const useUpdateConditionDetails = (
 
 const createCondition = (
   projectId: string,
-  documentId: string
+  documentId: string,
+  conditionDetails?: ConditionModel
 ) => {
   return submitRequest({
     url: `/conditions/project/${projectId}/document/${documentId}`,
     method: "post",
+    data: conditionDetails,
   });
 };
 
@@ -105,14 +107,14 @@ export const useCreateCondition = (
   options? : Options
 ) => {
   return useMutation({
-    mutationFn: () => {
+    mutationFn: (conditionDetails?: ConditionModel) => {
       if (!projectId) {
         return Promise.reject(new Error("Project ID is required"));
       }
       if (!documentId) {
         return Promise.reject(new Error("Document ID is required"));
       }
-      return createCondition(projectId, documentId);
+      return createCondition(projectId, documentId, conditionDetails);
     },
     ...options,
   });

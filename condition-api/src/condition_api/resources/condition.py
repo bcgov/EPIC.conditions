@@ -111,7 +111,12 @@ class ConditionDetailResource(Resource):
     def post(project_id, document_id):
         """Create a new condition."""
         try:
-            created_condition = ConditionService.create_condition(project_id, document_id)
+            payload = API.payload or {}
+            if payload:
+                conditions_data = ConditionSchema().load(API.payload)
+            else:
+                conditions_data = {}
+            created_condition = ConditionService.create_condition(project_id, document_id, conditions_data)
             return created_condition, HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

@@ -109,7 +109,6 @@ const ConditionInfoTabs: React.FC<{
                         documentId={documentId}
                         conditionNumber={conditionNumber}
                         condition={condition}
-                        setCondition={setCondition}
                     />
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
