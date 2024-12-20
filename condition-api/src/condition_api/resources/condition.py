@@ -112,7 +112,7 @@ class ConditionDetailResource(Resource):
         """Create a new condition."""
         try:
             payload = API.payload or {}
-            if payload:
+            if payload and payload != {}:
                 conditions_data = ConditionSchema().load(API.payload)
             else:
                 conditions_data = {}
