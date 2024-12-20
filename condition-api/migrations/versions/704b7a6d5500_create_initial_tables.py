@@ -25,8 +25,9 @@ attribute_keys = [
     {"key_name": "Deliverable Name", "created_date": datetime.utcnow()},
     {"key_name": "Requires management plan", "created_date": datetime.utcnow()},
     {"key_name": "Submitted to EAO for", "created_date": datetime.utcnow()},
-    {"key_name": "Days prior to next phase to submit", "created_date": datetime.utcnow()},
-    {"key_name": "Phase related to plan", "created_date": datetime.utcnow()},
+    {"key_name": "Time associated with submission milestone", "created_date": datetime.utcnow()},
+    {"key_name": "Milestone related to plan submission", "created_date": datetime.utcnow()},
+    {"key_name": "Milestone(s) related to plan implementation", "created_date": datetime.utcnow()},
 ]
 
 def upgrade():

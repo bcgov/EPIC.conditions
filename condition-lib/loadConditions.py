@@ -159,8 +159,8 @@ def load_data(folder_path):
                     'fn_consultation_required': "Requires consultation",
                     'is_plan': "Requires management plan",
                     'approval_type': "Submitted to EAO for",
-                    'related_phase': "Phase related to plan",
-                    'days_prior_to_commencement': "Days prior to next phase to submit",
+                    'related_phase': "Milestone related to plan submission",
+                    'days_prior_to_commencement': "Time associated with submission milestone",
                     'stakeholders_to_consult': "Parties required to be consulted",
                     'deliverable_name': "Deliverable Name",
                     'stakeholders_to_submit_to': "Parties required to be submitted"
