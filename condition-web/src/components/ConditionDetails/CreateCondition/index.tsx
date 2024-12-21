@@ -5,7 +5,7 @@ import { Box, Button, Grid, Stack, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { StyledTableHeadCell } from "../../Shared/Table/common";
 import ConditionInfoTabs from "./ConditionInfoTabs";
-import { useUpdateCondition } from "@/hooks/api/useConditions";
+import { useRemoveCondition, useUpdateCondition } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import ChipInput from "../../Shared/Chips/ChipInput";
 import { useNavigate } from "@tanstack/react-router";
@@ -28,11 +28,6 @@ export const CreateConditionPage = ({
 }: ConditionsParam) => {
   console.log(conditionData);
   const navigate = useNavigate();
-  const handleClose = () => {
-    navigate({
-      to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
-    });
-  };
 
   const [condition, setCondition] = useState<ConditionModel>(
     conditionData?.condition || createDefaultCondition);
@@ -55,32 +50,58 @@ export const CreateConditionPage = ({
       }));
   }, [tags, setTags]);
 
-  const onCreateFailure = () => {
-    notify.error("Failed to save condition");
+  const { mutateAsync: updateCondition } = useUpdateCondition(
+    condition?.condition_id,
+  );
+
+  const onRemoveFailure = () => {
+    notify.error("Failed to remove condition");
   };
 
-  const onCreateSuccess = () => {
-    notify.success("Condition saved successfully");
+  const onRemoveSuccess = () => {
+    notify.success("Condition removed successfully");
   };
 
-  const { mutate: updateCondition } = useUpdateCondition(
+  const { mutateAsync: removeCondition } = useRemoveCondition(
     condition?.condition_id,
     {
-      onSuccess: onCreateSuccess,
-      onError: onCreateFailure,
+      onSuccess: onRemoveSuccess,
+      onError: onRemoveFailure,
     }
   );
 
-  const saveChanges = () => {
-    if (!condition) {
-      notify.error("Condition data is incomplete or undefined.");
-      return;
+  const handleSaveAndClose = async () => {
+    try {
+      if (!condition) {
+        notify.error("Condition data is incomplete or undefined.");
+        return;
+      }
+      const data: ConditionModel = {
+        ...condition,
+      };
+      const response = await updateCondition(data);
+      if (response) {
+        navigate({
+          to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
+        });
+      }
+    } catch (error) {
+      console.error(error);
     }
-    const data: ConditionModel = {
-      ...condition,
-    };
-    updateCondition(data);
-  };
+  }
+
+  const handleRemove = async () => {
+    try {
+      const response = await removeCondition();
+      if (response) {
+        navigate({
+          to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
     <>
@@ -150,39 +171,36 @@ export const CreateConditionPage = ({
           </Box>
         </Grid>
 
-        <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
-          <Stack direction="row" alignItems="flex-start" spacing={-10}>
-            <Stack direction="column" alignItems="flex-start" spacing={-2}>
-              <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                Condition Number
-              </StyledTableHeadCell>
-              <Box sx={{ paddingLeft: "15px" }}>
-                <TextField
-                  variant="outlined"
-                  size="small"
-                  sx={{ width: '60%' }}
-                  value={condition?.condition_number}
-                  onChange={handleInputChange('condition_number')}
-                />
-              </Box>
-            </Stack>
+        <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'row'}}>
+          <Grid item xs={1.25} sx={{ flexGrow: 0 }}>
+            <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+              Condition Number
+            </StyledTableHeadCell>
+            <Box sx={{ paddingLeft: "15px" }}>
+              <TextField
+                variant="outlined"
+                size="small"
+                sx={{ width: '90%' }}
+                value={condition?.condition_number}
+                onChange={handleInputChange('condition_number')}
+              />
+            </Box>
+          </Grid>
 
-            <Stack direction="column" alignItems="flex-start" spacing={-2}>
-              <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                Condition Name
-              </StyledTableHeadCell>
-              <Box sx={{ paddingLeft: "15px" }}>
-                <TextField
-                  variant="outlined"
-                  size="small"
-                  sx={{ width: '200%' }}
-                  value={condition?.condition_name}
-                  onChange={handleInputChange('condition_name')}
-                />
-              </Box>
-            </Stack>
-
-          </Stack>
+          <Grid item xs={3} sx={{ flexGrow: 0 }}>
+            <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+              Condition Name
+            </StyledTableHeadCell>
+            <Box sx={{ paddingLeft: "15px" }}>
+              <TextField
+                variant="outlined"
+                size="small"
+                sx={{ width: '200%' }}
+                value={condition?.condition_name}
+                onChange={handleInputChange('condition_name')}
+              />
+            </Box>
+          </Grid>
         </Grid>
       </Grid>
 
@@ -218,9 +236,9 @@ export const CreateConditionPage = ({
           marginTop: "25px",
           marginRight: "5px",
         }}
-        onClick={handleClose}
+        onClick={handleRemove}
       >
-        Close
+        Cancel Condition
       </Button>
 
       <Button
@@ -233,9 +251,9 @@ export const CreateConditionPage = ({
           borderRadius: "4px",
           marginTop: "25px",
         }}
-        onClick={saveChanges}
+        onClick={handleSaveAndClose}
       >
-        Save
+        Save and Close
       </Button>
     </>
   );

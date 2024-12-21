@@ -38,3 +38,8 @@ class Condition(BaseModel):
     def get_conditions_by_document_id(cls, document_id):
         """Get all conditions for a specific document by document_id."""
         return cls.query.filter_by(document_id=document_id).all()
+
+    @classmethod
+    def get_by_id(cls, condition_id):
+        """Get project by project_id."""
+        return cls.query.filter_by(id=condition_id).first()

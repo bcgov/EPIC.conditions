@@ -89,10 +89,15 @@ class ConditionService:
                 document_categories.id == document_types.document_category_id
             )
             .filter(
-                (amendments.amended_document_id == amendment_exists[1] if amendment_exists
-                 else documents.document_id == document_id)
+                (
+                    amendments.amended_document_id == amendment_exists[1]
+                    if amendment_exists
+                    else (
+                        (documents.document_id == document_id) &
+                        (conditions.amended_document_id.is_(None))
+                    )
+                )
                 & (conditions.condition_number == condition_number)
-                & (conditions.is_active == True)
             )
             .order_by(subconditions.id)
             .all()
@@ -282,8 +287,8 @@ class ConditionService:
                 (
                     (amendments.amended_document_id == amendment_exists[1])
                     if amendment_exists
-                    else (documents.document_id == document_id)
-                ) & (conditions.is_active == True)
+                    else (documents.document_id == document_id and conditions.amended_document_id is None)
+                )
             )
             .group_by(
                 document_categories.category_name,
@@ -387,6 +392,26 @@ class ConditionService:
         if condition_id:
             # Query by condition_id
             condition = db.session.query(Condition).filter_by(id=condition_id).first()
+
+            if not condition:
+                raise ValueError("Condition not found for the given condition ID.")
+
+            if condition.amended_document_id is None:
+                existing_condition_numbers = db.session.query(Condition.condition_number).filter(
+                    Condition.document_id == condition.document_id,
+                    Condition.amended_document_id.is_(None),
+                    Condition.id!=condition_id
+                ).all()
+            else:
+                existing_condition_numbers = db.session.query(Condition.condition_number).filter(
+                    Condition.amended_document_id == condition.amended_document_id,
+                    Condition.id!=condition_id
+                ).all()
+                    
+            existing_condition_numbers = [num[0] for num in existing_condition_numbers]
+            if conditions_data.get("condition_number") in existing_condition_numbers:
+                raise ValueError("This condition number already exists. Please enter a new one.")
+
         elif project_id and document_id and condition_number:
             # Query by project_id, document_id, and condition_number
             condition = db.session.query(Condition).filter_by(
@@ -487,24 +512,30 @@ class ConditionService:
                 .first()
             )
             final_document_id = document[0]
+            # Check if a condition exists with the given document_id and condition_number
+            existing_condition = (
+                db.session.query(Condition)
+                .filter(
+                    Condition.document_id == final_document_id,
+                    Condition.condition_number == conditions_data.get("condition_number"),
+                )
+                .first()
+            )
+
+            # If it exists, update is_active to False
+            if existing_condition:
+                existing_condition.is_active = False
+                existing_condition.effective_to = datetime.utcnow()
+                db.session.add(existing_condition)
+            max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
+                Condition.amended_document_id == document_id).first()
+            condition_number_value = (
+                max_condition_number[0] if max_condition_number and max_condition_number[0] is not None else 0) + 1
         else:
             final_document_id = document_id
-
-        # Check if a condition exists with the given document_id and condition_number
-        existing_condition = (
-            db.session.query(Condition)
-            .filter(
-                Condition.document_id == final_document_id,
-                Condition.condition_number == conditions_data.get("condition_number"),
-            )
-            .first()
-        )
-
-        # If it exists, update is_active to False
-        if existing_condition:
-            existing_condition.is_active = False
-            existing_condition.effective_to = datetime.utcnow()
-            db.session.add(existing_condition)
+            max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
+                Condition.document_id == final_document_id).first()
+            condition_number_value = max_condition_number[0] + 1
 
         new_condition = Condition(
             document_id=final_document_id,
@@ -512,7 +543,7 @@ class ConditionService:
             project_id=project_id,
             is_approved=False,
             condition_name=conditions_data.get("condition_name"),
-            condition_number=conditions_data.get("condition_number"),
+            condition_number=condition_number_value,
             condition_text=conditions_data.get("condition_text"),
             topic_tags=conditions_data.get("topic_tags"),
             subtopic_tags=conditions_data.get("subtopic_tags"),
@@ -663,3 +694,11 @@ class ConditionService:
             "document_label": document_label,
             "condition": condition_details
         }
+
+    @staticmethod
+    def delete_condition(condition_id):
+        """Remove condition data."""
+        query = db.session.query(Condition).filter(Condition.id == condition_id)
+        query.delete()
+        db.session.commit()
+        return None

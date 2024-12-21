@@ -17,6 +17,8 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
+from condition_api.exceptions import ResourceNotFoundError
+from condition_api.models.condition import Condition as ConditionModel
 from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.util import cors_preflight
@@ -122,8 +124,8 @@ class ConditionDetailResource(Resource):
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
 
-@cors_preflight("GET, OPTIONS, PATCH")
-@API.route("/create/<int:condition_id>", methods=["PATCH", "GET", "OPTIONS"])
+@cors_preflight("GET, OPTIONS, PATCH, DELETE")
+@API.route("/create/<int:condition_id>", methods=["PATCH", "GET", "DELETE", "OPTIONS"])
 class ConditionResource(Resource):
     """Resource for fetching condition details by condition id."""
 
@@ -163,4 +165,25 @@ class ConditionResource(Resource):
             updated_condition = ConditionService.update_condition(conditions_data, None, None, None, condition_id)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+        except ValueError as err:
+            return {"message": str(err)}, HTTPStatus.CONFLICT
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Delete condition data")
+    @API.response(
+        code=HTTPStatus.OK, model=condition_model, description="Delete conditions"
+    )
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @cors.crossdomain(origin="*")
+    @auth.require
+    def delete(condition_id):
+        """Remove condition data."""
+        try:
+            condition_exists = ConditionModel.get_by_id(condition_id)
+            if not condition_exists:
+                raise ResourceNotFoundError("Condition data not found")
+            ConditionService().delete_condition(condition_id)
+            return 'Condition successfully removed', HTTPStatus.OK
+        except (KeyError, ValueError) as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
