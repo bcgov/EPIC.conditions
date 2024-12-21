@@ -7,6 +7,7 @@ import {
 import { submitRequest } from "@/utils/axiosUtils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Options } from "./types";
+import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 
 const loadConditions = (projectId?: string, documentId?: string) => {
   if (!projectId) {
@@ -159,6 +160,44 @@ export const useUpdateCondition = (
         return Promise.reject(new Error("Condition ID is required"));
       }
       return updateCondition(conditionId, conditionDetails);
+    },
+    onSuccess: () => {
+      notify.success("Condition updated successfully!"); // Success notification
+      if (options?.onSuccess) {
+        options.onSuccess(); // Call the optional custom onSuccess handler
+      }
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.response?.data?.message || "An unknown error occurred.";
+      notify.error(errorMessage); // Error notification
+      if (options?.onError) {
+        options.onError(); // Call the optional custom onError handler
+      }
+    },
+    ...options,
+  });
+};
+
+const removeCondition = (
+  conditionId: number,
+) => {
+  return submitRequest({
+    url: `/conditions/create/${conditionId}`,
+    method: "delete",
+  });
+};
+
+export const useRemoveCondition = (
+  conditionId?: number,
+  options? : Options
+) => {
+  return useMutation({
+    mutationFn: () => {
+      if (!conditionId) {
+        return Promise.reject(new Error("Condition ID is required"));
+      }
+      return removeCondition(conditionId);
     },
     ...options,
   });
