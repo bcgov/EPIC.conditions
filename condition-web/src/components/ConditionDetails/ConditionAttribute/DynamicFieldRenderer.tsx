@@ -1,7 +1,17 @@
-import React, { useEffect } from "react";
-import { MenuItem, Select, TextField, Checkbox, ListItemText } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+    Checkbox,
+    IconButton,
+    InputAdornment,
+    ListItemText,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
+} from "@mui/material";
 import { CONDITION_KEYS, SELECT_OPTIONS, TIME_UNITS, TIME_VALUES } from "./Constants";
 import ChipInput from "../../Shared/Chips/ChipInput";
+import AddIcon from '@mui/icons-material/Add';
 
 type DynamicFieldRendererProps = {
   attributeKey: string;
@@ -29,10 +39,12 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
   options,
 }) => {
 
-    const [timeUnit, setTimeUnit] = React.useState<string>("");
-    const [timeValue, setTimeValue] = React.useState<string>("");
-    const [customTimeValue, setCustomTimeValue] = React.useState<string>("");
-    const [error, setError] = React.useState(false);
+    const [timeUnit, setTimeUnit] = useState<string>("");
+    const [timeValue, setTimeValue] = useState<string>("");
+    const [customTimeValue, setCustomTimeValue] = useState<string>("");
+    const [error, setError] = useState(false);
+    const [showCustomInput, setShowCustomInput] = useState(false);
+    const [customMilestone, setCustomMilestone] = useState("");
    
     useEffect(() => {
         if (timeUnit) {
@@ -108,29 +120,89 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     if (attributeKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
         const milestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION];
     
+        const handleAddCustomMilestone = () => {
+            if (customMilestone.trim()) {
+              setMilestones([...milestones, customMilestone]);
+              setCustomMilestone(""); // Clear the input field
+              setShowCustomInput(false); // Hide the custom input field
+            }
+        };
+
         return (
-          <Select
-                multiple // Enables multiple selection
-                value={Array.isArray(milestones) ? milestones : []}
-                onChange={(e) => setMilestones(e.target.value as string[])} // Handle multiple values
-                renderValue={(selected) => (selected as string[]).join(", ")} // Display selected values as comma-separated text
-                fullWidth
+          <>
+            <Select
+                    multiple // Enables multiple selection
+                    value={Array.isArray(milestones) ? milestones : []}
+                    onChange={(e) => setMilestones(e.target.value as string[])} // Handle multiple values
+                    renderValue={(selected) => (selected as string[]).join(", ")} // Display selected values as comma-separated text
+                    fullWidth
+                    sx={{
+                        fontSize: "inherit",
+                        lineHeight: "inherit",
+                        width: "100%",
+                        "& .MuiSelect-select": {
+                            padding: "8px",
+                        },
+                    }}
+            >
+                {milestoneOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                        <Checkbox checked={Array.isArray(milestones) && milestones.includes(option.value)} />
+                        <ListItemText primary={option.label} />
+                    </MenuItem>
+                ))}
+            </Select>
+
+            <Typography
+                variant="body2"
+                color="primary"
+                onClick={() => setShowCustomInput(true)}
                 sx={{
-                    fontSize: "inherit",
-                    lineHeight: "inherit",
-                    width: "100%",
-                    "& .MuiSelect-select": {
-                        padding: "8px",
-                    },
+                marginTop: "8px",
+                cursor: "pointer",
+                textDecoration: "underline",
                 }}
-          >
-            {milestoneOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                    <Checkbox checked={Array.isArray(milestones) && milestones.includes(option.value)} />
-                    <ListItemText primary={option.label} />
-                </MenuItem>
-            ))}
-          </Select>
+            >
+                + Other Milestone
+            </Typography>
+
+            {showCustomInput && (
+                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <TextField
+                        value={customMilestone}
+                        onChange={(e) => setCustomMilestone(e.target.value)}
+                        placeholder="Enter custom milestone"
+                        size="small"
+                        fullWidth
+                        sx={{
+                            flex: 1,
+                        }}
+                        InputProps={{
+                            endAdornment: customMilestone ? (
+                              <InputAdornment position="end" sx={{ marginRight: "-5px" }}>
+                                <IconButton
+                                  onClick={handleAddCustomMilestone}
+                                  sx={{
+                                    padding: 0,
+                                    borderRadius: "50%",
+                                    backgroundColor: "green",
+                                    color: "white",
+                                    "&:hover": { backgroundColor: "darkgreen" },
+                                  }}
+                                >
+                                  <AddIcon
+                                    sx={{
+                                        fontSize: "20px",
+                                    }}
+                                  />
+                                </IconButton>
+                              </InputAdornment>
+                            ) : null,
+                        }}
+                    />
+                </div>
+            )}
+          </>
         );
     }
 
