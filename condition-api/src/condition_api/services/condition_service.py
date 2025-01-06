@@ -413,12 +413,24 @@ class ConditionService:
                 raise ValueError("This condition number already exists. Please enter a new one.")
 
         elif project_id and document_id and condition_number:
+            amendment = (
+                db.session.query(Amendment.amended_document_id)
+                .filter(Amendment.amended_document_id == document_id)
+                .first()
+            )
             # Query by project_id, document_id, and condition_number
-            condition = db.session.query(Condition).filter_by(
-                project_id=project_id,
-                document_id=document_id,
-                condition_number=condition_number
-            ).first()
+            if amendment:
+                condition = db.session.query(Condition).filter_by(
+                    project_id=project_id,
+                    amended_document_id=amendment[0],
+                    condition_number=condition_number
+                ).first()
+            else:
+                condition = db.session.query(Condition).filter_by(
+                    project_id=project_id,
+                    document_id=document_id,
+                    condition_number=condition_number
+                ).first()
         else:
             raise ValueError("You must provide either condition_id or project_id, document_id, and condition_number.")
 
