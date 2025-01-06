@@ -1,6 +1,6 @@
-import React from "react";
-import { MenuItem, Select, TextField } from "@mui/material";
-import { CONDITION_KEYS } from "./Constants";
+import React, { useEffect } from "react";
+import { MenuItem, Select, TextField, Checkbox, ListItemText } from "@mui/material";
+import { CONDITION_KEYS, SELECT_OPTIONS, TIME_UNITS, TIME_VALUES } from "./Constants";
 import ChipInput from "../../Shared/Chips/ChipInput";
 
 type DynamicFieldRendererProps = {
@@ -9,6 +9,10 @@ type DynamicFieldRendererProps = {
   setAttributeValue: (value: string) => void;
   chips: string[];
   setChips: (value: string[]) => void;
+  milestones: string[];
+  setMilestones: (value: string[]) => void;
+  otherValue: string;
+  setOtherValue: (value: string) => void;
   options?: { label: string; value: string }[];
 };
 
@@ -18,8 +22,78 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
   setAttributeValue,
   chips,
   setChips,
+  milestones,
+  setMilestones,
+  otherValue,
+  setOtherValue,
   options,
 }) => {
+
+    const [timeUnit, setTimeUnit] = React.useState<string>("");
+    const [timeValue, setTimeValue] = React.useState<string>("");
+    const [customTimeValue, setCustomTimeValue] = React.useState<string>("");
+    const [error, setError] = React.useState(false);
+   
+    useEffect(() => {
+        if (timeUnit) {
+            const value = customTimeValue || timeValue;
+            if (value) {
+                setAttributeValue(`${value} ${timeUnit}`);
+            }
+        }
+    }, [timeValue, timeUnit, customTimeValue, setAttributeValue]);
+
+    if (attributeKey === CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE) {
+        return (
+            <>
+                <Select
+                    value={timeUnit}
+                    onChange={(e) => setTimeUnit(e.target.value)}
+                    displayEmpty
+                    fullWidth
+                    sx={{ marginBottom: "16px" }}
+                >
+                    <MenuItem value="" disabled>
+                        Select Time Unit
+                    </MenuItem>
+                    {TIME_UNITS.map((option) => (
+                        <MenuItem key={option.value} value={option.label}>
+                            {option.label}
+                        </MenuItem>
+                    ))}
+                </Select>
+      
+                <Select
+                    value={timeValue}
+                    onChange={(e) => setTimeValue(e.target.value)}
+                    displayEmpty
+                    fullWidth
+                    disabled={!timeUnit}
+                    sx={{ marginBottom: "16px" }}
+                >
+                    <MenuItem value="" disabled>
+                        Select Time Value
+                    </MenuItem>
+                    {timeUnit && TIME_VALUES[timeUnit as keyof typeof TIME_VALUES].map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                        </MenuItem>
+                    ))}
+                </Select>
+      
+                {timeValue === "Other" ? (
+                    <TextField
+                        value={customTimeValue}
+                        onChange={(e) => setCustomTimeValue(e.target.value)}
+                        placeholder="Please specify"
+                        fullWidth
+                        sx={{ marginTop: "8px" }}
+                    />
+                ) : null}
+            </>
+        );
+    }
+
     if (attributeKey === CONDITION_KEYS.PARTIES_REQUIRED) {
         return (
             <ChipInput
@@ -31,27 +105,88 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         );
     }
 
+    if (attributeKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
+        const milestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION];
+    
+        return (
+          <Select
+                multiple // Enables multiple selection
+                value={Array.isArray(milestones) ? milestones : []}
+                onChange={(e) => setMilestones(e.target.value as string[])} // Handle multiple values
+                renderValue={(selected) => (selected as string[]).join(", ")} // Display selected values as comma-separated text
+                fullWidth
+                sx={{
+                    fontSize: "inherit",
+                    lineHeight: "inherit",
+                    width: "100%",
+                    "& .MuiSelect-select": {
+                        padding: "8px",
+                    },
+                }}
+          >
+            {milestoneOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                    <Checkbox checked={Array.isArray(milestones) && milestones.includes(option.value)} />
+                    <ListItemText primary={option.label} />
+                </MenuItem>
+            ))}
+          </Select>
+        );
+    }
+
     if (options) {
         return (
-        <Select
-            value={attributeValue}
-            onChange={(e) => setAttributeValue(e.target.value)}
-            fullWidth
-            sx={{
-                fontSize: "inherit",
-                lineHeight: "inherit",
-                width: "100%",
-                "& .MuiSelect-select": {
-                  padding: "8px",
-                },
-            }}
-        >
-            {options.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-                {option.label}
-            </MenuItem>
-            ))}
-        </Select>
+            <>
+                <Select
+                    value={attributeValue}
+                    onChange={(e) => setAttributeValue(e.target.value)}
+                    fullWidth
+                    sx={{
+                        fontSize: "inherit",
+                        lineHeight: "inherit",
+                        width: "100%",
+                        "& .MuiSelect-select": {
+                        padding: "8px",
+                        },
+                    }}
+                >
+                    {options.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                    </MenuItem>
+                    ))}
+                </Select>
+                {attributeValue === "Other" && (
+                    <TextField
+                        value={otherValue}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setOtherValue(value);
+                            setError(value.trim() === "");
+                        }}
+                        onBlur={() => {
+                            if (!otherValue.trim()) {
+                                setError(true);
+                            }
+                        }}
+                        placeholder="Please specify"
+                        fullWidth
+                        error={error}
+                        sx={{
+                        marginTop: "8px",
+                        "& .MuiInputBase-root": {
+                            padding: "0 0px",
+                            fontSize: "inherit",
+                            lineHeight: "inherit",
+                        },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                            border: error ? "1px solid red" : "none",
+                        },
+                        height: "1.5em",
+                        }}
+                    />
+                )}
+            </>
         );
     }
 

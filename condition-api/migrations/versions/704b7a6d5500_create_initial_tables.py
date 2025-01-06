@@ -28,6 +28,7 @@ attribute_keys = [
     {"key_name": "Time associated with submission milestone", "created_date": datetime.utcnow()},
     {"key_name": "Milestone related to plan submission", "created_date": datetime.utcnow()},
     {"key_name": "Milestone(s) related to plan implementation", "created_date": datetime.utcnow()},
+    {"key_name": "Management Plan Acronym", "created_date": datetime.utcnow()},
 ]
 
 def upgrade():

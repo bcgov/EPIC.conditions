@@ -46,9 +46,18 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   const { key: conditionKey, value: attributeValue } = conditionAttributeItem;
   const [isEditable, setIsEditable] = useState(false);
   const [editableValue, setEditableValue] = useState(attributeValue);
+  const [otherValue, setOtherValue] = useState("");
 
   const [chips, setChips] = useState<string[]>(
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
+      ? attributeValue
+          ?.replace(/[{}]/g, "")
+          .split(",")
+          .map((item) => item.trim().replace(/^"|"$/g, ""))
+      : []
+  );
+  const [milestones, setMilestones] = useState<string[]>(
+    conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
       ? attributeValue
           ?.replace(/[{}]/g, "")
           .split(",")
@@ -77,7 +86,9 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         .filter((chip) => chip !== null && chip !== "")
         .map((chip) => `"${chip}"`)
         .join(",")}}`
-      : editableValue;
+        : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
+        milestones.map((milestone) => `${milestone}`).join(",")
+        : otherValue !== "" ? otherValue : editableValue;
 
     onSave({ ...conditionAttributeItem, value: updatedValue });
 
@@ -89,6 +100,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         .filter((item) => item !== "");
       setChips(parsedChips);
     };
+    setOtherValue("");
   };
 
   const renderEditableField = () => {
@@ -100,6 +112,10 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         setAttributeValue={setEditableValue}
         chips={chips}
         setChips={setChips}
+        milestones={milestones}
+        setMilestones={setMilestones}
+        otherValue={otherValue}
+        setOtherValue={setOtherValue}
         options={options}
       />
     );
@@ -118,7 +134,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
             width: "40%",
           }}
         >
-          {selectedOption ? selectedOption.label : "N/A"}
+          {selectedOption ? selectedOption.label : editableValue}
         </span>
       );
     }
@@ -127,6 +143,16 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
           {chips?.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
+      return (
+        <ul style={{ margin: 0, paddingLeft: "16px" }}>
+          {milestones?.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>

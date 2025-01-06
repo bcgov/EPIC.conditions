@@ -26,17 +26,23 @@ type ConditionsParam = {
 export const CreateConditionPage = ({
   conditionData
 }: ConditionsParam) => {
-  console.log(conditionData);
+
   const navigate = useNavigate();
 
   const [condition, setCondition] = useState<ConditionModel>(
     conditionData?.condition || createDefaultCondition);
 
   const [tags, setTags] = useState<string[]>(condition?.topic_tags ?? []);
+  const [conditionNumberError, setConditionNumberError] = useState(false);
+  const [conditionNameError, setConditionNameError] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [conditionConflictError, setConditionConflictError] = useState(false);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = event.target.value;
-
+    setConditionNumberError(false);
+    setConditionNameError(false);
+    setConditionConflictError(false);
     setCondition((prevCondition) => ({
       ...prevCondition,
       [key]: updatedValue,
@@ -71,11 +77,26 @@ export const CreateConditionPage = ({
   );
 
   const handleSaveAndClose = async () => {
+    if (!condition) {
+      notify.error("Condition data is incomplete or undefined.");
+      setHasError(true);
+    }
+
+    if (!condition?.condition_number) {
+      setConditionNumberError(true);
+      setHasError(true);
+    }
+
+    if (!condition?.condition_name) {
+      setConditionNameError(true);
+      setHasError(true);
+    }
+
+    if (hasError) {
+      return;
+    }
+
     try {
-      if (!condition) {
-        notify.error("Condition data is incomplete or undefined.");
-        return;
-      }
       const data: ConditionModel = {
         ...condition,
       };
@@ -85,8 +106,13 @@ export const CreateConditionPage = ({
           to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        setConditionConflictError(true);
+      } else {
+        console.error(error);
+        notify.error("Failed to save condition.");
+      }
     }
   }
 
@@ -183,6 +209,8 @@ export const CreateConditionPage = ({
                 sx={{ width: '90%' }}
                 value={condition?.condition_number}
                 onChange={handleInputChange('condition_number')}
+                error={conditionNumberError}
+                helperText={conditionNumberError ? "Please enter a Condition Number" : ""}
               />
             </Box>
           </Grid>
@@ -198,10 +226,26 @@ export const CreateConditionPage = ({
                 sx={{ width: '200%' }}
                 value={condition?.condition_name}
                 onChange={handleInputChange('condition_name')}
+                error={conditionNameError}
+                helperText={conditionNameError ? "Please enter a Condition Name" : ""}
               />
             </Box>
           </Grid>
         </Grid>
+        {conditionConflictError && (
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              paddingLeft: "20px",
+              color: "red",
+            }}
+          >
+            This condition number already exists. Please enter a new one.
+          </Grid>
+        )}
       </Grid>
 
       <Grid container sx={{ paddingTop: "5px" }}>

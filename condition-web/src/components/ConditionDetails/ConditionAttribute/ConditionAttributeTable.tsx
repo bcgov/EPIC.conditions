@@ -139,6 +139,7 @@ const ConditionAttributeTable = memo(({
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedAttribute, setSelectedAttribute] = useState("");
     const [attributeValue, setAttributeValue] = useState("");
+    const [otherValue, setOtherValue] = useState("");
     const [chips, setChips] = useState<string[]>(
       selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
         ? attributeValue
@@ -147,11 +148,13 @@ const ConditionAttributeTable = memo(({
             .map((item) => item.trim().replace(/^"|"$/g, ""))
         : []
     );
+    const [milestones, setMilestones] = useState<string[]>([]);
 
     const handleCloseModal = () => {
       setModalOpen(false);
       setSelectedAttribute("");
       setAttributeValue("");
+      setOtherValue("");
 
       queryClient.invalidateQueries({
         queryKey: ["conditions", condition.condition_id],
@@ -163,12 +166,15 @@ const ConditionAttributeTable = memo(({
         notify.error("Please select an attribute before proceeding");
         return;
       }
+
       const newAttribute = {
         id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
         key: selectedAttribute,
         value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
         `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
-        :attributeValue,
+        : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
+        milestones.map((milestone) => `${milestone}`).join(",")
+        : otherValue !== "" ? otherValue : attributeValue,
       };
 
       updateAttributes([
@@ -177,9 +183,12 @@ const ConditionAttributeTable = memo(({
           key: selectedAttribute,
           value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
           `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
-          :attributeValue,
+          : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
+          milestones.map((milestone) => `${milestone}`).join(",")
+          : otherValue !== "" ? otherValue : attributeValue,
         }
       ]);
+
       setCondition((prevCondition) => ({
         ...prevCondition,
         condition_attributes: [
@@ -192,6 +201,8 @@ const ConditionAttributeTable = memo(({
       setModalOpen(false);
       setSelectedAttribute("");
       setAttributeValue("");
+      setChips([]);
+      setOtherValue("");
     };
 
     const renderEditableField = () => {
@@ -203,6 +214,10 @@ const ConditionAttributeTable = memo(({
           setAttributeValue={setAttributeValue}
           chips={chips}
           setChips={setChips}
+          milestones={milestones}
+          setMilestones={setMilestones}
+          otherValue={otherValue}
+          setOtherValue={setOtherValue}
           options={options}
         />
       );
@@ -354,7 +369,7 @@ const ConditionAttributeTable = memo(({
                       variant="contained"
                       sx={{ marginLeft: "8px", minWidth: "100px" }}
                       onClick={handleAttributeSelection}
-                      disabled={!selectedAttribute}
+                      disabled={!attributeValue && chips.length === 0 && milestones.length === 0}
                     >
                       Confirm
                     </Button>
