@@ -209,6 +209,7 @@ const ConditionAttributeTable = memo(({
       const options = SELECT_OPTIONS[selectedAttribute];
       return (
         <DynamicFieldRenderer
+          editMode={false}
           attributeKey={selectedAttribute}
           attributeValue={attributeValue}
           setAttributeValue={setAttributeValue}
