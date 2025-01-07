@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+    Box,
     Checkbox,
     IconButton,
     InputAdornment,
@@ -12,8 +13,10 @@ import {
 import { CONDITION_KEYS, SELECT_OPTIONS, TIME_UNITS, TIME_VALUES } from "./Constants";
 import ChipInput from "../../Shared/Chips/ChipInput";
 import AddIcon from '@mui/icons-material/Add';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 type DynamicFieldRendererProps = {
+  editMode: boolean;
   attributeKey: string;
   attributeValue: string;
   setAttributeValue: (value: string) => void;
@@ -27,6 +30,7 @@ type DynamicFieldRendererProps = {
 };
 
 const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
+  editMode,
   attributeKey,
   attributeValue,
   setAttributeValue,
@@ -45,7 +49,30 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     const [error, setError] = useState(false);
     const [showCustomInput, setShowCustomInput] = useState(false);
     const [customMilestone, setCustomMilestone] = useState("");
-   
+
+    const theme = createTheme({
+        components: {
+          MuiSelect: {
+            styleOverrides: {
+              root: {
+                "&.Mui-disabled": {
+                  backgroundColor: "#EDEBE9",
+                },
+              },
+            },
+          },
+          MuiOutlinedInput: {
+            styleOverrides: {
+              input: {
+                "&.Mui-disabled": {
+                  color: "#9F9D9C !important",
+                },
+              },
+            },
+          },
+        },
+    });
+
     useEffect(() => {
         if (timeUnit) {
             const value = customTimeValue || timeValue;
@@ -57,13 +84,26 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
     if (attributeKey === CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE) {
         return (
-            <>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
                 <Select
                     value={timeUnit}
                     onChange={(e) => setTimeUnit(e.target.value)}
                     displayEmpty
                     fullWidth
-                    sx={{ marginBottom: "16px" }}
+                    sx={{
+                        fontSize: "inherit",
+                        lineHeight: "inherit",
+                        width: editMode ? "30%" : "100%",
+                        "& .MuiSelect-select": {
+                            padding: "8px",
+                        },
+                        marginBottom: "10px",
+                    }}
                 >
                     <MenuItem value="" disabled>
                         Select Time Unit
@@ -74,24 +114,33 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         </MenuItem>
                     ))}
                 </Select>
-      
-                <Select
-                    value={timeValue}
-                    onChange={(e) => setTimeValue(e.target.value)}
-                    displayEmpty
-                    fullWidth
-                    disabled={!timeUnit}
-                    sx={{ marginBottom: "16px" }}
-                >
-                    <MenuItem value="" disabled>
-                        Select Time Value
-                    </MenuItem>
-                    {timeUnit && TIME_VALUES[timeUnit as keyof typeof TIME_VALUES].map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                            {option.label}
+                <ThemeProvider theme={theme}>
+                    <Select
+                        value={timeValue}
+                        onChange={(e) => setTimeValue(e.target.value)}
+                        displayEmpty
+                        fullWidth
+                        disabled={!timeUnit}
+                        sx={{
+                            fontSize: "inherit",
+                            lineHeight: "inherit",
+                            width: editMode ? "30%" : "100%",
+                            "& .MuiSelect-select": {
+                                padding: "8px",
+                            },
+                            marginBottom: "10px",
+                        }}
+                    >
+                        <MenuItem value="" disabled>
+                            Select Time Value
                         </MenuItem>
-                    ))}
-                </Select>
+                        {timeUnit && TIME_VALUES[timeUnit as keyof typeof TIME_VALUES].map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </ThemeProvider>
       
                 {timeValue === "Other" ? (
                     <TextField
@@ -102,7 +151,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         sx={{ marginTop: "8px" }}
                     />
                 ) : null}
-            </>
+            </Box>
         );
     }
 
@@ -173,9 +222,9 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         onChange={(e) => setCustomMilestone(e.target.value)}
                         placeholder="Enter custom milestone"
                         size="small"
-                        fullWidth
                         sx={{
-                            flex: 1,
+                            flex: "0 0 auto",
+                            width: editMode ? "30%" : "100%",
                         }}
                         InputProps={{
                             endAdornment: customMilestone ? (
@@ -216,7 +265,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                     sx={{
                         fontSize: "inherit",
                         lineHeight: "inherit",
-                        width: "100%",
+                        width: editMode ? "30%" : "100%",
                         "& .MuiSelect-select": {
                         padding: "8px",
                         },

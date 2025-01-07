@@ -107,6 +107,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     const options = SELECT_OPTIONS[conditionKey];
     return (
       <DynamicFieldRenderer
+        editMode={isEditable}
         attributeKey={conditionKey}
         attributeValue={editableValue}
         setAttributeValue={setEditableValue}

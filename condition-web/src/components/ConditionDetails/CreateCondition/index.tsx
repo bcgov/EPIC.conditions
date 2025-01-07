@@ -239,8 +239,10 @@ export const CreateConditionPage = ({
             sx={{
               display: "flex",
               flexDirection: "row",
-              paddingLeft: "20px",
-              color: "red",
+              paddingLeft: "18px",
+              marginTop: "-20px",
+              marginBottom: "15px",
+              color: "#CE3E39",
             }}
           >
             This condition number already exists. Please enter a new one.
