@@ -66,7 +66,12 @@ const SubconditionComponent: React.FC<{
           ) : (
             <Typography variant="body2">
               <span style={{ color: theme.palette.primary.dark, marginRight: '8px' }}>
-                  {subcondition.subcondition_identifier}
+                {subcondition.subcondition_identifier
+                ? subcondition.subcondition_identifier.endsWith(')') 
+                  ? subcondition.subcondition_identifier 
+                  : `${subcondition.subcondition_identifier})`
+                : ''
+                }
               </span>
               {subcondition.subcondition_text}
             </Typography>

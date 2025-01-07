@@ -308,6 +308,7 @@ class ConditionService:
                 date_issued_query,
                 document_label_query
             )
+            .order_by(conditions.condition_number)
             .all()
         )
 

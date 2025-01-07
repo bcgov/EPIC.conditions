@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Save } from "@mui/icons-material";
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
 import ConditionAttributeTable from './ConditionAttribute/ConditionAttributeTable';
@@ -86,16 +86,41 @@ const ConditionInfoTabs: React.FC<{
 
                 {/* Conditionally render the Edit button only if the "description" tab is selected */}
                 {selectedTab === 'description' && (
-                    <EditButton variant="contained" size="small" onClick={handleEditClick}>
+                    <EditButton
+                        variant="contained"
+                        size="small"
+                        onClick={handleEditClick}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
                         {editMode ? (
                             <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <Save fontSize="small" />
-                                <Box component="span" sx={{ ml: 0.4 }}>Save Condition Description</Box>
+                                <SaveAltIcon
+                                    sx={{ color: "#255A90", mr: 0.5 }}
+                                    fontSize="small"
+                                />
+                                <Box
+                                    component="span"
+                                    sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
+                                >
+                                    Save Condition Description
+                                </Box>
                             </Typography>
                         ) : (
                             <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <EditIcon fontSize="small" />
-                                <Box component="span" sx={{ ml: 0.4 }}>Edit Condition Description</Box>
+                                <EditIcon
+                                    sx={{ color: "#255A90", mr: 0.5 }}
+                                    fontSize="small"
+                                />
+                                <Box
+                                    component="span"
+                                    sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
+                                >
+                                    Edit Condition Description
+                                </Box>
                             </Typography>
                         )}
                     </EditButton>

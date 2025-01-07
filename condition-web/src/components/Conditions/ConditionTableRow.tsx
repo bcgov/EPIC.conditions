@@ -38,12 +38,23 @@ export default function ConditionTableRow({
         }}
       >
         <TableCell
-          colSpan={6}
+          colSpan={2}
           align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
+          }}
+        >
+          {condition.condition_number ?? "--"}
+        </TableCell>
+        <TableCell
+          colSpan={6}
+          align="left"
+          sx={{
+            borderTop: border,
+            borderBottom: border,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           <Link

@@ -208,8 +208,13 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
           justifyContent="left"
           alignItems="center"
           minWidth={"150px"}
+          color={"#255A90"}
+          fontWeight={"bold"}
         >
-          <IconButton color="primary" sx={{ mr: 1 }}><TuneIcon /></IconButton>Open Filters
+          <IconButton sx={{ color: "#255A90" }}>
+            <TuneIcon />
+          </IconButton>
+          Open Filters
         </Box>
         <TextField
           variant="outlined"

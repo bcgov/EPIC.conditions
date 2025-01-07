@@ -20,7 +20,7 @@ import { ContentBox } from "../Shared/ContentBox";
 import ConditionTable from "../Conditions/ConditionsTable";
 import { DocumentModel, DocumentStatus } from "@/models/Document";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { useCreateCondition } from "@/hooks/api/useConditions";
@@ -190,10 +190,12 @@ export const Conditions = ({
                     <Box sx={{ display: "flex", alignItems: "left", mr: 1 }}>
                       {documentLabel}
                       {hasAmendments && (
-                        <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1 }} />
+                        <Box sx={{ display: "flex", alignItems: "top", mr: 1, mt: 1 }}>
+                        <LayersOutlinedIcon fontSize="small" sx={{ ml: 1 }} />
+                        </Box>
                       )}
                     </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
+                    <Box sx={{ display: "flex", alignItems: "top", fontWeight: "normal" }}>
                       <DocumentStatusChip
                         status={noConditions? "nodata" : String(isToggleEnabled) as DocumentStatus}
                       />
