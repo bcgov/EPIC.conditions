@@ -6,24 +6,24 @@ import {
     TableHead,
     TableRow,
   } from "@mui/material";
-  import { BCDesignTokens } from "epic.theme";
-  import { ConditionModel } from "@/models/Condition";
-  import { StyledTableHeadCell } from "../Shared/Table/common";
-  import ConditionTableRow from "./ConditionTableRow";
+import { BCDesignTokens } from "epic.theme";
+import { ConditionModel } from "@/models/Condition";
+import { StyledTableHeadCell } from "../Shared/Table/common";
+import ConditionTableRow from "./ConditionTableRow";
 
-  export default function ConditionTable({
+export default function ConditionTable({
     conditions,
     projectId,
     documentId,
     headless,
     noConditions,
-  }: {
+}: {
     conditions: Array<ConditionModel>;
     projectId: string;
     documentId: string;
     headless?: boolean;
     noConditions: boolean;
-  }) {
+}) {
     return (
         <TableContainer component={Box} sx={{ height: "100%" }}>
             <Table sx={{ tableLayout: "fixed", border: 0 }} aria-label="simple table">
@@ -37,6 +37,9 @@ import {
                 }}
                 >
                 <TableRow>
+                    <StyledTableHeadCell colSpan={2}>
+                        Condition Number
+                    </StyledTableHeadCell>
                     <StyledTableHeadCell colSpan={6}>
                         Condition Name
                     </StyledTableHeadCell>
@@ -68,5 +71,4 @@ import {
             </Table>
         </TableContainer>
     );
-  }
-  
+}

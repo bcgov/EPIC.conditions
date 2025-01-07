@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Stack, Typography } from "@mui/material";
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import EditIcon from '@mui/icons-material/Edit';
-import { Save } from "@mui/icons-material";
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import { ConditionModel } from "@/models/Condition";
 import { DocumentStatus } from "@/models/Document";
@@ -79,7 +79,7 @@ const ConditionHeader = ({
             <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center', px: 2.5, py: 1 }}>
                     <Typography variant="h6">{condition?.condition_name}</Typography>
-                    <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
+                    <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
                     <DocumentStatusChip status={String(condition?.is_approved) as DocumentStatus} />
                     {!condition.is_topic_tags_approved && (
                         <Button
@@ -105,15 +105,27 @@ const ConditionHeader = ({
                                     sx={{ display: 'inline-flex', alignItems: 'center' }}
                                     onClick={() => approveTags(false)}
                                 >
-                                    <Save fontSize="small" />
-                                    <Box component="span" sx={{ ml: 0.5 }}>
+                                    <SaveAltIcon
+                                        sx={{ color: "#255A90", mr: 0.5 }}
+                                        fontSize="small"
+                                    />
+                                    <Box
+                                        component="span"
+                                        sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
+                                    >
                                         Save Tags
                                     </Box>
                                 </Typography>
                             : (
                                 <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                    <EditIcon fontSize="small" />
-                                    <Box component="span" sx={{ ml: 0.5 }}>
+                                    <EditIcon
+                                        sx={{ color: "#255A90", mr: 0.5 }}
+                                        fontSize="small"
+                                    />
+                                    <Box
+                                        component="span"
+                                        sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
+                                    >
                                         Edit/Add Tags
                                     </Box>
                                 </Typography>

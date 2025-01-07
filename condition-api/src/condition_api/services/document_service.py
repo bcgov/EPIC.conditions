@@ -24,6 +24,7 @@ class DocumentService:
             Document.id.label('id'),
             Document.document_id.label('document_id'),
             Document.document_label.label('document_label'),
+            Document.created_date,
             extract('year', Document.date_issued).label('year_issued'),
             case(
                 (func.count(Condition.id) == 0, None),
@@ -50,6 +51,7 @@ class DocumentService:
             Document.id,
             Document.document_id,
             Document.document_label,
+            Document.created_date,
             Document.date_issued
         ).all()
 
@@ -66,6 +68,7 @@ class DocumentService:
             amendments_query = db.session.query(
                 Amendment.amended_document_id.label('document_id'),
                 Amendment.amendment_name.label('document_label'),
+                Amendment.created_date,
                 extract('year', Amendment.date_issued).label('year_issued'),
                 case(
                     (func.count(Condition.id) == 0, None),
@@ -77,13 +80,17 @@ class DocumentService:
             ).filter(
                 Amendment.document_id == document.id
             ).group_by(
-                Amendment.amended_document_id, Amendment.amendment_name, Amendment.date_issued
+                Amendment.amended_document_id,
+                Amendment.amendment_name,
+                Amendment.created_date,
+                Amendment.date_issued
             ).all()
 
             # Append the main document to the result list
             result.append({
                 'document_id': document.document_id,
                 'document_label': document.document_label,
+                'created_date': document.created_date,
                 'year_issued': document.year_issued,
                 'status': document.status
             })
@@ -93,6 +100,7 @@ class DocumentService:
                 result.append({
                     'document_id': amendment.document_id,
                     'document_label': amendment.document_label,
+                    'created_date': amendment.created_date,
                     'year_issued': amendment.year_issued,
                     'status': amendment.status
                 })
@@ -100,7 +108,7 @@ class DocumentService:
         project_name = documents[0].project_name if documents else None
         document_category = documents[0].document_category if documents else None
 
-        sorted_result = sorted(result, key=lambda x: x['year_issued'], reverse=True)
+        sorted_result = sorted(result, key=lambda x: x['created_date'])
         return {
             "project_name": project_name,
             "document_category": document_category,

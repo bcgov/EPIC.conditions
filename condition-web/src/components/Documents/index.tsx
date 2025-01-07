@@ -7,7 +7,7 @@ import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { ContentBox } from "../Shared/ContentBox";
 import DocumentTable from "./DocumentTable";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -93,7 +93,7 @@ export const Documents = ({ projectName, projectId, documentLabel, documents }: 
                   {/* Document Name and Icon */}
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     {documentLabel}
-                    <ContentCopyOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
+                    <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
                     <DocumentStatusChip status={isToggleEnabled === null ? "nodata" : String(isToggleEnabled) as DocumentStatus} />
