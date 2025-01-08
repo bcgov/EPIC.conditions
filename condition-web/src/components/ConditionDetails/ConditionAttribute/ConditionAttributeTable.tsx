@@ -41,6 +41,11 @@ type ConditionAttributeTableProps = {
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 };
 
+interface Attribute {
+  id: string;
+  key_name: string;
+}
+
 const ConditionAttributeTable = memo(({
     projectId,
     documentId,
@@ -257,7 +262,7 @@ const ConditionAttributeTable = memo(({
                 },
               }}
             >
-              {(condition.condition_attributes || []).map((attribute, index) => (
+              {(condition.condition_attributes || []).map((attribute) => (
                 <ConditionAttributeRow
                   key={attribute.id}
                   conditionAttributeItem={attribute}
@@ -347,7 +352,7 @@ const ConditionAttributeTable = memo(({
                         mb: 2
                       }}
                     >
-                      {attributesData?.map((attribute: any) => (
+                      {attributesData?.map((attribute: Attribute) => (
                         <MenuItem key={attribute.id} value={attribute.key_name}>
                           {attribute.key_name}
                         </MenuItem>

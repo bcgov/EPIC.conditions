@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import { Box, Typography, Button, Stack } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import { ConditionModel } from "@/models/Condition";;
+import { ConditionModel } from "@/models/Condition";
 import { theme } from "@/styles/theme";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -59,17 +59,13 @@ const ConditionDescription = memo(({
     setSubconditions(condition.subconditions || []);
   }, [condition.subconditions, setSubconditions]);
 
-  if (!condition) {
-    return <Typography>No condition available</Typography>;
-  }
-  
   useEffect(() => {
     setIsEditing(editMode);
     if (isEditing) {
       // On save, submit changedValues to the backend
       saveChanges();
     }
-  }, [editMode]);
+  }, [editMode, isEditing]);
   
   const saveChanges = () => {
     const data: updateTopicTagsModel = {
@@ -77,6 +73,10 @@ const ConditionDescription = memo(({
     };
     updateConditionDetails(data);
   };
+
+  if (!condition) {
+    return <Typography>No condition available</Typography>;
+  }
 
   return (
     <Box>
@@ -122,7 +122,7 @@ const ConditionDescription = memo(({
                 padding: "4px 8px",
                 borderRadius: "4px",
               }}
-              onClick={() => console.log('Approved')}
+              onClick={() => console.log('Approved')} //TODO
           >
             Approve Condition Description
           </Button>

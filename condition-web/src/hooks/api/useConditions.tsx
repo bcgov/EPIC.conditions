@@ -167,7 +167,7 @@ export const useUpdateCondition = (
         options.onSuccess(); // Call the optional custom onSuccess handler
       }
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       const errorMessage =
         error?.response?.data?.message || "An unknown error occurred.";
       notify.error(errorMessage); // Error notification

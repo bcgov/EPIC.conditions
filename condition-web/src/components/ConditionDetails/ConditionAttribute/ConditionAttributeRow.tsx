@@ -13,14 +13,18 @@ const StyledTableRow = styled(TableRow)(() => ({}));
 
 type StyledTableRowProps = TableRowProps & { error?: boolean };
 
+interface CustomProps {
+  error: boolean;
+}
+
 export const PackageTableRow = ({
   error,
   children,
   ...otherProps
 }: StyledTableRowProps) => {
   const childrenWithProps = React.Children.map(children, (child) =>
-    React.isValidElement(child)
-      ? React.cloneElement(child, { error } as any)
+    React.isValidElement<CustomProps>(child)
+      ? React.cloneElement<CustomProps>(child, { error })
       : child
   );
 
@@ -75,7 +79,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           .map((item) => item.trim().replace(/^"|"$/g, ""))
       );
     }
-  }, [conditionAttributeItem]);
+  }, [conditionAttributeItem, conditionKey]);
 
   const handleSave = () => {
     setIsEditable(false);
@@ -99,7 +103,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         .map((item) => item.trim().replace(/^"|"$/g, ""))
         .filter((item) => item !== "");
       setChips(parsedChips);
-    };
+    }
     setOtherValue("");
   };
 

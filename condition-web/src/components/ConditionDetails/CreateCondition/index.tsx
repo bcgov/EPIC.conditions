@@ -4,7 +4,7 @@ import { ConditionModel, createDefaultCondition, ProjectDocumentConditionDetailM
 import { Box, Button, Grid, Stack, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { StyledTableHeadCell } from "../../Shared/Table/common";
-import ConditionInfoTabs from "./ConditionInfoTabs";
+import CreateConditionInfoTabs from "./CreateConditionInfoTabs";
 import { useRemoveCondition, useUpdateCondition } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import ChipInput from "../../Shared/Chips/ChipInput";
@@ -35,7 +35,6 @@ export const CreateConditionPage = ({
   const [tags, setTags] = useState<string[]>(condition?.topic_tags ?? []);
   const [conditionNumberError, setConditionNumberError] = useState(false);
   const [conditionNameError, setConditionNameError] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const [conditionConflictError, setConditionConflictError] = useState(false);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,22 +76,25 @@ export const CreateConditionPage = ({
   );
 
   const handleSaveAndClose = async () => {
+    let errorFlag = false;
+
     if (!condition) {
       notify.error("Condition data is incomplete or undefined.");
-      setHasError(true);
+      errorFlag = true;
     }
 
     if (!condition?.condition_number) {
       setConditionNumberError(true);
-      setHasError(true);
+      errorFlag = true;
     }
 
     if (!condition?.condition_name) {
       setConditionNameError(true);
-      setHasError(true);
+      errorFlag = true;
     }
 
-    if (hasError) {
+    if (errorFlag) {
+      notify.error("Failed to save condition.");
       return;
     }
 
@@ -106,11 +108,10 @@ export const CreateConditionPage = ({
           to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
         });
       }
-    } catch (error: any) {
-      if (error.response?.status === 409) {
+    } catch (error) {
+      if ((error as { response?: { data?: { message?: string }; status?: number } }).response?.status === 409) {
         setConditionConflictError(true);
       } else {
-        console.error(error);
         notify.error("Failed to save condition.");
       }
     }
@@ -125,7 +126,7 @@ export const CreateConditionPage = ({
         });
       }
     } catch (error) {
-      console.error(error);
+      notify.error("Failed to remove condition.");
     }
   }
 
@@ -259,7 +260,7 @@ export const CreateConditionPage = ({
           }}
         >
           {conditionData ? (
-            <ConditionInfoTabs
+            <CreateConditionInfoTabs
               projectId={conditionData.project_id}
               documentId={conditionData.document_id}
               condition={condition}
