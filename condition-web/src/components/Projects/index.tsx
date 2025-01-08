@@ -54,12 +54,10 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const [documentLabel, setDocumentLabel] = useState("");
   const [documentLink, setDocumentLink] = useState("");
   const [dateIssued, setDateIssued] = useState<Date | null>(null);
-  const [errors, setErrors] = useState({
+  const [errors] = useState({
     documentLabel: false,
     dateIssued: false,
   });
-
-  if (!projects) return <Navigate to={"/error"} />;
 
   const filteredProjects = projectArray.filter(project =>
     project.project_name.toLowerCase().includes(projectSearch.toLowerCase())
@@ -190,6 +188,8 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     selectedDocumentType === DocumentTypes.Amendment,
     selectedProject?.project_id
   );
+
+  if (!projects) return <Navigate to={"/error"} />;
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>

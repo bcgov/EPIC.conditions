@@ -1,6 +1,6 @@
 """Service for condition management."""
 from datetime import datetime
-from sqlalchemy import func, extract
+from sqlalchemy import and_, func, extract
 from sqlalchemy.orm import aliased
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
@@ -290,6 +290,12 @@ class ConditionService:
                     else (documents.document_id == document_id and conditions.amended_document_id is None)
                 )
             )
+            .filter(
+                ~and_(
+                    conditions.condition_name.is_(None),
+                    conditions.condition_number.is_(None)
+                )
+            )
             .group_by(
                 document_categories.category_name,
                 document_categories.id,
@@ -540,15 +546,8 @@ class ConditionService:
                 existing_condition.is_active = False
                 existing_condition.effective_to = datetime.utcnow()
                 db.session.add(existing_condition)
-            max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
-                Condition.amended_document_id == document_id).first()
-            condition_number_value = (
-                max_condition_number[0] if max_condition_number and max_condition_number[0] is not None else 0) + 1
         else:
             final_document_id = document_id
-            max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
-                Condition.document_id == final_document_id).first()
-            condition_number_value = max_condition_number[0] + 1
 
         new_condition = Condition(
             document_id=final_document_id,
@@ -556,7 +555,7 @@ class ConditionService:
             project_id=project_id,
             is_approved=False,
             condition_name=conditions_data.get("condition_name"),
-            condition_number=condition_number_value,
+            condition_number=conditions_data.get("condition_number"),
             condition_text=conditions_data.get("condition_text"),
             topic_tags=conditions_data.get("topic_tags"),
             subtopic_tags=conditions_data.get("subtopic_tags"),
@@ -629,6 +628,10 @@ class ConditionService:
             actual_document_id = amendment_data.amended_document_id if amendment_data else None
             document_label = amendment_data.document_label if amendment_data else None
             year_issued = amendment_data.year_issued if amendment_data else None
+            max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
+                Condition.amended_document_id == amended_document_id).first()
+            condition_number_value = (
+                max_condition_number[0] if max_condition_number and max_condition_number[0] is not None else 0) + 1
         else:
             actual_document_id = condition_data.document_id
             document_details = db.session.query(
@@ -638,6 +641,9 @@ class ConditionService:
 
             document_label = document_details.document_label if document_details else None
             year_issued = document_details.year_issued if document_details else None
+            max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
+                Condition.document_id == actual_document_id).first()
+            condition_number_value = max_condition_number[0] + 1
 
         project_data = db.session.query(
             Project.project_id,
@@ -657,7 +663,7 @@ class ConditionService:
         condition_details = {
             "condition_id": condition_data.id,
             "condition_name": condition_data.condition_name,
-            "condition_number": condition_data.condition_number,
+            "condition_number": condition_data.condition_number if condition_data.condition_number else condition_number_value,
             "condition_text": condition_data.condition_text,
             "is_approved": condition_data.is_approved,
             "topic_tags": condition_data.topic_tags,

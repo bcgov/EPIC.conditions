@@ -40,8 +40,6 @@ function ConditionPage() {
     }
   }, [isConditionsError]);
 
-  if (isConditionsError) return <Navigate to="/error" />;
-
   const META_PROJECT_TITLE = `${projectId}`;
   const META_DOCUMENT_CATEGORY = `Document Category`;
   const META_DOCUMENT_LABEL = `Document Label`;
@@ -62,7 +60,9 @@ function ConditionPage() {
         undefined
       );
     }
-  }, [documentConditions, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, META_DOCUMENT_LABEL]);
+  }, [documentConditions, projectId, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, META_DOCUMENT_LABEL]);
+
+  if (isConditionsError) return <Navigate to="/error" />;
 
   return (
     <PageGrid>

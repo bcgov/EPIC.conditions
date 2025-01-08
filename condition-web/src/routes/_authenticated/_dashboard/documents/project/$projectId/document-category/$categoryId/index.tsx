@@ -38,8 +38,6 @@ function DocumentPage() {
     }
   }, [isAmendmentsError]);
 
-  if (isAmendmentsError) return <Navigate to="/error" />;
-
   const META_PROJECT_TITLE = `${projectId}`;
   const META_DOCUMENT_CATEGORY = `${categoryId}`;
   const { replaceBreadcrumb } = useBreadCrumb();
@@ -49,6 +47,8 @@ function DocumentPage() {
       replaceBreadcrumb(META_DOCUMENT_CATEGORY, allDocuments?.document_category || META_DOCUMENT_CATEGORY);
     }
   }, [allDocuments, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY]);
+
+  if (isAmendmentsError) return <Navigate to="/error" />;
 
   return (
     <PageGrid>

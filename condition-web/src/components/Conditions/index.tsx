@@ -130,7 +130,7 @@ export const Conditions = ({
         });
       }
     } catch (error) {
-      console.error(error);
+      notify.error("Failed to create condition");
     }
   }
 

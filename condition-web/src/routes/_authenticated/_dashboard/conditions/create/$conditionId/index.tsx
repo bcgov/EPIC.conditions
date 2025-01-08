@@ -31,8 +31,6 @@ function ConditionPage() {
     isError: isConditionDetailsError
   } = useLoadConditionByID(conditionId);
 
-  if (isConditionDetailsError) return <Navigate to="/error" />;
-
   const META_PROJECT_TITLE = `Project Name`;
   const META_DOCUMENT_CATEGORY = `Document Category`;
   const META_DOCUMENT_LABEL = `Document Label`;
@@ -54,6 +52,8 @@ function ConditionPage() {
       );
     }
   }, [conditionDetails, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, META_DOCUMENT_LABEL]);
+
+  if (isConditionDetailsError) return <Navigate to="/error" />;
 
   return (
     <PageGrid>

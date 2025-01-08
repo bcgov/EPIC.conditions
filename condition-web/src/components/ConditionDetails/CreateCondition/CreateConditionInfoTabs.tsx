@@ -40,7 +40,7 @@ const StyledTab = styled(Tab)(({ theme }) => ({
     },
 }));
 
-const ConditionInfoTabs: React.FC<{
+const CreateConditionInfoTabs: React.FC<{
     projectId: string;
     documentId: string;
     condition: ConditionModel;
@@ -48,7 +48,7 @@ const ConditionInfoTabs: React.FC<{
 }> = ({ projectId, documentId, condition, setCondition }) => {
     const [selectedTab, setSelectedTab] = useState('description');
 
-    const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
     };
 
@@ -66,7 +66,7 @@ const ConditionInfoTabs: React.FC<{
             ...prevCondition,
             subconditions: subconditions,
           }));
-    }, [subconditions]);
+    }, [subconditions, setCondition]);
 
     useEffect(() => {
         setSubconditions(condition.subconditions || []);
@@ -134,4 +134,4 @@ const ConditionInfoTabs: React.FC<{
     );
 };
 
-export default ConditionInfoTabs;
+export default CreateConditionInfoTabs;

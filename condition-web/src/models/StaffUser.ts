@@ -6,5 +6,5 @@ export interface StaffUserModel {
     work_email_address: string;
     work_contact_number: string;
     auth_guid: string;
-  };
+}
   
