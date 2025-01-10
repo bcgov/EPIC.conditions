@@ -15,13 +15,15 @@ class BaseSchema(Schema):
 class ConditionAttributeSchema(BaseSchema):
     """Condition Attribute schema."""
     deliverable_name = fields.Str(data_key="deliverable_name")
-    is_plan = fields.Bool(data_key="is_plan")
-    approval_type = fields.Str(data_key="approval_type")
-    stakeholders_to_consult = fields.List(fields.Str(), data_key="stakeholders_to_consult")
-    stakeholders_to_submit_to = fields.List(fields.Str(), data_key="stakeholders_to_submit_to")
-    consultation_required = fields.Bool(data_key="consultation_required")
-    related_phase = fields.Str(data_key="related_phase")
-    days_prior_to_commencement = fields.Int(data_key="days_prior_to_commencement")
+    requires_management_plan = fields.Bool(data_key="requires_management_plan")
+    submitted_to_eao_for = fields.Str(data_key="submitted_to_eao_for")
+    milestone_related_to_plan_submission = fields.Str(data_key="milestone_related_to_plan_submission")
+    milestones_related_to_plan_implementation = fields.List(fields.Str(), data_key="milestones_related_to_plan_implementation")
+    time_associated_with_submission_milestone = fields.List(fields.Str(), data_key="time_associated_with_submission_milestone")
+    management_plan_acronym = fields.Bool(data_key="management_plan_acronym")
+    parties_required_to_be_consulted = fields.List(fields.Str(), data_key="parties_required_to_be_consulted")
+    parties_required_to_be_submitted = fields.List(fields.Str(), data_key="parties_required_to_be_submitted")
+    requires_consultation = fields.Bool(data_key="requires_consultation")
 
 class UpdateConditionAttributeSchema(BaseSchema):
     """Condition Attribute schema."""

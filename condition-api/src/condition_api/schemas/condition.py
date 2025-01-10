@@ -4,7 +4,7 @@ Manages the condition
 """
 
 from marshmallow import Schema, fields
-from condition_api.schemas.condition_attribute import UpdateConditionAttributeSchema
+from condition_api.schemas.condition_attribute import ConditionAttributeSchema, UpdateConditionAttributeSchema
 from condition_api.schemas.subcondition import SubconditionSchema
 
 class ConditionSchema(Schema):
@@ -21,7 +21,6 @@ class ConditionSchema(Schema):
     is_approved = fields.Bool(data_key="is_approved", allow_none=True)
     is_topic_tags_approved = fields.Bool(data_key="is_topic_tags_approved", allow_none=True)
     is_condition_attributes_approved = fields.Bool(data_key="is_condition_attributes_approved", allow_none=True)
-    deliverable_name = fields.Str(data_key="deliverable_name", allow_none=True)
     condition_attributes = fields.List(fields.Nested(UpdateConditionAttributeSchema), data_key="condition_attributes", allow_none=True)
     
     # Condition can also have its own subconditions (recursive nesting)
@@ -44,3 +43,18 @@ class ProjectDocumentConditionDetailSchema(Schema):
     document_label = fields.Str(data_key="document_label")
     document_id = fields.Str(data_key="document_id")
     condition = fields.Nested(ConditionSchema, data_key="condition")
+
+class ConsolidatedConditionSchema(Schema):
+    """Condition schema."""
+
+    condition_name = fields.Str(data_key="condition_name", allow_none=True)
+    condition_number = fields.Int(data_key="condition_number", allow_none=True)
+    condition_text = fields.Str(data_key="condition_text", allow_none=True)
+    topic_tags = fields.List(fields.Str(), data_key="topic_tags", allow_none=True)
+    subtopic_tags = fields.List(fields.Str(), data_key="subtopic_tags", allow_none=True)
+    amendment_names = fields.Str(data_key="amendment_names", allow_none=True)
+    year_issued = fields.Int(data_key="year_issued", allow_none=True)
+    condition_attributes = fields.Dict(data_key="condition_attributes", allow_none=True)
+    
+    # Condition can also have its own subconditions (recursive nesting)
+    subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")

@@ -61,6 +61,7 @@ const ConditionInfoTabs: React.FC<{
 }> = ({ projectId, documentId, conditionNumber, condition, setCondition }) => {
     const [selectedTab, setSelectedTab] = useState('description');
     const [editMode, setEditMode] = useState(false);
+    const [isConditionApproved, setIsConditionApproved] = useState(condition.is_approved || false);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
@@ -85,7 +86,7 @@ const ConditionInfoTabs: React.FC<{
                 </StyledTabs>
 
                 {/* Conditionally render the Edit button only if the "description" tab is selected */}
-                {selectedTab === 'description' && (
+                {selectedTab === 'description' && !isConditionApproved && (
                     <EditButton
                         variant="contained"
                         size="small"
@@ -134,6 +135,8 @@ const ConditionInfoTabs: React.FC<{
                         documentId={documentId}
                         conditionNumber={conditionNumber}
                         condition={condition}
+                        isConditionApproved={isConditionApproved}
+                        setIsConditionApproved={setIsConditionApproved}
                     />
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>

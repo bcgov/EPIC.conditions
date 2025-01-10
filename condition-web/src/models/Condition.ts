@@ -40,6 +40,7 @@ export const createDefaultCondition = (): ConditionModel => {
 
 export interface updateTopicTagsModel {
   topic_tags?: string[];
+  is_approved?: boolean;
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
   subconditions?: SubconditionModel[],

@@ -16,6 +16,8 @@ type ConditionDescriptionProps = {
   documentId: string;
   conditionNumber: number;
   condition: ConditionModel;
+  isConditionApproved: boolean;
+  setIsConditionApproved: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 // Main component to render the condition and its subconditions
@@ -24,7 +26,9 @@ const ConditionDescription = memo(({
   projectId,
   documentId,
   conditionNumber,
-  condition
+  condition,
+  isConditionApproved,
+  setIsConditionApproved
 }: ConditionDescriptionProps) => {
   const [isEditing, setIsEditing] = useState(editMode);
 
@@ -45,7 +49,7 @@ const ConditionDescription = memo(({
     notify.success("Condition saved successfully");
   };
 
-  const { mutate: updateConditionDetails } = useUpdateConditionDetails(
+  const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
     projectId,
     documentId,
     conditionNumber,
@@ -66,7 +70,19 @@ const ConditionDescription = memo(({
       saveChanges();
     }
   }, [editMode, isEditing]);
+
+  useEffect(() => {
+    if (conditionDetails) {
+      setIsConditionApproved(conditionDetails.is_approved)
+    }
+  }, [conditionDetails]);
   
+  const approveConditionDescription = () => {
+    const data: updateTopicTagsModel = {
+      is_approved: !isConditionApproved }
+    updateConditionDetails(data);
+  };
+
   const saveChanges = () => {
     const data: updateTopicTagsModel = {
       subconditions: subconditions
@@ -91,6 +107,7 @@ const ConditionDescription = memo(({
           onAdd={handleAdd}
           identifierValue={sub.subcondition_identifier || ""}
           textValue={sub.subcondition_text || ""}
+          is_approved={isConditionApproved || false}
         />
       ))}
       <Stack sx={{ mt: 5 }} direction={"row"}>
@@ -122,9 +139,10 @@ const ConditionDescription = memo(({
                 padding: "4px 8px",
                 borderRadius: "4px",
               }}
-              onClick={() => console.log('Approved')} //TODO
+              onClick={approveConditionDescription}
           >
-            Approve Condition Description
+            {isConditionApproved ?
+            'Un-approve Condition Description' : 'Approve Condition Description'}
           </Button>
         </Box>
       </Stack>

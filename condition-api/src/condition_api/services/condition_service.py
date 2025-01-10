@@ -12,6 +12,7 @@ from condition_api.models.document_type import DocumentType
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.db import db
 from condition_api.models.project import Project
+from condition_api.schemas.condition import ConditionSchema, ConsolidatedConditionSchema
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -721,3 +722,97 @@ class ConditionService:
         query.delete()
         db.session.commit()
         return None
+
+    @staticmethod
+    def get_consolidated_conditions(
+        project_id,
+        include_condition_attributes,
+        include_nested_conditions,
+        user_is_internal
+    ):
+        """Fetch all consolidated conditions by project ID."""
+        condition_data = (
+            db.session.query(
+                Condition.id,
+                Condition.condition_name,
+                Condition.condition_number,
+                Condition.condition_text,
+                Condition.topic_tags,
+                Condition.is_condition_attributes_approved,
+                Condition.is_topic_tags_approved
+            )
+            .filter(
+                and_(
+                    Condition.project_id == project_id,
+                    Condition.is_active == True,
+                    Condition.is_approved == True
+                )
+            )
+            .filter(
+                ~and_(
+                    Condition.condition_name.is_(None),
+                    Condition.condition_number.is_(None)
+                )
+            )
+            .order_by(Condition.condition_number)
+            .all()
+        )
+
+        if not condition_data:
+            return []
+        
+        result = []
+
+        for row in condition_data:
+            condition_attributes = []
+
+            if include_condition_attributes and row.is_condition_attributes_approved:
+                attributes_data = (
+                    db.session.query(
+                        AttributeKey.key_name,
+                        AttributeKey.external_key,
+                        ConditionAttribute.attribute_value
+                    )
+                    .outerjoin(
+                        AttributeKey,
+                        ConditionAttribute.attribute_key_id == AttributeKey.id,
+                    )
+                    .filter(
+                        ConditionAttribute.condition_id == row.id,
+                        ~ConditionAttribute.attribute_key_id.in_([2])
+                    )
+                    .order_by(ConditionAttribute.attribute_key_id)
+                    .all()
+                )
+
+                if user_is_internal:
+                    transformed_attributes = [
+                        {"key": record[0], "value": record[1]}
+                        for record in attributes_data
+                    ]
+
+                    condition_attributes = transformed_attributes if transformed_attributes else []
+                else:
+                    condition_attributes = {
+                        record[1]: (
+                            record[2]
+                            .replace("{", "")
+                            .replace("}", "")
+                            .replace('"', "")
+                        ) if record[2] else None
+                        for record in attributes_data if record[1]
+                    }
+
+            result.append({
+                "condition_name": row.condition_name,
+                "condition_number": row.condition_number,
+                "condition_text": row.condition_text,
+                "condition_attributes": condition_attributes
+            })
+
+        if user_is_internal:
+            conditions_schema = ConditionSchema(many=True)
+        else:
+            conditions_schema = ConsolidatedConditionSchema(many=True)
+
+        return {"conditions": conditions_schema.dump(result)}

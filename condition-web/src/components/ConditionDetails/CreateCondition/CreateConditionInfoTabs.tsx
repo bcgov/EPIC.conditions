@@ -100,6 +100,7 @@ const CreateConditionInfoTabs: React.FC<{
                             onAdd={handleAdd}
                             identifierValue={sub.subcondition_identifier || ""}
                             textValue={sub.subcondition_text || ""}
+                            is_approved={false}
                         />
                     ))}
                     <Stack sx={{ mt: 5 }} direction={"row"}>

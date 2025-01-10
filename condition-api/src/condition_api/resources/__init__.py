@@ -28,6 +28,7 @@ from .ops import API as OPS_API
 from .amendment import API as AMENDMENT_API
 from .attribute_key import API as ATTRIBUTE_KEY_API
 from .condition import API as CONDITION_API
+from .consolidated_condition import API as CONSOLIDATED_CONDITION_API
 from .condition_attribute import API as CONDITION_ATTRIBUTE_API
 from .document_category import API as DOCUMENT_CATEGORY_API
 from .document import API as DOCUMENT_API
@@ -63,6 +64,7 @@ API.add_namespace(AMENDMENT_API)
 API.add_namespace(ATTRIBUTE_KEY_API)
 API.add_namespace(CONDITION_API)
 API.add_namespace(CONDITION_ATTRIBUTE_API)
+API.add_namespace(CONSOLIDATED_CONDITION_API)
 API.add_namespace(DOCUMENT_CATEGORY_API)
 API.add_namespace(DOCUMENT_API)
 API.add_namespace(PROJECT_API)

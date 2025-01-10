@@ -3,6 +3,7 @@ import { SubconditionModel } from "@/models/Subcondition";
 import { theme } from "@/styles/theme";
 import AddIcon from '@mui/icons-material/Add';
 import Delete from "@mui/icons-material/Delete";
+import { BCDesignTokens } from "epic.theme";
 
 // Recursive component to render each subcondition
 const SubconditionComponent: React.FC<{
@@ -14,7 +15,8 @@ const SubconditionComponent: React.FC<{
     onAdd: (parentId: string) => void;
     identifierValue: string;
     textValue: string;
-}> = ({ subcondition, indentLevel, isEditing, onEdit, onDelete, onAdd, identifierValue, textValue }) => {
+    is_approved: boolean;
+}> = ({ subcondition, indentLevel, isEditing, onEdit, onDelete, onAdd, identifierValue, textValue, is_approved }) => {
 
     const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onEdit(subcondition.subcondition_id, e.target.value ?? '', textValue);
@@ -23,13 +25,13 @@ const SubconditionComponent: React.FC<{
     const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onEdit(subcondition.subcondition_id, identifierValue, e.target.value ?? '');
     };
-  
+
     return (
       <>
         <Box 
           sx={{ 
             padding: '8px 12px', 
-            backgroundColor: '#FAF9F8', 
+            backgroundColor: is_approved ? '#F7F9FC' : BCDesignTokens.themeGray10, 
             borderRadius: '3px', 
             border: `1px solid ${theme.palette.primary.light}`,
             marginBottom: '10px',
@@ -90,6 +92,7 @@ const SubconditionComponent: React.FC<{
             onAdd={onAdd}
             identifierValue={nestedSub.subcondition_identifier}
             textValue={nestedSub.subcondition_text}
+            is_approved={is_approved}
           />
         ))}
       </>
