@@ -359,10 +359,20 @@ const ConditionAttributeTable = memo(({
                       ))}
                     </Select>
                   )}
-                  <Typography variant="body1">
-                    Select a Value
-                  </Typography>
-                  {renderEditableField()}
+                  {selectedAttribute && (
+                    <>
+                      <Typography variant="body1">
+                        {selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
+                          ? 'Select Value(s)'
+                          : selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
+                          ? 'Add Parties to the List'
+                          : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM
+                          ? 'Enter Acronym'
+                          : 'Select a Value'}
+                      </Typography>
+                      {renderEditableField()}
+                    </>
+                  )}
                   <Box sx={{ display: "flex", justifyContent: "right", mt: 2 }}>
                     <Button
                       variant="outlined"
@@ -384,6 +394,7 @@ const ConditionAttributeTable = memo(({
               </Box>
             </Paper>
           </Modal>
+
           <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"

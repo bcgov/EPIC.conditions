@@ -71,4 +71,12 @@ export const SELECT_OPTIONS = {
     { value: "Decommissioning", label: "Decommissioning" },
     { value: "Other", label: "Other" },
   ],
+  [CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION]: [
+    { value: "Pre-Construction", label: "Pre-Construction" },
+    { value: "Construction", label: "Construction" },
+    { value: "Commissioning", label: "Commissioning" },
+    { value: "Operations", label: "Operations" },
+    { value: "Care and Maintenance", label: "Care and Maintenance" },
+    { value: "Decommissioning", label: "Decommissioning" },
+  ],
 };

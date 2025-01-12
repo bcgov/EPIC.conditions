@@ -127,23 +127,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   };
 
   const renderAttribute = () => {
-    const options = SELECT_OPTIONS[conditionKey];
-    if (options) {
-      const selectedOption = options.find((option) => option.value === editableValue);
-    
-      return (
-        <span
-          style={{
-            fontSize: "inherit",
-            lineHeight: "inherit",
-            width: "40%",
-          }}
-        >
-          {selectedOption ? selectedOption.label : editableValue}
-        </span>
-      );
-    }
-    
+
     if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
@@ -161,6 +145,23 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
             <li key={index}>{item}</li>
           ))}
         </ul>
+      );
+    }
+
+    const options = SELECT_OPTIONS[conditionKey];
+    if (options) {
+      const selectedOption = options.find((option) => option.value === editableValue);
+    
+      return (
+        <span
+          style={{
+            fontSize: "inherit",
+            lineHeight: "inherit",
+            width: "40%",
+          }}
+        >
+          {selectedOption ? selectedOption.label : editableValue}
+        </span>
       );
     }
 

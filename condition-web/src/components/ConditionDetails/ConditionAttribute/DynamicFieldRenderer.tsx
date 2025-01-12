@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Box,
     Checkbox,
@@ -7,6 +7,7 @@ import {
     ListItemText,
     MenuItem,
     Select,
+    Stack,
     TextField,
     Typography
 } from "@mui/material";
@@ -49,8 +50,25 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     const [error, setError] = useState(false);
     const [showCustomInput, setShowCustomInput] = useState(false);
     const [customMilestone, setCustomMilestone] = useState("");
+    const [dynamicWidth, setDynamicWidth] = useState<number>(100);
+    const textRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (textRef.current) {
+            const totalLength = milestones.join(", ");
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            if (context) {
+                const textWidth = context.measureText(totalLength).width;
+                setDynamicWidth(Math.max(textWidth + 180, 200));
+            }
+        }
+    }, [milestones]);
 
     const theme = createTheme({
+        typography: {
+            fontFamily: 'BC Sans',
+        },
         components: {
           MuiSelect: {
             styleOverrides: {
@@ -105,7 +123,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         marginBottom: "10px",
                     }}
                 >
-                    <MenuItem value="" disabled>
+                    <MenuItem value="" disabled sx={{ fontFamily: 'BC Sans' }}>
                         Select Time Unit
                     </MenuItem>
                     {TIME_UNITS.map((option) => (
@@ -131,7 +149,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                             marginBottom: "10px",
                         }}
                     >
-                        <MenuItem value="" disabled>
+                        <MenuItem value="" disabled sx={{ fontFamily: 'BC Sans' }}>
                             Select Time Value
                         </MenuItem>
                         {timeUnit && TIME_VALUES[timeUnit as keyof typeof TIME_VALUES].map((option) => (
@@ -147,8 +165,12 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         value={customTimeValue}
                         onChange={(e) => setCustomTimeValue(e.target.value)}
                         placeholder="Please specify"
+                        size="small"
                         fullWidth
-                        sx={{ marginTop: "8px" }}
+                        sx={{
+                            flex: "0 0 auto",
+                            width: editMode ? "30%" : "100%",
+                        }}
                     />
                 ) : null}
             </Box>
@@ -161,13 +183,13 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 chips={chips}
                 setChips={setChips}
                 placeholder="Add a party"
-                inputWidth="30%"
+                inputWidth={editMode ? "30%" : "100%"}
             />
         );
     }
 
     if (attributeKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
-        const milestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION];
+        const milestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION];
     
         const handleAddCustomMilestone = () => {
             if (customMilestone.trim()) {
@@ -180,19 +202,25 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         return (
           <>
             <Select
-                    multiple // Enables multiple selection
-                    value={Array.isArray(milestones) ? milestones : []}
-                    onChange={(e) => setMilestones(e.target.value as string[])} // Handle multiple values
-                    renderValue={(selected) => (selected as string[]).join(", ")} // Display selected values as comma-separated text
-                    fullWidth
-                    sx={{
-                        fontSize: "inherit",
-                        lineHeight: "inherit",
-                        width: "100%",
-                        "& .MuiSelect-select": {
-                            padding: "8px",
-                        },
-                    }}
+                multiple // Enables multiple selection
+                value={Array.isArray(milestones) ? milestones : []}
+                onChange={(e) => setMilestones(e.target.value as string[])} // Handle multiple values
+                renderValue={(selected) => (
+                    <Box ref={textRef}>
+                        {(selected as string[]).join(", ")}
+                    </Box>
+                )}
+                fullWidth
+                sx={{
+                    fontSize: "inherit",
+                    lineHeight: "inherit",
+                    width: editMode ? `${dynamicWidth}px` : "100%",
+                    minWidth: "30%",
+                    "& .MuiSelect-select": {
+                        padding: "8px",
+                    },
+                    marginBottom: "10px",
+                }}
             >
                 {milestoneOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -222,6 +250,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         onChange={(e) => setCustomMilestone(e.target.value)}
                         placeholder="Enter custom milestone"
                         size="small"
+                        fullWidth
                         sx={{
                             flex: "0 0 auto",
                             width: editMode ? "30%" : "100%",
@@ -257,7 +286,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
     if (options) {
         return (
-            <>
+            <Stack direction="column">
                 <Select
                     value={attributeValue}
                     onChange={(e) => setAttributeValue(e.target.value)}
@@ -285,6 +314,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                             setOtherValue(value);
                             setError(value.trim() === "");
                         }}
+                        size="small"
                         onBlur={() => {
                             if (!otherValue.trim()) {
                                 setError(true);
@@ -294,20 +324,21 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         fullWidth
                         error={error}
                         sx={{
-                        marginTop: "8px",
-                        "& .MuiInputBase-root": {
-                            padding: "0 0px",
-                            fontSize: "inherit",
-                            lineHeight: "inherit",
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                            border: error ? "1px solid red" : "none",
-                        },
-                        height: "1.5em",
+                            width: editMode ? "30%" : "100%",
+                            marginTop: "8px",
+                            "& .MuiInputBase-root": {
+                                padding: "0 0px",
+                                fontSize: "inherit",
+                                lineHeight: "inherit",
+                            },
+                            "& .MuiOutlinedInput-notchedOutline": {
+                                border: error ? "1px solid red" : "none",
+                            },
+                            height: "1.5em",
                         }}
                     />
                 )}
-            </>
+            </Stack>
         );
     }
 
@@ -316,9 +347,12 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             value={attributeValue}
             onChange={(e) => setAttributeValue(e.target.value)}
             fullWidth
+            size="small"
+            placeholder="Please specify"
             sx={{
+                flex: "0 0 auto",
+                width: editMode ? "30%" : "100%",
                 "& .MuiInputBase-root": {
-                  padding: "0 8px",
                   fontSize: "inherit",
                   lineHeight: "inherit",
                 },
