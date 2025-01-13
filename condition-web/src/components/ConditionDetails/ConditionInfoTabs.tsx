@@ -55,10 +55,10 @@ const EditButton = styled(Button)({
 const ConditionInfoTabs: React.FC<{
     projectId: string,
     documentId: string,
-    conditionNumber: number
+    conditionId: number
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
-}> = ({ projectId, documentId, conditionNumber, condition, setCondition }) => {
+}> = ({ projectId, documentId, conditionId, condition, setCondition }) => {
     const [selectedTab, setSelectedTab] = useState('description');
     const [editMode, setEditMode] = useState(false);
     const [isConditionApproved, setIsConditionApproved] = useState(condition.is_approved || false);
@@ -133,7 +133,7 @@ const ConditionInfoTabs: React.FC<{
                         editMode={editMode}
                         projectId={projectId}
                         documentId={documentId}
-                        conditionNumber={conditionNumber}
+                        conditionId={conditionId}
                         condition={condition}
                         isConditionApproved={isConditionApproved}
                         setIsConditionApproved={setIsConditionApproved}

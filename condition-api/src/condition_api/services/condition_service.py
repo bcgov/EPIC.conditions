@@ -18,7 +18,7 @@ class ConditionService:
     """Service for managing condition-related operations."""
 
     @staticmethod
-    def get_condition_details(project_id, document_id, condition_number):
+    def get_condition_details(project_id, document_id, condition_id):
         """Fetch condition details along with related condition attributes by project ID."""
 
         # Aliases for the tables
@@ -98,7 +98,7 @@ class ConditionService:
                         (conditions.amended_document_id.is_(None))
                     )
                 )
-                & (conditions.condition_number == condition_number)
+                & (conditions.id == condition_id)
             )
             .order_by(subconditions.id)
             .all()
@@ -192,7 +192,12 @@ class ConditionService:
         }
 
     @staticmethod
-    def get_all_conditions(project_id, document_id):
+    def get_all_conditions(
+        project_id,
+        document_id,
+        include_condition_attributes=False,
+        include_nested_conditions=False
+    ):
         """Fetch all conditions and their related subconditions by project ID and document ID."""
 
         # Aliases for the tables
@@ -203,6 +208,34 @@ class ConditionService:
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
+
+        # Check if the document_id is an amendment
+        is_amendment_document = (
+            db.session.query(amendments.document_id, amendments.amended_document_id)
+            .filter(amendments.amended_document_id == document_id)
+            .first()
+        )
+
+        if is_amendment_document:
+            # Join conditions to amendments instead of documents
+            amendment_label_subquery = (
+                db.session.query(amendments.amendment_name)
+                .filter(amendments.amended_document_id == is_amendment_document[1])
+                .subquery()
+            )
+            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
+            condition_join = amendments.amended_document_id == conditions.amended_document_id
+            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+            document_type_join = (amendments.document_type_id == document_types.id)
+        else:
+            # Join conditions directly to documents
+            condition_join = and_(
+                documents.document_id == conditions.document_id,
+                conditions.amended_document_id.is_(None)
+            )
+            document_label_query = documents.document_label
+            date_issued_query = extract("year", documents.date_issued).label("year_issued")
+            document_type_join = documents.document_type_id == document_types.id
 
         amendment_subquery = (
             db.session.query(
@@ -219,31 +252,6 @@ class ConditionService:
             .subquery()
         )
 
-        # Check if the document_id exists in the amendments table
-        amendment_exists = (
-            db.session.query(amendments.document_id, amendments.amended_document_id)
-            .filter(amendments.amended_document_id == document_id)
-            .first()
-        )
-
-        if amendment_exists:
-            # Join conditions to amendments instead of documents
-            amendment_label_subquery = (
-                db.session.query(amendments.amendment_name)
-                .filter(amendments.amended_document_id == amendment_exists[1])
-                .subquery()
-            )
-            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
-            condition_join = amendments.amended_document_id == conditions.amended_document_id
-            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
-            document_type_join = (amendments.document_type_id == document_types.id)
-        else:
-            # Join conditions directly to documents
-            condition_join = documents.document_id == conditions.document_id
-            document_label_query = documents.document_label
-            date_issued_query = extract("year", documents.date_issued).label("year_issued")
-            document_type_join = (documents.document_type_id == document_types.id)
-
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
             db.session.query(
@@ -258,11 +266,11 @@ class ConditionService:
                 conditions.topic_tags,
                 conditions.subtopic_tags,
                 amendment_subquery.c.amendment_names,
-                subconditions.id.label('subcondition_id'),
-                subconditions.subcondition_identifier,
-                subconditions.subcondition_text,
-                subconditions.parent_subcondition_id,
                 date_issued_query
+            )
+            .outerjoin(
+                conditions,
+                condition_join
             )
             .outerjoin(
                 document_types,
@@ -273,21 +281,13 @@ class ConditionService:
                 document_categories.id == document_types.document_category_id
             )
             .outerjoin(
-                conditions,
-                condition_join
-            )
-            .outerjoin(
-                subconditions,
-                conditions.id == subconditions.condition_id,
-            )
-            .outerjoin(
                 amendment_subquery,
                 conditions.condition_number == amendment_subquery.c.condition_number
             )
             .filter(
                 (
-                    (amendments.amended_document_id == amendment_exists[1])
-                    if amendment_exists
+                    (amendments.amended_document_id == is_amendment_document[1])
+                    if is_amendment_document
                     else (documents.document_id == document_id and conditions.amended_document_id is None)
                 )
             )
@@ -307,10 +307,6 @@ class ConditionService:
                 conditions.is_approved,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
-                subconditions.id,
-                subconditions.subcondition_identifier,
-                subconditions.subcondition_text,
-                subconditions.parent_subcondition_id,
                 amendment_subquery.c.amendment_names,
                 date_issued_query,
                 document_label_query
@@ -335,42 +331,52 @@ class ConditionService:
 
         # Process the query result
         for row in condition_data:
-            cond_num = row.condition_number
+            cond_id = row.condition_id
 
             # Add each condition to the map if not already present
-            if cond_num not in conditions_map:
-                conditions_map[cond_num] = {
-                    "condition_id": row.condition_id,
-                    "condition_name": row.condition_name,
-                    "condition_number": row.condition_number,
-                    "condition_text": row.condition_text,
-                    "is_approved": row.is_approved,
-                    "topic_tags": row.topic_tags,
-                    "subtopic_tags": row.subtopic_tags,
-                    "amendment_names": row.amendment_names,
-                    "year_issued": row.year_issued,
-                    "condition_attributes": [],
-                    "subconditions": []
-                }
+            conditions_map[cond_id] = {
+                "condition_id": row.condition_id,
+                "condition_name": row.condition_name,
+                "condition_number": row.condition_number,
+                "condition_text": row.condition_text,
+                "is_approved": row.is_approved,
+                "topic_tags": row.topic_tags,
+                "subtopic_tags": row.subtopic_tags,
+                "amendment_names": row.amendment_names,
+                "year_issued": row.year_issued,
+                "condition_attributes": [],
+                "subconditions": []
+            }
 
-            # Handle subconditions
-            subcond_id = row.subcondition_id
-            if subcond_id:
-                subcondition = {
-                    "subcondition_identifier": row.subcondition_identifier,
-                    "subcondition_text": row.subcondition_text,
-                    "subconditions": []
-                }
-                subcondition_map[subcond_id] = subcondition
+            if include_nested_conditions:
+                subconditions_data = (
+                    db.session.query(
+                        subconditions.id.label('subcondition_id'),
+                        subconditions.subcondition_identifier,
+                        subconditions.subcondition_text,
+                        subconditions.parent_subcondition_id
+                    )
+                    .filter(subconditions.condition_id == cond_id)
+                )
+                for row in subconditions_data:
+                    # Handle subconditions
+                    subcond_id = row.subcondition_id
+                    if subcond_id:
+                        subcondition = {
+                            "subcondition_identifier": row.subcondition_identifier,
+                            "subcondition_text": row.subcondition_text,
+                            "subconditions": []
+                        }
+                        subcondition_map[subcond_id] = subcondition
 
-                # If the subcondition has a parent, append it to the parent's subcondition list
-                if row.parent_subcondition_id:
-                    parent = subcondition_map.get(row.parent_subcondition_id)
-                    if parent:
-                        parent["subconditions"].append(subcondition)
-                else:
-                    # Top-level subcondition for this condition
-                    conditions_map[cond_num]["subconditions"].append(subcondition)
+                        # If the subcondition has a parent, append it to the parent's subcondition list
+                        if row.parent_subcondition_id:
+                            parent = subcondition_map.get(row.parent_subcondition_id)
+                            if parent:
+                                parent["subconditions"].append(subcondition)
+                        else:
+                            # Top-level subcondition for this condition
+                            conditions_map[cond_id]["subconditions"].append(subcondition)
 
         # Return all conditions
         return {
@@ -381,23 +387,21 @@ class ConditionService:
             "conditions": list(conditions_map.values())
         }
 
-
     @staticmethod
     def update_condition(
         conditions_data,
         project_id=None,
         document_id=None,
-        condition_number=None,
         condition_id=None,
+        check_condition_exists=None,
     ):
         """
         Update the approved status, topic tags, and subconditions of a specific condition.
 
         This method accepts either:
-        1. project_id, document_id, and condition_number, or
-        2. condition_id as input.
+        1. project_id, document_id, and condition_id as input.
         """
-        if condition_id:
+        if check_condition_exists:
             # Query by condition_id
             condition = db.session.query(Condition).filter_by(id=condition_id).first()
 
@@ -420,7 +424,7 @@ class ConditionService:
             if conditions_data.get("condition_number") in existing_condition_numbers:
                 raise ValueError("This condition number already exists. Please enter a new one.")
 
-        elif project_id and document_id and condition_number:
+        else:
             amendment = (
                 db.session.query(Amendment.amended_document_id)
                 .filter(Amendment.amended_document_id == document_id)
@@ -431,16 +435,14 @@ class ConditionService:
                 condition = db.session.query(Condition).filter_by(
                     project_id=project_id,
                     amended_document_id=amendment[0],
-                    condition_number=condition_number
+                    id=condition_id
                 ).first()
             else:
                 condition = db.session.query(Condition).filter_by(
                     project_id=project_id,
                     document_id=document_id,
-                    condition_number=condition_number
+                    id=condition_id
                 ).first()
-        else:
-            raise ValueError("You must provide either condition_id or project_id, document_id, and condition_number.")
 
         if any(key for key in conditions_data.keys() if key != "subconditions"):
             ConditionService._update_from_dict(condition, conditions_data)
@@ -451,11 +453,11 @@ class ConditionService:
                 if isinstance(subcond["subcondition_id"], str) and "-" not in subcond["subcondition_id"]
             ]
             db.session.query(Subcondition).filter(
-                Subcondition.condition_id == condition.id,
+                Subcondition.condition_id == condition_id,
                 Subcondition.id.notin_(existing_subcondition_ids)
             ).delete(synchronize_session=False)
             ConditionService.upsert_subconditions(
-                condition.id, conditions_data.get("subconditions"), None)
+                condition_id, conditions_data.get("subconditions"), None)
 
         condition.commit()
         return condition

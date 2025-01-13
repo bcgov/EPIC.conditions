@@ -39,6 +39,8 @@ export const createDefaultCondition = (): ConditionModel => {
 };
 
 export interface updateTopicTagsModel {
+  condition_number?: number;
+  condition_name?: string;
   topic_tags?: string[];
   is_approved?: boolean;
   is_topic_tags_approved?: boolean;

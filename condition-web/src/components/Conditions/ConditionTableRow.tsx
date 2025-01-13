@@ -20,9 +20,9 @@ export default function ConditionTableRow({
 }: ConditionRowProps) {
 
   const navigate = useNavigate();
-  const handleOnDocumentClick = (projectId: string, documentId: string, conditionNumber?: number) => {
+  const handleOnDocumentClick = (projectId: string, documentId: string, conditionId?: number) => {
     navigate({
-      to: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionNumber}`,
+      to: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}`,
     });
   };
 
@@ -65,7 +65,7 @@ export default function ConditionTableRow({
               alignItems: "center",
             }}
             component={"button"}
-            onClick={() => handleOnDocumentClick(projectId, documentId, condition.condition_number)}
+            onClick={() => handleOnDocumentClick(projectId, documentId, condition.condition_id)}
           >
             <Typography
               color={BCDesignTokens.themeBlue90}

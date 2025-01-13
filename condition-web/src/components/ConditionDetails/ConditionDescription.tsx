@@ -14,7 +14,7 @@ type ConditionDescriptionProps = {
   editMode: boolean;
   projectId: string;
   documentId: string;
-  conditionNumber: number;
+  conditionId: number;
   condition: ConditionModel;
   isConditionApproved: boolean;
   setIsConditionApproved: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,7 +25,7 @@ const ConditionDescription = memo(({
   editMode,
   projectId,
   documentId,
-  conditionNumber,
+  conditionId,
   condition,
   isConditionApproved,
   setIsConditionApproved
@@ -52,7 +52,7 @@ const ConditionDescription = memo(({
   const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
     projectId,
     documentId,
-    conditionNumber,
+    conditionId,
     {
       onSuccess: onCreateSuccess,
       onError: onCreateFailure,

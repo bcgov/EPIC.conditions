@@ -20,7 +20,7 @@ import { Route as AuthenticatedDashboardProjectsIndexImport } from './routes/_au
 import { Route as AuthenticatedDashboardConditionsCreateConditionIdIndexImport } from './routes/_authenticated/_dashboard/conditions/create/$conditionId/index'
 import { Route as AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexImport } from './routes/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/index'
 import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/index'
-import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/index'
+import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/index'
 
 // Create/Update Routes
 
@@ -77,10 +77,10 @@ const AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRou
     } as any,
   )
 
-const AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexRoute =
-  AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport.update(
+const AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexRoute =
+  AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexImport.update(
     {
-      path: '/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/',
+      path: '/conditions/project/$projectId/document/$documentId/condition/$conditionId/',
       getParentRoute: () => AuthenticatedDashboardRoute,
     } as any,
   )
@@ -152,11 +152,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
-    '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/': {
-      id: '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/'
-      path: '/conditions/project/$projectId/document/$documentId/condition/$conditionNumber'
-      fullPath: '/conditions/project/$projectId/document/$documentId/condition/$conditionNumber'
-      preLoaderRoute: typeof AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexImport
+    '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/': {
+      id: '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/'
+      path: '/conditions/project/$projectId/document/$documentId/condition/$conditionId'
+      fullPath: '/conditions/project/$projectId/document/$documentId/condition/$conditionId'
+      preLoaderRoute: typeof AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
   }
@@ -172,7 +172,7 @@ export const routeTree = rootRoute.addChildren({
       AuthenticatedDashboardConditionsCreateConditionIdIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRoute,
       AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexRoute,
-      AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionNumberIndexRoute,
+      AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexRoute,
     }),
   }),
   ErrorRoute,
@@ -216,7 +216,7 @@ export const routeTree = rootRoute.addChildren({
         "/_authenticated/_dashboard/conditions/create/$conditionId/",
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/",
         "/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/",
-        "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/"
+        "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/"
       ]
     },
     "/_authenticated/_dashboard/projects/": {
@@ -235,8 +235,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/index.tsx",
       "parent": "/_authenticated/_dashboard"
     },
-    "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/": {
-      "filePath": "_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/index.tsx",
+    "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/": {
+      "filePath": "_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/index.tsx",
       "parent": "/_authenticated/_dashboard"
     }
   }

@@ -88,7 +88,7 @@ export const Conditions = ({
   const {
     data: documentConditions,
     isPending: isConditionsLoading,
-  } = useLoadConditions(loadCondition, projectId, selectedDocumentId);
+  } = useLoadConditions(loadCondition, true, projectId, selectedDocumentId);
 
   useEffect(() => {
     // Check if all conditions have status as true

@@ -9,7 +9,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 
 export const Route = createFileRoute(
-  "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionNumber/"
+  "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/"
 )({
   component: ConditionPage,
   notFoundComponent: () => {
@@ -20,21 +20,21 @@ export const Route = createFileRoute(
     { title: `${params.projectId}`, path: `/projects/` },
     { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category/` },
     { title: `${params.documentId}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}` }, // Path to the specific document
-    { title: `${params.conditionNumber}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}/condition/${params.conditionNumber}` } // Path to the specific document
+    { title: `${params.conditionId}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}/condition/${params.conditionId}` } // Path to the specific document
   ],
 });
 
 function ConditionPage() {
-  const { projectId: projectIdParam, documentId: documentIdParam, conditionNumber: conditionNumberParam } = useParams({ strict: false });
+  const { projectId: projectIdParam, documentId: documentIdParam, conditionId: conditionIdParam } = useParams({ strict: false });
   const projectId = String(projectIdParam);
   const documentId = String(documentIdParam);
-  const conditionNumber = Number(conditionNumberParam);
+  const conditionId = Number(conditionIdParam);
 
   const {
     data: conditionDetails,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useLoadConditionDetails(projectId, documentId, conditionNumber);
+  } = useLoadConditionDetails(projectId, documentId, conditionId);
 
   useEffect(() => {
     if (isConditionsError) {
@@ -45,7 +45,7 @@ function ConditionPage() {
   const META_PROJECT_TITLE = `${projectId}`;
   const META_DOCUMENT_CATEGORY = `Document Category`;
   const META_DOCUMENT_TITLE = `${documentId}`;
-  const META_CONDITION_TITLE = `${conditionDetails?.condition.condition_number}`;
+  const META_CONDITION_TITLE = `${conditionDetails?.condition.condition_id}`;
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (conditionDetails) {
@@ -82,7 +82,7 @@ function ConditionPage() {
               initialCondition = {conditionDetails}
               projectId = {projectId || ""}
               documentId = {documentId || ""}
-              conditionNumber = {conditionNumber || 0}
+              conditionId = {conditionId || 0}
             />
           </Else>
         </If>

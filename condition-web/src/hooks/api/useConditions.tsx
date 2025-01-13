@@ -9,7 +9,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Options } from "./types";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 
-const loadConditions = (projectId?: string, documentId?: string) => {
+const loadConditions = (includeSubconditions: boolean, projectId?: string, documentId?: string) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -17,39 +17,43 @@ const loadConditions = (projectId?: string, documentId?: string) => {
     return Promise.reject(new Error("Document ID is required"));
   }
   return submitRequest<ProjectDocumentConditionModel>({
-    url: `/conditions/project/${projectId}/document/${documentId}`,
+    url: `/conditions/project/${projectId}/document/${documentId}?include_subconditions=${includeSubconditions}`,
   });
 };
 
-export const useLoadConditions = (shouldLoad: boolean, projectId?: string, documentId?: string) => {
+export const useLoadConditions = (
+  shouldLoad: boolean,
+  includeSubconditions: boolean,
+  projectId?: string,
+  documentId?: string) => {
   return useQuery({
     queryKey: ["projects", projectId, "documents", documentId],
-    queryFn: () => loadConditions(projectId, documentId),
+    queryFn: () => loadConditions(includeSubconditions, projectId, documentId),
     enabled: Boolean(projectId && documentId && shouldLoad),
     retry: false,
   });
 };
 
-const loadConditionDetails = (projectId?: string, documentId?: string, conditionNumber?: number) => {
+const loadConditionDetails = (projectId?: string, documentId?: string, conditionId?: number) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
   if (!documentId) {
     return Promise.reject(new Error("Document ID is required"));
   }
-  if (!conditionNumber) {
-    return Promise.reject(new Error("Condition Number is required"));
+  if (!conditionId) {
+    return Promise.reject(new Error("Condition ID is required"));
   }
   return submitRequest<ProjectDocumentConditionDetailModel>({
-    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionNumber}`,
+    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}`,
   });
 };
 
-export const useLoadConditionDetails = (projectId?: string, documentId?: string, conditionNumber?: number) => {
+export const useLoadConditionDetails = (projectId?: string, documentId?: string, conditionId?: number) => {
   return useQuery({
-    queryKey: ["projects", projectId, "documents", documentId, "conditions", conditionNumber],
-    queryFn: () => loadConditionDetails(projectId, documentId, conditionNumber),
-    enabled: Boolean(projectId && documentId && conditionNumber),
+    queryKey: ["projects", projectId, "documents", documentId, "conditions", conditionId],
+    queryFn: () => loadConditionDetails(projectId, documentId, conditionId),
+    enabled: Boolean(projectId && documentId && conditionId),
     retry: false,
   });
 };
@@ -57,11 +61,11 @@ export const useLoadConditionDetails = (projectId?: string, documentId?: string,
 const updateConditionDetails = (
   projectId: string,
   documentId: string,
-  conditionNumber: number,
+  conditionId: number,
   conditionDetails: updateTopicTagsModel
 ) => {
   return submitRequest({
-    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionNumber}`,
+    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}`,
     method: "patch",
     data: conditionDetails,
   });
@@ -70,7 +74,7 @@ const updateConditionDetails = (
 export const useUpdateConditionDetails = (
   projectId?: string,
   documentId?: string,
-  conditionNumber?: number,
+  conditionId?: number,
   options? : Options
 ) => {
   return useMutation({
@@ -81,10 +85,10 @@ export const useUpdateConditionDetails = (
       if (!documentId) {
         return Promise.reject(new Error("Document ID is required"));
       }
-      if (!conditionNumber) {
-        return Promise.reject(new Error("Condition Number is required"));
+      if (!conditionId) {
+        return Promise.reject(new Error("Condition ID is required"));
       }
-      return updateConditionDetails(projectId, documentId, conditionNumber, conditionDetails);
+      return updateConditionDetails(projectId, documentId, conditionId, conditionDetails);
     },
     ...options,
   });
