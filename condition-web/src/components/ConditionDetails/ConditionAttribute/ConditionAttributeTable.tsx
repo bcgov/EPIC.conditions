@@ -84,6 +84,7 @@ const ConditionAttributeTable = memo(({
     };
   
     const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
+        false,
         projectId,
         documentId,
         condition.condition_number,

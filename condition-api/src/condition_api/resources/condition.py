@@ -73,11 +73,15 @@ class ConditionDetailsResource(Resource):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
+            query_params = request.args
+            check_condition_exists = query_params.get('check_condition_exists', '', type=str)
             updated_condition = ConditionService.update_condition(
-                conditions_data, project_id, document_id, condition_id, False)
+                conditions_data, project_id, document_id, condition_id, check_condition_exists)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+        except ValueError as err:
+            return {"message": str(err)}, HTTPStatus.CONFLICT
 
 
 @cors_preflight("GET, POST, OPTIONS")
