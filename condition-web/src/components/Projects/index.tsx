@@ -17,6 +17,8 @@ import {
   IconButton,
   TextField
 } from "@mui/material";
+import { theme } from "@/styles/theme";
+import { CustomTooltip } from '../Shared/Common';
 import { Project } from "./Project";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { Navigate } from "@tanstack/react-router";
@@ -24,6 +26,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import HelpIcon from '@mui/icons-material/Help';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { useCreateAmendment } from "@/hooks/api/useAmendments";
@@ -375,7 +378,29 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               </>
               )}
               {/* Document Name Field */}
-              <Typography variant="body1">Document Label</Typography>
+              <Stack direction={"row"} sx={{ width: "100%" }}>
+                <Typography variant="body1">Document Label</Typography>
+                <CustomTooltip
+                  disableInteractive
+                  title={
+                    <>
+                      This is how the document will be titled in the Condition Repository. <br />
+                      Note: You do not need to use the official name of the document.
+                    </>
+                  }
+                  placement="top"
+                  arrow
+                >
+                  <HelpIcon
+                    fontSize="small"
+                    sx={{
+                      marginTop: '3px',
+                      marginLeft: '5px',
+                      color: theme.palette.primary?.main
+                    }}
+                  />
+                </CustomTooltip>
+              </Stack>
               <TextField
                 value={documentLabel}
                 onChange={(e) => setDocumentLabel(e.target.value)}
@@ -391,7 +416,24 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 }
               />
               {/* Document Link Field */}
-              <Typography variant="body1">Link to Document</Typography>
+              <Stack direction={"row"} sx={{ width: "100%" }}>
+                <Typography variant="body1">Link to Document</Typography>
+                <CustomTooltip
+                  disableInteractive
+                  title={'This is to include the URL to the document in EPIC.'}
+                  placement="top"
+                  arrow
+                >
+                  <HelpIcon
+                    fontSize="small"
+                    sx={{
+                      marginTop: '3px',
+                      marginLeft: '5px',
+                      color: theme.palette.primary?.main
+                    }}
+                  />
+                </CustomTooltip>
+              </Stack>
               <TextField
                 value={documentLink}
                 onChange={(e) => setDocumentLink(e.target.value)}
@@ -405,7 +447,29 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 }
               />
               {/* Date Issued Field */}
-              <Typography variant="body1">Date Issued</Typography>
+              <Stack direction={"row"} sx={{ width: "100%" }}>
+                <Typography variant="body1">Date Issued</Typography>
+                <CustomTooltip
+                  disableInteractive
+                  title={
+                    <>
+                      This is the year that the document was officially signed/approved. <br />
+                      Note: Please ensure you do not input the date that it was published to EPIC.
+                    </>
+                  }
+                  placement="top"
+                  arrow
+                >
+                  <HelpIcon
+                    fontSize="small"
+                    sx={{
+                      marginTop: '3px',
+                      marginLeft: '5px',
+                      color: theme.palette.primary?.main
+                    }}
+                  />
+                </CustomTooltip>
+              </Stack>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   value={dateIssued}

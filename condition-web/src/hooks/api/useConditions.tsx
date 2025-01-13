@@ -62,16 +62,18 @@ const updateConditionDetails = (
   projectId: string,
   documentId: string,
   conditionId: number,
-  conditionDetails: updateTopicTagsModel
+  conditionDetails: updateTopicTagsModel,
+  checkConditionExists: boolean
 ) => {
   return submitRequest({
-    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}`,
+    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}?check_condition_exists=${checkConditionExists}`,
     method: "patch",
     data: conditionDetails,
   });
 };
 
 export const useUpdateConditionDetails = (
+  checkConditionExists: boolean,
   projectId?: string,
   documentId?: string,
   conditionId?: number,
@@ -88,7 +90,7 @@ export const useUpdateConditionDetails = (
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }
-      return updateConditionDetails(projectId, documentId, conditionId, conditionDetails);
+      return updateConditionDetails(projectId, documentId, conditionId, conditionDetails, checkConditionExists);
     },
     ...options,
   });

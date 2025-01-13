@@ -50,6 +50,7 @@ const ConditionDescription = memo(({
   };
 
   const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
+    false,
     projectId,
     documentId,
     conditionId,

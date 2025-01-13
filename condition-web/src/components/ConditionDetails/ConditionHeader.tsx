@@ -34,37 +34,22 @@ const ConditionHeader = ({
     const [editConditionMode, setEditConditionMode] = useState(false);
     const [conditionNumber, setConditionNumber] = useState(condition?.condition_number || "");
     const [conditionName, setConditionName] = useState(condition?.condition_name || "");
+    const [checkConditionExists, setCheckConditionExists] = useState(false);
+    const [conditionConflictError, setConditionConflictError] = useState(false);
 
     const [editMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<string[]>(condition?.topic_tags || []);
 
-    const handleEditClick = () => {
-        setEditMode(!editMode);
-    };
-
-    const handleEditToggle = () => {
-        setEditConditionMode((prev) => !prev);
-    };
-
-    const handleSave = () => {
-        // Add save logic here (e.g., API call or state update)
-        const data: PartialUpdateTopicTagsModel = {
-          condition_number: conditionNumber? Number(conditionNumber) : condition.condition_number,
-          condition_name: conditionName? conditionName : condition.condition_name }
-    
-        updateConditionDetails(data);
-        setEditConditionMode(false);
-    };
-
     const onCreateFailure = () => {
-        notify.error("Failed to save condition");
+      notify.error("Failed to save condition");
     };
 
     const onCreateSuccess = () => {
         notify.success("Condition saved successfully");
     };
 
-    const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
+    const { data: conditionDetails, mutateAsync: updateConditionDetails } = useUpdateConditionDetails(
+        checkConditionExists,
         projectId,
         documentId,
         conditionId,
@@ -73,6 +58,45 @@ const ConditionHeader = ({
           onError: onCreateFailure,
         }
     );
+  
+    const handleEditClick = () => {
+      setEditMode(!editMode);
+      setConditionConflictError(false);
+    };
+
+    const handleEditToggle = () => {
+      setConditionConflictError(false);
+      setEditConditionMode((prev) => !prev);
+    };
+
+    const handleSave = async () => {
+        setCheckConditionExists(true);
+
+        const data: PartialUpdateTopicTagsModel = {};
+
+        if (conditionNumber !== condition.condition_number) {
+            data.condition_number = conditionNumber ? Number(conditionNumber) : condition.condition_number;
+        }
+
+        if (conditionName !== condition.condition_name) {
+          data.condition_name = conditionName ? conditionName : condition.condition_name;
+        }
+
+        if (Object.keys(data).length > 0) {
+          try {
+            await updateConditionDetails(data);
+            setEditConditionMode(false);
+            setCheckConditionExists(false);
+            setConditionConflictError(false);
+          } catch (error) {
+            if ((error as { response?: { data?: { message?: string }; status?: number } }).response?.status === 409) {
+              setConditionConflictError(true);
+            } else {
+              notify.error("Failed to save condition.");
+            }
+          }
+        }
+    };
 
     useEffect(() => {
         if (conditionDetails) {
@@ -101,86 +125,133 @@ const ConditionHeader = ({
           paddingBottom={condition.is_topic_tags_approved ? 1 : 5}
         >
           <Grid item xs={10} sx={{ padding: { xs: "10px", sm: "10px 10px 0px 10px" } }}>
-            {editConditionMode ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                }}
-              >
-                <TextField 
-                  variant="outlined" 
-                  value={conditionNumber}
-                  onChange={(e) => setConditionNumber(e.target.value)}
-                  sx={{ width: '100px' }}
-                />
-                <TextField 
-                  variant="outlined" 
-                  multiline
-                  fullWidth
-                  value={conditionName}
-                  onChange={(e) => setConditionName(e.target.value)}
-                  InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={handleSave}
-                  sx={{
-                    alignSelf: "stretch",
-                    borderRadius: "0 4px 4px 0",
-                    borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                    height: '100%',
-                    padding: '6px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <SaveAltIcon
-                    sx={{ color: "#255A90", mr: 0.5 }}
-                    fontSize="small"
-                  />
-                  Save
-                </Button>
-              </Box>
-            ) : (
-              <Stack direction="row">
+            <Stack direction={"column"}>
+              {editConditionMode ? (
                 <Box
                   sx={{
-                    border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                    borderRadius: "4px 0 0 4px",
-                    borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '100%',
-                    padding: '1px 5px 0 5px',
-                    backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
+                    display: "flex",
+                    flexDirection: "row",
                   }}
                 >
-                  <Typography variant="h6">
-                    {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
-                  </Typography>
-                </Box>
-                {!condition.is_topic_tags_approved && (
+                  <TextField 
+                    variant="outlined" 
+                    value={conditionNumber}
+                    onChange={(e) => setConditionNumber(e.target.value)}
+                    sx={{
+                      width: '100px',
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "4px 0 0 4px",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderRadius: "4px 0 0 4px",
+                      },
+                    }}
+                  />
+                  <TextField 
+                    variant="outlined" 
+                    multiline
+                    fullWidth
+                    value={conditionName}
+                    onChange={(e) => setConditionName(e.target.value)}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "0px",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderRadius: "0px",
+                      },
+                    }}
+                    InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
+                  />
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     size="small"
-                    onClick={handleEditToggle}
+                    onClick={handleSave}
                     sx={{
                       alignSelf: "stretch",
                       borderRadius: "0 4px 4px 0",
-                      borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                      border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                      backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
                       height: '100%',
-                      padding: '5.75px 0',
+                      padding: '5px 0',
                       display: 'flex',
                       alignItems: 'center',
+                      color: "black",
+                      '&:hover': {
+                        backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                      },
                     }}
                   >
-                    <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
-                    Edit
+                    <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <SaveAltIcon sx={{ color: "#255A90", mr: 1, ml: 1 }} fontSize="small" />
+                      <Box component="span" sx={{ mr:2, color: "#255A90", fontWeight: "bold" }}>
+                        Save
+                      </Box>
+                    </Typography>
                   </Button>
-                )}
-              </Stack>
-            )}
+                </Box>
+              ) : (
+                <Stack direction="row">
+                  <Box
+                    sx={{
+                      border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                      borderRadius: "4px 0 0 4px",
+                      borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      padding: '1px 5px 0 5px',
+                      backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
+                    }}
+                  >
+                    <Typography variant="h6">
+                      {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
+                    </Typography>
+                  </Box>
+                  {!condition.is_topic_tags_approved && (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={handleEditToggle}
+                      sx={{
+                        alignSelf: "stretch",
+                        borderRadius: "0 4px 4px 0",
+                        border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                        backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                        height: '100%',
+                        padding: '2.25px 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: "black",
+                        '&:hover': {
+                          backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                        },
+                      }}
+                    >
+                      <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                        <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                          Edit
+                        </Box>
+                      </Typography>
+                    </Button>
+                  )}
+                </Stack>
+              )}
+              {conditionConflictError && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    marginBottom: "15px",
+                    color: "#CE3E39",
+                    marginTop: "-20px",
+                  }}
+                >
+                  This condition number already exists. Please enter a new one.
+                </Box>
+              )}
+            </Stack>
           </Grid>
           <Grid
             item
@@ -303,7 +374,7 @@ const ConditionHeader = ({
                     backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
                   },
                 }}
-              >
+              > 
                 {editMode ? (
                   <Typography
                     component="span"
