@@ -20,14 +20,14 @@ type ConditionsParam = {
   initialCondition?: ProjectDocumentConditionDetailModel;
   projectId: string;
   documentId: string;
-  conditionNumber: number;
+  conditionId: number;
 };
 
 export const ConditionDetails = ({
   initialCondition,
   projectId,
   documentId,
-  conditionNumber
+  conditionId
 }: ConditionsParam) => {
 
   const [condition, setCondition] = useState(initialCondition?.condition || createDefaultCondition);
@@ -44,7 +44,7 @@ export const ConditionDetails = ({
         <ConditionHeader
           projectId={projectId}
           documentId={documentId}
-          conditionNumber={conditionNumber}
+          conditionId={conditionId}
           projectName={initialCondition?.project_name || ""}
           documentLabel={initialCondition?.document_label || ""} 
           condition={condition}
@@ -62,7 +62,7 @@ export const ConditionDetails = ({
         <ConditionInfoTabs
           projectId={projectId}
           documentId={documentId}
-          conditionNumber={conditionNumber}
+          conditionId={conditionId}
           condition={condition}
           setCondition={setCondition}
         />

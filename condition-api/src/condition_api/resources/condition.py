@@ -14,6 +14,7 @@
 """API endpoints for managing a condition resource."""
 
 from http import HTTPStatus
+from flask import request
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
@@ -35,7 +36,7 @@ condition_model = ApiHelper.convert_ma_schema_to_restx_model(
 )
 
 @cors_preflight("GET, OPTIONS, PATCH")
-@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_number>", methods=["PATCH", "GET", "OPTIONS"])
+@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_id>", methods=["PATCH", "GET", "OPTIONS"])
 class ConditionDetailsResource(Resource):
     """Resource for fetching condition details by project_id."""
 
@@ -45,10 +46,10 @@ class ConditionDetailsResource(Resource):
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.require
     @cors.crossdomain(origin="*")
-    def get(project_id, document_id, condition_number):
+    def get(project_id, document_id, condition_id):
         """Fetch conditions and condition attributes by project ID."""
         try:
-            condition_details = ConditionService.get_condition_details(project_id, document_id, condition_number)
+            condition_details = ConditionService.get_condition_details(project_id, document_id, condition_id)
             if not condition_details:
                 return {"message": "Condition not found"}, HTTPStatus.NOT_FOUND
 
@@ -68,12 +69,12 @@ class ConditionDetailsResource(Resource):
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
     @auth.require
-    def patch(project_id, document_id, condition_number):
+    def patch(project_id, document_id, condition_id):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
             updated_condition = ConditionService.update_condition(
-                conditions_data, project_id, document_id, condition_number)
+                conditions_data, project_id, document_id, condition_id, False)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
@@ -93,7 +94,11 @@ class ConditionDetailResource(Resource):
     def get(project_id, document_id):
         """Fetch conditions and condition attributes by project ID."""
         try:
-            condition_details = ConditionService.get_all_conditions(project_id, document_id)
+            query_params = request.args
+            include_condition_attributes = query_params.get('include_condition_attributes', '', type=str)
+            include_nested_conditions = query_params.get('include_subconditions', '', type=str)
+            condition_details = ConditionService.get_all_conditions(
+                project_id, document_id, include_condition_attributes, include_nested_conditions)
             if not condition_details:
                 return {}
             # Instantiate the schema
@@ -162,7 +167,7 @@ class ConditionResource(Resource):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
-            updated_condition = ConditionService.update_condition(conditions_data, None, None, None, condition_id)
+            updated_condition = ConditionService.update_condition(conditions_data, None, None, condition_id, True)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Grid, Stack, Typography } from "@mui/material";
-import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
+import { Box, Button, Grid, Stack, Typography, TextField } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
@@ -16,7 +15,7 @@ import ChipInput from "../Shared/Chips/ChipInput";
 type ConditionHeaderProps = {
     projectId: string;
     documentId: string;
-    conditionNumber: number;
+    conditionId: number;
     projectName: string;
     documentLabel: string;
     condition: ConditionModel;
@@ -26,17 +25,35 @@ type ConditionHeaderProps = {
 const ConditionHeader = ({
     projectId,
     documentId,
-    conditionNumber,
+    conditionId,
     projectName,
     documentLabel,
     condition,
     setCondition
 }: ConditionHeaderProps) => {
+    const [editConditionMode, setEditConditionMode] = useState(false);
+    const [conditionNumber, setConditionNumber] = useState(condition?.condition_number || "");
+    const [conditionName, setConditionName] = useState(condition?.condition_name || "");
+
     const [editMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<string[]>(condition?.topic_tags || []);
 
     const handleEditClick = () => {
         setEditMode(!editMode);
+    };
+
+    const handleEditToggle = () => {
+        setEditConditionMode((prev) => !prev);
+    };
+
+    const handleSave = () => {
+        // Add save logic here (e.g., API call or state update)
+        const data: PartialUpdateTopicTagsModel = {
+          condition_number: conditionNumber? Number(conditionNumber) : condition.condition_number,
+          condition_name: conditionName? conditionName : condition.condition_name }
+    
+        updateConditionDetails(data);
+        setEditConditionMode(false);
     };
 
     const onCreateFailure = () => {
@@ -50,7 +67,7 @@ const ConditionHeader = ({
     const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
         projectId,
         documentId,
-        conditionNumber,
+        conditionId,
         {
           onSuccess: onCreateSuccess,
           onError: onCreateFailure,
@@ -62,6 +79,7 @@ const ConditionHeader = ({
             setCondition((prevCondition) => ({
                 ...prevCondition,
                 ...conditionDetails,
+                subconditions: prevCondition.subconditions,
             }));
         }
     }, [conditionDetails, setCondition]);
@@ -75,185 +93,265 @@ const ConditionHeader = ({
     };
 
     return (
-        <Grid container>
-            <Grid item xs={12}>
-                <Box sx={{ display: 'flex', alignItems: 'center', px: 2.5, py: 1 }}>
-                    <Typography variant="h6">{condition?.condition_name}</Typography>
-                    <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
-                    <DocumentStatusChip status={String(condition?.is_approved) as DocumentStatus} />
-                    {!condition.is_topic_tags_approved && (
-                        <Button
-                            variant="contained"
-                            size="small"
-                            onClick={handleEditClick}
-                            sx={{
-                                ml: 'auto',
-                                right: -3,
-                                top: 9,
-                                borderRadius: "4px 4px 0 0",
-                                border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                                backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
-                                color: "black",
-                                '&:hover': {
-                                    backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
-                                },
-                            }}
-                        >
-                            {editMode ?
-                                <Typography
-                                    component="span"
-                                    sx={{ display: 'inline-flex', alignItems: 'center' }}
-                                    onClick={() => approveTags(false)}
-                                >
-                                    <SaveAltIcon
-                                        sx={{ color: "#255A90", mr: 0.5 }}
-                                        fontSize="small"
-                                    />
-                                    <Box
-                                        component="span"
-                                        sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
-                                    >
-                                        Save Tags
-                                    </Box>
-                                </Typography>
-                            : (
-                                <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                    <EditIcon
-                                        sx={{ color: "#255A90", mr: 0.5 }}
-                                        fontSize="small"
-                                    />
-                                    <Box
-                                        component="span"
-                                        sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
-                                    >
-                                        Edit/Add Tags
-                                    </Box>
-                                </Typography>
-                            )}
-                        </Button>
-                    )}
+      <>
+        <Grid
+          container
+          xs={12}
+          direction={{ xs: "column", sm: "row" }}
+          paddingBottom={condition.is_topic_tags_approved ? 1 : 5}
+        >
+          <Grid item xs={10} sx={{ padding: { xs: "10px", sm: "10px 10px 0px 10px" } }}>
+            {editConditionMode ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
+              >
+                <TextField 
+                  variant="outlined" 
+                  value={conditionNumber}
+                  onChange={(e) => setConditionNumber(e.target.value)}
+                  sx={{ width: '100px' }}
+                />
+                <TextField 
+                  variant="outlined" 
+                  multiline
+                  fullWidth
+                  value={conditionName}
+                  onChange={(e) => setConditionName(e.target.value)}
+                  InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={handleSave}
+                  sx={{
+                    alignSelf: "stretch",
+                    borderRadius: "0 4px 4px 0",
+                    borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                    height: '100%',
+                    padding: '6px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <SaveAltIcon
+                    sx={{ color: "#255A90", mr: 0.5 }}
+                    fontSize="small"
+                  />
+                  Save
+                </Button>
+              </Box>
+            ) : (
+              <Stack direction="row">
+                <Box
+                  sx={{
+                    border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                    borderRadius: "4px 0 0 4px",
+                    borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    padding: '1px 5px 0 5px',
+                    backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
+                  }}
+                >
+                  <Typography variant="h6">
+                    {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
+                  </Typography>
                 </Box>
-            </Grid>
-
-            <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <Stack direction="row" sx={{ paddingLeft: 2, paddingRight: 2, paddingBottom: 1, height: '100%' }}>
-                    <Box sx={{ paddingRight: 1, height: '100%', width: '100%' }}>
-                        <Box
-                            sx={{
-                                border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                                borderRadius: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                height: '100%'
-                            }}
-                        >
-                            <Grid container direction="row">
-                                <Grid item xs={8}>
-                                    <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                                        <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                                            Project:
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                                            <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                {projectName}
-                                            </Typography>
-                                        </StyledTableHeadCell>
-                                    </Stack>
-                                </Grid>
-                                <Grid item xs={4}>
-                                    <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                                        <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                                            Year Condition Issued:
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                                            <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                {condition?.year_issued}
-                                            </Typography>
-                                        </StyledTableHeadCell>
-                                    </Stack>
-                                </Grid>
-                            </Grid>
-                            <Grid container direction="row" marginBottom={1.5} marginTop={-2}>
-                                <Grid container direction="row" alignItems="center">
-                                    <Grid item xs={8} sx={{ height: "60px" }}>
-                                        <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                                            <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                                                Source:
-                                            </StyledTableHeadCell>
-                                            <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                                                <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                    {documentLabel}
-                                                </Typography>
-                                            </StyledTableHeadCell>
-                                        </Stack>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    </Box>
-
-                    <Box sx={{ paddingLeft: 1, height: '100%', width: '100%' }}>
-                        <Box
-                            sx={{
-                                border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                                borderRadius: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                height: '100%',
-                                backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit'
-                            }}
-                        >
-                             <Grid container direction="row">
-                                <Grid item xs={12}>
-                                    <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                                        <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                                            Tags:
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                                            {editMode ? (
-                                                <ChipInput
-                                                    chips={tags}
-                                                    setChips={setTags}
-                                                    placeholder="Add tag"
-                                                    inputWidth="100%"
-                                                />
-                                            ) : (
-                                                <Typography variant="body2" sx={{ ml: 1, wordBreak: 'break-word' }}>
-                                                    {tags?.join(', ')}
-                                                </Typography>
-                                            )}
-                                        </StyledTableHeadCell>
-                                    </Stack>
-                                </Grid>
-                                <Grid
-                                    item
-                                    xs={12}
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    alignItems="flex-end"
-                                    paddingRight={1}
-                                    paddingTop={2}
-                                >
-                                    <Stack direction="row" spacing={1}>
-                                        {!editMode &&
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                size="small"
-                                                sx={{ padding: "4px 8px", borderRadius: "4px" }}
-                                                onClick={() => approveTags(true)}
-                                            >
-                                                {condition.is_topic_tags_approved ? 'Un-approve Tags' : 'Approve Tags'}
-                                            </Button>
-                                        }
-                                    </Stack>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    </Box>
-                </Stack>
-            </Grid>
+                {!condition.is_topic_tags_approved && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleEditToggle}
+                    sx={{
+                      alignSelf: "stretch",
+                      borderRadius: "0 4px 4px 0",
+                      borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                      height: '100%',
+                      padding: '5.75px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                    Edit
+                  </Button>
+                )}
+              </Stack>
+            )}
+          </Grid>
+          <Grid
+            item
+            xs={2}
+            sx={{
+              padding: { xs: "10px", sm: "10px 10px 0px 10px" },
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}
+          >
+            <DocumentStatusChip status={String(condition?.is_approved) as DocumentStatus} />
+          </Grid>
         </Grid>
+        <Grid container xs={12} direction={{ xs: "column", sm: "row" }}>
+          <Grid item xs={6} sx={{ padding: { xs: "10px", sm: "10px 5px 10px 10px" } }}>
+            <Box
+              sx={{
+                border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                borderRadius: "4px",
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%'
+              }}
+            >
+              <Grid container direction={{ xs: "column", sm: "row" }}>
+                  <Grid item xs={8}>
+                      <Stack direction="row" alignItems="flex-start" spacing={-2}>
+                          <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                              Project:
+                          </StyledTableHeadCell>
+                          <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                              <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                  {projectName}
+                              </Typography>
+                          </StyledTableHeadCell>
+                      </Stack>
+                  </Grid>
+                  <Grid item xs={4}>
+                      <Stack direction="row" alignItems="flex-start" spacing={-2}>
+                          <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                              Year Condition Issued:
+                          </StyledTableHeadCell>
+                          <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                              <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                  {condition?.year_issued}
+                              </Typography>
+                          </StyledTableHeadCell>
+                      </Stack>
+                  </Grid>
+              </Grid>
+              <Grid container direction="row" marginBottom={1.5} marginTop={-2}>
+                  <Grid container direction="row" alignItems="center">
+                      <Grid item xs={12} sm={8} sx={{ height: "60px" }}>
+                          <Stack direction="row" alignItems="flex-start" spacing={-2}>
+                              <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                                  Source:
+                              </StyledTableHeadCell>
+                              <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                                  <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                      {documentLabel}
+                                  </Typography>
+                              </StyledTableHeadCell>
+                          </Stack>
+                      </Grid>
+                  </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+
+          <Grid item xs={6} sx={{ padding: { xs: "10px", sm: "10px 10px 10px 5px" }, position: 'relative' }}>
+            <Box
+              sx={{
+                border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                borderRadius: "4px",
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit'
+              }}
+            >
+              <Grid container direction="row">
+                <Grid item xs={12}>
+                  <Stack direction="row" alignItems="flex-start" spacing={-2}>
+                    <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                      Tags:
+                    </StyledTableHeadCell>
+                    <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                      {editMode ? (
+                        <ChipInput
+                          chips={tags}
+                          setChips={setTags}
+                          placeholder="Add tag"
+                          inputWidth="100%"
+                        />
+                      ) : (
+                        <Typography variant="body2" sx={{ ml: 1, wordBreak: 'break-word' }}>
+                          {tags?.join(', ')}
+                        </Typography>
+                      )}
+                    </StyledTableHeadCell>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {!condition.is_topic_tags_approved && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleEditClick}
+                sx={{
+                  position: 'absolute', // Position it absolutely
+                  top: -21,
+                  right: 10,
+                  borderRadius: "4px 4px 0 0",
+                  border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                  backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                  color: "black",
+                  '&:hover': {
+                    backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                  },
+                }}
+              >
+                {editMode ? (
+                  <Typography
+                    component="span"
+                    sx={{ display: 'inline-flex', alignItems: 'center' }}
+                    onClick={() => approveTags(false)}
+                  >
+                    <SaveAltIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                    <Box component="span" sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}>
+                      Save Tags
+                    </Box>
+                  </Typography>
+                ) : (
+                  <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                    <Box component="span" sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}>
+                      Edit/Add Tags
+                    </Box>
+                  </Typography>
+                )}
+              </Button>
+            )}
+          </Grid>
+
+          <Grid
+            item
+            xs={12}
+            display="flex"
+            justifyContent="flex-end"
+            alignItems="flex-end"
+            paddingRight={1}
+            paddingBottom={1}
+          >
+            <Stack direction="row" spacing={1}>
+                {!editMode &&
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        sx={{ padding: "4px 8px", borderRadius: "4px" }}
+                        onClick={() => approveTags(true)}
+                    >
+                        {condition.is_topic_tags_approved ? 'Un-approve Condition Information' : 'Approve Condition Information'}
+                    </Button>
+                }
+            </Stack>
+          </Grid>
+        </Grid>
+      </>
     );
 };
 
