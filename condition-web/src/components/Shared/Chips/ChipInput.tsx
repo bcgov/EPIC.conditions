@@ -40,6 +40,7 @@ const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "A
       <TextField
         placeholder={placeholder}
         value={chipInput}
+        size="small"
         onChange={(e) => setChipInput(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && chipInput.trim() !== "") {
