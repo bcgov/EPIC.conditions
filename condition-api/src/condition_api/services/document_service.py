@@ -132,7 +132,8 @@ class DocumentService:
             project_id=project_id,
             document_label=document.get("document_label"),
             document_link=document.get("document_link"),
-            document_type_id=document.get("document_type_id")
+            document_type_id=document.get("document_type_id"),
+            is_latest_amendment_added=document.get("is_latest_amendment_added")
         )
         db.session.add(new_document)
         db.session.flush()
@@ -168,3 +169,62 @@ class DocumentService:
             })
 
         return result
+
+    @staticmethod
+    def get_document_details(document_id):
+        """Fetch document details by document_id."""
+
+        # Check if the document_id is an amendment
+        is_amendment_document = (
+            db.session.query(Amendment.document_id, Amendment.amended_document_id, Amendment.amendment_name)
+            .filter(Amendment.amended_document_id == document_id)
+            .first()
+        )
+
+        if is_amendment_document:
+            document = db.session.query(
+                Project.project_name.label('project_name'),
+                DocumentCategory.id.label('document_category_id'),
+                DocumentCategory.category_name.label('document_category'),
+            ).outerjoin(
+                Document,
+                Document.project_id == Project.project_id
+            ).outerjoin(
+                DocumentType,
+                DocumentType.id == Document.document_type_id
+            ).outerjoin(
+                DocumentCategory,
+                DocumentCategory.id == DocumentType.document_category_id
+            ).filter(Document.id == is_amendment_document.document_id
+            ).first()
+        else:
+            # Fetch the original document
+            document = db.session.query(
+                Project.project_name.label('project_name'),
+                DocumentCategory.id.label('document_category_id'),
+                DocumentCategory.category_name.label('document_category'),
+                Document.document_id.label('document_id'),
+                Document.document_label.label('document_label'),
+            ).outerjoin(
+                Project,
+                Project.project_id == Document.project_id
+            ).outerjoin(
+                DocumentType,
+                DocumentType.id == Document.document_type_id
+            ).outerjoin(
+                DocumentCategory,
+                DocumentCategory.id == DocumentType.document_category_id
+            ).filter(Document.document_id == document_id
+            ).first()
+
+            if not document:
+                # If no original document is found, return
+                return None
+
+        return {
+            "project_name": document.project_name,
+            "document_category_id": document.document_category_id,
+            "document_category": document.document_category,
+            "document_id": is_amendment_document.amended_document_id if is_amendment_document else document.document_id,
+            "document_label": is_amendment_document.amendment_name if is_amendment_document else document.document_label,
+        }

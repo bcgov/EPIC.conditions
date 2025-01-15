@@ -15,7 +15,10 @@ import {
   Modal,
   Paper,
   IconButton,
-  TextField
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio
 } from "@mui/material";
 import { theme } from "@/styles/theme";
 import { CustomTooltip } from '../Shared/Common';
@@ -36,7 +39,7 @@ import { CreateAmendmentModel } from "@/models/Amendment";
 import { CreateDocumentModel, DocumentModel } from "@/models/Document";
 import { useQueryClient } from "@tanstack/react-query";
 import { DocumentTypes } from "@/utils/enums"
-
+import { usePagination } from "@/hooks/api/usePagination";
 
 type ProjectsParams = {
   projects?: { projects: ProjectModel[] };
@@ -48,15 +51,16 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const navigate = useNavigate();
   const projectArray = projects?.projects || [];
   const itemsPerPage = 10; // Number of projects per page
-  const [page, setPage] = useState(1); // Current page
   const [projectSearch, setProjectSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectModel | null>(null);
   const [selectedDocumentType, setSelectedDocumentType] = useState<number | null>(null);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [selectedDocumentLabel, setSelectedDocumentLabel] = useState<string | null>(null);
   const [documentLabel, setDocumentLabel] = useState("");
   const [documentLink, setDocumentLink] = useState("");
   const [dateIssued, setDateIssued] = useState<Date | null>(null);
+  const [isLatestAmendment, setIsLatestAmendment ] = useState<string | null>(null);
   const [errors] = useState({
     documentLabel: false,
     dateIssued: false,
@@ -66,22 +70,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     project.project_name.toLowerCase().includes(projectSearch.toLowerCase())
   );
 
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  
-  // Calculate the start and end indices for the current page
-  const startIndex = (page - 1) * itemsPerPage + 1;
-  const endIndex = Math.min(startIndex + itemsPerPage - 1, filteredProjects.length);
-
-  // Get the subset of projects for the current page
-  const paginatedProjects = filteredProjects?.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
+  const { currentPageItems, totalPages, currentPage, setPage } = usePagination(filteredProjects, itemsPerPage);
 
   const handleOpenCreateNewDocument = () => setOpenModal(true);
   const handleCloseCreateNewDocument = () => {
@@ -89,17 +78,21 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     setSelectedProject(null);
     setSelectedDocumentType(null);
     setSelectedDocumentId(null);
+    setSelectedDocumentLabel(null);
     setDocumentLabel("");
     setDocumentLink("");
     setDateIssued(null);
+    setIsLatestAmendment(null);
   }
   const handleCancelCreateNewDocument = () => {
     setSelectedProject(null);
     setSelectedDocumentType(null);
     setSelectedDocumentId(null);
+    setSelectedDocumentLabel(null);
     setDocumentLabel("");
     setDocumentLink("");
     setDateIssued(null);
+    setIsLatestAmendment(null);
   }
 
   const filteredDocumentTypes = documentType.filter((type) => {
@@ -160,12 +153,14 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
           amendment_name: documentLabel,
           amendment_link: documentLink,
           date_issued: formattedDateIssued,
+          is_latest_amendment_added: isLatestAmendment,
         }
       : {
           document_label: documentLabel,
           document_link: documentLink,
           document_type_id: selectedDocumentType,
           date_issued: formattedDateIssued,
+          is_latest_amendment_added: isLatestAmendment,
         };
 
 
@@ -254,18 +249,18 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
       {/* Showing results message */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="body1">
-          Showing {startIndex} to {endIndex} of {filteredProjects.length} results
+          Showing {currentPageItems.startIndex + 1} to {currentPageItems.endIndex} of {filteredProjects.length} results
         </Typography>
         {/* Pagination Component */}
         <Pagination
           count={totalPages}
-          page={page}
-          onChange={handlePageChange}
+          page={currentPage}
+          onChange={(_, value) => setPage(value)}
           color="primary"
         />
       </Box>
 
-      {paginatedProjects?.map((project) => (
+      {currentPageItems.items.map((project) => (
         <Project key={project.project_id} project={project} />
       ))}
 
@@ -278,8 +273,10 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             transform: "translate(-50%, -50%)",
             width: "90%",
             maxWidth: "500px",
+            maxHeight: "90vh",
             borderRadius: "4px",
             outline: "none",
+            overflow: "auto",
           }}
         >
           <Box
@@ -372,10 +369,61 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                   getOptionLabel={(document: DocumentModel) => document.document_label}
                   onChange={(_e: React.SyntheticEvent<Element, Event>, document: DocumentModel | null) => {
                     setSelectedDocumentId(document?.document_record_id || null);
+                    setSelectedDocumentLabel(document?.document_label || null);
                   }}
                   disabled={!selectedProject}
                 />
               </>
+              )}
+              {selectedDocumentType !== DocumentTypes.Amendment && selectedDocumentType !== null && (
+                <>
+                  <Typography variant="body1">
+                    Does this Certificate Document contain Amendment(s)?
+                  </Typography>
+                  <RadioGroup
+                    row
+                    name="isLatestAmendment"
+                    value={isLatestAmendment}
+                    onChange={(e) => setIsLatestAmendment(e.target.value)}
+                    sx={{ marginBottom: '20px' }}
+                  >
+                    <FormControlLabel
+                      value="false"
+                      control={<Radio />}
+                      label="Yes, this Certificate Document contains Amendment(s)"
+                    />
+                    <FormControlLabel
+                      value="true"
+                      control={<Radio />}
+                      label="No, this Certificate Document does not contain Amendment(s)"
+                    />
+                  </RadioGroup>
+                </>
+              )}
+              {selectedDocumentType === DocumentTypes.Amendment && selectedDocumentId !== null && (
+                <>
+                  <Typography variant="body1">
+                    Is this the most recent Amendment to {selectedDocumentLabel}?
+                  </Typography>
+                  <RadioGroup
+                    row
+                    name="isLatestAmendment"
+                    value={isLatestAmendment}
+                    onChange={(e) => setIsLatestAmendment(e.target.value)}
+                    sx={{ marginBottom: '20px' }}
+                  >
+                    <FormControlLabel
+                      value="true"
+                      control={<Radio />}
+                      label="Yes, this is the most recent Amendment"
+                    />
+                    <FormControlLabel
+                      value="false"
+                      control={<Radio />}
+                      label="No, this is not the most recent Amendment"
+                    />
+                  </RadioGroup>
+                </>
               )}
               {/* Document Name Field */}
               <Stack direction={"row"} sx={{ width: "100%" }}>

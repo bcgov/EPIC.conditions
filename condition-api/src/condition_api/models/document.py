@@ -25,6 +25,7 @@ class Document(BaseModel):
     act = Column(Integer)
     first_nations = Column(ARRAY(Text))
     consultation_records_required = Column(Boolean)
+    is_latest_amendment_added = Column(Boolean)
 
     # Foreign key to link to the project
     project_id = Column(String(255), ForeignKey('condition.projects.project_id', ondelete='CASCADE'))

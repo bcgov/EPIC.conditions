@@ -13,6 +13,7 @@ export interface DocumentModel {
   act: string;
   status: boolean;
   amendment_count: number;
+  is_latest_amendment_added: boolean;
   conditions?: ConditionModel[];  // Multiple conditions per document
 }
 
@@ -60,9 +61,18 @@ export interface CreateDocumentModel {
   document_link: string | null;
   document_type_id?: number | null;
   date_issued?: string | null;
+  is_latest_amendment_added?: boolean | null;
 }
 
 export enum DocumentType {
   'ExemptionOrder' = 'Exemption Order',
   'Certificate' = 'Certificate',
+}
+
+export interface DocumentDetailsModel {
+  project_name: string;
+  document_category_id: string;
+  document_category: string;
+  document_id: string;
+  document_label: string;
 }

@@ -25,19 +25,13 @@ class ProjectService:
                 DocumentCategory.id.label("document_category_id"),
                 DocumentCategory.category_name.label("document_category"),
                 func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
-                func.max(Document.date_issued).label("date_issued"),
-                # Check if all related conditions are approved
-                case(
-                    (func.count(Condition.id) == 0, None),
-                    else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
-                ).label("all_approved"),
-                # Count amendments related to each document
+                func.greatest(func.max(Document.date_issued), func.max(Amendment.date_issued)).label("max_date_issued"),
                 func.count(Amendment.document_id).label("amendment_count"),
+                func.bool_and(Document.is_latest_amendment_added).label("is_latest_amendment_added")
             )
             .outerjoin(Document, Document.project_id == Project.project_id)
             .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
             .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
-            .outerjoin(Condition, Condition.document_id == Document.document_id)
             .outerjoin(Amendment, Amendment.document_id == Document.id)
             .group_by(
                 Project.project_id,
@@ -62,15 +56,23 @@ class ProjectService:
                 }
 
             if row.document_category_id:  # Ensure there's a document category id associated
+                all_approved = db.session.query(
+                    case(
+                        (func.count(Condition.id) == 0, None),
+                        else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
+                    ).label("all_approved")
+                ).outerjoin(Document, Condition.document_id == Document.document_id
+                ).filter(Document.project_id == project_id).first()
+
                 projects_map[project_id]["documents"].append({
                     "document_category_id": row.document_category_id,
                     "document_category": row.document_category,
                     "document_types": row.document_types,
-                    "date_issued": row.date_issued,
-                    "status": row.all_approved,
+                    "date_issued": row.max_date_issued,
+                    "status": all_approved[0],
+                    "is_latest_amendment_added": row.is_latest_amendment_added,
                     "amendment_count": row.amendment_count,
                 })
 
         # Convert the map to a list of projects
-        result = list(projects_map.values())
-        return result
+        return list(projects_map.values())

@@ -1,4 +1,9 @@
-import { CreateDocumentModel, DocumentModel, ProjectDocumentAllAmendmentsModel } from "@/models/Document";
+import {
+  CreateDocumentModel,
+  DocumentModel,
+  DocumentDetailsModel,
+  ProjectDocumentAllAmendmentsModel
+} from "@/models/Document";
 import { submitRequest } from "@/utils/axiosUtils";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
@@ -24,7 +29,6 @@ export const useLoadDocuments = (projectId?: string, categoryId?: number) => {
     retry: false,
   });
 };
-
 
 const fetchDocumentType = () => {
   return submitRequest({url: '/documents/type'});
@@ -78,6 +82,24 @@ export const useLoadDocumentsByProject = (shouldLoad: boolean, projectId?: strin
     queryKey: ["projects", projectId],
     queryFn: () => loadDocumentsByProject(projectId),
     enabled: Boolean(projectId && shouldLoad),
+    retry: false,
+  });
+};
+
+const loadDocumentDetails = (documentId?: string) => {
+  if (!documentId) {
+    return Promise.reject(new Error("Document ID is required"));
+  }
+  return submitRequest<DocumentDetailsModel>({
+    url: `/documents/${documentId}`,
+  });
+};
+
+export const useLoadDocumentDetails = (documentId?: string) => {
+  return useQuery({
+    queryKey: ["document", documentId],
+    queryFn: () => loadDocumentDetails(documentId),
+    enabled: Boolean(documentId),
     retry: false,
   });
 };

@@ -326,7 +326,12 @@ export const Conditions = ({
                   </Typography>
                   <TextField
                     value={
-                      documentConditions.conditions.find(condition => condition.condition_id === selectedConditionId)?.condition_text || ""
+                      documentConditions.conditions
+                      .find(condition => condition.condition_id === selectedConditionId)
+                      ?.subconditions
+                      ?.map(subcondition => subcondition.subcondition_text)
+                      .join(' ')
+                      || ""
                     }
                     InputProps={{
                       readOnly: true,

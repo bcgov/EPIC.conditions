@@ -203,8 +203,6 @@ class ConditionService:
         # Aliases for the tables
         projects = aliased(Project)
         documents = aliased(Document)
-        document_types = aliased(DocumentType)
-        document_categories = aliased(DocumentCategory)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
@@ -226,7 +224,6 @@ class ConditionService:
             document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
             condition_join = amendments.amended_document_id == conditions.amended_document_id
             date_issued_query = extract("year", amendments.date_issued).label("year_issued")
-            document_type_join = (amendments.document_type_id == document_types.id)
         else:
             # Join conditions directly to documents
             condition_join = and_(
@@ -235,7 +232,6 @@ class ConditionService:
             )
             document_label_query = documents.document_label
             date_issued_query = extract("year", documents.date_issued).label("year_issued")
-            document_type_join = documents.document_type_id == document_types.id
 
         amendment_subquery = (
             db.session.query(
@@ -255,8 +251,6 @@ class ConditionService:
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
             db.session.query(
-                document_categories.category_name.label('document_category'),
-                document_categories.id.label('document_category_id'),
                 document_label_query,
                 conditions.id.label('condition_id'),
                 conditions.condition_name,
@@ -271,14 +265,6 @@ class ConditionService:
             .outerjoin(
                 conditions,
                 condition_join
-            )
-            .outerjoin(
-                document_types,
-                document_type_join
-            )
-            .outerjoin(
-                document_categories,
-                document_categories.id == document_types.document_category_id
             )
             .outerjoin(
                 amendment_subquery,
@@ -298,8 +284,6 @@ class ConditionService:
                 )
             )
             .group_by(
-                document_categories.category_name,
-                document_categories.id,
                 conditions.id,
                 conditions.condition_name,
                 conditions.condition_number,
@@ -317,17 +301,6 @@ class ConditionService:
 
         conditions_map = {}
         subcondition_map = {}
-
-        project_name_query = (
-            db.session.query(projects.project_name)
-            .filter(projects.project_id == project_id)
-            .first()
-        )
-
-        project_name = project_name_query[0] if project_name_query else None
-        document_category = condition_data[0].document_category if condition_data else None
-        document_category_id = condition_data[0].document_category_id if condition_data else None
-        document_label = condition_data[0].document_label if condition_data else None
 
         # Process the query result
         for row in condition_data:
@@ -380,10 +353,6 @@ class ConditionService:
 
         # Return all conditions
         return {
-            "project_name": project_name,
-            "document_category": document_category,
-            "document_category_id": document_category_id,
-            "document_label": document_label,
             "conditions": list(conditions_map.values())
         }
 
@@ -646,7 +615,8 @@ class ConditionService:
             year_issued = document_details.year_issued if document_details else None
             max_condition_number = db.session.query(func.max(Condition.condition_number)).filter(
                 Condition.document_id == actual_document_id).first()
-            condition_number_value = max_condition_number[0] + 1
+            condition_number_value = (
+                max_condition_number[0] if max_condition_number and max_condition_number[0] is not None else 0) + 1
 
         project_data = db.session.query(
             Project.project_id,
@@ -733,7 +703,7 @@ class ConditionService:
         user_is_internal
     ):
         """Fetch all consolidated conditions by project ID."""
-        condition_data = (
+        query = (
             db.session.query(
                 Condition.id,
                 Condition.condition_name,
@@ -746,19 +716,22 @@ class ConditionService:
             .filter(
                 and_(
                     Condition.project_id == project_id,
-                    Condition.is_active == True,
-                    Condition.is_approved == True
+                    Condition.is_active == True
                 )
             )
-            .filter(
-                ~and_(
-                    Condition.condition_name.is_(None),
-                    Condition.condition_number.is_(None)
-                )
-            )
-            .order_by(Condition.condition_number)
-            .all()
         )
+
+        if not user_is_internal:
+            query = query.filter(Condition.is_approved == True)
+
+        query = query.filter(
+            ~and_(
+                Condition.condition_name.is_(None),
+                Condition.condition_number.is_(None)
+            )
+        ).order_by(Condition.condition_number)
+
+        condition_data = query.all()
 
         if not condition_data:
             return []
