@@ -19,7 +19,7 @@ from marshmallow import ValidationError
 
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
-from condition_api.schemas.document import DocumentSchema, DocumentTypeSchema
+from condition_api.schemas.document import DocumentDetailsSchema, DocumentSchema, DocumentTypeSchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.util import cors_preflight
 
@@ -97,5 +97,31 @@ class DocumentTypeResource(Resource):
                 return {}
 
             return DocumentTypeSchema(many=True).dump(document_type), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
+@API.route("/<string:document_id>", methods=["GET", "OPTIONS"])
+class DocumentResource(Resource):
+    """Resource for fetching document details."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get document details")
+    @API.response(code=HTTPStatus.CREATED, model=document_model, description="Get document details")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
+    @cors.crossdomain(origin="*")
+    def get(document_id):
+        """Fetch document details by document ID."""
+        try:
+            document_details = DocumentService.get_document_details(document_id)
+            if not document_details:
+                return {}
+            # Instantiate the schema
+            document_details_schema = DocumentDetailsSchema()
+
+            # Call dump on the schema instance
+            return document_details_schema.dump(document_details), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

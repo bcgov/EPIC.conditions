@@ -116,6 +116,11 @@ const ConditionHeader = ({
         updateConditionDetails(data);
     };
 
+    const calculateWidth = (text: string) => {
+      const baseWidth = 10;
+      return `${Math.max(baseWidth * text.length, 50)}px`;
+    };
+
     return (
       <>
         <Grid
@@ -149,11 +154,11 @@ const ConditionHeader = ({
                   />
                   <TextField 
                     variant="outlined" 
-                    multiline
                     fullWidth
                     value={conditionName}
                     onChange={(e) => setConditionName(e.target.value)}
                     sx={{
+                      width: calculateWidth(conditionName),
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "0px",
                       },
@@ -161,7 +166,6 @@ const ConditionHeader = ({
                         borderRadius: "0px",
                       },
                     }}
-                    InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
                   />
                   <Button
                     variant="contained"
@@ -200,7 +204,7 @@ const ConditionHeader = ({
                       display: 'flex',
                       flexDirection: 'column',
                       height: '100%',
-                      padding: '1px 5px 0 5px',
+                      padding: '1px 10px 0 10px',
                       backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
                     }}
                   >

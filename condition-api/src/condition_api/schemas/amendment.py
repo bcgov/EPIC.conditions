@@ -15,3 +15,4 @@ class AmendmentSchema(Schema):
     document_type_id = fields.Int(data_key="document_type_id")
     date_issued = fields.Str(data_key="date_issued")
     act = fields.Int(data_key="act")
+    is_latest_amendment_added = fields.Bool(data_key="is_latest_amendment_added")

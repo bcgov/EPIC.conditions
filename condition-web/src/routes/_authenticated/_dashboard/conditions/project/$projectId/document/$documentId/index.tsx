@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { Else, If, Then } from "react-if";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
+import { useLoadDocumentDetails } from "@/hooks/api/useDocuments";
 import { useLoadConditions } from "@/hooks/api/useConditions";
 import { Conditions, ConditionsSkeleton } from "@/components/Conditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -29,59 +29,79 @@ function ConditionPage() {
   const documentId = String(documentIdParam);
 
   const {
+    data: documentDetails,
+    isPending: isDocumentDetailsLoading,
+    isError: isDocumentDetailsError
+  } = useLoadDocumentDetails(documentId);
+
+  const {
     data: documentConditions,
     isPending: isConditionsLoading,
     isError: isConditionsError
   } = useLoadConditions(true, false, projectId, documentId);
 
   useEffect(() => {
+    if (isDocumentDetailsError) {
+      notify.error("Failed to load document details");
+    }
     if (isConditionsError) {
       notify.error("Failed to load conditions");
     }
-  }, [isConditionsError]);
+  }, [isConditionsError, isDocumentDetailsError]);
 
   const META_PROJECT_TITLE = `${projectId}`;
   const META_DOCUMENT_CATEGORY = `Document Category`;
   const META_DOCUMENT_LABEL = `Document Label`;
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
-    if (documentConditions) {
-      replaceBreadcrumb(META_PROJECT_TITLE, documentConditions?.project_name || META_PROJECT_TITLE);
+    if (documentDetails) {
+      replaceBreadcrumb(META_PROJECT_TITLE, documentDetails?.project_name || META_PROJECT_TITLE);
 
       replaceBreadcrumb(
         META_DOCUMENT_CATEGORY,
-        documentConditions?.document_category || META_DOCUMENT_CATEGORY,
-        `/documents/project/${projectId}/document-category/${documentConditions.document_category_id}/`
+        documentDetails?.document_category || META_DOCUMENT_CATEGORY,
+        `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`
       );
 
       replaceBreadcrumb(
         META_DOCUMENT_LABEL,
-        documentConditions?.document_label || META_DOCUMENT_LABEL,
+        documentDetails?.document_label || META_DOCUMENT_LABEL,
         undefined
       );
     }
-  }, [documentConditions, projectId, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, META_DOCUMENT_LABEL]);
+  }, [
+    documentDetails,
+    documentConditions,
+    projectId,
+    replaceBreadcrumb,
+    META_PROJECT_TITLE,
+    META_DOCUMENT_CATEGORY,
+    META_DOCUMENT_LABEL
+  ]);
 
-  if (isConditionsError) return <Navigate to="/error" />;
+  if (isConditionsError || isDocumentDetailsError) return <Navigate to="/error" />;
+
+  if (isDocumentDetailsLoading || isConditionsLoading) {
+    return (
+      <PageGrid>
+        <Grid item xs={12}>
+          <ConditionsSkeleton />
+        </Grid>
+      </PageGrid>
+    );
+  }
 
   return (
     <PageGrid>
       <Grid item xs={12}>
-        <If condition={isConditionsLoading}>
-          <Then>
-            <ConditionsSkeleton />
-          </Then>
-          <Else>
-            <Conditions
-              projectName = {documentConditions?.project_name || ""}
-              projectId = {projectId}
-              documentCategory = {documentConditions?.document_category || ""}
-              documentLabel = {documentConditions?.document_label || ""}
-              documentId = {documentId}
-              conditions={documentConditions?.conditions}
-            />
-          </Else>
-        </If>
+        <Conditions
+          projectName = {documentDetails?.project_name || ""}
+          projectId = {projectId}
+          documentCategory = {documentDetails?.document_category || ""}
+          documentLabel = {documentDetails?.document_label || ""}
+          documentId = {documentId}
+          conditions={documentConditions?.conditions}
+        />
       </Grid>
     </PageGrid>
   );
