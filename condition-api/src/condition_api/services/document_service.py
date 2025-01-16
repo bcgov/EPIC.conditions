@@ -178,7 +178,12 @@ class DocumentService:
 
         # Check if the document_id is an amendment
         is_amendment_document = (
-            db.session.query(Amendment.document_id, Amendment.amended_document_id, Amendment.amendment_name)
+            db.session.query(
+                Amendment.document_id,
+                Amendment.amended_document_id,
+                Amendment.amendment_name,
+                Amendment.document_type_id,
+            )
             .filter(Amendment.amended_document_id == document_id)
             .first()
         )
@@ -187,7 +192,7 @@ class DocumentService:
             document = db.session.query(
                 Project.project_name.label('project_name'),
                 DocumentCategory.id.label('document_category_id'),
-                DocumentCategory.category_name.label('document_category'),
+                DocumentCategory.category_name.label('document_category')
             ).outerjoin(
                 Document,
                 Document.project_id == Project.project_id
@@ -207,6 +212,7 @@ class DocumentService:
                 DocumentCategory.category_name.label('document_category'),
                 Document.document_id.label('document_id'),
                 Document.document_label.label('document_label'),
+                DocumentType.id.label('document_type_id')
             ).outerjoin(
                 Project,
                 Project.project_id == Document.project_id
@@ -229,4 +235,5 @@ class DocumentService:
             "document_category": document.document_category,
             "document_id": is_amendment_document.amended_document_id if is_amendment_document else document.document_id,
             "document_label": is_amendment_document.amendment_name if is_amendment_document else document.document_label,
+            "document_type_id": is_amendment_document.document_type_id if is_amendment_document else document.document_type_id,
         }

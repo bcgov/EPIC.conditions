@@ -5,11 +5,13 @@ import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import { DocumentStatus } from "@/models/Document";
 import { ConditionModel } from "@/models/Condition";
 import { useNavigate } from "@tanstack/react-router";
+import { DocumentTypes } from "@/utils/enums"
 
 interface ConditionRowProps {
   condition: ConditionModel;
   projectId: string;
   documentId: string;
+  documentTypeId: number;
 }
 const border = `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`;
 
@@ -17,6 +19,7 @@ export default function ConditionTableRow({
     condition,
     projectId,
     documentId,
+    documentTypeId
 }: ConditionRowProps) {
 
   const navigate = useNavigate();
@@ -83,17 +86,19 @@ export default function ConditionTableRow({
             <ArrowForwardIos fontSize="small" />
           </Link>
         </TableCell>
-        <TableCell
-          colSpan={2}
-          align="right"
-          sx={{
-            borderTop: border,
-            borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
-          }}
-        >
-          {condition.amendment_names ?? "--"}
-        </TableCell>
+        {documentTypeId !== DocumentTypes.Amendment && (
+          <TableCell
+            colSpan={2}
+            align="right"
+            sx={{
+              borderTop: border,
+              borderBottom: border,
+              py: BCDesignTokens.layoutPaddingXsmall,
+            }}
+          >
+            {condition.amendment_names ?? "--"}
+          </TableCell>
+        )}
         <TableCell
           colSpan={2}
           align="right"
@@ -115,6 +120,17 @@ export default function ConditionTableRow({
           }}
         >
           {condition.year_issued ?? "--"}
+        </TableCell>
+        <TableCell
+          colSpan={2}
+          align="center"
+          sx={{
+            borderTop: border,
+            borderBottom: border,
+            py: BCDesignTokens.layoutPaddingXsmall,
+          }}
+        >
+          {condition.is_standard_condition ?? "--"}
         </TableCell>
         <TableCell
           colSpan={2}

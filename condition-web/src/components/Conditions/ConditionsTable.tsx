@@ -10,6 +10,7 @@ import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
 import { StyledTableHeadCell } from "../Shared/Table/common";
 import ConditionTableRow from "./ConditionTableRow";
+import { DocumentTypes } from "@/utils/enums"
 
 export default function ConditionTable({
     conditions,
@@ -17,12 +18,14 @@ export default function ConditionTable({
     documentId,
     headless,
     noConditions,
+    documentTypeId
 }: {
     conditions: Array<ConditionModel>;
     projectId: string;
     documentId: string;
     headless?: boolean;
     noConditions: boolean;
+    documentTypeId: number;
 }) {
     return (
         <TableContainer component={Box} sx={{ height: "100%" }}>
@@ -36,26 +39,31 @@ export default function ConditionTable({
                     },
                 }}
                 >
-                <TableRow>
-                    <StyledTableHeadCell colSpan={2}>
-                        Condition Number
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={6}>
-                        Condition Name
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="right">
-                        Amendment In
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="right">
-                        Tags
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="right">
-                        Year Issued
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell colSpan={2} align="center">
-                        Status
-                    </StyledTableHeadCell>
-                </TableRow>
+                    <TableRow>
+                        <StyledTableHeadCell colSpan={2}>
+                            Condition Number
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell colSpan={6}>
+                            Condition Name
+                        </StyledTableHeadCell>
+                        {documentTypeId !== DocumentTypes.Amendment && (
+                            <StyledTableHeadCell colSpan={2} align="right">
+                                Amendment In
+                            </StyledTableHeadCell>
+                        )}
+                        <StyledTableHeadCell colSpan={2} align="right">
+                            Tags
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell colSpan={2} align="right">
+                            Year Issued
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell colSpan={2} align="center">
+                            Standard Condition
+                        </StyledTableHeadCell>
+                        <StyledTableHeadCell colSpan={2} align="center">
+                            Status
+                        </StyledTableHeadCell>
+                    </TableRow>
                 </TableHead>
             )}
             <TableBody>
@@ -65,6 +73,7 @@ export default function ConditionTable({
                     condition={condition}
                     projectId={projectId}
                     documentId={documentId}
+                    documentTypeId={documentTypeId}
                 />
             ))}
             </TableBody>

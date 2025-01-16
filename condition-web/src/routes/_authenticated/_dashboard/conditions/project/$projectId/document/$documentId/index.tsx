@@ -101,6 +101,7 @@ function ConditionPage() {
           documentLabel = {documentDetails?.document_label || ""}
           documentId = {documentId}
           conditions={documentConditions?.conditions}
+          documentTypeId={documentDetails?.document_type_id}
         />
       </Grid>
     </PageGrid>

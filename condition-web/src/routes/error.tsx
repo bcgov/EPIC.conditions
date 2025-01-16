@@ -1,3 +1,4 @@
+import ErrorPage from "@/components/ErrorPage";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/error")({
@@ -6,5 +7,5 @@ export const Route = createFileRoute("/error")({
 });
 
 function Error() {
-  return <div>Oops! An unexpected error occurred</div>;
+  return <ErrorPage />;
 }

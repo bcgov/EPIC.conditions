@@ -70,6 +70,7 @@ class ConditionService:
                 conditions.topic_tags,
                 conditions.is_topic_tags_approved,
                 conditions.is_condition_attributes_approved,
+                conditions.is_standard_condition,
                 conditions.subtopic_tags,
                 subconditions.id.label('subcondition_id'),
                 subconditions.subcondition_identifier,
@@ -128,6 +129,7 @@ class ConditionService:
             "topic_tags": condition_data[0].topic_tags,
             "is_topic_tags_approved": condition_data[0].is_topic_tags_approved,
             "is_condition_attributes_approved": condition_data[0].is_condition_attributes_approved,
+            "is_standard_condition": condition_data[0].is_standard_condition,
             "subtopic_tags": condition_data[0].subtopic_tags,
             "year_issued": condition_data[0].year_issued,
             "condition_attributes": [],
@@ -257,6 +259,7 @@ class ConditionService:
                 conditions.condition_number,
                 conditions.condition_text,
                 conditions.is_approved,
+                conditions.is_standard_condition,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
                 amendment_subquery.c.amendment_names,
@@ -289,6 +292,7 @@ class ConditionService:
                 conditions.condition_number,
                 conditions.condition_text,
                 conditions.is_approved,
+                conditions.is_standard_condition,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
                 amendment_subquery.c.amendment_names,
@@ -313,6 +317,7 @@ class ConditionService:
                 "condition_number": row.condition_number,
                 "condition_text": row.condition_text,
                 "is_approved": row.is_approved,
+                "is_standard_condition": row.is_standard_condition,
                 "topic_tags": row.topic_tags,
                 "subtopic_tags": row.subtopic_tags,
                 "amendment_names": row.amendment_names,
@@ -529,6 +534,7 @@ class ConditionService:
             condition_name=conditions_data.get("condition_name"),
             condition_number=conditions_data.get("condition_number"),
             condition_text=conditions_data.get("condition_text"),
+            is_standard_condition=conditions_data.get("is_standard_condition"),
             topic_tags=conditions_data.get("topic_tags"),
             subtopic_tags=conditions_data.get("subtopic_tags"),
             effective_from=datetime.utcnow()
@@ -577,6 +583,7 @@ class ConditionService:
                 Condition.condition_number,
                 Condition.condition_text,
                 Condition.is_approved,
+                Condition.is_standard_condition,
                 Condition.topic_tags,
                 Condition.subtopic_tags
             ).filter(Condition.id == condition_id).first()
@@ -639,6 +646,7 @@ class ConditionService:
             "condition_number": condition_data.condition_number if condition_data.condition_number else condition_number_value,
             "condition_text": condition_data.condition_text,
             "is_approved": condition_data.is_approved,
+            "is_standard_condition": condition_data.is_standard_condition,
             "topic_tags": condition_data.topic_tags,
             "subtopic_tags": condition_data.subtopic_tags,
             "year_issued": year_issued,
@@ -711,7 +719,8 @@ class ConditionService:
                 Condition.condition_text,
                 Condition.topic_tags,
                 Condition.is_condition_attributes_approved,
-                Condition.is_topic_tags_approved
+                Condition.is_topic_tags_approved,
+                Condition.is_standard_condition
             )
             .filter(
                 and_(
@@ -719,6 +728,7 @@ class ConditionService:
                     Condition.is_active == True
                 )
             )
+            .order_by(Condition.condition_number)
         )
 
         if not user_is_internal:
@@ -782,6 +792,7 @@ class ConditionService:
                 "condition_name": row.condition_name,
                 "condition_number": row.condition_number,
                 "condition_text": row.condition_text,
+                "is_standard_condition": row.is_standard_condition,
                 "condition_attributes": condition_attributes
             })
 
@@ -846,6 +857,7 @@ class ConditionService:
                     Condition.condition_name,
                     Condition.condition_number,
                     Condition.is_approved,
+                    Condition.is_standard_condition,
                     Condition.topic_tags,
                     amendment_subquery.c.amendment_names,
                     case(
@@ -863,6 +875,7 @@ class ConditionService:
                         Condition.is_active == True
                     )
                 )
+                .order_by(Condition.condition_number)
                 .all()
             )
 
@@ -875,6 +888,7 @@ class ConditionService:
                     "condition_name": row.condition_name,
                     "condition_number": row.condition_number,
                     "is_approved": row.is_approved,
+                    "is_standard_condition": row.is_standard_condition,
                     "topic_tags": row.topic_tags,
                     "amendment_names": row.amendment_names,
                     "year_issued": document.year_issued,

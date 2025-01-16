@@ -45,6 +45,7 @@ type ConditionsParam = {
   documentCategory: string;
   documentLabel: string;
   documentId: string;
+  documentTypeId: number;
 };
 
 export const Conditions = ({
@@ -53,6 +54,7 @@ export const Conditions = ({
   documentCategory,
   documentLabel,
   documentId,
+  documentTypeId,
   conditions
 }: ConditionsParam) => {
   const navigate = useNavigate();
@@ -228,6 +230,7 @@ export const Conditions = ({
                       projectId={projectId}
                       documentId={documentId}
                       noConditions={noConditions}
+                      documentTypeId={documentTypeId}
                     />
                 </CardInnerBox>
             </Box>

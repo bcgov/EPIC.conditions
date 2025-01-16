@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
-import { Box, Grid, styled, Stack, Typography } from "@mui/material";
+import { Box, FormControlLabel, Grid, styled, Stack, Switch, Typography } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { ContentBox } from "../Shared/ContentBox";
 import ConditionTable from "../Conditions/ConditionsTable";
@@ -23,18 +24,32 @@ type ConditionsParam = {
   projectName: string;
   projectId: string;
   documentCategory: string;
+  documentCategoryId: string;
 };
 
 export const ConsolidatedConditions = ({
   projectName,
   projectId,
   documentCategory,
+  documentCategoryId,
   conditions
 }: ConditionsParam) => {
+  const navigate = useNavigate();
   const [noConditions, setNoConditions] = useState(conditions?.length === 0);
   const [allApproved, setAllApproved] = useState(false);
   const [hasAmendments, setHasAmendments] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isToggled, setIsToggled] = useState(true);
+
+  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setIsToggled(!checked);
+    if (!checked) {
+      navigate({
+        to: `/documents/project/${projectId}/document-category/${documentCategoryId}`,
+      });
+    }
+  };
   
   useEffect(() => {
     // Check if all conditions have status as true
@@ -106,6 +121,18 @@ export const ConsolidatedConditions = ({
                   </Box>
                 </Stack>
               </Grid>
+              <Grid item xs={6} textAlign="right">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isToggled}
+                      onChange={handleToggle}
+                    />
+                  }
+                  label="View Consolidated Conditions"
+                  labelPlacement="end"
+                />
+              </Grid>
             </Grid>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
               <CardInnerBox
@@ -116,6 +143,7 @@ export const ConsolidatedConditions = ({
                     projectId={projectId}
                     documentId={""}
                     noConditions={noConditions}
+                    documentTypeId={0}
                   />
               </CardInnerBox>
             </Box>

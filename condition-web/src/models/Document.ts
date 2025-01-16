@@ -76,4 +76,5 @@ export interface DocumentDetailsModel {
   document_category: string;
   document_id: string;
   document_label: string;
+  document_type_id: number;
 }
