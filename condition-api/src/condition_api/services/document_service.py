@@ -24,6 +24,7 @@ class DocumentService:
             Document.id.label('id'),
             Document.document_id.label('document_id'),
             Document.document_label.label('document_label'),
+            Document.is_latest_amendment_added,
             Document.created_date,
             extract('year', Document.date_issued).label('year_issued'),
             case(
@@ -92,7 +93,8 @@ class DocumentService:
                 'document_label': document.document_label,
                 'created_date': document.created_date,
                 'year_issued': document.year_issued,
-                'status': document.status
+                'status': document.status,
+                'is_latest_amendment_added': document.is_latest_amendment_added
             })
 
             # Append all amendments for the current document

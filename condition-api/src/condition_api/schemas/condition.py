@@ -22,12 +22,14 @@ class ConditionSchema(Schema):
     is_topic_tags_approved = fields.Bool(data_key="is_topic_tags_approved", allow_none=True)
     is_condition_attributes_approved = fields.Bool(data_key="is_condition_attributes_approved", allow_none=True)
     condition_attributes = fields.List(fields.Nested(UpdateConditionAttributeSchema), data_key="condition_attributes", allow_none=True)
-    
+    effective_document_id = fields.Str(data_key="effective_document_id", allow_none=True)
     # Condition can also have its own subconditions (recursive nesting)
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
 
 class ProjectDocumentConditionSchema(Schema):
     """Top-level schema to include project and document names."""
+    project_name = fields.Str(data_key="project_name")
+    document_category = fields.Str(data_key="document_category")
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")
 
 class ProjectDocumentConditionDetailSchema(Schema):

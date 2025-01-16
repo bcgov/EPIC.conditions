@@ -18,6 +18,7 @@ from flask import request
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
+from condition_api.schemas.condition import ProjectDocumentConditionSchema
 from condition_api.services import authorization
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.util import cors_preflight
@@ -63,5 +64,41 @@ class ConditionResource(Resource):
 
             # Call dump on the schema instance
             return consolidated_conditions, HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+
+@cors_preflight("GET, OPTIONS")
+@API.route("/project/<string:project_id>/consolidated-conditions", methods=["GET", "OPTIONS"])
+class ConditionsResource(Resource):
+    """Resource for fetching consolidated conditions by project_id and category_id."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get consolidated conditions")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
+    @cors.crossdomain(origin="*")
+    def get(project_id):
+        """Fetch consolidated conditions and condition attributes by project and category ID."""
+        query_params = request.args
+        all_conditions = query_params.get('all_conditions', '').lower() == 'true'
+        category_id = query_params.get('category_id', '')
+
+        try:
+            consolidated_conditions = ConditionService.get_consolidated_conditions_by_project_and_category(
+                project_id,
+                category_id,
+                all_conditions
+            )
+
+            if not consolidated_conditions:
+                return {"message": "Condition not found"}, HTTPStatus.NOT_FOUND
+
+            # Instantiate the schema
+            condition_details_schema = ProjectDocumentConditionSchema()
+
+            # Call dump on the schema instance
+            return condition_details_schema.dump(consolidated_conditions), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

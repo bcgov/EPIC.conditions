@@ -22,20 +22,22 @@ type DocumentsParam = {
   documents?: AllDocumentModel[];
   projectName: string;
   projectId: string;
+  categoryId: number;
   documentLabel: string;
 };
 
-export const Documents = ({ projectName, projectId, documentLabel, documents }: DocumentsParam) => {
+export const Documents = ({ projectName, projectId, categoryId, documentLabel, documents }: DocumentsParam) => {
   const navigate = useNavigate();
   const [isToggled, setIsToggled] = useState(false);
   const [isToggleEnabled, setIsToggleEnabled] = useState<boolean | null>(false);
+  const [isAllApproved, setIsAllApproved] = useState<boolean | null>(false);
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     setIsToggled(checked);
     if (checked) {
       navigate({
-        to: `/conditions/project/${projectId}/document/${projectId}`,
+        to: `/projects/${projectId}/document-category/${categoryId}/consolidated-conditions`,
       });
     }
   };
@@ -45,11 +47,17 @@ export const Documents = ({ projectName, projectId, documentLabel, documents }: 
     if (documents && documents.length > 0) {
       const hasNullStatus = documents.some((document) => document.status === null);
       if (hasNullStatus) {
-        setIsToggleEnabled(null);
+        setIsAllApproved(null);
       } else {
         const allApproved = documents.every((document) => document.status === true);
-        setIsToggleEnabled(allApproved);
+        setIsAllApproved(allApproved);
       }
+
+      // Check if any document has is_latest_amendment_added as true
+      const anyLatestAmendmentAdded = documents.some(
+        (document) => document.is_latest_amendment_added === true
+      );
+      setIsToggleEnabled(anyLatestAmendmentAdded);
     }
   }, [documents]);
 
@@ -96,7 +104,7 @@ export const Documents = ({ projectName, projectId, documentLabel, documents }: 
                     <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
-                    <DocumentStatusChip status={isToggleEnabled === null ? "nodata" : String(isToggleEnabled) as DocumentStatus} />
+                    <DocumentStatusChip status={isAllApproved === null ? "nodata" : String(isAllApproved) as DocumentStatus} />
                   </Box>
                 </Box>
               </Grid>
@@ -109,7 +117,7 @@ export const Documents = ({ projectName, projectId, documentLabel, documents }: 
                       onChange={handleToggle} // Add onChange handler to toggle and navigate
                     />
                   }
-                  label="View Consolidated Certificate"
+                  label="View Consolidated Conditions"
                   labelPlacement="end"
                 />
               </Grid>

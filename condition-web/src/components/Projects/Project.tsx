@@ -3,7 +3,7 @@ import { BCDesignTokens } from "epic.theme";
 import { ProjectModel } from "@/models/Project";
 import DocumentTable from "./DocumentTable";
 import { ContentBox } from "../Shared/ContentBox";
-// import { useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { theme } from "@/styles/theme";
 
 export const CardInnerBox = styled(Box)({
@@ -21,7 +21,7 @@ type ProjectParam = {
 
 export const Project = ({ project }: ProjectParam) => {
 
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const certificateDocument = project?.documents?.find(
         (doc) => doc.document_category === "Certificate and Amendments"
@@ -31,11 +31,11 @@ export const Project = ({ project }: ProjectParam) => {
     const allDocumentsStatusTrue = project?.documents?.every(doc => doc.is_latest_amendment_added === true);
 
     const handleViewConsolidatedConditions = () => {
-        // if (project?.project_id && certificateDocument) {
-        // navigate({
-        // to: `/conditions/project/${project.project_id}`,
-        // });
-        // }
+        if (project?.project_id && certificateDocument) {
+            navigate({
+                to: `/projects/${project?.project_id}/consolidated-conditions`,
+            });
+        }
     };
 
     return (

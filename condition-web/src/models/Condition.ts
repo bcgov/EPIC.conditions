@@ -6,6 +6,7 @@ export interface ConditionModel {
   condition_number?: number;
   condition_text?: string;
   amendment_names?: string;
+  effective_document_id?: string;
   year_issued?: number;
   is_approved?: boolean;
   topic_tags?: string[];
@@ -27,6 +28,7 @@ export const createDefaultCondition = (): ConditionModel => {
       condition_number: 0,
       condition_text: '',
       amendment_names: '',
+      effective_document_id: '',
       year_issued: 0,
       is_approved: false,
       topic_tags: [],

@@ -22,3 +22,26 @@ export const useConsolidatedConditions = (
     retry: false,
   });
 };
+
+const loadConsolidatedConditionsByCategory = (
+  projectId?: string,
+  categoryId?: string,
+  allConditions?: boolean
+) => {
+  if (!projectId) {
+    return Promise.reject(new Error("Project ID is required"));
+  }
+  return submitRequest<ProjectDocumentConditionModel>({
+    url: `/conditions/project/${projectId}/consolidated-conditions?all_conditions=${allConditions}&category_id=${categoryId}`,
+  });
+};
+
+export const useConsolidatedConditionsByCategory = (
+  projectId?: string, categoryId?: string, allConditions?: boolean) => {
+  return useQuery({
+    queryKey: ["projects", projectId],
+    queryFn: () => loadConsolidatedConditionsByCategory(projectId, categoryId, allConditions),
+    enabled: Boolean(projectId),
+    retry: false,
+  });
+};

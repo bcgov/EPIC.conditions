@@ -3,7 +3,7 @@ import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
 import { useLoadDocumentDetails } from "@/hooks/api/useDocuments";
-import { useConsolidatedConditions } from "@/hooks/api/useConsolidatedConditions";
+import { useLoadConditions } from "@/hooks/api/useConditions";
 import { Conditions, ConditionsSkeleton } from "@/components/Conditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -17,7 +17,9 @@ export const Route = createFileRoute(
   },
   meta: ({ params }) => [
     { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` }
+    { title: `${params.projectId}`, path: `/projects/` },
+    { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category/` },
+    { title: `Document Label`, path: undefined }
   ],
 });
 
@@ -27,20 +29,59 @@ function ConditionPage() {
   const documentId = String(documentIdParam);
 
   const {
+    data: documentDetails,
+    isPending: isDocumentDetailsLoading,
+    isError: isDocumentDetailsError
+  } = useLoadDocumentDetails(documentId);
+
+  const {
     data: documentConditions,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useConsolidatedConditions(projectId);
+  } = useLoadConditions(true, false, projectId, documentId);
 
   useEffect(() => {
+    if (isDocumentDetailsError) {
+      notify.error("Failed to load document details");
+    }
     if (isConditionsError) {
       notify.error("Failed to load conditions");
     }
-  }, [isConditionsError]);
+  }, [isConditionsError, isDocumentDetailsError]);
 
-  if (isConditionsError) return <Navigate to="/error" />;
+  const META_PROJECT_TITLE = `${projectId}`;
+  const META_DOCUMENT_CATEGORY = `Document Category`;
+  const META_DOCUMENT_LABEL = `Document Label`;
+  const { replaceBreadcrumb } = useBreadCrumb();
+  useEffect(() => {
+    if (documentDetails) {
+      replaceBreadcrumb(META_PROJECT_TITLE, documentDetails?.project_name || META_PROJECT_TITLE);
 
-  if (isConditionsLoading) {
+      replaceBreadcrumb(
+        META_DOCUMENT_CATEGORY,
+        documentDetails?.document_category || META_DOCUMENT_CATEGORY,
+        `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`
+      );
+
+      replaceBreadcrumb(
+        META_DOCUMENT_LABEL,
+        documentDetails?.document_label || META_DOCUMENT_LABEL,
+        undefined
+      );
+    }
+  }, [
+    documentDetails,
+    documentConditions,
+    projectId,
+    replaceBreadcrumb,
+    META_PROJECT_TITLE,
+    META_DOCUMENT_CATEGORY,
+    META_DOCUMENT_LABEL
+  ]);
+
+  if (isConditionsError || isDocumentDetailsError) return <Navigate to="/error" />;
+
+  if (isDocumentDetailsLoading || isConditionsLoading) {
     return (
       <PageGrid>
         <Grid item xs={12}>
@@ -54,10 +95,10 @@ function ConditionPage() {
     <PageGrid>
       <Grid item xs={12}>
         <Conditions
-          projectName = {""}
+          projectName = {documentDetails?.project_name || ""}
           projectId = {projectId}
-          documentCategory = {""}
-          documentLabel = {""}
+          documentCategory = {documentDetails?.document_category || ""}
+          documentLabel = {documentDetails?.document_label || ""}
           documentId = {documentId}
           conditions={documentConditions?.conditions}
         />

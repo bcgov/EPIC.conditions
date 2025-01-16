@@ -59,7 +59,7 @@ export const Conditions = ({
   const [hasAmendments, setHasAmendments] = useState(false);
   const [isToggleEnabled, setIsToggleEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [noConditions, setNoConditions] = useState(false);
+  const [noConditions, setNoConditions] = useState(conditions?.length === 0);
   const [openModal, setOpenModal] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | "">("");
   const [loadCondition, setLoadCondition] = useState(false);
@@ -198,7 +198,7 @@ export const Conditions = ({
                     <Box sx={{ display: "flex", alignItems: "top", fontWeight: "normal" }}>
                       <DocumentStatusChip
                         status={noConditions? "nodata" : String(isToggleEnabled) as DocumentStatus}
-                      />
+                        />
                     </Box>
                   </Stack>
                 </Stack>
