@@ -23,6 +23,7 @@ class ConditionSchema(Schema):
     is_condition_attributes_approved = fields.Bool(data_key="is_condition_attributes_approved", allow_none=True)
     condition_attributes = fields.List(fields.Nested(UpdateConditionAttributeSchema), data_key="condition_attributes", allow_none=True)
     effective_document_id = fields.Str(data_key="effective_document_id", allow_none=True)
+    is_standard_condition = fields.Bool(data_key="is_standard_condition", allow_none=True)
     # Condition can also have its own subconditions (recursive nesting)
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
 

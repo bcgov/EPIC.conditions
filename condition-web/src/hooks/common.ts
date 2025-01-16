@@ -22,3 +22,9 @@ export const useUpdateBreadcrumb = <T>(
     replaceBreadcrumb(title, name);
   }, [replaceBreadcrumb, title, matches, name, dependency]);
 };
+
+// useMounted is a useEffect with empty dependencies array
+export const useMounted = (callback: () => void) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(callback, []);
+};

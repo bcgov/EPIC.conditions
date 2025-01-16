@@ -73,6 +73,7 @@ function ConditionPage() {
           projectName = {consolidatedConditions?.project_name}
           projectId = {projectId}
           documentCategory = {consolidatedConditions?.document_category}
+          documentCategoryId = {categoryId}
           conditions={consolidatedConditions?.conditions}
         />
       </Grid>

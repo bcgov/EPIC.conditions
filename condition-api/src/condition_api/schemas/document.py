@@ -51,3 +51,4 @@ class DocumentDetailsSchema(Schema):
     document_category = fields.Str(data_key="document_category")
     document_id = fields.Str(data_key="document_id")
     document_label = fields.Str(data_key="document_label")
+    document_type_id = fields.Int(data_key="document_type_id")
