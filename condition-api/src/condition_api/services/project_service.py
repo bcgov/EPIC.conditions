@@ -27,7 +27,7 @@ class ProjectService:
                 func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
                 func.greatest(func.max(Document.date_issued), func.max(Amendment.date_issued)).label("max_date_issued"),
                 func.count(Amendment.document_id).label("amendment_count"),
-                func.bool_and(Document.is_latest_amendment_added).label("is_latest_amendment_added")
+                func.bool_or(Document.is_latest_amendment_added).label("is_latest_amendment_added")
             )
             .outerjoin(Document, Document.project_id == Project.project_id)
             .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
