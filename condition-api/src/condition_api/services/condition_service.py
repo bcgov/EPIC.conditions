@@ -12,7 +12,7 @@ from condition_api.models.document_type import DocumentType
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.db import db
 from condition_api.models.project import Project
-from condition_api.schemas.condition import ConditionSchema, ConsolidatedConditionSchema
+from condition_api.schemas.condition import ProjectDocumentConditionSchema, ConsolidatedConditionSchema
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -172,7 +172,7 @@ class ConditionService:
             )
             .filter(
                 condition_attributes.condition_id == condition_data[0].id,
-                ~condition_attributes.attribute_key_id.in_([2, 4])
+                ~condition_attributes.attribute_key_id.in_([2])
             )
             .order_by(condition_attributes.attribute_key_id)
             .all()
@@ -706,29 +706,75 @@ class ConditionService:
     @staticmethod
     def get_consolidated_conditions(
         project_id,
-        include_condition_attributes,
-        include_nested_conditions,
-        user_is_internal
+        category_id=None,
+        all_conditions=False,
+        include_condition_attributes=False,
+        include_nested_conditions=False,
+        user_is_internal=False,
     ):
-        """Fetch all consolidated conditions by project ID."""
+        """Fetch all consolidated conditions."""
+        filter_condition = (
+            Project.project_id == project_id
+            if not user_is_internal or all_conditions
+            else and_(
+                Project.project_id == project_id,
+                DocumentCategory.id == category_id,
+            )
+        )
+
+        if user_is_internal:
+            amendment_subquery = (
+                db.session.query(
+                    Condition.condition_number,
+                    func.string_agg(
+                        Amendment.amendment_name.distinct(), ', '
+                    ).label('amendment_names'),
+                )
+                .select_from(Project)
+                .join(Document, Document.project_id == Project.project_id)
+                .join(DocumentType, DocumentType.id == Document.document_type_id)
+                .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                .join(Amendment, Amendment.document_id == Document.id)
+                .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
+                .filter(filter_condition)
+                .group_by(Condition.condition_number)
+                .subquery()
+            )
+
         query = (
             db.session.query(
-                Condition.id,
+                Project.project_name,
+                Document.id,
+                Document.document_id,
+                DocumentCategory.category_name,
+                extract("year", Document.date_issued).label("year_issued"),
+                Condition.id.label("condition_id"),
                 Condition.condition_name,
                 Condition.condition_number,
                 Condition.condition_text,
+                Condition.is_approved,
                 Condition.topic_tags,
                 Condition.is_condition_attributes_approved,
                 Condition.is_topic_tags_approved,
-                Condition.is_standard_condition
+                Condition.is_standard_condition,
+                case(
+                    (Condition.amended_document_id.isnot(None), Condition.amended_document_id),
+                    else_=Condition.document_id,
+                ).label("effective_document_id"),
             )
-            .filter(
-                and_(
-                    Condition.project_id == project_id,
-                    Condition.is_active == True
-                )
-            )
-            .order_by(Condition.condition_number)
+            .join(Document, Document.project_id == Project.project_id)
+            .join(DocumentType, DocumentType.id == Document.document_type_id)
+            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .join(Condition, Condition.document_id == Document.document_id)
+            .filter(filter_condition)
+            .filter(Condition.is_active == True)
+        )
+
+        if user_is_internal:
+            query = query.add_columns(amendment_subquery.c.amendment_names.label("amendment_names"))
+            query = query.outerjoin(
+                amendment_subquery,
+                Condition.condition_number == amendment_subquery.c.condition_number,
         )
 
         if not user_is_internal:
@@ -746,159 +792,89 @@ class ConditionService:
         if not condition_data:
             return []
         
+        if user_is_internal:
+            return ConditionService._process_internal_conditions(condition_data, include_condition_attributes)
+        else:
+            return ConditionService._process_external_conditions(condition_data, include_condition_attributes)
+
+    @staticmethod
+    def _process_internal_conditions(condition_data, include_condition_attributes):
+        """Process conditions for internal users."""
+        conditions_map = {}
+
+        for row in condition_data:
+            condition_attributes = (
+                ConditionService._fetch_condition_attributes(
+                    row.condition_id, include_condition_attributes, True)
+            )
+
+            conditions_map[row.condition_id] = {
+                "condition_id": row.condition_id,
+                "condition_name": row.condition_name,
+                "condition_number": row.condition_number,
+                "is_approved": row.is_approved,
+                "is_standard_condition": row.is_standard_condition,
+                "topic_tags": row.topic_tags,
+                "amendment_names": row.amendment_names,
+                "year_issued": row.year_issued,
+                "effective_document_id": row.effective_document_id,
+                "condition_attributes": condition_attributes,
+            }
+
+        return ProjectDocumentConditionSchema().dump(
+            {
+                "project_name": condition_data[0].project_name,
+                "document_category": condition_data[0].category_name,
+                "conditions": list(conditions_map.values()),
+            }
+        )
+
+    @staticmethod
+    def _process_external_conditions(condition_data, include_condition_attributes):
+        """Process conditions for external users."""
         result = []
 
         for row in condition_data:
-            condition_attributes = []
-
-            if include_condition_attributes and row.is_condition_attributes_approved:
-                attributes_data = (
-                    db.session.query(
-                        AttributeKey.key_name,
-                        AttributeKey.external_key,
-                        ConditionAttribute.attribute_value
-                    )
-                    .outerjoin(
-                        AttributeKey,
-                        ConditionAttribute.attribute_key_id == AttributeKey.id,
-                    )
-                    .filter(
-                        ConditionAttribute.condition_id == row.id,
-                        ~ConditionAttribute.attribute_key_id.in_([2])
-                    )
-                    .order_by(ConditionAttribute.attribute_key_id)
-                    .all()
-                )
-
-                if user_is_internal:
-                    transformed_attributes = [
-                        {"key": record[0], "value": record[1]}
-                        for record in attributes_data
-                    ]
-
-                    condition_attributes = transformed_attributes if transformed_attributes else []
-                else:
-                    condition_attributes = {
-                        record[1]: (
-                            record[2]
-                            .replace("{", "")
-                            .replace("}", "")
-                            .replace('"', "")
-                        ) if record[2] else None
-                        for record in attributes_data if record[1]
-                    }
-
+            condition_attributes = (
+                ConditionService._fetch_condition_attributes(
+                    row.condition_id, include_condition_attributes, False)
+            )
             result.append({
                 "condition_name": row.condition_name,
                 "condition_number": row.condition_number,
                 "condition_text": row.condition_text,
                 "is_standard_condition": row.is_standard_condition,
-                "condition_attributes": condition_attributes
+                "condition_attributes": condition_attributes,
             })
 
-        if user_is_internal:
-            conditions_schema = ConditionSchema(many=True)
-        else:
-            conditions_schema = ConsolidatedConditionSchema(many=True)
-
+        conditions_schema = ConsolidatedConditionSchema(many=True)
         return {"conditions": conditions_schema.dump(result)}
 
     @staticmethod
-    def get_consolidated_conditions_by_project_and_category(
-        project_id,
-        category_id,
-        all_conditions
-    ):
-        """Fetch all conditions and their related subconditions by project ID and document ID."""
-        if all_conditions:
-            filter_condition = Project.project_id == project_id
+    def _fetch_condition_attributes(condition_id, include_condition_attributes, user_is_internal):
+        """Fetch condition attributes based on the user type and flags."""
+        if not include_condition_attributes:
+            return []
+
+        attributes_data = db.session.query(
+            AttributeKey.key_name,
+            AttributeKey.external_key,
+            ConditionAttribute.attribute_value,
+        ).outerjoin(
+            AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id
+        ).filter(
+            ConditionAttribute.condition_id == condition_id,
+            ~ConditionAttribute.attribute_key_id.in_([2]),
+        ).order_by(ConditionAttribute.attribute_key_id).all()
+
+        if user_is_internal:
+            return [{"key": record[0], "value": record[1]} for record in attributes_data]
         else:
-            filter_condition = and_(
-                Project.project_id == project_id,
-                DocumentCategory.id == category_id,
-            )
-
-        amendment_subquery = (
-            db.session.query(
-                Condition.condition_number,
-                func.string_agg(Amendment.amendment_name.distinct(), ', ').label('amendment_names')
-            )
-            .select_from(Project)
-            .join(Document, Document.project_id == Project.project_id)
-            .join(DocumentType, DocumentType.id == Document.document_type_id)
-            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
-            .join(Amendment, Amendment.document_id == Document.id)
-            .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
-            .filter(filter_condition)
-            .group_by(Condition.condition_number)
-            .subquery()
-        )
-
-        documents = (
-            db.session.query(
-                Project.project_name,
-                Document.id,
-                Document.document_id,
-                DocumentCategory.category_name,
-                extract("year", Document.date_issued).label("year_issued")
-            )
-            .join(Document, Document.project_id == Project.project_id)
-            .join(DocumentType, DocumentType.id == Document.document_type_id)
-            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
-            .filter(filter_condition)
-        )
-
-        conditions_map = {}
-
-        for document in documents:
-            condition_data = (
-                db.session.query(
-                    Condition.id.label('condition_id'),
-                    Condition.condition_name,
-                    Condition.condition_number,
-                    Condition.is_approved,
-                    Condition.is_standard_condition,
-                    Condition.topic_tags,
-                    amendment_subquery.c.amendment_names,
-                    case(
-                        (Condition.amended_document_id.isnot(None), Condition.amended_document_id),
-                        else_=Condition.document_id
-                    ).label('effective_document_id')
+            return {
+                record[1]: (
+                    record[2].replace("{", "").replace("}", "").replace('"', "")
+                    if record[2]
+                    else None
                 )
-                .outerjoin(
-                    amendment_subquery,
-                    Condition.condition_number == amendment_subquery.c.condition_number
-                )
-                .filter(
-                    and_(
-                        Condition.document_id == document[2],
-                        Condition.is_active == True
-                    )
-                )
-                .order_by(Condition.condition_number)
-                .all()
-            )
-
-            for row in condition_data:
-                cond_id = row.condition_id
-
-                # Add each condition to the map if not already present
-                conditions_map[cond_id] = {
-                    "condition_id": row.condition_id,
-                    "condition_name": row.condition_name,
-                    "condition_number": row.condition_number,
-                    "is_approved": row.is_approved,
-                    "is_standard_condition": row.is_standard_condition,
-                    "topic_tags": row.topic_tags,
-                    "amendment_names": row.amendment_names,
-                    "year_issued": document.year_issued,
-                    "effective_document_id": row.effective_document_id
-                }
-
-        conditions_list = list(conditions_map.values())
-
-        return {
-            "project_name": documents[0].project_name if documents else None,
-            "document_category": documents[0].category_name if documents else None,
-            "conditions": conditions_list
-        }
+                for record in attributes_data if record[1]
+            }

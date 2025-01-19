@@ -30,13 +30,3 @@ class Amendment(BaseModel):
         UniqueConstraint('amended_document_id', name='uq_amended_document'),
         {'schema': 'condition'},
     )
-
-    @classmethod
-    def get_all(cls):
-        """Get all amended documents."""
-        return cls.query.all()
-
-    @classmethod
-    def get_by_id(cls, document_id):
-        """Get amended document by document_id."""
-        return cls.query.filter_by(document_id=document_id).first()

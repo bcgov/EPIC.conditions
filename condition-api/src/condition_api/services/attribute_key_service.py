@@ -1,4 +1,4 @@
-"""Service for project management."""
+"""Service for attribute key management."""
 from sqlalchemy.orm import aliased
 from condition_api.models.db import db
 from condition_api.models.attribute_key import AttributeKey
@@ -28,7 +28,7 @@ class AttributeKeyService:
             )
             .filter(
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
-                ~attribute_keys.id.in_([2, 4])
+                ~attribute_keys.id.in_([2])
             )
             .all()
         )

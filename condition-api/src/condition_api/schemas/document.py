@@ -34,6 +34,7 @@ class DocumentSchema(Schema):
     status = fields.Bool(data_key="status")
     amendment_count = fields.Int(data_key="amendment_count")
     is_latest_amendment_added = fields.Bool(data_key="is_latest_amendment_added")
+    project_name = fields.Str(data_key="project_name")
     
     # Each document can have multiple conditions
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")
@@ -43,12 +44,3 @@ class ProjectDocumentAllAmendmentsSchema(Schema):
     project_name = fields.Str(data_key="project_name")
     document_category = fields.Str(data_key="document_category")
     documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")
-
-class DocumentDetailsSchema(Schema):
-    """Top-level schema to include all amendments related to a document."""
-    project_name = fields.Str(data_key="project_name")
-    document_category_id = fields.Str(data_key="document_category_id")
-    document_category = fields.Str(data_key="document_category")
-    document_id = fields.Str(data_key="document_id")
-    document_label = fields.Str(data_key="document_label")
-    document_type_id = fields.Int(data_key="document_type_id")

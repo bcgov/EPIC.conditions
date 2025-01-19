@@ -25,7 +25,7 @@ class ConditionAttributeSchema(BaseSchema):
     parties_required_to_be_submitted = fields.List(fields.Str(), data_key="parties_required_to_be_submitted")
     requires_consultation = fields.Bool(data_key="requires_consultation")
 
-class UpdateConditionAttributeSchema(BaseSchema):
+class ConditionAttributeUpdateSchema(BaseSchema):
     """Condition Attribute schema."""
     id = fields.Str(data_key="id")
     key = fields.Str(data_key="key")

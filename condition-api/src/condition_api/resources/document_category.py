@@ -17,7 +17,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.document import ProjectDocumentAllAmendmentsSchema
+from condition_api.schemas.document_category import DocumentCategorySchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.util import cors_preflight
 
@@ -29,30 +29,28 @@ API = Namespace("document-category", description="Endpoints for Document Managem
 """
 
 document_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, ProjectDocumentAllAmendmentsSchema(), "Document"
+    API, DocumentCategorySchema(), "Document"
 )
 
 @cors_preflight("GET, OPTIONS")
 @API.route("/project/<string:project_id>/category/<int:category_id>", methods=["GET", "OPTIONS"])
-class DocumentResource(Resource):
+class DocumentCategoryResource(Resource):
     """Resource for fetching all document for a document category."""
 
     @staticmethod
-    @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents")
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents for document category")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.require
     @cors.crossdomain(origin="*")
     def get(project_id, category_id):
-        """Fetch document category and related documents."""
+        """Fetch all documents for a specific document category."""
         try:
             documents_data = DocumentService.get_all_documents_by_category(project_id, category_id)
             if not documents_data:
                 return {"message": "No documents found"}, HTTPStatus.NOT_FOUND
 
-            document_schema = ProjectDocumentAllAmendmentsSchema()
-
             # Call dump on the schema instance
-            return document_schema.dump(documents_data), HTTPStatus.OK
+            return DocumentCategorySchema().dump(documents_data), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

@@ -17,7 +17,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.project import AllProjectsSchema, ProjectSchema
+from condition_api.schemas.project import ProjectSchema
 from condition_api.services.project_service import ProjectService
 from condition_api.utils.util import cors_preflight
 
@@ -28,12 +28,8 @@ API = Namespace("projects", description="Endpoints for Project Management")
 """Custom exception messages
 """
 
-project_list_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, ProjectSchema(), "Project"
-)
-
 projects_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, AllProjectsSchema(), "Projects"
+    API, ProjectSchema(), "Projects"
 )
 
 @cors_preflight("GET, OPTIONS")
@@ -54,11 +50,9 @@ class ProjectsResource(Resource):
             if not project_data:
                 return {"message": "No projects found"}, HTTPStatus.NOT_FOUND
 
-            data_for_schema = {"projects": project_data}
-            # Instantiate the schema
-            projects_schema = AllProjectsSchema()
+            projects_schema = ProjectSchema(many=True)
 
             # Call dump on the schema instance
-            return projects_schema.dump(data_for_schema), HTTPStatus.OK
+            return projects_schema.dump(project_data), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

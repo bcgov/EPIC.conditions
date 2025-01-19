@@ -87,7 +87,7 @@ const ConditionAttributeTable = memo(({
         false,
         projectId,
         documentId,
-        condition.condition_number,
+        condition.condition_id,
         {
           onSuccess: onApproveSuccess,
           onError: onApproveFailure,
@@ -99,6 +99,7 @@ const ConditionAttributeTable = memo(({
           setCondition((prevCondition) => ({
               ...prevCondition,
               ...conditionDetails,
+              subconditions: prevCondition.subconditions
           }));
       }
     }, [conditionDetails, setCondition]);
@@ -141,7 +142,7 @@ const ConditionAttributeTable = memo(({
       isPending: isAttributesLoading,
       isError: isAttributesError,
     } = useGetAttributes(condition.condition_id);
-  
+
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedAttribute, setSelectedAttribute] = useState("");
     const [attributeValue, setAttributeValue] = useState("");

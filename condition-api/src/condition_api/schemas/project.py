@@ -20,8 +20,3 @@ class ProjectSchema(BaseSchema):
     
     # A project can have multiple documents
     documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")
-
-
-class AllProjectsSchema(BaseSchema):
-    """Schema for returning a list of all projects."""
-    projects = fields.List(fields.Nested(ProjectSchema))  # Reuse the ProjectSchema
