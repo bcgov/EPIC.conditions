@@ -19,7 +19,7 @@ from marshmallow import ValidationError
 
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
-from condition_api.schemas.document import DocumentDetailsSchema, DocumentSchema, DocumentTypeSchema
+from condition_api.schemas.document import DocumentSchema, DocumentTypeSchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.util import cors_preflight
 
@@ -118,10 +118,8 @@ class DocumentResource(Resource):
             document_details = DocumentService.get_document_details(document_id)
             if not document_details:
                 return {}
-            # Instantiate the schema
-            document_details_schema = DocumentDetailsSchema()
 
             # Call dump on the schema instance
-            return document_details_schema.dump(document_details), HTTPStatus.OK
+            return DocumentSchema().dump(document_details), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

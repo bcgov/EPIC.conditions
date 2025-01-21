@@ -24,7 +24,7 @@ export default function EAOAppBar() {
           paddingX={isMobile ? 0 : "0.5rem"}
           justifyContent="space-between"
         >
-          <Grid display="flex" justifyContent="start" alignItems="center">
+          <Grid item display="flex" justifyContent="start" alignItems="center">
             <img src={EAO_Logo} height={isMobile ? 40 : 56} />
             {!isMobile && (
               <>
@@ -42,6 +42,7 @@ export default function EAOAppBar() {
             )}
           </Grid>
           <Grid
+            item
             display="flex"
             justifyContent="center"
             alignItems="center"

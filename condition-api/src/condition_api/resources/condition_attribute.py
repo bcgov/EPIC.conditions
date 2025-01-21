@@ -17,7 +17,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
-from condition_api.schemas.condition_attribute import UpdateConditionAttributeSchema
+from condition_api.schemas.condition_attribute import ConditionAttributeUpdateSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.util import cors_preflight
 
@@ -29,7 +29,7 @@ API = Namespace("attributes", description="Endpoints for Condition Attribute Man
 """
 
 condition_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, UpdateConditionAttributeSchema(), "Attribute"
+    API, ConditionAttributeUpdateSchema(), "Attribute"
 )
 
 @cors_preflight("OPTIONS, PATCH")
@@ -48,9 +48,9 @@ class ConditionAttributeaResource(Resource):
     def patch(condition_id):
         """Edit condition attributes data."""
         try:
-            conditions_attributes_data = UpdateConditionAttributeSchema(many=True).load(API.payload)
+            conditions_attributes_data = ConditionAttributeUpdateSchema(many=True).load(API.payload)
             updated_conditions_attributes = ConditionAttributeService.upsert_condition_attribute(
                 condition_id, conditions_attributes_data)
-            return UpdateConditionAttributeSchema(many=True).dump(updated_conditions_attributes), HTTPStatus.OK
+            return ConditionAttributeUpdateSchema(many=True).dump(updated_conditions_attributes), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

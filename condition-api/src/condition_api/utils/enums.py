@@ -22,6 +22,18 @@ class UserStatus(IntEnum):
     INACTIVE = 2
 
 class DocumentType(IntEnum):
-    """User status."""
+    """Document type."""
 
     Amendment = 3
+
+class AttributeKeys(IntEnum):
+    """Attribute Keys."""
+    # The numbers are same as the id for each attribute key within the table attribute_keys
+    REQUIRES_MANAGEMENT_PLAN = 1
+    REQUIRES_CONSULTATION = 2
+    MANAGEMENT_PLAN_NAME = 3
+    PARTIES_REQUIRED_TO_BE_CONSULTED = 5
+    SUBMITTED_TO_EAO_FOR = 6
+    TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE = 7
+    MILESTONE_RELATED_TO_PLAN_SUBMISSION = 8
+    MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION = 9

@@ -30,7 +30,7 @@ def upgrade():
         "Requires consultation": "requires_consultation",
         "Parties required to be submitted": "parties_required_to_be_submitted",
         "Parties required to be consulted": "parties_required_to_be_consulted",
-        "Deliverable Name": "deliverable_name",
+        "Management plan name": "deliverable_name",
         "Requires management plan": "requires_management_plan",
         "Submitted to EAO for": "submitted_to_eao_for",
         "Milestone related to plan submission": "milestone_related_to_plan_submission",

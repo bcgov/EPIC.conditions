@@ -7,6 +7,7 @@ export const CONDITION_KEYS = {
   TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE: "Time associated with submission milestone",
   PARTIES_REQUIRED: "Parties required to be consulted",
   MANAGEMENT_PLAN_ACRONYM: "Management Plan Acronym",
+  MANAGEMENT_PLAN_NAME: "Management plan name",
 };
 
 export const TIME_UNITS = [

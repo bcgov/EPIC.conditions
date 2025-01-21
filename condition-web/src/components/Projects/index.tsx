@@ -42,14 +42,14 @@ import { DocumentTypes } from "@/utils/enums"
 import { usePagination } from "@/hooks/api/usePagination";
 
 type ProjectsParams = {
-  projects?: { projects: ProjectModel[] };
+  projects?: ProjectModel[];
   documentType: DocumentTypeModel[];
 };
 
 export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const projectArray = projects?.projects || [];
+  const projectArray = projects || [];
   const itemsPerPage = 10; // Number of projects per page
   const [projectSearch, setProjectSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
@@ -66,7 +66,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     dateIssued: false,
   });
 
-  const filteredProjects = projectArray.filter(project =>
+  const filteredProjects = projectArray?.filter(project =>
     project.project_name.toLowerCase().includes(projectSearch.toLowerCase())
   );
 

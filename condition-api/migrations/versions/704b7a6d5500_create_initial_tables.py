@@ -19,11 +19,11 @@ depends_on = None
 
 # Values to be inserted into the attribute_keys table
 attribute_keys = [
+    {"key_name": "Requires management plan", "created_date": datetime.utcnow()},
     {"key_name": "Requires consultation", "created_date": datetime.utcnow()},
+    {"key_name": "Management plan name", "created_date": datetime.utcnow()},
     {"key_name": "Parties required to be submitted", "created_date": datetime.utcnow()},
     {"key_name": "Parties required to be consulted", "created_date": datetime.utcnow()},
-    {"key_name": "Deliverable Name", "created_date": datetime.utcnow()},
-    {"key_name": "Requires management plan", "created_date": datetime.utcnow()},
     {"key_name": "Submitted to EAO for", "created_date": datetime.utcnow()},
     {"key_name": "Time associated with submission milestone", "created_date": datetime.utcnow()},
     {"key_name": "Milestone related to plan submission", "created_date": datetime.utcnow()},

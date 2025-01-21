@@ -69,7 +69,7 @@ export default function ConditionTable({
             <TableBody>
             {!noConditions && conditions?.map((condition) => (
                 <ConditionTableRow
-                    key={condition.condition_number}
+                    key={condition.condition_id}
                     condition={condition}
                     projectId={projectId}
                     documentId={documentId}

@@ -41,7 +41,7 @@ class AmendmentService:
     @staticmethod
     def _update_document(document_id, is_latest_amendment_added):
         """Update a SQLAlchemy model instance from a dictionary."""
-        document = db.session.query(Document).filter_by(id=document_id).first()
+        document = Document.get_by_id(document_id)
         if not document:
             raise ValueError(f"Document with ID {document_id} does not exist.")
         document.is_latest_amendment_added=is_latest_amendment_added

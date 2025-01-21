@@ -32,7 +32,7 @@ const loadConsolidatedConditionsByCategory = (
     return Promise.reject(new Error("Project ID is required"));
   }
   return submitRequest<ProjectDocumentConditionModel>({
-    url: `/conditions/project/${projectId}/consolidated-conditions?all_conditions=${allConditions}&category_id=${categoryId}`,
+    url: `/conditions/project/${projectId}?all_conditions=${allConditions}&category_id=${categoryId}`,
   });
 };
 

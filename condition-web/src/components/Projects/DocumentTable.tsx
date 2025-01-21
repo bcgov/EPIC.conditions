@@ -20,6 +20,7 @@ import {
     documents: Array<DocumentModel>;
     headless?: boolean;
   }) {
+
     return (
         <TableContainer component={Box} sx={{ height: "100%" }}>
             <Table sx={{ tableLayout: "fixed", border: 0 }} aria-label="simple table">
@@ -72,7 +73,7 @@ import {
             <TableBody>
             {documents?.map((document) => (
                 <DocumentTableRow
-                    key={document.document_id}
+                    key={document.document_category_id}
                     projectId={projectId}
                     document={document}
                 />

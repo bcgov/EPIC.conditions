@@ -17,33 +17,40 @@ import AddIcon from '@mui/icons-material/Add';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 type DynamicFieldRendererProps = {
-  editMode: boolean;
-  attributeKey: string;
-  attributeValue: string;
-  setAttributeValue: (value: string) => void;
-  chips: string[];
-  setChips: (value: string[]) => void;
-  milestones: string[];
-  setMilestones: (value: string[]) => void;
-  otherValue: string;
-  setOtherValue: (value: string) => void;
-  options?: { label: string; value: string }[];
-};
+    editMode: boolean;
+    attributeData: {
+      key: string;
+      value: string;
+      setValue: (value: string) => void;
+    };
+    chipsData: {
+      chips: string[];
+      setChips: (value: string[]) => void;
+    };
+    milestonesData: {
+      milestones: string[];
+      setMilestones: (value: string[]) => void;
+    };
+    planNamesData: {
+        planNames: string[];
+        setPlanNames: (value: string[]) => void;
+    };
+    otherData: {
+        otherValue: string;
+        setOtherValue: (value: string) => void;
+    };
+    options?: { label: string; value: string }[];
+  };
 
 const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
-  editMode,
-  attributeKey,
-  attributeValue,
-  setAttributeValue,
-  chips,
-  setChips,
-  milestones,
-  setMilestones,
-  otherValue,
-  setOtherValue,
-  options,
+    editMode,
+    options,
+    attributeData,
+    chipsData,
+    milestonesData,
+    planNamesData,
+    otherData,
 }) => {
-
     const [timeUnit, setTimeUnit] = useState<string>("");
     const [timeValue, setTimeValue] = useState<string>("");
     const [customTimeValue, setCustomTimeValue] = useState<string>("");
@@ -55,7 +62,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
     useEffect(() => {
         if (textRef.current) {
-            const totalLength = milestones.join(", ");
+            const totalLength = milestonesData.milestones.join(", ");
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
             if (context) {
@@ -63,7 +70,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 setDynamicWidth(Math.max(textWidth + 180, 200));
             }
         }
-    }, [milestones]);
+    }, [milestonesData]);
 
     const theme = createTheme({
         typography: {
@@ -95,12 +102,12 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         if (timeUnit) {
             const value = customTimeValue || timeValue;
             if (value) {
-                setAttributeValue(`${value} ${timeUnit}`);
+                attributeData.setValue(`${value} ${timeUnit}`);
             }
         }
-    }, [timeValue, timeUnit, customTimeValue, setAttributeValue]);
+    }, [timeValue, timeUnit, customTimeValue, attributeData]);
 
-    if (attributeKey === CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE) {
+    if (attributeData.key === CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE) {
         return (
             <Box
                 sx={{
@@ -177,23 +184,34 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         );
     }
 
-    if (attributeKey === CONDITION_KEYS.PARTIES_REQUIRED) {
+    if (attributeData.key === CONDITION_KEYS.PARTIES_REQUIRED) {
         return (
             <ChipInput
-                chips={chips}
-                setChips={setChips}
+                chips={chipsData.chips}
+                setChips={chipsData.setChips}
                 placeholder="Add a party"
                 inputWidth={editMode ? "30%" : "100%"}
             />
         );
     }
 
-    if (attributeKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
+    if (attributeData.key === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+        return (
+            <ChipInput
+                chips={planNamesData.planNames}
+                setChips={planNamesData.setPlanNames}
+                placeholder="Add a party"
+                inputWidth={editMode ? "30%" : "100%"}
+            />
+        );
+    }
+
+    if (attributeData.key === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
         const milestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION];
     
         const handleAddCustomMilestone = () => {
             if (customMilestone.trim()) {
-              setMilestones([...milestones, customMilestone]);
+              milestonesData.setMilestones([...milestonesData.milestones, customMilestone]);
               setCustomMilestone(""); // Clear the input field
               setShowCustomInput(false); // Hide the custom input field
             }
@@ -203,8 +221,8 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
           <>
             <Select
                 multiple // Enables multiple selection
-                value={Array.isArray(milestones) ? milestones : []}
-                onChange={(e) => setMilestones(e.target.value as string[])} // Handle multiple values
+                value={Array.isArray(milestonesData.milestones) ? milestonesData.milestones : []}
+                onChange={(e) => milestonesData.setMilestones(e.target.value as string[])} // Handle multiple values
                 renderValue={(selected) => (
                     <Box ref={textRef}>
                         {(selected as string[]).join(", ")}
@@ -224,7 +242,12 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             >
                 {milestoneOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
-                        <Checkbox checked={Array.isArray(milestones) && milestones.includes(option.value)} />
+                        <Checkbox
+                            checked={
+                                Array.isArray(milestonesData.milestones) &&
+                                milestonesData.milestones.includes(option.value)
+                            }
+                        />
                         <ListItemText primary={option.label} />
                     </MenuItem>
                 ))}
@@ -288,8 +311,8 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         return (
             <Stack direction="column">
                 <Select
-                    value={attributeValue}
-                    onChange={(e) => setAttributeValue(e.target.value)}
+                    value={attributeData.value}
+                    onChange={(e) => attributeData.setValue(e.target.value)}
                     fullWidth
                     sx={{
                         fontSize: "inherit",
@@ -306,17 +329,17 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                     </MenuItem>
                     ))}
                 </Select>
-                {attributeValue === "Other" && (
+                {attributeData.value === "Other" && (
                     <TextField
-                        value={otherValue}
+                        value={otherData.otherValue}
                         onChange={(e) => {
                             const value = e.target.value;
-                            setOtherValue(value);
+                            otherData.setOtherValue(value);
                             setError(value.trim() === "");
                         }}
                         size="small"
                         onBlur={() => {
-                            if (!otherValue.trim()) {
+                            if (!otherData.otherValue.trim()) {
                                 setError(true);
                             }
                         }}
@@ -344,8 +367,8 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
     return (
         <TextField
-            value={attributeValue}
-            onChange={(e) => setAttributeValue(e.target.value)}
+            value={attributeData.value}
+            onChange={(e) => attributeData.setValue(e.target.value)}
             fullWidth
             size="small"
             placeholder="Please specify"

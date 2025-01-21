@@ -66,6 +66,7 @@ function ConditionPage() {
           projectId = {projectId}
           documentCategory = {consolidatedConditions?.document_category}
           conditions={consolidatedConditions?.conditions}
+          documentCategoryId={''}
         />
       </Grid>
     </PageGrid>
