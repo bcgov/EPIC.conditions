@@ -54,6 +54,7 @@ const ConditionAttributeTable = memo(({
   }: ConditionAttributeTableProps) => {
 
     const queryClient = useQueryClient();
+    const [conditionAttributeError, setConditionAttributeError] = useState(false);
 
     const onCreateFailure = () => {
       notify.error("Failed to save condition attributes");
@@ -67,7 +68,7 @@ const ConditionAttributeTable = memo(({
       });
     };
   
-    const { mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
+    const { data: conditionAttributeDetails, mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
       condition.condition_id,
       {
         onSuccess: onCreateSuccess,
@@ -103,14 +104,47 @@ const ConditionAttributeTable = memo(({
           }));
       }
     }, [conditionDetails, setCondition]);
-  
+
+    useEffect(() => {
+      if (conditionAttributeDetails) {
+        setCondition((prevCondition) => {
+          const existingAttributes = prevCondition.condition_attributes || [];
+    
+          // Explicitly type the attributes
+          const mergedAttributes = [
+            ...existingAttributes.filter((attr: { id: string }) => 
+              !conditionAttributeDetails.some((newAttr: { id: string }) => newAttr.id === attr.id)
+            ),
+            ...conditionAttributeDetails,
+          ];
+    
+          return {
+            ...prevCondition,
+            condition_attributes: mergedAttributes,
+          };
+        });
+      }
+    }, [conditionAttributeDetails]);
+
     const approveConditionAttributes = () => {
+      // Check if any condition attribute has a null or {} value
+      const hasInvalidAttributes = condition?.condition_attributes?.some(attr => 
+        attr.value === null || JSON.stringify(attr.value) === '{}'
+      );
+
+      if (hasInvalidAttributes) {
+        // Trigger a notification for invalid attributes
+        setConditionAttributeError(true);
+        return;
+      }
+
       const data: updateTopicTagsModel = {
         is_condition_attributes_approved: !condition.is_condition_attributes_approved }
       updateConditionDetails(data);
     };
 
     const handleSave = async (updatedAttribute: ConditionAttributeModel) => {
+      setConditionAttributeError(false);
       const updatedAttributes = condition.condition_attributes?.map((attr) =>
         attr.id === updatedAttribute.id ? updatedAttribute : attr
       ) || [];
@@ -155,6 +189,14 @@ const ConditionAttributeTable = memo(({
             .map((item) => item.trim().replace(/^"|"$/g, ""))
         : []
     );
+    const [planNames, setPlanNames] = useState<string[]>(
+      selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+        ? attributeValue
+            ?.replace(/[{}]/g, "")
+            .split(",")
+            .map((item) => item.trim().replace(/^"|"$/g, ""))
+        : []
+    );
     const [milestones, setMilestones] = useState<string[]>([]);
 
     const handleCloseModal = () => {
@@ -174,41 +216,26 @@ const ConditionAttributeTable = memo(({
         return;
       }
 
-      const newAttribute = {
-        id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
-        key: selectedAttribute,
-        value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
-        `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
-        : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
-        milestones.map((milestone) => `${milestone}`).join(",")
-        : otherValue !== "" ? otherValue : attributeValue,
-      };
-
       updateAttributes([
         {
           id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
           key: selectedAttribute,
           value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
           `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
+          : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME ?
+          `{${planNames.filter((planName) => planName !== null && planName !== "").map((planName) => `"${planName}"`).join(",")}}`
           : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
           milestones.map((milestone) => `${milestone}`).join(",")
           : otherValue !== "" ? otherValue : attributeValue,
         }
       ]);
-
-      setCondition((prevCondition) => ({
-        ...prevCondition,
-        condition_attributes: [
-          ...(prevCondition.condition_attributes || []),
-          newAttribute,
-        ],
-      }));
   
       // Close the modal and reset the selection
       setModalOpen(false);
       setSelectedAttribute("");
       setAttributeValue("");
       setChips([]);
+      setPlanNames([]);
       setOtherValue("");
     };
 
@@ -217,15 +244,15 @@ const ConditionAttributeTable = memo(({
       return (
         <DynamicFieldRenderer
           editMode={false}
-          attributeKey={selectedAttribute}
-          attributeValue={attributeValue}
-          setAttributeValue={setAttributeValue}
-          chips={chips}
-          setChips={setChips}
-          milestones={milestones}
-          setMilestones={setMilestones}
-          otherValue={otherValue}
-          setOtherValue={setOtherValue}
+          attributeData={{
+            key: selectedAttribute,
+            value: attributeValue,
+            setValue: setAttributeValue,
+          }}
+          chipsData={{ chips, setChips }}
+          milestonesData={{ milestones, setMilestones }}
+          planNamesData={{ planNames, setPlanNames }}
+          otherData={{ otherValue, setOtherValue }}
           options={options}
         />
       );
@@ -276,6 +303,19 @@ const ConditionAttributeTable = memo(({
           </Table>
         </TableContainer>
 
+        {conditionAttributeError && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              marginBottom: "15px",
+              color: "#CE3E39",
+              marginTop: 1,
+            }}
+          >
+            Please complete all the required attribute fields before approving the Condition Attributes.
+          </Box>
+        )}
         <Stack sx={{ mt: 5 }} direction={"row"}>
           <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
             {!condition.is_condition_attributes_approved  && attributesData?.length > 0 && (
@@ -387,7 +427,12 @@ const ConditionAttributeTable = memo(({
                       variant="contained"
                       sx={{ marginLeft: "8px", minWidth: "100px" }}
                       onClick={handleAttributeSelection}
-                      disabled={!attributeValue && chips.length === 0 && milestones.length === 0}
+                      disabled={
+                        !attributeValue &&
+                        chips.length === 0 &&
+                        milestones.length === 0 &&
+                        planNames.length === 0
+                      }
                     >
                       Confirm
                     </Button>

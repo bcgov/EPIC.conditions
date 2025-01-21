@@ -28,8 +28,9 @@ class AttributeKeyService:
             )
             .filter(
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
-                ~attribute_keys.id.in_([2])
+                ~attribute_keys.id.in_([4]) # exlucding Parties required to be submitted from attribute_keys
             )
+            .order_by(attribute_keys.id)
             .all()
         )
 

@@ -125,7 +125,6 @@ const ConditionHeader = ({
       <>
         <Grid
           container
-          xs={12}
           direction={{ xs: "column", sm: "row" }}
           paddingBottom={condition.is_topic_tags_approved ? 1 : 5}
         >
@@ -269,7 +268,7 @@ const ConditionHeader = ({
             <DocumentStatusChip status={String(condition?.is_approved) as DocumentStatus} />
           </Grid>
         </Grid>
-        <Grid container xs={12} direction={{ xs: "column", sm: "row" }}>
+        <Grid container direction={{ xs: "column", sm: "row" }}>
           <Grid item xs={6} sx={{ padding: { xs: "10px", sm: "10px 5px 10px 10px" } }}>
             <Box
               sx={{

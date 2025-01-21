@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, IconButton, TableCell, TableRow, TableRowProps } from "@mui/material";
+import { CustomTooltip } from '../../Shared/Common';
 import { styled } from "@mui/system";
 import EditIcon from "@mui/icons-material/Edit";
 import { Save } from "@mui/icons-material";
@@ -68,11 +69,27 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           .map((item) => item.trim().replace(/^"|"$/g, ""))
       : []
   );
+  const [planNames, setPlanNames] = useState<string[]>(
+    conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+      ? attributeValue
+          ?.replace(/[{}]/g, "")
+          .split(",")
+          .map((item) => item.trim().replace(/^"|"$/g, ""))
+      : []
+  );
 
   useEffect(() => {
     setEditableValue(conditionAttributeItem.value);
     if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
       setChips(
+        conditionAttributeItem.value
+          ?.replace(/[{}]/g, "")
+          .split(",")
+          .map((item) => item.trim().replace(/^"|"$/g, ""))
+      );
+    }
+    if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+      setPlanNames(
         conditionAttributeItem.value
           ?.replace(/[{}]/g, "")
           .split(",")
@@ -90,6 +107,11 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         .filter((chip) => chip !== null && chip !== "")
         .map((chip) => `"${chip}"`)
         .join(",")}}`
+        : conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+        ? `{${planNames
+          .filter((planName) => planName !== null && planName !== "")
+          .map((planName) => `"${planName}"`)
+          .join(",")}}`
         : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
         milestones.map((milestone) => `${milestone}`).join(",")
         : otherValue !== "" ? otherValue : editableValue;
@@ -104,6 +126,16 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         .filter((item) => item !== "");
       setChips(parsedChips);
     }
+
+    if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+      const parsedPlanNames = updatedValue
+        .replace(/[{}]/g, "")
+        .split(",")
+        .map((item) => item.trim().replace(/^"|"$/g, ""))
+        .filter((item) => item !== "");
+      setPlanNames(parsedPlanNames);
+    }
+
     setOtherValue("");
   };
 
@@ -112,15 +144,15 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     return (
       <DynamicFieldRenderer
         editMode={isEditable}
-        attributeKey={conditionKey}
-        attributeValue={editableValue}
-        setAttributeValue={setEditableValue}
-        chips={chips}
-        setChips={setChips}
-        milestones={milestones}
-        setMilestones={setMilestones}
-        otherValue={otherValue}
-        setOtherValue={setOtherValue}
+        attributeData={{
+          key: conditionKey,
+          value: editableValue,
+          setValue: setEditableValue,
+        }}
+        chipsData={{ chips, setChips }}
+        milestonesData={{ milestones, setMilestones }}
+        planNamesData={{ planNames, setPlanNames }}
+        otherData={{ value: otherValue, setValue: setOtherValue }}
         options={options}
       />
     );
@@ -142,6 +174,16 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
           {milestones?.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+      return (
+        <ul style={{ margin: 0, paddingLeft: "16px" }}>
+          {planNames?.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>
@@ -170,7 +212,14 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
 
   return (
     <PackageTableRow>
-      <ConditionAttributeHeadTableCell align="left">{conditionKey}</ConditionAttributeHeadTableCell>
+      <ConditionAttributeHeadTableCell align="left">
+        {conditionKey}
+        {(!attributeValue || attributeValue === "{}") && (
+          <CustomTooltip title="This attribute is required and cannot be empty" arrow>
+            <span style={{ color: "red", fontSize: "16px", marginLeft: "4px" }}>*</span>
+          </CustomTooltip>
+        )}
+      </ConditionAttributeHeadTableCell>
       <ConditionAttributeHeadTableCell align="left">
         {isEditable ? renderEditableField() : renderAttribute()}
       </ConditionAttributeHeadTableCell>

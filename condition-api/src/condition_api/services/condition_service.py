@@ -172,7 +172,7 @@ class ConditionService:
             )
             .filter(
                 condition_attributes.condition_id == condition_data[0].id,
-                ~condition_attributes.attribute_key_id.in_([2])
+                ~condition_attributes.attribute_key_id.in_([4]) # exlucding Parties required to be submitted from attribute_keys
             )
             .order_by(condition_attributes.attribute_key_id)
             .all()
@@ -864,7 +864,7 @@ class ConditionService:
             AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id
         ).filter(
             ConditionAttribute.condition_id == condition_id,
-            ~ConditionAttribute.attribute_key_id.in_([2]),
+            ~ConditionAttribute.attribute_key_id.in_([4]),
         ).order_by(ConditionAttribute.attribute_key_id).all()
 
         if user_is_internal:

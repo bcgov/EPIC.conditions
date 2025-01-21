@@ -162,11 +162,32 @@ def load_data(folder_path):
                     'related_phase': "Milestone related to plan submission",
                     'days_prior_to_commencement': "Time associated with submission milestone",
                     'stakeholders_to_consult': "Parties required to be consulted",
-                    'deliverable_name': "Deliverable Name",
+                    'deliverable_name': "Management plan name",
                     'stakeholders_to_submit_to': "Parties required to be submitted"
                 }
                 # Insert into condition requirements table
                 if 'deliverables' in condition:
+                    # Initialize variables for aggregation
+                    deliverable_names = []
+                    deliverable_names_id = 0
+                    is_plan = None
+                    is_plan_id = 0
+                    approval_type = None
+                    approval_type_id = 0
+                    fn_consultation_required = None
+                    fn_consultation_required_id = 0
+                    related_phase = None
+                    related_phase_id = 0
+                    days_prior_to_commencement = None
+                    days_prior_to_commencement_id = 0
+                    stakeholders_to_consult_set = set()
+                    stakeholders_to_consult_set_id = 0
+                    stakeholders_to_submit_to_set = set()
+                    stakeholders_to_submit_to_set_id = 0
+
+                    # Dictionary to hold the attribute_key_id and aggregated values for insertion
+                    insert_data = []
+
                     for condition_attribute in condition['deliverables']:
                         for key, value in condition_attribute.items():
                             attribute_label = key_to_label_map.get(key)
@@ -175,6 +196,7 @@ def load_data(folder_path):
                                 # If no mapping exists for the key, skip it
                                 print(f"Skipping unknown key: {key}")
                                 continue
+
                             # Check if the key exists in the attribute_key table
                             cur.execute("""
                                 SELECT id FROM condition.attribute_keys WHERE key_name = %s
@@ -186,27 +208,75 @@ def load_data(folder_path):
                                 print(f"Skipping unknown attribute key: {key}")
                                 continue
 
-                            # Get the human-readable label for the attribute key
+                            # Get the attribute_key_id
                             attribute_key_id = result[0]
 
-                            # Convert lists (e.g., stakeholders) to PostgreSQL array string format
-                            if isinstance(value, list):
-                                value = convert_to_pg_array(value)
+                            # Aggregate values based on the key
+                            if key == 'deliverable_name':
+                                deliverable_names.append(value)
+                                deliverable_names_id = attribute_key_id
+                            elif key == 'is_plan':
+                                if is_plan is None:
+                                    is_plan = value
+                                    is_plan_id = attribute_key_id
+                            elif key == 'approval_type':
+                                if approval_type is None:
+                                    approval_type = value
+                                    approval_type_id = attribute_key_id
+                            elif key == 'fn_consultation_required':
+                                if fn_consultation_required is None:
+                                    fn_consultation_required = value
+                                    fn_consultation_required_id = attribute_key_id
+                            elif key == 'related_phase':
+                                if related_phase is None:
+                                    related_phase = value
+                                    related_phase_id = attribute_key_id
+                            elif key == 'days_prior_to_commencement':
+                                if days_prior_to_commencement is None:
+                                    days_prior_to_commencement = value
+                                    days_prior_to_commencement_id = attribute_key_id
+                            elif key == 'stakeholders_to_consult':
+                                stakeholders_to_consult_set.update(value)
+                                stakeholders_to_consult_set_id = attribute_key_id
+                            elif key == 'stakeholders_to_submit_to':
+                                stakeholders_to_submit_to_set.update(value)
+                                stakeholders_to_submit_to_set_id = attribute_key_id
 
-                            # Convert booleans to string representation for storage
-                            if isinstance(value, bool):
-                                value = 'true' if value else 'false'
+                    # Finalize aggregated values
+                    if deliverable_names:
+                        deliverable_names_str = f"{{{', '.join(deliverable_names)}}}"
+                        insert_data.append((condition_id, deliverable_names_id, deliverable_names_str))
 
-                            # Insert each key-value pair into the new table
-                            cur.execute("""
-                                INSERT INTO condition.condition_attributes (
-                                    condition_id, attribute_key_id, attribute_value, created_date
-                                ) VALUES (%s, %s, %s, NOW())
-                            """, (
-                                condition_id,
-                                attribute_key_id,  # Use the human-readable label here
-                                value
-                            ))
+                    if is_plan is not None:
+                        insert_data.append((condition_id, is_plan_id, 'true' if is_plan else 'false'))
+
+                    if approval_type:
+                        insert_data.append((condition_id, approval_type_id, approval_type))
+
+                    if fn_consultation_required is not None:
+                        insert_data.append((condition_id, fn_consultation_required_id, 'true' if fn_consultation_required else 'false'))
+
+                    if related_phase:
+                        insert_data.append((condition_id, related_phase_id, related_phase))
+
+                    if days_prior_to_commencement:
+                        insert_data.append((condition_id, days_prior_to_commencement_id, str(days_prior_to_commencement)))
+
+                    if stakeholders_to_consult_set:
+                        stakeholders_to_consult_str = f"{{{', '.join(sorted(stakeholders_to_consult_set))}}}"
+                        insert_data.append((condition_id, stakeholders_to_consult_set_id, stakeholders_to_consult_str))
+
+                    if stakeholders_to_submit_to_set:
+                        stakeholders_to_submit_to_str = f"{{{', '.join(sorted(stakeholders_to_submit_to_set))}}}"
+                        insert_data.append((condition_id, stakeholders_to_submit_to_set_id, stakeholders_to_submit_to_str))
+
+                    # Insert only the data that exists
+                    for data in insert_data:
+                        cur.execute("""
+                            INSERT INTO condition.condition_attributes (
+                                condition_id, attribute_key_id, attribute_value, created_date
+                            ) VALUES (%s, %s, %s, NOW())
+                        """, data)
 
     conn.commit()
 

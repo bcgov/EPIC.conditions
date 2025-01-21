@@ -13,7 +13,7 @@ class BaseSchema(Schema):
         unknown = EXCLUDE
 
 class ProjectSchema(BaseSchema):
-    """Project schema, including documents, conditions, subconditions, and deliverables."""
+    """Project schema, including documents, conditions, subconditions, and management plans."""
 
     project_id = fields.Str(data_key="project_id")
     project_name = fields.Str(data_key="project_name")

@@ -27,6 +27,6 @@ class ConditionAttributeSchema(BaseSchema):
 
 class ConditionAttributeUpdateSchema(BaseSchema):
     """Condition Attribute schema."""
-    id = fields.Str(data_key="id")
-    key = fields.Str(data_key="key")
-    value = fields.Str(data_key="value")
+    id = fields.Str(data_key="id", allow_none=True)
+    key = fields.Str(data_key="key", allow_none=True)
+    value = fields.Str(data_key="value", allow_none=True)
