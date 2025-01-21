@@ -51,8 +51,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     planNamesData,
     otherData,
 }) => {
-    console.log('100', attributeData);
-    console.log('200', otherData);
     const [timeUnit, setTimeUnit] = useState<string>("");
     const [timeValue, setTimeValue] = useState<string>("");
     const [customTimeValue, setCustomTimeValue] = useState<string>("");
