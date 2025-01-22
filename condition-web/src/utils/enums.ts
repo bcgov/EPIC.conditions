@@ -1,3 +1,6 @@
 export enum DocumentTypes {
-    Amendment = 3
+    Certificate = 1,
+    ExemptionOrder = 2,
+    Amendment = 3,
+    OtherOrder = 4
 }

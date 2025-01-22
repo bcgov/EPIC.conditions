@@ -117,6 +117,27 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     return true;
   });
 
+  // Helper function to determine the text
+  const getDocumentQuestionText = (selectedProject: ProjectModel | null): string | null => {
+    if (!selectedProject || !selectedProject.documents) return '';
+
+    const hasCertificate = selectedProject.documents.some((document) =>
+      document.document_types.includes(DocumentType.Certificate)
+    );
+
+    const hasExemptionOrder = selectedProject.documents.some((document) =>
+      document.document_types.includes(DocumentType.ExemptionOrder)
+    );
+
+    if (hasCertificate) {
+      return 'Certificate';
+    } else if (hasExemptionOrder) {
+      return 'Exemption Order';
+    }
+
+    return '';
+  };
+
   const onCreateFailure = () => {
     notify.error("Failed to create document");
   };
@@ -186,6 +207,18 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     selectedDocumentType === DocumentTypes.Amendment,
     selectedProject?.project_id
   );
+
+  // Function to get the document name
+  const getDocumentName = (type: DocumentTypes | null): string => {
+    switch (type) {
+      case DocumentTypes.Certificate:
+        return "Certificate";
+      case DocumentTypes.ExemptionOrder:
+        return "Exemption Order";
+      default:
+        return ""; // Default name if no matching type
+    }
+  };
 
   if (!projects) return <Navigate to={"/error"} />;
 
@@ -272,7 +305,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "90%",
-            maxWidth: "500px",
+            maxWidth: "550px",
             maxHeight: "90vh",
             borderRadius: "4px",
             outline: "none",
@@ -350,7 +383,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               {selectedDocumentType === DocumentTypes.Amendment && !isDocumentsLoading && (
                 <>
                   <Typography variant="body1">
-                    Which Certificate Document does this Amendment belong to?
+                    Which {getDocumentQuestionText(selectedProject)} Document does this Amendment belong to?
                   </Typography>
                 <Autocomplete
                   id="document-selector"
@@ -375,10 +408,11 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 />
               </>
               )}
-              {selectedDocumentType !== DocumentTypes.Amendment && selectedDocumentType !== null && (
+              {selectedDocumentType !== DocumentTypes.Amendment
+              && selectedDocumentType !== DocumentTypes.OtherOrder && selectedDocumentType !== null && (
                 <>
                   <Typography variant="body1">
-                    Does this Certificate Document contain Amendment(s)?
+                    Does this {getDocumentName(selectedDocumentType)} Document contain Amendment(s)?
                   </Typography>
                   <RadioGroup
                     row
@@ -390,12 +424,12 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                     <FormControlLabel
                       value="false"
                       control={<Radio />}
-                      label="Yes, this Certificate Document contains Amendment(s)"
+                      label={`Yes, this ${getDocumentName(selectedDocumentType)} Document contains Amendment(s)`}
                     />
                     <FormControlLabel
                       value="true"
                       control={<Radio />}
-                      label="No, this Certificate Document does not contain Amendment(s)"
+                      label={`No, this ${getDocumentName(selectedDocumentType)} Document does not contain Amendment(s)`}
                     />
                   </RadioGroup>
                 </>

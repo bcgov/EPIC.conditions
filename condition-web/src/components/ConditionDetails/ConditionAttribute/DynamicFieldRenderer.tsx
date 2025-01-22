@@ -9,7 +9,8 @@ import {
     Select,
     Stack,
     TextField,
-    Typography
+    Typography,
+    Chip
 } from "@mui/material";
 import { CONDITION_KEYS, SELECT_OPTIONS, TIME_UNITS, TIME_VALUES } from "./Constants";
 import ChipInput from "../../Shared/Chips/ChipInput";
@@ -56,7 +57,9 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     const [customTimeValue, setCustomTimeValue] = useState<string>("");
     const [error, setError] = useState(false);
     const [showCustomInput, setShowCustomInput] = useState(false);
+    const [showCustomPlanNames, setShowCustomPlanNames] = useState(false);
     const [customMilestone, setCustomMilestone] = useState("");
+    const [additionalPlanNames, setAdditionalPlanNames] = useState("");
     const [dynamicWidth, setDynamicWidth] = useState<number>(100);
     const textRef = useRef<HTMLDivElement>(null);
 
@@ -195,17 +198,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         );
     }
 
-    if (attributeData.key === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
-        return (
-            <ChipInput
-                chips={planNamesData.planNames}
-                setChips={planNamesData.setPlanNames}
-                placeholder="Add a party"
-                inputWidth={editMode ? "30%" : "100%"}
-            />
-        );
-    }
-
     if (attributeData.key === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION) {
         const milestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION];
     
@@ -306,6 +298,118 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
           </>
         );
     }
+
+    if (attributeData.key === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+        const handleAddAdditionalPlanNames = () => {
+            if (additionalPlanNames.trim()) {
+                planNamesData.setPlanNames([...planNamesData.planNames, additionalPlanNames]);
+                setAdditionalPlanNames(""); // Clear the input field
+                setShowCustomPlanNames(false); // Hide the custom input field
+            }
+        };
+    
+        const handleDeleteChip = (chipToDelete: string) => {
+            planNamesData.setPlanNames(
+                planNamesData.planNames.filter((chip) => chip !== chipToDelete)
+            );
+        };
+    
+        return (
+            <>
+                {planNamesData.planNames.length > 0 ? (
+                    // Render chips if there are plan names
+                    <div>
+                        {/* Chips displayed in a flexible row */}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
+                            {planNamesData.planNames.map((name, index) => (
+                                <Chip
+                                    key={index}
+                                    label={name}
+                                    onDelete={() => handleDeleteChip(name)}
+                                    sx={{
+                                        backgroundColor: "#e0e0e0",
+                                        color: "black",
+                                        fontSize: "14px",
+                                    }}
+                                />
+                            ))}
+                        </div>
+    
+                        {/* "+ Add name for another Management Plan" appears on the next line */}
+                        <div>
+                            <Typography
+                                variant="body2"
+                                color="primary"
+                                onClick={() => setShowCustomPlanNames(true)}
+                                sx={{
+                                    cursor: "pointer",
+                                    textDecoration: "underline",
+                                }}
+                            >
+                                + Add name for another Management Plan
+                            </Typography>
+                        </div>
+                    </div>
+                ) : (
+                    // Render the ChipInput component if no plan names exist
+                    <ChipInput
+                        chips={planNamesData.planNames}
+                        setChips={(newChips) => planNamesData.setPlanNames(newChips)}
+                        placeholder="Add a party"
+                        inputWidth={editMode ? "30%" : "100%"}
+                    />
+                )}
+    
+                {showCustomPlanNames && (
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                        }}
+                    >
+                        <TextField
+                            value={additionalPlanNames}
+                            onChange={(e) => setAdditionalPlanNames(e.target.value)}
+                            placeholder="Enter custom milestone"
+                            size="small"
+                            fullWidth
+                            sx={{
+                                flex: "0 0 auto",
+                                width: editMode ? "30%" : "100%",
+                            }}
+                            InputProps={{
+                                endAdornment: additionalPlanNames ? (
+                                    <InputAdornment
+                                        position="end"
+                                        sx={{ marginRight: "-5px" }}
+                                    >
+                                        <IconButton
+                                            onClick={handleAddAdditionalPlanNames}
+                                            sx={{
+                                                padding: 0,
+                                                borderRadius: "50%",
+                                                backgroundColor: "green",
+                                                color: "white",
+                                                "&:hover": { backgroundColor: "darkgreen" },
+                                            }}
+                                        >
+                                            <AddIcon
+                                                sx={{
+                                                    fontSize: "20px",
+                                                }}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ) : null,
+                            }}
+                        />
+                    </div>
+                )}
+            </>
+        );
+    }    
 
     if (options) {
         return (
