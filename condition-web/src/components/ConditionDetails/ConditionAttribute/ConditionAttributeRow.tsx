@@ -152,7 +152,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         chipsData={{ chips, setChips }}
         milestonesData={{ milestones, setMilestones }}
         planNamesData={{ planNames, setPlanNames }}
-        otherData={{ value: otherValue, setValue: setOtherValue }}
+        otherData={{ otherValue, setOtherValue }}
         options={options}
       />
     );
@@ -214,7 +214,8 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     <PackageTableRow>
       <ConditionAttributeHeadTableCell align="left">
         {conditionKey}
-        {(!attributeValue || attributeValue === "{}") && (
+        {conditionKey !== CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM && 
+        (!attributeValue || attributeValue === "{}") && (
           <CustomTooltip title="This attribute is required and cannot be empty" arrow>
             <span style={{ color: "red", fontSize: "16px", marginLeft: "4px" }}>*</span>
           </CustomTooltip>

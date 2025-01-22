@@ -127,9 +127,11 @@ const ConditionAttributeTable = memo(({
     }, [conditionAttributeDetails]);
 
     const approveConditionAttributes = () => {
-      // Check if any condition attribute has a null or {} value
+      /* Check if any condition attribute has a null or {} value except
+         for management plan acronym as this is not mandatory */
       const hasInvalidAttributes = condition?.condition_attributes?.some(attr => 
-        attr.value === null || JSON.stringify(attr.value) === '{}'
+        attr.key !== CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM && 
+        (attr.value === null || attr.value === '{}')
       );
 
       if (hasInvalidAttributes) {
@@ -311,6 +313,7 @@ const ConditionAttributeTable = memo(({
               marginBottom: "15px",
               color: "#CE3E39",
               marginTop: 1,
+              fontSize: '14px',
             }}
           >
             Please complete all the required attribute fields before approving the Condition Attributes.
