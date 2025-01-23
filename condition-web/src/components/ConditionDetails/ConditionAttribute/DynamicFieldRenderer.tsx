@@ -309,19 +309,34 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         };
     
         const handleDeleteChip = (chipToDelete: string) => {
+            setShowCustomPlanNames(false);
             planNamesData.setPlanNames(
                 planNamesData.planNames.filter((chip) => chip !== chipToDelete)
             );
         };
     
+        const shouldRenderChipInput =
+        planNamesData.planNames.length === 0 ||
+        (planNamesData.planNames.length === 1 && planNamesData.planNames[0] === "");
+
         return (
             <>
-                {planNamesData.planNames.length > 0 ? (
+                {shouldRenderChipInput ? (
+                    // Render the ChipInput component if no plan names exist
+                    <ChipInput
+                        chips={planNamesData.planNames}
+                        setChips={(newChips) => planNamesData.setPlanNames(newChips)}
+                        placeholder="Add a management plan"
+                        inputWidth={editMode ? "30%" : "100%"}
+                    />
+                ) : (
                     // Render chips if there are plan names
                     <div>
                         {/* Chips displayed in a flexible row */}
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
-                            {planNamesData.planNames.map((name, index) => (
+                            {planNamesData.planNames
+                            .filter((chip) => chip.trim() !== "")
+                            .map((name, index) => (
                                 <Chip
                                     key={index}
                                     label={name}
@@ -350,14 +365,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                             </Typography>
                         </div>
                     </div>
-                ) : (
-                    // Render the ChipInput component if no plan names exist
-                    <ChipInput
-                        chips={planNamesData.planNames}
-                        setChips={(newChips) => planNamesData.setPlanNames(newChips)}
-                        placeholder="Add a party"
-                        inputWidth={editMode ? "30%" : "100%"}
-                    />
                 )}
     
                 {showCustomPlanNames && (
@@ -372,7 +379,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         <TextField
                             value={additionalPlanNames}
                             onChange={(e) => setAdditionalPlanNames(e.target.value)}
-                            placeholder="Enter custom milestone"
+                            placeholder="Add a management plan"
                             size="small"
                             fullWidth
                             sx={{

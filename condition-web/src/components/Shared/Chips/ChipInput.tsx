@@ -9,7 +9,12 @@ type ChipInputProps = {
   inputWidth?: string;
 };
 
-const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "Add a chip", inputWidth = "100%" }) => {
+const ChipInput: React.FC<ChipInputProps> = ({
+  chips,
+  setChips,
+  placeholder = "Add a chip",
+  inputWidth = "100%",
+}) => {
   const [chipInput, setChipInput] = useState("");
 
   const handleAddChip = () => {
@@ -24,19 +29,29 @@ const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "A
   };
 
   return (
-    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", width: inputWidth }}>
-      {chips.map((chip, index) => (
-        <Chip
-          key={index}
-          label={chip}
-          onDelete={() => handleRemoveChip(index)}
-          sx={{
-            backgroundColor: "#e0e0e0",
-            color: "black",
-            fontSize: "14px",
-          }}
-        />
-      ))}
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        alignItems: "center",
+        width: inputWidth,
+      }}
+    >
+      {chips
+        .filter((chip) => chip.trim() !== "") // Filter out empty strings
+        .map((chip, index) => (
+          <Chip
+            key={index}
+            label={chip}
+            onDelete={() => handleRemoveChip(index)}
+            sx={{
+              backgroundColor: "#e0e0e0",
+              color: "black",
+              fontSize: "14px",
+            }}
+          />
+        ))}
       <TextField
         placeholder={placeholder}
         value={chipInput}
@@ -64,7 +79,7 @@ const ChipInput: React.FC<ChipInputProps> = ({ chips, setChips, placeholder = "A
               >
                 <AddIcon
                   sx={{
-                      fontSize: "20px",
+                    fontSize: "20px",
                   }}
                 />
               </IconButton>
