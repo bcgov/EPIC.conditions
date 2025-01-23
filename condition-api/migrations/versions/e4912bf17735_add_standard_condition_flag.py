@@ -36,7 +36,7 @@ def upgrade():
         "Milestone related to plan submission": "milestone_related_to_plan_submission",
         "Milestone(s) related to plan implementation": "milestones_related_to_plan_implementation",
         "Time associated with submission milestone": "time_associated_with_submission_milestone",
-        "Management Plan Acronym": "management_plan_acronym",
+        "Management plan acronym": "management_plan_acronym",
     }
 
     for key_name, external_key in updates.items():

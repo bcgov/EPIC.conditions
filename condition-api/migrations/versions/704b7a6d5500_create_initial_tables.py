@@ -22,7 +22,7 @@ attribute_keys = [
     {"key_name": "Requires management plan", "created_date": datetime.utcnow()},
     {"key_name": "Requires consultation", "created_date": datetime.utcnow()},
     {"key_name": "Management plan name", "created_date": datetime.utcnow()},
-    {"key_name": "Management Plan Acronym", "created_date": datetime.utcnow()},
+    {"key_name": "Management plan acronym", "created_date": datetime.utcnow()},
     {"key_name": "Parties required to be submitted", "created_date": datetime.utcnow()},
     {"key_name": "Parties required to be consulted", "created_date": datetime.utcnow()},
     {"key_name": "Submitted to EAO for", "created_date": datetime.utcnow()},
