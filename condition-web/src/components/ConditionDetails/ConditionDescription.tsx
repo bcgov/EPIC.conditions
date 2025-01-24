@@ -16,6 +16,7 @@ type ConditionDescriptionProps = {
   documentId: string;
   conditionId: number;
   condition: ConditionModel;
+  setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
   isConditionApproved: boolean;
   setIsConditionApproved: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -27,6 +28,7 @@ const ConditionDescription = memo(({
   documentId,
   conditionId,
   condition,
+  setCondition,
   isConditionApproved,
   setIsConditionApproved
 }: ConditionDescriptionProps) => {
@@ -75,6 +77,11 @@ const ConditionDescription = memo(({
   useEffect(() => {
     if (conditionDetails) {
       setIsConditionApproved(conditionDetails.is_approved)
+      setCondition((prevCondition) => ({
+        ...prevCondition,
+        ...conditionDetails,
+        subconditions: prevCondition.subconditions,
+      }));
     }
   }, [conditionDetails]);
   

@@ -1,5 +1,5 @@
 """Service for project management."""
-from sqlalchemy import func, case, String
+from sqlalchemy import and_, func, case, or_, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
@@ -56,23 +56,88 @@ class ProjectService:
                 }
 
             if row.document_category_id:  # Ensure there's a document category id associated
-                all_approved = db.session.query(
-                    case(
-                        (func.count(Condition.id) == 0, None),
-                        else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
-                    ).label("all_approved")
-                ).outerjoin(Document, Condition.document_id == Document.document_id
-                ).filter(Document.project_id == project_id).first()
 
                 projects_map[project_id]["documents"].append({
                     "document_category_id": row.document_category_id,
                     "document_category": row.document_category,
                     "document_types": row.document_types,
                     "date_issued": row.max_date_issued,
-                    "status": all_approved[0],
+                    "status": ProjectService.check_project_conditions(project_id),
                     "is_latest_amendment_added": row.is_latest_amendment_added,
                     "amendment_count": row.amendment_count,
                 })
 
         # Convert the map to a list of projects
         return list(projects_map.values())
+
+    def check_project_conditions(project_id):
+        """
+        Check all documents in the `documents` table for a specific project.
+
+        :param project_id: ID of the project to check.
+        :return: None if any document has no conditions or invalid conditions, otherwise True.
+        """
+        # Fetch all documents for the project
+        documents = (
+            db.session.query(Document.id, Document.document_id)
+            .filter(Document.project_id == project_id)
+            .all()
+        )
+
+        for document in documents:
+            id = document.id
+            document_id = document.document_id
+            # Check if the document has any conditions
+            condition_count = (
+                db.session.query(func.count(Condition.id))
+                .filter(Condition.document_id == document_id, Condition.amended_document_id.is_(None))
+                .filter(
+                    ~and_(
+                        Condition.condition_name.is_(None),
+                        Condition.condition_number.is_(None)
+                    )
+                )
+                .scalar()
+            )
+            if condition_count == 0:
+                return None
+            
+        for document in documents:
+            # Fetch all amendments related to the document
+            amendments = (
+                db.session.query(Amendment.amended_document_id)
+                .filter(Amendment.document_id == id)
+                .all()
+            )
+
+            # Check if any amendment has zero conditions
+            for amendment in amendments:
+                amended_document_id = amendment.amended_document_id
+                amendment_condition_count = (
+                    db.session.query(func.count(Condition.id))
+                    .filter(Condition.amended_document_id == amended_document_id)
+                    .filter(
+                        ~and_(
+                            Condition.condition_name.is_(None),
+                            Condition.condition_number.is_(None)
+                        )
+                    )
+                    .scalar()
+                )
+                if amendment_condition_count == 0:
+                    return None
+                
+        all_approved = db.session.query(
+            func.min(case((Condition.is_approved == False, 0), else_=1)).label("all_approved")
+        ).filter(Condition.project_id == project_id
+        ).filter(
+            ~and_(
+                Condition.condition_name.is_(None),
+                Condition.condition_number.is_(None)
+            )
+        ).first()
+
+        if all_approved is None:
+            return None
+        else:
+            return all_approved[0]

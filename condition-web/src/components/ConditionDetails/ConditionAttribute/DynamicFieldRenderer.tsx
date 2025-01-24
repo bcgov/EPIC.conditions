@@ -326,7 +326,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                     <ChipInput
                         chips={planNamesData.planNames}
                         setChips={(newChips) => planNamesData.setPlanNames(newChips)}
-                        placeholder="Add a management plan"
+                        placeholder="Add a management plan name"
                         inputWidth={editMode ? "30%" : "100%"}
                     />
                 ) : (
@@ -379,7 +379,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         <TextField
                             value={additionalPlanNames}
                             onChange={(e) => setAdditionalPlanNames(e.target.value)}
-                            placeholder="Add a management plan"
+                            placeholder="Add a management plan name"
                             size="small"
                             fullWidth
                             sx={{

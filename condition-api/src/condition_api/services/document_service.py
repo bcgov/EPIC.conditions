@@ -1,7 +1,7 @@
 """Service for document management."""
 import uuid
 from datetime import date
-from sqlalchemy import extract, func, case
+from sqlalchemy import and_, not_, case, func, extract
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
 from condition_api.models.document import Document
@@ -28,8 +28,41 @@ class DocumentService:
             Document.created_date,
             extract('year', Document.date_issued).label('year_issued'),
             case(
-                (func.count(Condition.id) == 0, None),
-                else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
+                (
+                    func.count(
+                        case(
+                            # Include only valid conditions for the count
+                            (
+                                not_(
+                                    and_(
+                                        Condition.condition_name.is_(None),
+                                        Condition.condition_number.is_(None)
+                                    )
+                                ),  # Exclude invalid conditions
+                                Condition.id
+                            )
+                        )
+                    ) == 0,  # If there are no valid conditions
+                    None
+                ),
+                else_=func.min(
+                    case(
+                        # Check approval status for valid conditions only
+                        (
+                            and_(
+                                not_(
+                                    and_(
+                                        Condition.condition_name.is_(None),
+                                        Condition.condition_number.is_(None)
+                                    )
+                                ),  # Exclude invalid conditions
+                                Condition.is_approved == False  # Not approved
+                            ),
+                            0  # Not approved
+                        ),
+                        else_=1  # Approved
+                    )
+                )
             ).label("status")
         ).outerjoin(
             Project,
@@ -42,7 +75,10 @@ class DocumentService:
             DocumentCategory.id == DocumentType.document_category_id
         ).outerjoin(
             Condition,
-            Condition.document_id == Document.document_id and Condition.amended_document_id is None
+            and_(
+                Condition.document_id == Document.document_id,
+                Condition.amended_document_id.is_(None)  # Ensure only original conditions
+            )
         ).filter(
             (Project.project_id == project_id)
             & (DocumentCategory.id == category_id)

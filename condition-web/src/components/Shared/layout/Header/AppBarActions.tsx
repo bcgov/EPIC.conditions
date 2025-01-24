@@ -75,6 +75,9 @@ export default function AppBarActions() {
           onClick={() =>
             auth.signinRedirect({
               redirect_uri: `${OidcConfig.redirect_uri}${window.location.search}`,
+              extraQueryParams: {
+                kc_idp_hint: OidcConfig.kc_idp_hint,
+              },
             })
           }
           sx={{
