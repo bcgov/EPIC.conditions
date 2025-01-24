@@ -62,7 +62,7 @@ class ProjectService:
                     "document_category": row.document_category,
                     "document_types": row.document_types,
                     "date_issued": row.max_date_issued,
-                    "status": ProjectService.check_project_conditions(project_id),
+                    "status": ProjectService.check_project_conditions(project_id, row.document_category_id),
                     "is_latest_amendment_added": row.is_latest_amendment_added,
                     "amendment_count": row.amendment_count,
                 })
@@ -70,7 +70,7 @@ class ProjectService:
         # Convert the map to a list of projects
         return list(projects_map.values())
 
-    def check_project_conditions(project_id):
+    def check_project_conditions(project_id, document_category_id):
         """
         Check all documents in the `documents` table for a specific project.
 
@@ -80,9 +80,14 @@ class ProjectService:
         # Fetch all documents for the project
         documents = (
             db.session.query(Document.id, Document.document_id)
-            .filter(Document.project_id == project_id)
+            .join(DocumentType, DocumentType.id == Document.document_type_id)
+            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id))
             .all()
         )
+
+        if not documents:
+            return None
 
         for document in documents:
             id = document.id
@@ -101,8 +106,6 @@ class ProjectService:
             )
             if condition_count == 0:
                 return None
-            
-        for document in documents:
             # Fetch all amendments related to the document
             amendments = (
                 db.session.query(Amendment.amended_document_id)
@@ -126,10 +129,13 @@ class ProjectService:
                 )
                 if amendment_condition_count == 0:
                     return None
-                
+
         all_approved = db.session.query(
             func.min(case((Condition.is_approved == False, 0), else_=1)).label("all_approved")
-        ).filter(Condition.project_id == project_id
+        ).join(Document, Document.document_id == Condition.document_id
+        ).join(DocumentType, DocumentType.id == Document.document_type_id
+        ).join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
+        ).filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id)
         ).filter(
             ~and_(
                 Condition.condition_name.is_(None),

@@ -60,7 +60,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const [documentLabel, setDocumentLabel] = useState("");
   const [documentLink, setDocumentLink] = useState("");
   const [dateIssued, setDateIssued] = useState<Date | null>(null);
-  const [isLatestAmendment, setIsLatestAmendment ] = useState<string | null>(null);
+  const [isLatestAmendment, setIsLatestAmendment ] = useState(false);
   const [errors] = useState({
     documentLabel: false,
     dateIssued: false,
@@ -82,7 +82,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     setDocumentLabel("");
     setDocumentLink("");
     setDateIssued(null);
-    setIsLatestAmendment(null);
+    setIsLatestAmendment(false);
   }
   const handleCancelCreateNewDocument = () => {
     setSelectedProject(null);
@@ -92,7 +92,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     setDocumentLabel("");
     setDocumentLink("");
     setDateIssued(null);
-    setIsLatestAmendment(null);
+    setIsLatestAmendment(false);
   }
 
   const filteredDocumentTypes = documentType.filter((type) => {
@@ -168,6 +168,10 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
     : undefined;
 
     const isAmendment = selectedDocumentType === DocumentTypes.Amendment && selectedDocumentId !== null;
+
+    if (selectedDocumentType === DocumentTypes.OtherOrder) {
+      setIsLatestAmendment(true);
+    };
 
     const data = isAmendment
       ? {
@@ -418,7 +422,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                     row
                     name="isLatestAmendment"
                     value={isLatestAmendment}
-                    onChange={(e) => setIsLatestAmendment(e.target.value)}
+                    onChange={(e) => setIsLatestAmendment(e.target.value === 'true')}
                     sx={{ marginBottom: '20px' }}
                   >
                     <FormControlLabel
@@ -443,7 +447,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                     row
                     name="isLatestAmendment"
                     value={isLatestAmendment}
-                    onChange={(e) => setIsLatestAmendment(e.target.value)}
+                    onChange={(e) => setIsLatestAmendment(e.target.value === 'true')}
                     sx={{ marginBottom: '20px' }}
                   >
                     <FormControlLabel
