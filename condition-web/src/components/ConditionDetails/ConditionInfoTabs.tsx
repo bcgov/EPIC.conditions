@@ -137,6 +137,7 @@ const ConditionInfoTabs: React.FC<{
                         condition={condition}
                         isConditionApproved={isConditionApproved}
                         setIsConditionApproved={setIsConditionApproved}
+                        setCondition={setCondition}
                     />
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
