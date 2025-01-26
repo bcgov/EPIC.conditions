@@ -5,6 +5,7 @@ import DocumentTable from "./DocumentTable";
 import { ContentBox } from "../Shared/ContentBox";
 import { useNavigate } from "@tanstack/react-router";
 import { theme } from "@/styles/theme";
+import { DocumentCategory } from "@/utils/enums"
 
 export const CardInnerBox = styled(Box)({
     display: "flex",
@@ -27,8 +28,11 @@ export const Project = ({ project }: ProjectParam) => {
         (doc) => doc.document_category === "Certificate and Amendments"
     );
 
-    // Check if all documents have a status of true
-    const allDocumentsStatusTrue = project?.documents?.every(doc => doc.is_latest_amendment_added === true);
+    // Check if all documents have a status of true excluding other orders
+    const allDocumentsStatusTrue = project?.documents?.every(doc => 
+        String(doc.document_category_id) === DocumentCategory.OtherOrders 
+        || doc.is_latest_amendment_added === true
+    );
 
     const handleViewConsolidatedConditions = () => {
         if (project?.project_id && certificateDocument) {

@@ -25,6 +25,7 @@ type ConditionsParam = {
   projectId: string;
   documentCategory: string;
   documentCategoryId: string;
+  consolidationLevel?: string;
 };
 
 export const ConsolidatedConditions = ({
@@ -32,7 +33,8 @@ export const ConsolidatedConditions = ({
   projectId,
   documentCategory,
   documentCategoryId,
-  conditions
+  conditions,
+  consolidationLevel
 }: ConditionsParam) => {
   const navigate = useNavigate();
   const [noConditions, setNoConditions] = useState(conditions?.length === 0);
@@ -107,7 +109,7 @@ export const ConsolidatedConditions = ({
               <Grid item xs={6}>
                 <Stack direction={"row"}>
                   <Box sx={{ display: "flex", alignItems: "left", ml: 2 }}>
-                    {documentCategory}
+                    {consolidationLevel == 'project' ? 'Consolidated Conditions' : documentCategory}
                     {hasAmendments && (
                       <Box sx={{ display: "flex", alignItems: "top", mr: 1, mt: 1 }}>
                       <LayersOutlinedIcon fontSize="small" sx={{ ml: 1 }} />
@@ -121,6 +123,7 @@ export const ConsolidatedConditions = ({
                   </Box>
                 </Stack>
               </Grid>
+              {consolidationLevel != 'project' &&
               <Grid item xs={6} textAlign="right">
                 <FormControlLabel
                   control={
@@ -132,7 +135,7 @@ export const ConsolidatedConditions = ({
                   label="View Consolidated Conditions"
                   labelPlacement="end"
                 />
-              </Grid>
+              </Grid>}
             </Grid>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
               <CardInnerBox

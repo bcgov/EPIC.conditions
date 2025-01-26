@@ -128,6 +128,7 @@ const CreateConditionInfoTabs: React.FC<{
                         documentId={documentId}
                         condition={condition}
                         setCondition={setCondition}
+                        origin={'create'}
                     />
                 </Box>
             </Box>

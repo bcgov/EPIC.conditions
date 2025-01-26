@@ -1,5 +1,5 @@
 """Service for project management."""
-from sqlalchemy import and_, func, case, or_, String
+from sqlalchemy import and_, func, case, not_, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
@@ -131,7 +131,21 @@ class ProjectService:
                     return None
 
         all_approved = db.session.query(
-            func.min(case((Condition.is_approved == False, 0), else_=1)).label("all_approved")
+            func.min(
+                case(
+                    (
+                        not_(
+                            and_(
+                                Condition.is_approved.is_(True),  # Ensure is_approved is True
+                                Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
+                                Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
+                            )
+                        ),  # If any of the conditions are not True
+                        0  # Not approved
+                    ),
+                    else_=1  # Approved
+                )
+            ).label("all_approved")
         ).join(Document, Document.document_id == Condition.document_id
         ).join(DocumentType, DocumentType.id == Document.document_type_id
         ).join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id

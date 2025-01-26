@@ -56,7 +56,13 @@ class DocumentService:
                                         Condition.condition_number.is_(None)
                                     )
                                 ),  # Exclude invalid conditions
-                                Condition.is_approved == False  # Not approved
+                                not_(
+                                    and_(
+                                        Condition.is_approved.is_(True),  # Ensure is_approved is True
+                                        Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
+                                        Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
+                                    )
+                                )  # If all are not True, mark as not approved
                             ),
                             0  # Not approved
                         ),
@@ -108,8 +114,22 @@ class DocumentService:
                 Amendment.created_date,
                 extract('year', Amendment.date_issued).label('year_issued'),
                 case(
-                    (func.count(Condition.id) == 0, None),
-                    else_=func.min(case((Condition.is_approved == False, 0), else_=1)),
+                    (func.count(Condition.id) == 0, None),  # If there are no conditions, return None
+                    else_=func.min(
+                        case(
+                            (
+                                not_(
+                                    and_(
+                                        Condition.is_approved.is_(True),  # Ensure is_approved is True
+                                        Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
+                                        Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
+                                    )
+                                ),  # If any of the conditions are not True
+                                0  # Not approved
+                            ),
+                            else_=1  # Approved
+                        )
+                    )
                 ).label("status")
             ).outerjoin(
                 Condition,

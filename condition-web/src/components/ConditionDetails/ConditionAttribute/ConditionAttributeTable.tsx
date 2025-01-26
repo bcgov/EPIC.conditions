@@ -39,6 +39,7 @@ type ConditionAttributeTableProps = {
     documentId: string;
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
+    origin?: string;
 };
 
 interface Attribute {
@@ -50,7 +51,8 @@ const ConditionAttributeTable = memo(({
     projectId,
     documentId,
     condition,
-    setCondition
+    setCondition,
+    origin
   }: ConditionAttributeTableProps) => {
 
     const queryClient = useQueryClient();
@@ -445,7 +447,7 @@ const ConditionAttributeTable = memo(({
             </Paper>
           </Modal>
 
-          <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {origin != 'create' && <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
               color="primary"
@@ -456,11 +458,11 @@ const ConditionAttributeTable = memo(({
                 borderRadius: "4px",
               }}
               onClick={approveConditionAttributes}
-          >
-            {condition.is_condition_attributes_approved ?
-            'Un-approve Condition Attributes' : 'Approve Condition Attributes'}
-          </Button>
-          </Box>
+            >
+              {condition.is_condition_attributes_approved ?
+              'Un-approve Condition Attributes' : 'Approve Condition Attributes'}
+            </Button>
+          </Box>}
         </Stack>
       </Box>
     );
