@@ -265,7 +265,15 @@ const ConditionHeader = ({
               justifyContent: 'flex-end'
             }}
           >
-            <DocumentStatusChip status={String(condition?.is_approved) as DocumentStatus} />
+            <DocumentStatusChip
+              status={
+                condition?.is_approved
+                && condition?.is_condition_attributes_approved
+                && condition?.is_topic_tags_approved
+                  ? "true"
+                  : "false"
+              }
+            />
           </Grid>
         </Grid>
         <Grid container direction={{ xs: "column", sm: "row" }}>

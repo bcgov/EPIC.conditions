@@ -75,6 +75,7 @@ function ConditionPage() {
           documentCategory = {consolidatedConditions?.document_category}
           documentCategoryId = {categoryId}
           conditions={consolidatedConditions?.conditions}
+          consolidationLevel={'document-category'}
         />
       </Grid>
     </PageGrid>

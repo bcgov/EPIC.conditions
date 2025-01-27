@@ -258,7 +258,17 @@ class ConditionService:
                 conditions.condition_name,
                 conditions.condition_number,
                 conditions.condition_text,
-                conditions.is_approved,
+                case(
+                    (
+                        and_(
+                            conditions.is_approved == True,  # Check if condition is approved
+                            conditions.is_condition_attributes_approved == True,  # Check if attributes are approved
+                            conditions.is_topic_tags_approved == True  # Check if topic tags are approved
+                        ),
+                        True  # All conditions are met
+                    ),
+                    else_=False  # At least one condition is not met
+                ).label('is_approved'),  # Derived column for the calculated approval status
                 conditions.is_standard_condition,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
@@ -292,6 +302,8 @@ class ConditionService:
                 conditions.condition_number,
                 conditions.condition_text,
                 conditions.is_approved,
+                conditions.is_condition_attributes_approved,
+                conditions.is_topic_tags_approved,
                 conditions.is_standard_condition,
                 conditions.topic_tags,
                 conditions.subtopic_tags,

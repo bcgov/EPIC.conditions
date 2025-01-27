@@ -4,3 +4,7 @@ export enum DocumentTypes {
     Amendment = 3,
     OtherOrder = 4
 }
+
+export enum DocumentCategory {
+    OtherOrders = '3'
+}
