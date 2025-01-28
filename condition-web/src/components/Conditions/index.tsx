@@ -204,11 +204,11 @@ export const Conditions = ({
                     </Typography>
                   </Box>
                   <Stack direction={"row"}>
-                    <Box sx={{ display: "flex", alignItems: "left", mr: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "left", mr: 1, gap: 1 }}>
                       {documentLabel}
                       {hasAmendments && (
                         <Box sx={{ display: "flex", alignItems: "top", mr: 1, mt: 1 }}>
-                        <LayersOutlinedIcon fontSize="small" sx={{ ml: 1 }} />
+                        <LayersOutlinedIcon fontSize="small" />
                         </Box>
                       )}
                     </Box>

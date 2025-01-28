@@ -4,7 +4,7 @@ name: CONDITION API CD
 on:
   push:
     branches:
-      - develop
+      - main
     paths:
       - "condition-api/**"
   workflow_dispatch:
