@@ -63,10 +63,12 @@ const updateConditionDetails = (
   documentId: string,
   conditionId: number,
   conditionDetails: updateTopicTagsModel,
-  checkConditionExists: boolean
+  checkConditionExists: boolean,
+  check_condition_over_project: boolean,
 ) => {
   return submitRequest({
-    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}?check_condition_exists=${checkConditionExists}`,
+    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}` +
+         `?check_condition_exists=${checkConditionExists}&check_condition_over_project=${check_condition_over_project}`,
     method: "patch",
     data: conditionDetails,
   });
@@ -74,6 +76,7 @@ const updateConditionDetails = (
 
 export const useUpdateConditionDetails = (
   checkConditionExists: boolean,
+  check_condition_over_project: boolean,
   projectId?: string,
   documentId?: string,
   conditionId?: number,
@@ -90,7 +93,8 @@ export const useUpdateConditionDetails = (
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }
-      return updateConditionDetails(projectId, documentId, conditionId, conditionDetails, checkConditionExists);
+      return updateConditionDetails(projectId, documentId, conditionId,
+        conditionDetails, checkConditionExists, check_condition_over_project);
     },
     ...options,
   });
@@ -132,7 +136,7 @@ const loadConditionByID = (conditionId?: string) => {
     return Promise.reject(new Error("Condition ID is required"));
   }
   return submitRequest<ProjectDocumentConditionDetailModel>({
-    url: `/conditions/create/${conditionId}`,
+    url: `/conditions/${conditionId}`,
   });
 };
 
@@ -146,17 +150,19 @@ export const useLoadConditionByID = (conditionId?: string) => {
 };
 
 const updateCondition = (
+  check_condition_over_project: boolean,
   conditionId: number,
   conditionDetails: ConditionModel
 ) => {
   return submitRequest({
-    url: `/conditions/create/${conditionId}`,
+    url: `/conditions/${conditionId}?check_condition_over_project=${check_condition_over_project}`,
     method: "patch",
     data: conditionDetails,
   });
 };
 
 export const useUpdateCondition = (
+  check_condition_over_project?: boolean,
   conditionId?: number,
   options? : Options
 ) => {
@@ -165,7 +171,8 @@ export const useUpdateCondition = (
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }
-      return updateCondition(conditionId, conditionDetails);
+      const isCheckConditionOverProject = check_condition_over_project ?? true;
+      return updateCondition(isCheckConditionOverProject, conditionId, conditionDetails);
     },
     onSuccess: () => {
       notify.success("Condition updated successfully!"); // Success notification
@@ -176,7 +183,7 @@ export const useUpdateCondition = (
     onError: (error: { response?: { data?: { message?: string } } }) => {
       const errorMessage =
         error?.response?.data?.message || "An unknown error occurred.";
-      notify.error(errorMessage); // Error notification
+      console.log(errorMessage); // Error notification
       if (options?.onError) {
         options.onError(); // Call the optional custom onError handler
       }
@@ -189,7 +196,7 @@ const removeCondition = (
   conditionId: number,
 ) => {
   return submitRequest({
-    url: `/conditions/create/${conditionId}`,
+    url: `/conditions/${conditionId}`,
     method: "delete",
   });
 };

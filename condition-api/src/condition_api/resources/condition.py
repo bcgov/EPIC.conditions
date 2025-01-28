@@ -17,8 +17,7 @@ from http import HTTPStatus
 from flask import request
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
-
-from condition_api.exceptions import ResourceNotFoundError
+from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError, ResourceNotFoundError
 from condition_api.models.condition import Condition as ConditionModel
 from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
@@ -75,13 +74,17 @@ class ConditionDetailsResource(Resource):
             conditions_data = ConditionSchema().load(API.payload)
             query_params = request.args
             check_condition_exists = query_params.get('check_condition_exists', '', type=str)
+            check_condition_over_project = query_params.get('check_condition_over_project', '', type=str)
             updated_condition = ConditionService.update_condition(
-                conditions_data, project_id, document_id, condition_id, check_condition_exists)
+                conditions_data, project_id, document_id, condition_id, check_condition_exists,
+                check_condition_over_project)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
-        except ValidationError as err:
-            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
-        except ValueError as err:
+        except ConditionNumberExistsError as err:
             return {"message": str(err)}, HTTPStatus.CONFLICT
+        except ConditionNumberExistsInProjectError as err:
+            return {"message": str(err)}, HTTPStatus.PRECONDITION_FAILED
+        except ValueError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
 
 @cors_preflight("GET, POST, OPTIONS")
@@ -134,7 +137,7 @@ class ConditionDetailResource(Resource):
 
 
 @cors_preflight("GET, OPTIONS, PATCH, DELETE")
-@API.route("/create/<int:condition_id>", methods=["PATCH", "GET", "DELETE", "OPTIONS"])
+@API.route("/<int:condition_id>", methods=["PATCH", "GET", "DELETE", "OPTIONS"])
 class ConditionResource(Resource):
     """Resource for fetching condition details by condition id."""
 
@@ -171,12 +174,21 @@ class ConditionResource(Resource):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
-            updated_condition = ConditionService.update_condition(conditions_data, None, None, condition_id, True)
+            query_params = request.args
+            check_condition_over_project = query_params.get(
+                'check_condition_over_project', 'true').lower() == 'true'
+            updated_condition = ConditionService.update_condition(conditions_data, None, None,
+                                                                  condition_id, True,
+                                                                  check_condition_over_project)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
-        except ValueError as err:
+        except ConditionNumberExistsError as err:
             return {"message": str(err)}, HTTPStatus.CONFLICT
+        except ConditionNumberExistsInProjectError as err:
+            return {"message": str(err)}, HTTPStatus.PRECONDITION_FAILED
+        except ValueError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Delete condition data")

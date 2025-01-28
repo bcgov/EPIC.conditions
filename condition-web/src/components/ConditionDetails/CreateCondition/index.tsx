@@ -1,7 +1,19 @@
 import { useEffect, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
 import { ConditionModel, createDefaultCondition, ProjectDocumentConditionDetailModel } from "@/models/Condition";
-import { Box, Button, Grid, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+  Modal,
+  Paper,
+  Divider,
+  DialogActions
+} from "@mui/material";
 import { styled } from "@mui/system";
 import { StyledTableHeadCell } from "../../Shared/Table/common";
 import CreateConditionInfoTabs from "./CreateConditionInfoTabs";
@@ -9,6 +21,7 @@ import { useRemoveCondition, useUpdateCondition } from "@/hooks/api/useCondition
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import ChipInput from "../../Shared/Chips/ChipInput";
 import { useNavigate } from "@tanstack/react-router";
+import CloseIcon from '@mui/icons-material/Close';
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -36,12 +49,17 @@ export const CreateConditionPage = ({
   const [conditionNumberError, setConditionNumberError] = useState(false);
   const [conditionNameError, setConditionNameError] = useState(false);
   const [conditionConflictError, setConditionConflictError] = useState(false);
+  const [preconditionFailedError, setPreconditionFailedError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(true);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = event.target.value;
     setConditionNumberError(false);
     setConditionNameError(false);
     setConditionConflictError(false);
+    setPreconditionFailedError(false);
     setCondition((prevCondition) => ({
       ...prevCondition,
       [key]: updatedValue,
@@ -56,6 +74,7 @@ export const CreateConditionPage = ({
   }, [tags, setTags]);
 
   const { mutateAsync: updateCondition } = useUpdateCondition(
+    checkConditionExistsForProject,
     condition?.condition_id,
   );
 
@@ -109,10 +128,19 @@ export const CreateConditionPage = ({
         });
       }
     } catch (error) {
-      if ((error as { response?: { data?: { message?: string }; status?: number } }).response?.status === 409) {
+      const responseError = error as {
+        response?: { data?: { message?: string }; status?: number };
+      };
+      if (responseError.response?.status === 409) {
         setConditionConflictError(true);
+      } else if (responseError.response?.status === 412) {
+        setPreconditionFailedError(true);
+        setErrorMessage(responseError.response.data?.message || ""); // Set error message
+        setModalOpen(true); // Open the modal
+      } else if (responseError.response?.status) {
+        notify.error("Failed to save condition."); // Only for unhandled status codes
       } else {
-        notify.error("Failed to save condition.");
+        notify.error("An unexpected error occurred."); // Handle unexpected structures
       }
     }
   }
@@ -129,6 +157,11 @@ export const CreateConditionPage = ({
       notify.error("Failed to remove condition.");
     }
   }
+
+  const handleModalClose = () => {
+    setModalOpen(false); // Close the modal
+    setPreconditionFailedError(false); // Reset the error state
+  };
 
   return (
     <>
@@ -271,6 +304,61 @@ export const CreateConditionPage = ({
           )}
         </Box>
       </Grid>
+
+      {preconditionFailedError && (
+        <Modal open={modalOpen} onClose={handleModalClose}>
+          <Paper
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "90%",
+              maxWidth: "500px",
+              borderRadius: "4px",
+              outline: "none",
+            }}
+          >
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              padding={"14px 5px 14px 14px"}
+            >
+              <Typography variant="h6">Duplicate Condition Number</Typography>
+              <IconButton onClick={handleModalClose}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Divider />
+            <Box
+              component="div"
+              padding={"14px"}
+              sx={{
+                color: "#CE3E39",
+                fontSize: "14px"
+              }}
+              dangerouslySetInnerHTML={{
+                __html: errorMessage || "A precondition failed while saving the condition.",
+              }}
+            />
+          <DialogActions>
+            <Button onClick={handleModalClose} color="secondary">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setCheckConditionExistsForProject(false); // Set the constant to true
+                handleSaveAndClose(); // Call the save function
+              }}
+              color="primary"
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+          </Paper>
+        </Modal>
+      )}
 
       <Button
         variant="contained"

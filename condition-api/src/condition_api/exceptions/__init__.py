@@ -81,3 +81,13 @@ class UnprocessableEntityError(UnprocessableEntity):
         super().__init__(*args, **kwargs)
         self.description = message
         self.response = Response(message, status=UnprocessableEntity.code)
+
+
+class ConditionNumberExistsError(ValueError):
+    """Raised when the condition number already exists in the document."""
+    pass
+
+
+class ConditionNumberExistsInProjectError(ValueError):
+    """Raised when the condition number already exists in the project."""
+    pass

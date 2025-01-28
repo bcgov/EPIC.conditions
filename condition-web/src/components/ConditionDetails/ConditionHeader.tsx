@@ -4,7 +4,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import { ConditionModel } from "@/models/Condition";
-import { DocumentStatus } from "@/models/Document";
 import { BCDesignTokens } from "epic.theme";
 import { StyledTableHeadCell } from "../Shared/Table/common";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
@@ -35,6 +34,7 @@ const ConditionHeader = ({
     const [conditionNumber, setConditionNumber] = useState(condition?.condition_number || "");
     const [conditionName, setConditionName] = useState(condition?.condition_name || "");
     const [checkConditionExists, setCheckConditionExists] = useState(false);
+    const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(false);
     const [conditionConflictError, setConditionConflictError] = useState(false);
 
     const [editMode, setEditMode] = useState(false);
@@ -50,6 +50,7 @@ const ConditionHeader = ({
 
     const { data: conditionDetails, mutateAsync: updateConditionDetails } = useUpdateConditionDetails(
         checkConditionExists,
+        checkConditionExistsForProject,
         projectId,
         documentId,
         conditionId,
@@ -71,6 +72,7 @@ const ConditionHeader = ({
 
     const handleSave = async () => {
         setCheckConditionExists(true);
+        setCheckConditionExistsForProject(true);
 
         const data: PartialUpdateTopicTagsModel = {};
 
@@ -87,6 +89,7 @@ const ConditionHeader = ({
             await updateConditionDetails(data);
             setEditConditionMode(false);
             setCheckConditionExists(false);
+            setCheckConditionExistsForProject(false);
             setConditionConflictError(false);
           } catch (error) {
             if ((error as { response?: { data?: { message?: string }; status?: number } }).response?.status === 409) {
