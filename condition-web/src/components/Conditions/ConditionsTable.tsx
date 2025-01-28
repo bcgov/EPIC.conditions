@@ -18,7 +18,8 @@ export default function ConditionTable({
     documentId,
     headless,
     noConditions,
-    documentTypeId
+    documentTypeId,
+    tableType
 }: {
     conditions: Array<ConditionModel>;
     projectId: string;
@@ -26,6 +27,7 @@ export default function ConditionTable({
     headless?: boolean;
     noConditions: boolean;
     documentTypeId: number;
+    tableType: string;
 }) {
     return (
         <TableContainer component={Box} sx={{ height: "100%" }}>
@@ -57,6 +59,11 @@ export default function ConditionTable({
                         <StyledTableHeadCell colSpan={2} align="right">
                             Year Issued
                         </StyledTableHeadCell>
+                        {tableType == "consolidated" && (
+                            <StyledTableHeadCell colSpan={2} align="right">
+                                Source Document
+                            </StyledTableHeadCell>
+                        )}
                         <StyledTableHeadCell colSpan={2} align="center">
                             Standard Condition
                         </StyledTableHeadCell>
@@ -74,6 +81,7 @@ export default function ConditionTable({
                     projectId={projectId}
                     documentId={documentId}
                     documentTypeId={documentTypeId}
+                    tableType={tableType}
                 />
             ))}
             </TableBody>
