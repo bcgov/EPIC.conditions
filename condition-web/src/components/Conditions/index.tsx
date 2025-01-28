@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
 import {
-  Autocomplete,
+  Autocomplete, 
   Box,
   Button,
   Divider,
@@ -28,6 +28,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
 import { useLoadDocumentsByProject } from "@/hooks/api/useDocuments";
 import { useLoadConditions } from "@/hooks/api/useConditions";
+import { DocumentTypes } from "@/utils/enums"
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -113,8 +114,22 @@ export const Conditions = ({
     setIsLoading(false);
   }, [conditions]);
 
-  const handleOpenCreateNewCondition = () => {
-    setOpenModal(true);
+  const handleOpenCreateNewCondition = async (conditionDetails?: ConditionModel) => {
+    // Directly navigate to the 'Create Condition' page if the condition is not being added to an amendment.
+    if (documentTypeId !== DocumentTypes.Amendment) {
+      try {
+        const response = await createCondition(conditionDetails);
+        if (response) {
+          navigate({
+            to: `/conditions/create/${response.condition_id}`,
+          });
+        }
+      } catch (error) {
+        notify.error("Failed to create condition");
+      }
+    } else {
+      setOpenModal(true);
+    }
   };
 
   const handleCloseCreateNewCondition = () => {
@@ -215,7 +230,7 @@ export const Conditions = ({
                       borderRadius: "4px",
                       paddingLeft: "2px"
                     }}
-                    onClick={handleOpenCreateNewCondition}
+                    onClick={() => handleOpenCreateNewCondition({})}
                   >
                     <AddIcon fontSize="small" /> Add Condition
                   </Button>
