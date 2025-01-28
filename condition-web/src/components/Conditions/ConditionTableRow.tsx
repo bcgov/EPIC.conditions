@@ -12,6 +12,7 @@ interface ConditionRowProps {
   projectId: string;
   documentId: string;
   documentTypeId: number;
+  tableType: string;
 }
 const border = `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`;
 
@@ -19,7 +20,8 @@ export default function ConditionTableRow({
     condition,
     projectId,
     documentId,
-    documentTypeId
+    documentTypeId,
+    tableType
 }: ConditionRowProps) {
 
   const navigate = useNavigate();
@@ -121,6 +123,17 @@ export default function ConditionTableRow({
         >
           {condition.year_issued ?? "--"}
         </TableCell>
+        {tableType == "consolidated" && <TableCell
+          colSpan={2}
+          align="right"
+          sx={{
+            borderTop: border,
+            borderBottom: border,
+            py: BCDesignTokens.layoutPaddingXsmall,
+          }}
+        >
+          {condition.source_document ?? "--"}
+        </TableCell>}
         <TableCell
           colSpan={2}
           align="center"

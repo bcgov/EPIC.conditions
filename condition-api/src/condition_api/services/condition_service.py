@@ -761,6 +761,7 @@ class ConditionService:
         if user_is_internal:
             amendment_subquery = (
                 db.session.query(
+                    DocumentCategory.id,
                     Condition.condition_number,
                     func.string_agg(
                         Amendment.amendment_name.distinct(), ', '
@@ -773,7 +774,7 @@ class ConditionService:
                 .join(Amendment, Amendment.document_id == Document.id)
                 .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
                 .filter(filter_condition)
-                .group_by(Condition.condition_number)
+                .group_by(DocumentCategory.id, Condition.condition_number)
                 .subquery()
             )
 
@@ -797,11 +798,14 @@ class ConditionService:
                     (Condition.amended_document_id.isnot(None), Condition.amended_document_id),
                     else_=Condition.document_id,
                 ).label("effective_document_id"),
+                Document.document_label,
+                Amendment.amendment_name
             )
             .join(Document, Document.project_id == Project.project_id)
             .join(DocumentType, DocumentType.id == Document.document_type_id)
             .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
             .join(Condition, Condition.document_id == Document.document_id)
+            .outerjoin(Amendment, Amendment.amended_document_id == Condition.amended_document_id)
             .filter(filter_condition)
             .filter(Condition.is_active == True)
         )
@@ -810,8 +814,11 @@ class ConditionService:
             query = query.add_columns(amendment_subquery.c.amendment_names.label("amendment_names"))
             query = query.outerjoin(
                 amendment_subquery,
-                Condition.condition_number == amendment_subquery.c.condition_number,
-        )
+                and_(
+                    Condition.condition_number == amendment_subquery.c.condition_number,
+                    DocumentCategory.id == amendment_subquery.c.id
+                ),
+            )
 
         if not user_is_internal:
             query = query.filter(Condition.is_approved == True)
@@ -855,6 +862,7 @@ class ConditionService:
                 "year_issued": row.year_issued,
                 "effective_document_id": row.effective_document_id,
                 "condition_attributes": condition_attributes,
+                "source_document": row.amendment_name if row.amendment_name else row.document_label
             }
 
         return ProjectDocumentConditionSchema().dump(

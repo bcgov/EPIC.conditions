@@ -246,6 +246,7 @@ export const Conditions = ({
                       documentId={documentId}
                       noConditions={noConditions}
                       documentTypeId={documentTypeId}
+                      tableType={""}
                     />
                 </CardInnerBox>
             </Box>

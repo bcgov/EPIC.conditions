@@ -13,6 +13,7 @@ export interface ConditionModel {
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
   is_standard_condition?: boolean;
+  source_document?: string;
   subtopic_tags?: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
   condition_attributes?: Array<{
