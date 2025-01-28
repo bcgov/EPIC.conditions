@@ -108,7 +108,7 @@ export const ConsolidatedConditions = ({
             <Grid container direction="row" paddingBottom={3}>
               <Grid item xs={6}>
                 <Stack direction={"row"}>
-                  <Box sx={{ display: "flex", alignItems: "left", ml: 2, gap: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "left", ml: 2, mr: 1, gap: 1 }}>
                     {consolidationLevel == 'project' ? 'Consolidated Conditions' : documentCategory}
                     {hasAmendments && (
                       <Box sx={{ display: "flex", alignItems: "top", mr: 1, mt: 1 }}>
