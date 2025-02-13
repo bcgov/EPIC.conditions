@@ -36,6 +36,8 @@ const ConditionHeader = ({
     const [checkConditionExists, setCheckConditionExists] = useState(false);
     const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(false);
     const [conditionConflictError, setConditionConflictError] = useState(false);
+    const [approvalError, setApprovalError] = useState(false);
+    const [approvalErrorMessage, setApprovalErrorMessage] = useState("");
 
     const [editMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<string[]>(condition?.topic_tags || []);
@@ -63,10 +65,14 @@ const ConditionHeader = ({
     const handleEditClick = () => {
       setEditMode(!editMode);
       setConditionConflictError(false);
+      setApprovalError(false);
+      setApprovalErrorMessage('');
     };
 
     const handleEditToggle = () => {
       setConditionConflictError(false);
+      setApprovalError(false);
+      setApprovalErrorMessage('');
       setEditConditionMode((prev) => !prev);
     };
 
@@ -91,6 +97,8 @@ const ConditionHeader = ({
             setCheckConditionExists(false);
             setCheckConditionExistsForProject(false);
             setConditionConflictError(false);
+            setApprovalErrorMessage('');
+            setApprovalError(false);
           } catch (error) {
             if ((error as { response?: { data?: { message?: string }; status?: number } }).response?.status === 409) {
               setConditionConflictError(true);
@@ -112,6 +120,20 @@ const ConditionHeader = ({
     }, [conditionDetails, setCondition]);
 
     const approveTags = (isApprovalAction = true) => {
+        // Check if conditionName or conditionNumber is empty
+        if (!condition.condition_name) {
+          setApprovalError(true)
+          setApprovalErrorMessage("Condition name is not entered.");
+          return;
+        }
+
+        if (!condition.condition_number) {
+          setApprovalError(true)
+          setApprovalErrorMessage("Condition number is not entered.");
+          return;
+        }
+
+        // Prepare the data for update
         const data: PartialUpdateTopicTagsModel = isApprovalAction
           ? { is_topic_tags_approved: !condition.is_topic_tags_approved }
           : { topic_tags: tags };
@@ -255,6 +277,18 @@ const ConditionHeader = ({
                   }}
                 >
                   This condition number already exists. Please enter a new one.
+                </Box>
+              )}
+              {approvalError && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    marginBottom: "15px",
+                    color: "#CE3E39",
+                  }}
+                >
+                  {approvalErrorMessage}
                 </Box>
               )}
             </Stack>

@@ -49,14 +49,29 @@ function ConditionPage() {
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (conditionDetails) {
-      replaceBreadcrumb(META_PROJECT_TITLE, conditionDetails?.project_name || "");
+      replaceBreadcrumb("Home", "Home", "/projects", true);
+      replaceBreadcrumb(
+        META_PROJECT_TITLE,
+        conditionDetails?.project_name || "",
+        `/projects`,
+        true
+      );
       replaceBreadcrumb(
         META_DOCUMENT_CATEGORY,
         conditionDetails?.document_category || META_DOCUMENT_CATEGORY,
-        `/documents/project/${projectId}/document-category/${conditionDetails.document_category_id}/`
+        `/documents/project/${projectId}/document-category/${conditionDetails.document_category_id}/`,
+        true
       );
-      replaceBreadcrumb(META_DOCUMENT_TITLE, conditionDetails?.document_label || "");
-      replaceBreadcrumb(META_CONDITION_TITLE, conditionDetails?.condition.condition_name || "");
+      replaceBreadcrumb(
+        META_DOCUMENT_TITLE,
+        conditionDetails?.document_label || ""
+      );
+      replaceBreadcrumb(
+        META_CONDITION_TITLE,
+        conditionDetails?.condition.condition_name || "",
+        undefined,
+        false
+      );
     }
   }, [
     projectId,

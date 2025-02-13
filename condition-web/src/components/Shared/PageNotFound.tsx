@@ -1,21 +1,38 @@
-import { Paper, Container } from "@mui/material";
+import { Grid, Typography, Toolbar } from '@mui/material';
+import ErrorSvg from '../../../src/assets/images/404.svg';
 import { Link } from "@tanstack/react-router";
 
-export default function PageNotFound() {
-  return (
-    <Container id="Error404">
-      <Paper
-        elevation={3}
-        sx={{
-          padding: "1rem",
-          marginTop: "2rem",
-          textAlign: "center",
-        }}
-      >
-        <h1>404</h1>
-        <p>Sorry, page not found.</p>
-        <Link to={"/"}>Go Home</Link>
-      </Paper>
-    </Container>
-  );
-}
+const marginStyle = { mr: 2 };
+
+const PageNotFound = ({ errorMessage }: { errorMessage?: string }) => {
+
+    return (
+        <>
+            <Toolbar />
+            <Grid
+                container
+                direction={'column'}
+                justifyContent="center"
+                alignItems="center"
+                spacing={1}
+                padding={'2em 2em 1em 2em'}
+            >
+                <Grid item sx={{ ...marginStyle, marginBottom: 3 }}>
+                    <Typography variant="h1">
+                      {errorMessage}
+                    </Typography>
+                </Grid>
+                <Grid item sx={{ marginStyle, marginBottom: 2 }}>
+                <img src={ErrorSvg} alt="404 Not Found" />
+                </Grid>
+                <Grid item xs={6} justifyContent={'left'}>
+                  <Typography variant="h4">
+                    <Link to={"/"}>Go Home</Link>
+                  </Typography>
+                </Grid>
+            </Grid>
+        </>
+    );
+};
+
+export default PageNotFound;

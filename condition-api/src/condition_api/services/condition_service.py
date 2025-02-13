@@ -821,7 +821,9 @@ class ConditionService:
             )
 
         if not user_is_internal:
-            query = query.filter(Condition.is_approved == True)
+            query = query.filter(and_(Condition.is_approved == True,
+                                      Condition.is_condition_attributes_approved == True,
+                                      Condition.is_topic_tags_approved == True))
 
         query = query.filter(
             ~and_(

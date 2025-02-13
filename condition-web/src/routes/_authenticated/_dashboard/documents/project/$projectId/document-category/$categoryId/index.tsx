@@ -16,9 +16,9 @@ export const Route = createFileRoute(
     return <p>Document Category not found!</p>;
   },
   meta: ({ params }) => [
-    { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` },
-    { title: `${params.categoryId}`, path: `/projects/` }
+    { title: "Home", path: "/projects" },
+    { title: `${params.projectId}`, path: `/projects` },
+    { title: `${params.categoryId}`, path: `/projects` }
   ],
 });
 
@@ -43,8 +43,19 @@ function DocumentPage() {
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (allDocuments) {
-      replaceBreadcrumb(META_PROJECT_TITLE, allDocuments?.project_name || META_PROJECT_TITLE);
-      replaceBreadcrumb(META_DOCUMENT_CATEGORY, allDocuments?.document_category || META_DOCUMENT_CATEGORY);
+      replaceBreadcrumb("Home", "Home", "/projects", true);
+      replaceBreadcrumb(
+        META_PROJECT_TITLE,
+        allDocuments?.project_name || META_PROJECT_TITLE,
+        `/projects`,
+        true
+      );
+      replaceBreadcrumb(
+        META_DOCUMENT_CATEGORY,
+        allDocuments?.document_category || META_DOCUMENT_CATEGORY,
+        undefined,
+        false
+      );
     }
   }, [allDocuments, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY]);
 

@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as OidcCallbackImport } from './routes/oidc-callback'
+import { Route as NotFoundImport } from './routes/not-found'
 import { Route as ErrorImport } from './routes/error'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
@@ -29,6 +30,11 @@ import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocume
 
 const OidcCallbackRoute = OidcCallbackImport.update({
   path: '/oidc-callback',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const NotFoundRoute = NotFoundImport.update({
+  path: '/not-found',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -135,6 +141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ErrorImport
       parentRoute: typeof rootRoute
     }
+    '/not-found': {
+      id: '/not-found'
+      path: '/not-found'
+      fullPath: '/not-found'
+      preLoaderRoute: typeof NotFoundImport
+      parentRoute: typeof rootRoute
+    }
     '/oidc-callback': {
       id: '/oidc-callback'
       path: '/oidc-callback'
@@ -225,6 +238,7 @@ export const routeTree = rootRoute.addChildren({
     }),
   }),
   ErrorRoute,
+  NotFoundRoute,
   OidcCallbackRoute,
 })
 
@@ -239,6 +253,7 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/_authenticated",
         "/error",
+        "/not-found",
         "/oidc-callback"
       ]
     },
@@ -253,6 +268,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/error": {
       "filePath": "error.tsx"
+    },
+    "/not-found": {
+      "filePath": "not-found.tsx"
     },
     "/oidc-callback": {
       "filePath": "oidc-callback.tsx"
