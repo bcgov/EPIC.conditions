@@ -31,7 +31,7 @@ export const Project = ({ project }: ProjectParam) => {
     // Check if all documents have a status of true excluding other orders
     const allDocumentsStatusTrue = project?.documents?.every(doc => 
         String(doc.document_category_id) === DocumentCategory.OtherOrders 
-        || doc.is_latest_amendment_added === true
+        || (doc.is_latest_amendment_added === true && doc.status !== null)
     );
 
     const handleViewConsolidatedConditions = () => {

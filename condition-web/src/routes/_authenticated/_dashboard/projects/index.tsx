@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
 import { useLoadDocumentType } from "@/hooks/api/useDocuments";
@@ -7,6 +8,7 @@ import { Projects, ProjectsSkeleton } from "@/components/Projects";
 import { useEffect } from "react";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PageGrid } from "@/components/Shared/PageGrid";
+import { HTTP_STATUS_CODES } from "../../../../hooks/api/constants";
 
 export const Route = createFileRoute("/_authenticated/_dashboard/projects/")({
   component: ProjectsPage,
@@ -20,6 +22,7 @@ export function ProjectsPage() {
     data: projectsData,
     isPending: isProjectsLoading,
     isError: isProjectsError,
+    error,
   } = useGetProjects();
 
   const {
@@ -31,6 +34,13 @@ export function ProjectsPage() {
       notify.error("Failed to load projects");
     }
   }, [isProjectsError]);
+
+  // Check if the error is a 404 Not Found error
+  const axiosError = error as AxiosError;
+  if (isProjectsError && axiosError?.response?.status === HTTP_STATUS_CODES.NOT_FOUND) {
+    const errorMessage = (axiosError.response?.data as { message?: string })?.message || "Page not found";
+    return <Navigate to={`/not-found?message=${encodeURIComponent(errorMessage)}`} />;
+  }
 
   if (isProjectsError) {
     return <Navigate to={"/error"} />;

@@ -54,9 +54,9 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
       }
 
       // Check if any document has is_latest_amendment_added as true
-      const anyLatestAmendmentAdded = documents.some(
-        (document) => document.is_latest_amendment_added === true
-      );
+      const hasLatestAmendment = documents.some(doc => doc.is_latest_amendment_added === true);
+      const anyLatestAmendmentAdded = hasNullStatus ? false : hasLatestAmendment;
+
       setIsToggleEnabled(anyLatestAmendmentAdded);
     }
   }, [documents]);

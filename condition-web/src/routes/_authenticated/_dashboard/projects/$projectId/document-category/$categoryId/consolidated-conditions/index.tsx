@@ -45,11 +45,20 @@ function ConditionPage() {
 
   useEffect(() => {
     if (consolidatedConditions) {
-      replaceBreadcrumb(META_PROJECT_TITLE, consolidatedConditions?.project_name || META_PROJECT_TITLE);
+      replaceBreadcrumb("Home", "Home", "/projects", true);
+
+      replaceBreadcrumb(
+        META_PROJECT_TITLE,
+        consolidatedConditions?.project_name || META_PROJECT_TITLE,
+        `/projects`,
+        true
+      );
+
       replaceBreadcrumb(
         META_DOCUMENT_CATEGORY,
         consolidatedConditions?.document_category || META_DOCUMENT_CATEGORY,
-        `/documents/project/${projectId}/document-category/${categoryId}/`
+        `/documents/project/${projectId}/document-category/${categoryId}/`,
+        true
       );
     }
   }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY]);

@@ -38,8 +38,8 @@ const BreadcrumbNav: React.FC = () => {
       }}
     >
       <Breadcrumbs aria-label="breadcrumb">
-        {breadcrumbs.map(({ title, path }) => (
-          path ? (
+        {breadcrumbs.map(({ title, path, clickable }) => (
+          clickable && path ? (
             <Link
               key={path}
               style={{
@@ -53,10 +53,6 @@ const BreadcrumbNav: React.FC = () => {
           ) : (
             <span
               key={path}
-              style={{
-                color: theme.palette.primary.dark,
-                textDecoration: "underline",
-              }}
             >
               {title}
             </span>

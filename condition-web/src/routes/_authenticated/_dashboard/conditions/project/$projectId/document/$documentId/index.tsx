@@ -16,9 +16,9 @@ export const Route = createFileRoute(
     return <p>Condition not found!</p>;
   },
   meta: ({ params }) => [
-    { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` },
-    { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category/` },
+    { title: "Home", path: "/projects" },
+    { title: `${params.projectId}`, path: `/projects` },
+    { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category` },
     { title: `Document Label`, path: undefined }
   ],
 });
@@ -55,18 +55,27 @@ function ConditionPage() {
   const { replaceBreadcrumb } = useBreadCrumb();
   useEffect(() => {
     if (documentDetails) {
-      replaceBreadcrumb(META_PROJECT_TITLE, documentDetails?.project_name || META_PROJECT_TITLE);
+      replaceBreadcrumb("Home", "Home", "/projects", true);
+
+      replaceBreadcrumb(
+        META_PROJECT_TITLE,
+        documentDetails?.project_name || META_PROJECT_TITLE,
+        `/projects`,
+        true
+      );
 
       replaceBreadcrumb(
         META_DOCUMENT_CATEGORY,
         documentDetails?.document_category || META_DOCUMENT_CATEGORY,
-        `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`
+        `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`,
+        true
       );
 
       replaceBreadcrumb(
         META_DOCUMENT_LABEL,
         documentDetails?.document_label || META_DOCUMENT_LABEL,
-        undefined
+        undefined,
+        false
       );
     }
   }, [
