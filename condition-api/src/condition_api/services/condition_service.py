@@ -419,7 +419,8 @@ class ConditionService:
                 project_condition_numbers = db.session.query(
                     Condition.condition_number, Condition.project_id, Condition.document_id
                 ).filter(
-                    Condition.project_id == condition.project_id
+                    and_(Condition.project_id == condition.project_id,
+                         Condition.amended_document_id.is_(None))
                 ).all()
                 # Extract the condition numbers and their corresponding project and document IDs
                 project_condition_map = {

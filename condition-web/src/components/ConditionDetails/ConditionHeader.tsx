@@ -10,6 +10,7 @@ import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PartialUpdateTopicTagsModel } from "@/models/Condition";
 import ChipInput from "../Shared/Chips/ChipInput";
+import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
 
 type ConditionHeaderProps = {
     projectId: string;
@@ -78,7 +79,6 @@ const ConditionHeader = ({
 
     const handleSave = async () => {
         setCheckConditionExists(true);
-        setCheckConditionExistsForProject(true);
 
         const data: PartialUpdateTopicTagsModel = {};
 
@@ -100,12 +100,18 @@ const ConditionHeader = ({
             setApprovalErrorMessage('');
             setApprovalError(false);
           } catch (error) {
-            if ((error as { response?: { data?: { message?: string }; status?: number } }).response?.status === 409) {
+            if ((
+              error as {
+                response?: { data?: { message?: string }; status?: number }
+              }).response?.status === HTTP_STATUS_CODES.CONFLICT
+            ) {
               setConditionConflictError(true);
             } else {
               notify.error("Failed to save condition.");
             }
           }
+        } else {
+          setEditConditionMode(false);
         }
     };
 
@@ -123,13 +129,13 @@ const ConditionHeader = ({
         // Check if conditionName or conditionNumber is empty
         if (!condition.condition_name) {
           setApprovalError(true)
-          setApprovalErrorMessage("Condition name is not entered.");
+          setApprovalErrorMessage("Please enter a Condition Name.");
           return;
         }
 
         if (!condition.condition_number) {
           setApprovalError(true)
-          setApprovalErrorMessage("Condition number is not entered.");
+          setApprovalErrorMessage("Please enter a Condition Number.");
           return;
         }
 
@@ -194,7 +200,10 @@ const ConditionHeader = ({
                   <Button
                     variant="contained"
                     size="small"
-                    onClick={handleSave}
+                    onClick={() => {
+                      setCheckConditionExistsForProject(true);
+                      handleSave();
+                    }}
                     sx={{
                       alignSelf: "stretch",
                       borderRadius: "0 4px 4px 0",
@@ -286,9 +295,11 @@ const ConditionHeader = ({
                     flexDirection: "row",
                     marginBottom: "15px",
                     color: "#CE3E39",
+                    marginTop: 1,
+                    fontSize: '14px',
                   }}
                 >
-                  {approvalErrorMessage}
+                  {approvalErrorMessage} 
                 </Box>
               )}
             </Stack>
