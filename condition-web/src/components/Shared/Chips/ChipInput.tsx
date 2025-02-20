@@ -10,7 +10,7 @@ type ChipInputProps = {
 };
 
 const ChipInput: React.FC<ChipInputProps> = ({
-  chips,
+  chips = [],
   setChips,
   placeholder = "Add a chip",
   inputWidth = "100%",
