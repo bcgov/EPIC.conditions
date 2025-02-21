@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
 import { createDefaultCondition, ProjectDocumentConditionDetailModel } from "@/models/Condition";
 import { Box, Stack } from "@mui/material";
@@ -30,7 +30,13 @@ export const ConditionDetails = ({
   conditionId
 }: ConditionsParam) => {
 
-  const [condition, setCondition] = useState(initialCondition?.condition || createDefaultCondition);
+  const [condition, setCondition] = useState(() => initialCondition?.condition || createDefaultCondition());
+
+  useEffect(() => {
+    if (initialCondition?.condition) {
+      setCondition(initialCondition.condition);
+    }
+  }, [initialCondition]);
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
