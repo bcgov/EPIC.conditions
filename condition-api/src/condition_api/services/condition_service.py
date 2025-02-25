@@ -920,8 +920,8 @@ class ConditionService:
             return {
                 record[1]: (
                     record[2].replace("{", "").replace("}", "").replace('"', "")
-                    if record[2]
+                    if record[2] and record[2] != "N/A"  # Exclude attributes with 'N/A' values
                     else None
                 )
-                for record in attributes_data if record[1]
+                for record in attributes_data if record[1] and record[2] != "N/A"  # Exclude 'N/A' attributes
             }

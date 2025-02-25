@@ -14,6 +14,7 @@ export const TIME_UNITS = [
   { value: "days", label: "Days" },
   { value: "months", label: "Month(s)" },
   { value: "years", label: "Year(s)" },
+  { value: "na", label: "N/A" },
 ];
 
 export const TIME_VALUES = {
@@ -62,6 +63,7 @@ export const SELECT_OPTIONS = {
     { value: "Approval", label: "Approval" },
     { value: "Acceptance", label: "Acceptance" },
     { value: "Satisfaction", label: "Satisfaction" },
+    { value: "N/A", label: "N/A" },
   ],
   [CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION]: [
     { value: "Pre-Construction", label: "Pre-Construction" },
@@ -71,6 +73,7 @@ export const SELECT_OPTIONS = {
     { value: "Care and Maintenance", label: "Care and Maintenance" },
     { value: "Decommissioning", label: "Decommissioning" },
     { value: "Other", label: "Other" },
+    { value: "N/A", label: "N/A" },
   ],
   [CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION]: [
     { value: "Pre-Construction", label: "Pre-Construction" },
@@ -79,5 +82,6 @@ export const SELECT_OPTIONS = {
     { value: "Operations", label: "Operations" },
     { value: "Care and Maintenance", label: "Care and Maintenance" },
     { value: "Decommissioning", label: "Decommissioning" },
+    { value: "N/A", label: "N/A" },
   ],
 };

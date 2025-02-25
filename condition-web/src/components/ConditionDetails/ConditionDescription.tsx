@@ -134,7 +134,7 @@ const ConditionDescription = memo(({
               }}
               onClick={handleAddParentCondition}
             >
-              <AddIcon fontSize="small" /> Add Condition
+              <AddIcon fontSize="small" /> Add Condition Sub-Section
             </Button>
           )}
         </Box>
@@ -144,14 +144,14 @@ const ConditionDescription = memo(({
               color="primary"
               size="small"
               sx={{
-                width: "250px", 
+                width: "260px", 
                 padding: "4px 8px",
                 borderRadius: "4px",
               }}
               onClick={approveConditionDescription}
           >
             {isConditionApproved ?
-            'Un-approve Condition Description' : 'Approve Condition Description'}
+            'Un-approve Condition Requirements' : 'Approve Condition Requirements'}
           </Button>
         </Box>
       </Stack>
