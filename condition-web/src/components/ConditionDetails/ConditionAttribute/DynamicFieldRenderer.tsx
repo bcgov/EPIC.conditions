@@ -12,6 +12,7 @@ import {
     Typography,
     Chip
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import { CONDITION_KEYS, SELECT_OPTIONS, TIME_UNITS, TIME_VALUES } from "./Constants";
 import ChipInput from "../../Shared/Chips/ChipInput";
 import AddIcon from '@mui/icons-material/Add';
@@ -103,12 +104,28 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
     useEffect(() => {
         if (timeUnit) {
-            const value = customTimeValue || timeValue;
-            if (value) {
-                attributeData.setValue(`${value} ${timeUnit}`);
+            if (timeUnit === "N/A") {
+                attributeData.setValue(timeUnit); // Only set the time unit
+            } else {
+                const value = customTimeValue || timeValue;
+                if (value) {
+                    attributeData.setValue(`${value} ${timeUnit}`);
+                }
             }
         }
-    }, [timeValue, timeUnit, customTimeValue, attributeData]);
+    }, [timeValue, timeUnit, customTimeValue, attributeData]);    
+
+    const handleTimeUnitChange = (e: SelectChangeEvent<string>) => {
+        const selectedUnit = e.target.value;
+        setTimeUnit(selectedUnit);
+    
+        // If 'N/A' is selected, set timeValue to 'na', otherwise reset it
+        if (selectedUnit === "N/A") {
+            setTimeValue("na");
+        } else {
+            setTimeValue("");
+        }
+    };
 
     if (attributeData.key === CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE) {
         return (
@@ -120,7 +137,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             >
                 <Select
                     value={timeUnit}
-                    onChange={(e) => setTimeUnit(e.target.value)}
+                    onChange={handleTimeUnitChange}
                     displayEmpty
                     fullWidth
                     sx={{
@@ -148,7 +165,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         onChange={(e) => setTimeValue(e.target.value)}
                         displayEmpty
                         fullWidth
-                        disabled={!timeUnit}
+                        disabled={!timeUnit || timeUnit === "N/A"} 
                         sx={{
                             fontSize: "inherit",
                             lineHeight: "inherit",
@@ -162,11 +179,17 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         <MenuItem value="" disabled sx={{ fontFamily: 'BC Sans' }}>
                             Select Time Value
                         </MenuItem>
-                        {timeUnit && TIME_VALUES[timeUnit as keyof typeof TIME_VALUES].map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
+                        {timeUnit === "N/A" ? (
+                            <MenuItem key="na" value="na">
+                                N/A
                             </MenuItem>
-                        ))}
+                        ) : (
+                            TIME_VALUES[timeUnit as keyof typeof TIME_VALUES]?.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </MenuItem>
+                            ))
+                        )}
                     </Select>
                 </ThemeProvider>
       

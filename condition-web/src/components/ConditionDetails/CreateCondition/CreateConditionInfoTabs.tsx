@@ -46,7 +46,7 @@ const CreateConditionInfoTabs: React.FC<{
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 }> = ({ projectId, documentId, condition, setCondition }) => {
-    const [selectedTab, setSelectedTab] = useState('description');
+    const [selectedTab, setSelectedTab] = useState('requirements');
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
@@ -82,13 +82,13 @@ const CreateConditionInfoTabs: React.FC<{
                 }}
             >
                 <StyledTabs value={selectedTab} onChange={handleTabChange} aria-label="Condition details tabs">
-                    <StyledTab label="Condition Description" value="description" />
+                    <StyledTab label="Condition Requirements" value="requirements" />
                     <StyledTab label="Condition Attributes" value="attributes" />
                 </StyledTabs>
 
             </Stack>
             <Box sx={{ p: 2 }}>
-                <Box sx={{ display: selectedTab === 'description' ? 'block' : 'none' }}>
+                <Box sx={{ display: selectedTab === 'requirements' ? 'block' : 'none' }}>
                     {subconditions.map((sub, index) => (
                         <SubconditionComponent
                             key={index}
@@ -117,7 +117,7 @@ const CreateConditionInfoTabs: React.FC<{
                                 }}
                                 onClick={handleAddParentCondition}
                             >
-                                <AddIcon fontSize="small" /> Add Condition
+                                <AddIcon fontSize="small" /> Add Condition Sub-Section
                             </Button>
                         </Box>
                     </Stack>

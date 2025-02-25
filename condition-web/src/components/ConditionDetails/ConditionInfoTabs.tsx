@@ -41,7 +41,7 @@ const StyledTab = styled(Tab)(({ theme }) => ({
 
 const EditButton = styled(Button)({
     height: '32px',
-    width: '260px',
+    width: '280px',
     borderRadius: "4px 4px 0 0",
     marginLeft: 'auto',
     border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
@@ -59,7 +59,7 @@ const ConditionInfoTabs: React.FC<{
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 }> = ({ projectId, documentId, conditionId, condition, setCondition }) => {
-    const [selectedTab, setSelectedTab] = useState('description');
+    const [selectedTab, setSelectedTab] = useState('requirements');
     const [editMode, setEditMode] = useState(false);
     const [isConditionApproved, setIsConditionApproved] = useState(condition.is_approved || false);
 
@@ -81,12 +81,12 @@ const ConditionInfoTabs: React.FC<{
                 }}
             >
                 <StyledTabs value={selectedTab} onChange={handleTabChange} aria-label="Condition details tabs">
-                    <StyledTab label="Condition Description" value="description" />
+                    <StyledTab label="Condition Requirements" value="requirements" />
                     <StyledTab label="Condition Attributes" value="attributes" />
                 </StyledTabs>
 
-                {/* Conditionally render the Edit button only if the "description" tab is selected */}
-                {selectedTab === 'description' && !isConditionApproved && (
+                {/* Conditionally render the Edit button only if the "requirements" tab is selected */}
+                {selectedTab === 'requirements' && !isConditionApproved && (
                     <EditButton
                         variant="contained"
                         size="small"
@@ -107,7 +107,7 @@ const ConditionInfoTabs: React.FC<{
                                     component="span"
                                     sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
                                 >
-                                    Save Condition Description
+                                    Save Condition Requirements
                                 </Box>
                             </Typography>
                         ) : (
@@ -120,7 +120,7 @@ const ConditionInfoTabs: React.FC<{
                                     component="span"
                                     sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
                                 >
-                                    Edit Condition Description
+                                    Edit Condition Requirements
                                 </Box>
                             </Typography>
                         )}
@@ -128,7 +128,7 @@ const ConditionInfoTabs: React.FC<{
                 )}
             </Stack>
             <Box sx={{ p: 2 }}>
-                <Box sx={{ display: selectedTab === 'description' ? 'block' : 'none' }}>
+                <Box sx={{ display: selectedTab === 'requirements' ? 'block' : 'none' }}>
                     <ConditionDescription
                         editMode={editMode}
                         projectId={projectId}

@@ -338,7 +338,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
 
               {/* Project Selector */}
               <Typography variant="body1" marginBottom={"2px"}>
-                Which Project does this Document belong to?
+                Which project does this document belong to?
               </Typography>
               <Autocomplete
                 id="project-selector"
@@ -361,7 +361,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               />
               {/* Document Type Selector */}
               <Typography variant="body1">
-                What is the source Document?
+                What type of document are you adding?
               </Typography>
               <Autocomplete
                 id="document-type-selector"
@@ -387,7 +387,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               {selectedDocumentType === DocumentTypes.Amendment && !isDocumentsLoading && (
                 <>
                   <Typography variant="body1">
-                    Which {getDocumentQuestionText(selectedProject)} Document does this Amendment belong to?
+                    Document being amended
                   </Typography>
                 <Autocomplete
                   id="document-selector"
@@ -416,7 +416,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               && selectedDocumentType !== DocumentTypes.OtherOrder && selectedDocumentType !== null && (
                 <>
                   <Typography variant="body1">
-                    Does this {getDocumentName(selectedDocumentType)} Document contain Amendment(s)?
+                    Does this {getDocumentName(selectedDocumentType)} document contain amendment(s)?
                   </Typography>
                   <RadioGroup
                     row
@@ -428,12 +428,12 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                     <FormControlLabel
                       value="false"
                       control={<Radio />}
-                      label={`Yes, this ${getDocumentName(selectedDocumentType)} Document contains Amendment(s)`}
+                      label={`Yes, this ${getDocumentName(selectedDocumentType)} document contains amendment(s)`}
                     />
                     <FormControlLabel
                       value="true"
                       control={<Radio />}
-                      label={`No, this ${getDocumentName(selectedDocumentType)} Document does not contain Amendment(s)`}
+                      label={`No, this ${getDocumentName(selectedDocumentType)} document does not contain amendment(s)`}
                     />
                   </RadioGroup>
                 </>
@@ -441,7 +441,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               {selectedDocumentType === DocumentTypes.Amendment && selectedDocumentId !== null && (
                 <>
                   <Typography variant="body1">
-                    Is this the most recent Amendment to {selectedDocumentLabel}?
+                    Is this the most recent amendment to {selectedDocumentLabel}?
                   </Typography>
                   <RadioGroup
                     row
@@ -465,12 +465,12 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               )}
               {/* Document Name Field */}
               <Stack direction={"row"} sx={{ width: "100%" }}>
-                <Typography variant="body1">Document Label</Typography>
+                <Typography variant="body1">Document label</Typography>
                 <CustomTooltip
                   disableInteractive
                   title={
                     <>
-                      This is how the document will be titled in the Condition Repository. <br />
+                      This is how the document will be titled in the condition repository. <br />
                       Note: You do not need to use the official name of the document.
                     </>
                   }
@@ -493,7 +493,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 error={errors.documentLabel}
                 helperText={errors.documentLabel && "Document label is required"}
                 fullWidth
-                placeholder="Document Label"
+                placeholder="Document label"
                 size="small"
                 disabled={
                   !selectedProject || (
@@ -503,7 +503,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               />
               {/* Document Link Field */}
               <Stack direction={"row"} sx={{ width: "100%" }}>
-                <Typography variant="body1">Link to Document</Typography>
+                <Typography variant="body1">Link to document</Typography>
                 <CustomTooltip
                   disableInteractive
                   title={'This is to include the URL to the document in EPIC.'}
@@ -524,7 +524,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
                 value={documentLink}
                 onChange={(e) => setDocumentLink(e.target.value)}
                 fullWidth
-                placeholder="Link to Document"
+                placeholder="Link to document"
                 size="small"
                 disabled={
                   !selectedProject || (
@@ -534,7 +534,7 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
               />
               {/* Date Issued Field */}
               <Stack direction={"row"} sx={{ width: "100%" }}>
-                <Typography variant="body1">Date Issued</Typography>
+                <Typography variant="body1">Date issued</Typography>
                 <CustomTooltip
                   disableInteractive
                   title={
