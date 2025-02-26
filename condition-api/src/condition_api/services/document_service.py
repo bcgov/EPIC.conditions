@@ -175,6 +175,14 @@ class DocumentService:
 
     @staticmethod
     def create_document(project_id, document):
+        required_fields = ["document_label", "document_type_id", "is_latest_amendment_added"]
+        
+        # Check if any required field is missing
+        if any(document.get(field) is None or document.get(field) == "" 
+               for field in required_fields) or project_id is None:
+            raise ValueError("Missing required fields. All fields except 'document_link' \
+                             must be provided and cannot be empty.")
+
         document_id = document.get("document_id")
         if not document_id:
             # Generate a random ID using UUID and convert it to a string
