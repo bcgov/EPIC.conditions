@@ -14,6 +14,7 @@
 """API endpoints for managing a document resource."""
 
 from http import HTTPStatus
+from flask import request
 from flask_restx import Namespace, Resource, cors
 from marshmallow import ValidationError
 
@@ -101,8 +102,8 @@ class DocumentTypeResource(Resource):
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
 
-@cors_preflight("GET, OPTIONS")
-@API.route("/<string:document_id>", methods=["GET", "OPTIONS"])
+@cors_preflight("GET, PATCH, OPTIONS")
+@API.route("/<string:document_id>", methods=["GET", "PATCH", "OPTIONS"])
 class DocumentResource(Resource):
     """Resource for fetching document details."""
 
@@ -122,4 +123,22 @@ class DocumentResource(Resource):
             # Call dump on the schema instance
             return DocumentSchema().dump(document_details), HTTPStatus.OK
         except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Edit document label")
+    @API.response(
+        code=HTTPStatus.OK, model=document_model, description="Edit document"
+    )
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @cors.crossdomain(origin="*")
+    @auth.require
+    def patch(document_id):
+        """Edit document label."""
+        try:
+            request_data = request.get_json()
+            document_label = str(request_data.get("document_label", ""))
+            updated_document = DocumentService.update_document(document_id, document_label)
+            return DocumentSchema().dump(updated_document), HTTPStatus.OK
+        except ValueError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

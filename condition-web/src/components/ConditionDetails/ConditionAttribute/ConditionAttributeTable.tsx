@@ -265,7 +265,7 @@ const ConditionAttributeTable = memo(({
 
     return (
       <Box>
-        <TableContainer component={Box} sx={{ height: "100%", overflow: "hidden", borderRadius: "4px" }}>
+        <TableContainer component={Box} sx={{ height: "100%", overflow: "auto", borderRadius: "4px" }}>
           <Table sx={{ tableLayout: "fixed" }}>
             <TableHead
               sx={{

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
@@ -53,8 +53,13 @@ function ConditionPage() {
   const META_DOCUMENT_CATEGORY = `Document Category`;
   const META_DOCUMENT_LABEL = `Document Label`;
   const { replaceBreadcrumb } = useBreadCrumb();
+
+  const [documentLabel, setDocumentLabel] = useState<string>("");
+
   useEffect(() => {
     if (documentDetails) {
+      setDocumentLabel(documentDetails.document_label || "Document Label"); 
+
       replaceBreadcrumb("Home", "Home", "/projects", true);
 
       replaceBreadcrumb(
@@ -88,6 +93,13 @@ function ConditionPage() {
     META_DOCUMENT_LABEL
   ]);
 
+  const handleDocumentLabelChange = (newLabel: string) => {
+    setDocumentLabel(newLabel);
+    
+    // Update breadcrumb immediately when label changes
+    replaceBreadcrumb(META_DOCUMENT_LABEL, newLabel, undefined, false);
+  };
+
   if (isConditionsError || isDocumentDetailsError) return <Navigate to="/error" />;
 
   if (isDocumentDetailsLoading || isConditionsLoading) {
@@ -107,10 +119,11 @@ function ConditionPage() {
           projectName = {documentDetails?.project_name || ""}
           projectId = {projectId}
           documentCategory = {documentDetails?.document_category || ""}
-          documentLabel = {documentDetails?.document_label || ""}
+          documentLabel = {documentLabel || ""}
           documentId = {documentId}
           conditions={documentConditions?.conditions}
           documentTypeId={documentDetails?.document_type_id}
+          onDocumentLabelChange={handleDocumentLabelChange}
         />
       </Grid>
     </PageGrid>

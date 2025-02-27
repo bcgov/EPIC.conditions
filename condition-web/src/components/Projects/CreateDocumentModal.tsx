@@ -362,7 +362,7 @@ export const CreateDocumentModal = ({
                         && formState.selectedDocumentId !== null && (
                             <>
                             <Typography variant="body1">
-                                Is this the most recent amendment to {formState.selectedDocumentLabel}?
+                                Is this the most recent Amendment to {formState.selectedDocumentLabel}?
                             </Typography>
                             <RadioGroup
                                 row
@@ -428,38 +428,6 @@ export const CreateDocumentModal = ({
                                 )
                             }
                         />
-                        {/* Document Link Field */}
-                        <Stack direction={"row"} sx={{ width: "100%" }}>
-                            <Typography variant="body1">Link to document</Typography>
-                            <CustomTooltip
-                            disableInteractive
-                            title={'This is to include the URL to the document in EPIC.'}
-                            placement="top"
-                            arrow
-                            >
-                            <HelpIcon
-                                fontSize="small"
-                                sx={{
-                                marginTop: '3px',
-                                marginLeft: '5px',
-                                color: theme.palette.primary?.main
-                                }}
-                            />
-                            </CustomTooltip>
-                        </Stack>
-                        <TextField
-                            value={formState.documentLink}
-                            onChange={(e) => updateFormState({ documentLink: e.target.value })}
-                            fullWidth
-                            placeholder="Link to document"
-                            size="small"
-                            disabled={
-                            !formState.selectedProject || (
-                                formState.selectedDocumentType === DocumentTypes.Amendment
-                                && !formState.selectedDocumentId?.trim()
-                            )
-                            }
-                        />
                         {/* Date Issued Field */}
                         <Stack direction={"row"} sx={{ width: "100%" }}>
                             <Typography variant="body1">Date issued</Typography>
@@ -509,6 +477,38 @@ export const CreateDocumentModal = ({
                             }
                             />
                         </LocalizationProvider>
+                        {/* Document Link Field */}
+                        <Stack direction={"row"} sx={{ width: "100%" }}>
+                            <Typography variant="body1">Link to document</Typography>
+                            <CustomTooltip
+                            disableInteractive
+                            title={'This is to include the URL to the document in EPIC.'}
+                            placement="top"
+                            arrow
+                            >
+                            <HelpIcon
+                                fontSize="small"
+                                sx={{
+                                marginTop: '3px',
+                                marginLeft: '5px',
+                                color: theme.palette.primary?.main
+                                }}
+                            />
+                            </CustomTooltip>
+                        </Stack>
+                        <TextField
+                            value={formState.documentLink}
+                            onChange={(e) => updateFormState({ documentLink: e.target.value })}
+                            fullWidth
+                            placeholder="Link to document"
+                            size="small"
+                            disabled={
+                            !formState.selectedProject || (
+                                formState.selectedDocumentType === DocumentTypes.Amendment
+                                && !formState.selectedDocumentId?.trim()
+                            )
+                            }
+                        />
                     </Stack>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "right", padding: "14px" }}>
