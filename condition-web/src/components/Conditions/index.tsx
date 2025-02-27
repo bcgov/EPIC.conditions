@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
 import { Box, Button, Grid, styled, Stack, TextField, Typography } from "@mui/material";
@@ -132,10 +132,15 @@ export const Conditions = ({
     setIsEditing(!isEditing);
   };
 
-  const calculateWidth = (text: string) => {
-    const baseWidth = 10;
-    return `${Math.max(baseWidth * text.length, 50)}px`;
-  };
+  const documentLabelWidth = `${Math.max(200 + documentLabel.length * 6, 200)}px`;
+  const textFieldRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    // Focus the TextField and set the cursor position to the end when it's rendered or when the documentLabel changes
+    if (textFieldRef.current) {
+      textFieldRef.current.focus();
+      textFieldRef.current.setSelectionRange(documentLabel.length, documentLabel.length);
+    }
+  }, [documentLabel]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -187,7 +192,7 @@ export const Conditions = ({
                 </Button>
               </Grid>
             </Grid>
-            <Grid container direction="row" px={2} pb={3} marginTop={-1}>
+            <Grid container direction="row" px={2} pb={3} wrap="wrap">
               <Grid
                 item
                 sx={{
@@ -198,6 +203,7 @@ export const Conditions = ({
                   borderRadius: "4px 0 0 4px",
                   borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
                   height: "40px",
+                  overflow: "hidden",
                 }}
               >
                 {isEditing ? (
@@ -206,7 +212,7 @@ export const Conditions = ({
                     value={isEditing ? tempLabel : documentLabel}
                     onChange={(e) => setTempLabel(e.target.value)}
                     sx={{
-                      width: calculateWidth(tempLabel),
+                      width: documentLabelWidth,
                       marginTop: 3,
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "0px",
@@ -215,14 +221,18 @@ export const Conditions = ({
                         borderRadius: "0px",
                       },
                     }}
+                    inputRef={textFieldRef}
                   />
                 ) : (
                   <Typography
-                  variant="h6"
-                  sx={{
-                    px: BCDesignTokens.layoutPaddingXsmall,
-                    py: BCDesignTokens.layoutPaddingSmall,
-                  }}
+                    variant="h6"
+                    sx={{
+                      px: BCDesignTokens.layoutPaddingXsmall,
+                      py: BCDesignTokens.layoutPaddingSmall,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                 >
                   {documentLabel}
                 </Typography>
