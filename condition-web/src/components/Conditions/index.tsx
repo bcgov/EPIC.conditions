@@ -1,34 +1,22 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
-import {
-  Autocomplete, 
-  Box,
-  Button,
-  Divider,
-  Grid,
-  IconButton,
-  Modal,
-  Paper,
-  styled,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material";
+import { Box, Button, Grid, styled, Stack, TextField, Typography } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { ContentBox } from "../Shared/ContentBox";
 import ConditionTable from "../Conditions/ConditionsTable";
-import { DocumentModel, DocumentStatus } from "@/models/Document";
+import { DocumentStatus } from "@/models/Document";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import { useCreateCondition } from "@/hooks/api/useConditions";
+import { useUpdateDocument } from "@/hooks/api/useDocuments";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
-import { useLoadDocumentsByProject } from "@/hooks/api/useDocuments";
-import { useLoadConditions } from "@/hooks/api/useConditions";
 import { DocumentTypes } from "@/utils/enums"
+import { ConditionModal } from "./CreateConditionModal";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -47,16 +35,18 @@ type ConditionsParam = {
   documentLabel: string;
   documentId: string;
   documentTypeId: number;
+  onDocumentLabelChange: (newLabel: string) => void;
 };
 
 export const Conditions = ({
+  conditions,
   projectName,
   projectId,
   documentCategory,
   documentLabel,
   documentId,
   documentTypeId,
-  conditions
+  onDocumentLabelChange
 }: ConditionsParam) => {
   const navigate = useNavigate();
   const [hasAmendments, setHasAmendments] = useState(false);
@@ -64,9 +54,6 @@ export const Conditions = ({
   const [isLoading, setIsLoading] = useState(true);
   const [noConditions, setNoConditions] = useState(conditions?.length === 0);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | "">("");
-  const [loadCondition, setLoadCondition] = useState(false);
-  const [selectedConditionId, setSelectedConditionId] = useState<number | null>(null);
 
   const onCreateFailure = () => {
     notify.error("Failed to create condition");
@@ -80,18 +67,6 @@ export const Conditions = ({
     onSuccess: onCreateSuccess,
     onError: onCreateFailure,
   });
-
-  const {
-    data: documentData,
-    isPending: isDocumentsLoading
-  } = useLoadDocumentsByProject(
-    true, projectId
-  );
-
-  const {
-    data: documentConditions,
-    isPending: isConditionsLoading,
-  } = useLoadConditions(loadCondition, true, projectId, selectedDocumentId);
 
   useEffect(() => {
     // Check if all conditions have status as true
@@ -134,29 +109,40 @@ export const Conditions = ({
 
   const handleCloseCreateNewCondition = () => {
     setOpenModal(false);
-    setSelectedDocumentId("");
-    setSelectedConditionId(null);
   };
 
-  const handleCreateNewCondition = async (conditionDetails?: ConditionModel) => {
-    try {
-      const response = await createCondition(conditionDetails);
-      if (response) {
-        navigate({
-          to: `/conditions/create/${response.condition_id}`,
-        });
+  const { mutateAsync: updateDocument } = useUpdateDocument(documentId);
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempLabel, setTempLabel] = useState(documentLabel);
+  useEffect(() => {
+    setTempLabel(documentLabel || ""); 
+  }, [documentLabel]);
+
+  const handleEditClick = async () => {
+    if (isEditing) {
+      try {
+        await updateDocument(tempLabel);
+        onDocumentLabelChange(tempLabel);
+        notify.success("Document label updated successfully");
+      } catch (error) {
+        console.log(error);
+        notify.error("Failed to update document label");
       }
-    } catch (error) {
-      notify.error("Failed to create condition");
     }
-  }
+    setIsEditing(!isEditing);
+  };
+
+  const calculateWidth = (text: string) => {
+    const baseWidth = 10;
+    return `${Math.max(baseWidth * text.length, 50)}px`;
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
+    <Grid container direction="column">
       {/* Showing results message */}
       <ContentBox
         mainLabel={
@@ -168,238 +154,155 @@ export const Conditions = ({
         }
         label={""}
       >
-        <Box
-          sx={{
-            borderRadius: "3px",
-            border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-            boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography
-            variant="h6"
+          <Box
             sx={{
-              px: BCDesignTokens.layoutPaddingXsmall,
-              py: BCDesignTokens.layoutPaddingSmall,
-              borderBottom: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+              borderRadius: "3px",
+              border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+              boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <Grid container direction="row" paddingBottom={3}>
+            <Grid container direction="row" p={1} px={2.5}>
               <Grid item xs={6}>
-                <Stack
-                  direction={"column"}
+                <Typography
+                  component="span"
+                  fontWeight="normal"
+                  fontSize="16px"
+                  sx={{ color: '#898785' }}
+                >
+                  {documentCategory}
+                </Typography>
+              </Grid>
+              <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
                   sx={{
-                    px: 2.5,
-                    display: "flex", // Align items in a row
-                    alignItems: "left", // Vertically center the elements
+                    borderRadius: "4px",
+                    paddingLeft: "2px"
+                  }}
+                  onClick={() => handleOpenCreateNewCondition({})}
+                >
+                  <AddIcon fontSize="small" /> Add Condition
+                </Button>
+              </Grid>
+            </Grid>
+            <Grid container direction="row" px={2} pb={3} marginTop={-1}>
+              <Grid
+                item
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: 'center',
+                  border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                  borderRadius: "4px 0 0 4px",
+                  borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                  height: "40px",
+                }}
+              >
+                {isEditing ? (
+                  <TextField 
+                    variant="outlined" 
+                    value={isEditing ? tempLabel : documentLabel}
+                    onChange={(e) => setTempLabel(e.target.value)}
+                    sx={{
+                      width: calculateWidth(tempLabel),
+                      marginTop: 3,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "0px",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderRadius: "0px",
+                      },
+                    }}
+                  />
+                ) : (
+                  <Typography
+                  variant="h6"
+                  sx={{
+                    px: BCDesignTokens.layoutPaddingXsmall,
+                    py: BCDesignTokens.layoutPaddingSmall,
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "left", mr: 1 }}>
-                    <Typography
-                      component="span"
-                      fontWeight="normal"
-                      fontSize="16px"
-                      sx={{ color: '#898785' }}
-                    >
-                      {documentCategory}
-                    </Typography>
-                  </Box>
-                  <Stack direction={"row"}>
-                    <Box sx={{ display: "flex", alignItems: "left", mr: 1, gap: 1 }}>
-                      {documentLabel}
-                      {hasAmendments && (
-                        <Box sx={{ display: "flex", alignItems: "top", mr: 1, mt: 1 }}>
-                        <LayersOutlinedIcon fontSize="small" />
-                        </Box>
-                      )}
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "top", fontWeight: "normal" }}>
-                      <DocumentStatusChip
-                        status={noConditions? "nodata" : String(isToggleEnabled) as DocumentStatus}
-                        />
-                    </Box>
-                  </Stack>
-                </Stack>
+                  {documentLabel}
+                </Typography>
+                )}
               </Grid>
-              <Grid item xs={6} textAlign="right">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    sx={{
-                      marginRight: 2,
-                      borderRadius: "4px",
-                      paddingLeft: "2px"
-                    }}
-                    onClick={() => handleOpenCreateNewCondition({})}
-                  >
-                    <AddIcon fontSize="small" /> Add Condition
-                  </Button>
-                </Grid>
-            </Grid>
-            <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
-                <CardInnerBox
-                    sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
+              <Grid
+                item
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                  borderLeft: "none",
+                  borderRadius: "0 4px 4px 0",
+                  height: "40px",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleEditClick}
+                  sx={{
+                    alignSelf: "stretch",
+                    borderRadius: "0 4px 4px 0",
+                    border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                    backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                    height: '100%',
+                    padding: '2.25px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: "black",
+                    '&:hover': {
+                      backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                    },
+                  }}
                 >
-                    <ConditionTable
-                      conditions={conditions || []}
-                      projectId={projectId}
-                      documentId={documentId}
-                      noConditions={noConditions}
-                      documentTypeId={documentTypeId}
-                      tableType={""}
-                    />
-                </CardInnerBox>
-            </Box>
-          </Typography>
-        </Box>
-      </ContentBox>
-      <Modal open={openModal} onClose={handleCloseCreateNewCondition}>
-        <Paper
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: "500px",
-            borderRadius: "4px",
-            outline: "none",
-          }}
-        >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            padding={"14px 5px 14px 14px"}
-          >
-            <Typography variant="h6">Manual Condition Entry</Typography>
-            <IconButton onClick={handleCloseCreateNewCondition}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <Divider />
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            padding={"14px"}
-          >
-            <Stack direction={"column"} sx={{ width: "100%" }}>
-              <Typography variant="body1" marginBottom={"2px"}>
-                Select from Existing Document
-              </Typography>
-              <Autocomplete
-                id="condition-selector"
-                options={(documentData || []) as DocumentModel[]}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label=" "
-                        InputLabelProps={{
-                            shrink: false,
-                        }}
-                        fullWidth
-                    />
-                )}
-                getOptionLabel={(document: DocumentModel) => document.document_label}
-                onChange={(_e: React.SyntheticEvent<Element, Event>, document: DocumentModel | null) => {
-                  setSelectedDocumentId(document?.document_id || "");
-                  setLoadCondition(true);
-                }}
-                disabled={isDocumentsLoading}
-                size="small"
-              />
-              {selectedDocumentId && !isConditionsLoading && (
-                <>
-              <Typography variant="body1" marginBottom={"2px"}>
-                Condition
-              </Typography>
-              <Autocomplete
-                id="condition-selector"
-                options={documentConditions?.conditions || []}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label=" "
-                        InputLabelProps={{
-                            shrink: false,
-                        }}
-                        fullWidth
-                    />
-                )}
-                getOptionLabel={(condition: ConditionModel) => 
-                  `${condition.condition_number || "No Number"} - ${condition.condition_name || "Unknown Condition"}`
-                }
-                onChange={(_e: React.SyntheticEvent<Element, Event>, condition: ConditionModel | null) => {
-                  setSelectedConditionId(condition?.condition_id || null);
-                }}
-                disabled={isConditionsLoading}
-                size="small"
-              /></>)}
-              {selectedConditionId 
-              && documentConditions?.conditions?.find(condition => condition.condition_id === selectedConditionId) 
-              && (
-                <Box sx={{ marginTop: 0 }}>
-                  <Typography variant="body1" marginBottom={"2px"}>
-                    Condition Preview
-                  </Typography>
-                  <TextField
-                    value={
-                      documentConditions.conditions
-                      .find(condition => condition.condition_id === selectedConditionId)
-                      ?.subconditions
-                      ?.map(subcondition => subcondition.subcondition_text)
-                      .join(' ')
-                      || ""
+                  <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                    {isEditing ?
+                      <SaveAltIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" /> :
+                      <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
                     }
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    fullWidth
-                    multiline
-                    rows={4}
-                    variant="outlined"
+                    <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                      {isEditing ? "Save" : "Edit"}
+                    </Box>
+                  </Typography>
+                </Button>
+              </Grid>
+              <Grid item sx={{ display: "flex"}} px={1}>
+                {hasAmendments && (
+                  <Box sx={{ display: "flex", justifyContent: 'center', alignItems: "center" }}>
+                    <LayersOutlinedIcon fontSize="small" />
+                  </Box>
+                )}
+              </Grid>
+              <Grid item sx={{ display: "flex"}} px={1}>
+                <Box sx={{ display: "flex", justifyContent: 'center', alignItems: "center" }}>
+                  <DocumentStatusChip
+                    status={noConditions? "nodata" : String(isToggleEnabled) as DocumentStatus}
                   />
                 </Box>
-              )}
-              <Typography variant="h6" marginBottom={"15px"}>
-                OR
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{ maxWidth: "55%" }}
-                onClick={() => handleCreateNewCondition({})}
-              >
-                Add New Manual Condition
-              </Button>
-            </Stack>
+              </Grid>
+            </Grid>
+            <Grid container direction="row" p={1} px={2} pb={3}>
+              <ConditionTable
+                conditions={conditions || []}
+                projectId={projectId}
+                documentId={documentId}
+                noConditions={noConditions}
+                documentTypeId={documentTypeId}
+                tableType={""}
+              />
+            </Grid>
           </Box>
-          <Divider />
-          <Box sx={{ display: "flex", justifyContent: "right", padding: "14px" }}>
-            <Button
-              variant="outlined"
-              sx={{ minWidth: "100px" }}
-              onClick={handleCloseCreateNewCondition}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              sx={{ marginLeft: "8px", minWidth: "100px" }}
-              onClick={() =>
-                handleCreateNewCondition(
-                  documentConditions?.conditions?.find(
-                    (condition) => condition.condition_id === selectedConditionId
-                  )
-                )
-              }
-            >
-              Next
-            </Button>
-          </Box>
-        </Paper>
-      </Modal>
-    </Stack>
+      </ContentBox>
+      <ConditionModal
+        open={openModal}
+        onClose={handleCloseCreateNewCondition}
+        projectId={projectId}
+        documentId={documentId}
+      />
+    </Grid>
   );
 };
 

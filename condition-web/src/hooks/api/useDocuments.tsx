@@ -8,6 +8,7 @@ import { submitRequest } from "@/utils/axiosUtils";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { Options } from "./types";
+import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 
 const loadDocuments = (projectId?: string, categoryId?: number) => {
   if (!projectId) {
@@ -101,5 +102,45 @@ export const useLoadDocumentDetails = (documentId?: string) => {
     queryFn: () => loadDocumentDetails(documentId),
     enabled: Boolean(documentId),
     retry: false,
+  });
+};
+
+const updateDocument = (documentId: string, documentLabel: string) => {
+  return submitRequest({
+    url: `/documents/${documentId}`,
+    method: "PATCH",
+    data: { document_label: documentLabel },
+  });
+};
+
+export const useUpdateDocument = (
+  documentId?: string,
+  options?: Options
+) => {
+  return useMutation({
+    mutationFn: async (documentLabel: string) => {
+      if (!documentId) {
+        return Promise.reject(new Error("Document ID is required"));
+      }
+      const response = await updateDocument(documentId, documentLabel);
+      return response.data;
+    },
+    onSuccess: (updatedDocument) => {
+      notify.success("Document name updated successfully!");
+
+      if (options?.onSuccess) {
+        options.onSuccess(updatedDocument); // Pass the updated document back
+      }
+    },
+    onError: (error: { response?: { data?: { message?: string } } }) => {
+      const errorMessage =
+        error?.response?.data?.message || "An unknown error occurred.";
+      console.log(errorMessage);
+      
+      if (options?.onError) {
+        options.onError();
+      }
+    },
+    ...options,
   });
 };

@@ -117,7 +117,7 @@ const CreateConditionInfoTabs: React.FC<{
                                 }}
                                 onClick={handleAddParentCondition}
                             >
-                                <AddIcon fontSize="small" /> Add Condition Sub-Section
+                                <AddIcon fontSize="small" /> Add Condition Sub-section
                             </Button>
                         </Box>
                     </Stack>

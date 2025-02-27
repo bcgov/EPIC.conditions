@@ -30,7 +30,7 @@ export default function ConditionTable({
     tableType: string;
 }) {
     return (
-        <TableContainer component={Box} sx={{ height: "100%" }}>
+        <TableContainer component={Box} sx={{ height: "100%", overflowY: 'auto', minWidth: 1000 }}>
             <Table sx={{ tableLayout: "fixed", border: 0 }} aria-label="simple table">
             {!headless && (
                 <TableHead

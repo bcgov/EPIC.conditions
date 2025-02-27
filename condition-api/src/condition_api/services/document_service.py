@@ -301,3 +301,34 @@ class DocumentService:
             "document_label": is_amendment_document.amendment_name if is_amendment_document else document.document_label,
             "document_type_id": is_amendment_document.document_type_id if is_amendment_document else document.document_type_id,
         }
+
+    @staticmethod
+    def update_document(document_id: str, document_label: str):
+        """
+        Update the document label for a specific document.
+        
+        If the document is an amendment, update `amendment_name`.
+        Otherwise, update `document_label`.
+        """
+        if not document_id or not document_label:
+            return None  # Ensure valid inputs
+
+        # Check if the document_id is an amendment
+        amendment = db.session.query(Amendment).filter_by(amended_document_id=document_id).first()
+
+        if amendment:
+            amendment.amendment_name = document_label
+            db.session.add(amendment)
+        else:
+            document = db.session.query(Document).filter_by(document_id=document_id).first()
+            if not document:
+                return None  # Document does not exist
+            
+            document.document_label = document_label
+            db.session.add(document)
+
+        # Commit changes once to avoid redundant calls
+        db.session.commit()
+
+        # Return updated document details
+        return DocumentService.get_document_details(document_id)
