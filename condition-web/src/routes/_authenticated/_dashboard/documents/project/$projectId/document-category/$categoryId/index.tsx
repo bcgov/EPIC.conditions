@@ -47,7 +47,7 @@ function DocumentPage() {
       replaceBreadcrumb(
         META_PROJECT_TITLE,
         allDocuments?.project_name || META_PROJECT_TITLE,
-        `/projects`,
+        `/projects/${projectId}`,
         true
       );
       replaceBreadcrumb(

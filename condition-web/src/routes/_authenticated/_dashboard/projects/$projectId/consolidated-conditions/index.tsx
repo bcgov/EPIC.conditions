@@ -47,7 +47,7 @@ function ConditionPage() {
       replaceBreadcrumb(
         META_PROJECT_TITLE,
         consolidatedConditions?.project_name || META_PROJECT_TITLE,
-        `/projects`,
+        `/projects/${projectId}`,
         true
       );
     }
