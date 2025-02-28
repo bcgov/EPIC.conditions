@@ -17,6 +17,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
 import { DocumentTypes } from "@/utils/enums"
 import { ConditionModal } from "./CreateConditionModal";
+import LoadingButton from "../Shared/Buttons/LoadingButton";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -54,6 +55,7 @@ export const Conditions = ({
   const [isLoading, setIsLoading] = useState(true);
   const [noConditions, setNoConditions] = useState(conditions?.length === 0);
   const [openModal, setOpenModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onCreateFailure = () => {
     notify.error("Failed to create condition");
@@ -90,6 +92,7 @@ export const Conditions = ({
   }, [conditions]);
 
   const handleOpenCreateNewCondition = async (conditionDetails?: ConditionModel) => {
+    setLoading(true)
     // Directly navigate to the 'Create Condition' page if the condition is not being added to an amendment.
     if (documentTypeId !== DocumentTypes.Amendment) {
       try {
@@ -101,6 +104,8 @@ export const Conditions = ({
         }
       } catch (error) {
         notify.error("Failed to create condition");
+      } finally {
+        setLoading(false)
       }
     } else {
       setOpenModal(true);
@@ -178,7 +183,7 @@ export const Conditions = ({
                 </Typography>
               </Grid>
               <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button
+                <LoadingButton
                   variant="contained"
                   color="primary"
                   size="small"
@@ -187,9 +192,10 @@ export const Conditions = ({
                     paddingLeft: "2px"
                   }}
                   onClick={() => handleOpenCreateNewCondition({})}
+                  loading={loading}
                 >
                   <AddIcon fontSize="small" /> Add Condition
-                </Button>
+                </LoadingButton>
               </Grid>
             </Grid>
             <Grid container direction="row" px={2} pb={3} wrap="wrap">

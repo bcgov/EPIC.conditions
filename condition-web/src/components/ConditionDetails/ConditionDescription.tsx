@@ -19,6 +19,7 @@ type ConditionDescriptionProps = {
   setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
   isConditionApproved: boolean;
   setIsConditionApproved: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 // Main component to render the condition and its subconditions
@@ -30,7 +31,8 @@ const ConditionDescription = memo(({
   condition,
   setCondition,
   isConditionApproved,
-  setIsConditionApproved
+  setIsConditionApproved,
+  setIsLoading
 }: ConditionDescriptionProps) => {
   const [isEditing, setIsEditing] = useState(editMode);
 
@@ -83,6 +85,7 @@ const ConditionDescription = memo(({
         ...conditionDetails,
         subconditions: prevCondition.subconditions,
       }));
+      setIsLoading(false);
     }
   }, [conditionDetails]);
   

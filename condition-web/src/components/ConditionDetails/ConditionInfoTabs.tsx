@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Stack, Tab, Tabs, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import { styled } from '@mui/system';
@@ -62,12 +62,14 @@ const ConditionInfoTabs: React.FC<{
     const [selectedTab, setSelectedTab] = useState('requirements');
     const [editMode, setEditMode] = useState(false);
     const [isConditionApproved, setIsConditionApproved] = useState(condition.is_approved || false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
     };
 
     const handleEditClick = () => {
+        setIsLoading(true);
         setEditMode((prev) => !prev);
     };
 
@@ -91,38 +93,46 @@ const ConditionInfoTabs: React.FC<{
                         variant="contained"
                         size="small"
                         onClick={handleEditClick}
+                        disabled={isLoading}
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
                             whiteSpace: 'nowrap',
+                            position: 'relative',
                         }}
                     >
-                        {editMode ? (
-                            <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <SaveAltIcon
-                                    sx={{ color: "#255A90", mr: 0.5 }}
-                                    fontSize="small"
-                                />
-                                <Box
-                                    component="span"
-                                    sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
-                                >
-                                    Save Condition Requirements
-                                </Box>
-                            </Typography>
+                        {isLoading ? (
+                            <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
                         ) : (
-                            <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <EditIcon
-                                    sx={{ color: "#255A90", mr: 0.5 }}
-                                    fontSize="small"
-                                />
-                                <Box
-                                    component="span"
-                                    sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
-                                >
-                                    Edit Condition Requirements
-                                </Box>
-                            </Typography>
+                            <>
+                                {editMode ? (
+                                    <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                        <SaveAltIcon
+                                            sx={{ color: "#255A90", mr: 0.5 }}
+                                            fontSize="small"
+                                        />
+                                        <Box
+                                            component="span"
+                                            sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
+                                        >
+                                            Save Condition Requirements
+                                        </Box>
+                                    </Typography>
+                                ) : (
+                                    <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                        <EditIcon
+                                            sx={{ color: "#255A90", mr: 0.5 }}
+                                            fontSize="small"
+                                        />
+                                        <Box
+                                            component="span"
+                                            sx={{ ml: 0.5, color: "#255A90", fontWeight: "bold" }}
+                                        >
+                                            Edit Condition Requirements
+                                        </Box>
+                                    </Typography>
+                                )}
+                            </>
                         )}
                     </EditButton>
                 )}
@@ -138,6 +148,7 @@ const ConditionInfoTabs: React.FC<{
                         isConditionApproved={isConditionApproved}
                         setIsConditionApproved={setIsConditionApproved}
                         setCondition={setCondition}
+                        setIsLoading={setIsLoading}
                     />
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
