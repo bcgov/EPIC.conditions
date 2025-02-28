@@ -5,7 +5,7 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import { ConditionModel } from "@/models/Condition";
 import { BCDesignTokens } from "epic.theme";
-import { StyledTableHeadCell } from "../Shared/Table/common";
+import { StyledLabel } from "../Shared/Table/common";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PartialUpdateTopicTagsModel } from "@/models/Condition";
@@ -336,46 +336,50 @@ const ConditionHeader = ({
               }}
             >
               <Grid container direction={{ xs: "column", sm: "row" }}>
-                  <Grid item xs={8}>
-                      <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                          <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                              Project:
-                          </StyledTableHeadCell>
-                          <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                              <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                  {projectName}
-                              </Typography>
-                          </StyledTableHeadCell>
-                      </Stack>
-                  </Grid>
-                  <Grid item xs={4}>
-                      <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                          <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                              Year Condition Issued:
-                          </StyledTableHeadCell>
-                          <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                              <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                  {condition?.year_issued}
-                              </Typography>
-                          </StyledTableHeadCell>
-                      </Stack>
-                  </Grid>
+                <Grid item xs={8} sx={{ pl: 2, pt: 2 }}>
+                  <Stack 
+                      direction="row" 
+                      alignItems="center" // Aligns items in a visually consistent way
+                      gap={1.5} // Controls spacing dynamically
+                  >
+                      <StyledLabel sx={{ whiteSpace: "nowrap" }}>
+                          Project:
+                      </StyledLabel>
+                      <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
+                          {projectName}
+                      </Typography>
+                  </Stack>
+                </Grid>
+                <Grid item xs={4} sx={{ pl: 2, pt: 2 }}>
+                  <Stack 
+                      direction="row" 
+                      alignItems="center" // Aligns items in a visually consistent way
+                      gap={1.5} // Controls spacing dynamically
+                  >
+                      <StyledLabel sx={{ whiteSpace: "nowrap" }}>
+                        Year Condition Issued:
+                      </StyledLabel>
+                      <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
+                          {condition?.year_issued}
+                      </Typography>
+                  </Stack>
+                </Grid>
               </Grid>
-              <Grid container direction="row" marginBottom={1.5} marginTop={-2}>
-                  <Grid container direction="row" alignItems="center">
-                      <Grid item xs={12} sm={8} sx={{ height: "60px" }}>
-                          <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                              <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                                  Source:
-                              </StyledTableHeadCell>
-                              <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
-                                  <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                      {documentLabel}
-                                  </Typography>
-                              </StyledTableHeadCell>
-                          </Stack>
-                      </Grid>
-                  </Grid>
+              <Grid container direction={{ xs: "column", sm: "row" }}>
+                <Grid item xs={12} sm={8} sx={{ pl: 2, pb: 2 }}>
+                  <Stack 
+                      direction="row" 
+                      alignItems="center" // Aligns items in a visually consistent way
+                      gap={1.5} // Controls spacing dynamically
+                  >
+                      <StyledLabel sx={{ whiteSpace: "nowrap" }}>
+                        Source:
+                      </StyledLabel>
+                      <Typography variant="body2" sx={{ wordBreak: "break-word", pt: 2.5 }}>
+                          {documentLabel}
+                      </Typography>
+                  </Stack>
+                </Grid>
               </Grid>
             </Box>
           </Grid>
@@ -392,12 +396,12 @@ const ConditionHeader = ({
               }}
             >
               <Grid container direction="row">
-                <Grid item xs={12}>
-                  <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                    <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                <Grid item xs={12} sx={{ pl: 2, pt: 2 }}>
+                  <Stack direction="row" alignItems="flex-start" gap={1.5}>
+                    <StyledLabel sx={{ whiteSpace: "nowrap" }}>
                       Tags:
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                    </StyledLabel>
+                    <Typography variant="body2"  sx={{ whiteSpace: "nowrap", pt: .5 }} component="span">
                       {editMode ? (
                         <ChipInput
                           chips={tags}
@@ -406,11 +410,9 @@ const ConditionHeader = ({
                           inputWidth="100%"
                         />
                       ) : (
-                        <Typography variant="body2" sx={{ ml: 1, wordBreak: 'break-word' }}>
-                          {tags?.join(', ')}
-                        </Typography>
+                        <>{tags?.join(', ')}</>
                       )}
-                    </StyledTableHeadCell>
+                    </Typography>
                   </Stack>
                 </Grid>
               </Grid>

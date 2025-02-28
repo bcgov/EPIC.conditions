@@ -272,10 +272,10 @@ const ConditionAttributeTable = memo(({
                 ".MuiTableCell-root": {
                   p: BCDesignTokens.layoutPaddingXsmall,
                   backgroundColor: BCDesignTokens.themeGray30,
-                  marginBottom: `15px solid white`,
                   fontSize: '14px',
                   fontWeight: "bold",
                 },
+                borderBottom: `5px solid white`,
               }}
             >
               <TableRow>
@@ -284,14 +284,12 @@ const ConditionAttributeTable = memo(({
                 <TableCell align="left" sx={{ width: "10%", paddingLeft: "10px !important" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
-  
-            <Box sx={{ height: "5px", backgroundColor: BCDesignTokens.themeGray10 }} />
-  
+
             <TableBody
               sx={{
                 ".MuiTableCell-root": {
                   p: BCDesignTokens.layoutPaddingXsmall,
-                  backgroundColor: condition.is_condition_attributes_approved ?'#F7F9FC' : BCDesignTokens.themeGray10,
+                  backgroundColor: condition.is_condition_attributes_approved ? '#F7F9FC' : BCDesignTokens.themeGray10,
                   fontSize: '14px',
                 },
               }}

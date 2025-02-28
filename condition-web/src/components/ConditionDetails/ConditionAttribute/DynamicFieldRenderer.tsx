@@ -501,7 +501,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
     return (
         <TextField
-            value={attributeData.value}
+            value={attributeData.value || ""}
             onChange={(e) => attributeData.setValue(e.target.value)}
             fullWidth
             size="small"

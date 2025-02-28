@@ -30,12 +30,14 @@ import { CustomTooltip } from '../Shared/Common';
 import { useNavigate } from "@tanstack/react-router";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useQueryClient } from "@tanstack/react-query";
+import LoadingButton from "../Shared/Buttons/LoadingButton";
 
 type CreateDocumentModalProps = {
   open: boolean;
   onClose: () => void;
   documentType: DocumentTypeModel[];
   projectArray: ProjectModel[];
+  onTransitionEnd?: () => void;
 };
 
 export const CreateDocumentModal = ({
@@ -43,6 +45,7 @@ export const CreateDocumentModal = ({
   onClose,
   documentType,
   projectArray,
+  onTransitionEnd,
 }: CreateDocumentModalProps) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -150,10 +153,13 @@ export const CreateDocumentModal = ({
         }
     );
 
+    const [loading, setLoading] = useState(false);
     const handleCreateNewDocument = async () => {
         if (!validateFields()) {
             return; // Stop execution if validation fails
         }
+
+        setLoading(true);
 
         const formattedDateIssued = formState.dateIssued 
         ? formState.dateIssued.toISOString().split("T")[0] : undefined;
@@ -180,18 +186,24 @@ export const CreateDocumentModal = ({
             is_latest_amendment_added: formState.isLatestAmendment,
         };
     
-        const response = isAmendment
-        ? await createAmendment(payload as CreateAmendmentModel)
-        : await createDocument(payload as CreateDocumentModel);
-        
-        queryClient.invalidateQueries({ queryKey: ["projects"] });
-        
-        if (response) {
-        const navigateTo = isAmendment
-            ? `/conditions/project/${formState.selectedProject?.project_id}/document/${response.amended_document_id}`
-            : `/conditions/project/${response.project_id}/document/${response.document_id}`;
-        
-        navigate({ to: navigateTo });
+        try {
+            const response = isAmendment
+            ? await createAmendment(payload as CreateAmendmentModel)
+            : await createDocument(payload as CreateDocumentModel);
+            
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            
+            if (response) {
+                const navigateTo = isAmendment
+                    ? `/conditions/project/${formState.selectedProject?.project_id}/document/${response.amended_document_id}`
+                    : `/conditions/project/${response.project_id}/document/${response.document_id}`;
+            
+                navigate({ to: navigateTo });
+            }
+        } catch (error) {
+            console.error("Failed to create document", error);
+        } finally {
+            setLoading(false); // Stop loading once the request completes
         }
     };
 
@@ -210,7 +222,7 @@ export const CreateDocumentModal = ({
     };
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open} onClose={onClose} onTransitionEnd={onTransitionEnd}>
             <Paper
                 sx={{
                     position: "absolute",
@@ -519,13 +531,14 @@ export const CreateDocumentModal = ({
                     >
                         Cancel
                     </Button>
-                    <Button
+                    <LoadingButton
                         variant="contained"
                         sx={{ marginLeft: "8px", minWidth: "100px" }}
                         onClick={handleCreateNewDocument}
+                        loading={loading}
                     >
                         Add
-                    </Button>
+                    </LoadingButton>
                 </Box>
             </Paper>
         </Modal>

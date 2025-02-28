@@ -22,6 +22,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import ChipInput from "../../Shared/Chips/ChipInput";
 import { useNavigate } from "@tanstack/react-router";
 import CloseIcon from '@mui/icons-material/Close';
+import LoadingButton from "../../Shared/Buttons/LoadingButton";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -52,6 +53,7 @@ export const CreateConditionPage = ({
   const [preconditionFailedError, setPreconditionFailedError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(true);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +97,7 @@ export const CreateConditionPage = ({
   );
 
   const handleSaveAndClose = async () => {
+    setLoading(true);
     let errorFlag = false;
 
     if (!condition) {
@@ -142,6 +145,8 @@ export const CreateConditionPage = ({
       } else {
         notify.error("An unexpected error occurred."); // Handle unexpected structures
       }
+    } finally {
+      setLoading(false); // Stop loading once the request is complete
     }
   }
 
@@ -346,15 +351,16 @@ export const CreateConditionPage = ({
             <Button onClick={handleModalClose} color="secondary">
               Cancel
             </Button>
-            <Button
+            <LoadingButton
               onClick={() => {
                 setCheckConditionExistsForProject(false); // Set the constant to true
                 handleSaveAndClose(); // Call the save function
               }}
               color="primary"
+              loading={loading}
             >
               Confirm
-            </Button>
+            </LoadingButton>
           </DialogActions>
           </Paper>
         </Modal>
@@ -376,10 +382,11 @@ export const CreateConditionPage = ({
         Cancel Condition
       </Button>
 
-      <Button
+      <LoadingButton
         variant="contained"
         color="primary"
         size="small"
+        loading={loading}
         sx={{
           minWidth: "80px",
           padding: "4px 8px",
@@ -389,7 +396,7 @@ export const CreateConditionPage = ({
         onClick={handleSaveAndClose}
       >
         Save and Close
-      </Button>
+      </LoadingButton>
     </>
   );
 };
