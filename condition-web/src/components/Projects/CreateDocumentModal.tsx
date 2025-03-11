@@ -270,6 +270,7 @@ export const CreateDocumentModal = ({
                         <Autocomplete
                             id="project-selector"
                             options={projectArray || []}
+                            value={formState.selectedProject}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -294,6 +295,8 @@ export const CreateDocumentModal = ({
                         <Autocomplete
                             id="document-type-selector"
                             options={filteredDocumentTypes || []}
+                            value={filteredDocumentTypes.find(
+                                (type) => type.id === formState.selectedDocumentType) || null}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -351,19 +354,19 @@ export const CreateDocumentModal = ({
                                 <RadioGroup
                                     row
                                     name="isLatestAmendment"
-                                    value={formState.isLatestAmendment}
+                                    value={formState.isLatestAmendment?.toString()} // Convert boolean to string
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                                        updateFormState({ isLatestAmendment: e.target.checked })
+                                        updateFormState({ isLatestAmendment: e.target.value === "true" }) // Convert string back to boolean
                                     }
                                     sx={{ marginBottom: '20px' }}
                                 >
                                     <FormControlLabel
-                                        value="false"
+                                        value="false" // Keep as string
                                         control={<Radio />}
                                         label={`Yes, this ${getDocumentName(formState.selectedDocumentType)} document contains amendment(s)`}
                                     />
                                     <FormControlLabel
-                                        value="true"
+                                        value="true" // Keep as string
                                         control={<Radio />}
                                         label={`No, this ${getDocumentName(formState.selectedDocumentType)} document does not contain amendment(s)`}
                                     />
@@ -379,21 +382,21 @@ export const CreateDocumentModal = ({
                             <RadioGroup
                                 row
                                 name="isLatestAmendment"
-                                value={formState.isLatestAmendment}
+                                value={formState.isLatestAmendment?.toString()}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                                    updateFormState({ isLatestAmendment: e.target.checked })
+                                    updateFormState({ isLatestAmendment: e.target.value === "true" })
                                 }
                                 sx={{ marginBottom: '20px' }}
                             >
                                 <FormControlLabel
-                                value="true"
-                                control={<Radio />}
-                                label="Yes, this is the most recent Amendment"
+                                    value="true"
+                                    control={<Radio />}
+                                    label="Yes, this is the most recent Amendment"
                                 />
                                 <FormControlLabel
-                                value="false"
-                                control={<Radio />}
-                                label="No, this is not the most recent Amendment"
+                                    value="false"
+                                    control={<Radio />}
+                                    label="No, this is not the most recent Amendment"
                                 />
                             </RadioGroup>
                             </>
