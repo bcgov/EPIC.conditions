@@ -361,12 +361,12 @@ export const CreateDocumentModal = ({
                                     sx={{ marginBottom: '20px' }}
                                 >
                                     <FormControlLabel
-                                        value="true" // Keep as string
+                                        value="false" // Keep as string
                                         control={<Radio />}
                                         label={`Yes, this ${getDocumentName(formState.selectedDocumentType)} document contains amendment(s)`}
                                     />
                                     <FormControlLabel
-                                        value="false" // Keep as string
+                                        value="true" // Keep as string
                                         control={<Radio />}
                                         label={`No, this ${getDocumentName(formState.selectedDocumentType)} document does not contain amendment(s)`}
                                     />
