@@ -190,16 +190,16 @@ const ConditionAttributeTable = memo(({
       selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
         ? attributeValue
             ?.replace(/[{}]/g, "")
-            .split(",")
-            .map((item) => item.trim().replace(/^"|"$/g, ""))
+            .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+            ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
         : []
     );
     const [planNames, setPlanNames] = useState<string[]>(
       selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
         ? attributeValue
             ?.replace(/[{}]/g, "")
-            .split(",")
-            .map((item) => item.trim().replace(/^"|"$/g, ""))
+            .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+            ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
         : []
     );
     const [milestones, setMilestones] = useState<string[]>([]);
