@@ -57,8 +57,8 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
       ? attributeValue
           ?.replace(/[{}]/g, "")
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""))
+          .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+          ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
       : []
   );
   const [milestones, setMilestones] = useState<string[]>(
@@ -73,8 +73,8 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
       ? attributeValue
           ?.replace(/[{}]/g, "")
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""))
+          .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+          ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
       : []
   );
 
@@ -84,16 +84,16 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       setChips(
         conditionAttributeItem.value
           ?.replace(/[{}]/g, "")
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""))
+          .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+          ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
       );
     }
     if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
       setPlanNames(
         conditionAttributeItem.value
           ?.replace(/[{}]/g, "")
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""))
+          .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+          ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
       );
     }
   }, [conditionAttributeItem, conditionKey]);
@@ -102,37 +102,41 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     setIsEditable(false);
 
     const updatedValue =
-    conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
-      ? `{${chips
-        .filter((chip) => chip !== null && chip !== "")
-        .map((chip) => `"${chip}"`)
-        .join(",")}}`
+      conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
+        ? `{${chips
+            .filter((chip) => chip !== null && chip !== "")
+            .map((chip) => `"${chip}"`)
+            .join(",")}}`
         : conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
         ? `{${planNames
-          .filter((planName) => planName !== null && planName !== "")
-          .map((planName) => `"${planName}"`)
-          .join(",")}}`
-        : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
-        milestones.map((milestone) => `${milestone}`).join(",")
-        : otherValue !== "" ? otherValue : editableValue;
+            .filter((planName) => planName !== null && planName !== "")
+            .map((planName) => `"${planName}"`)
+            .join(",")}}`
+        : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
+        ? milestones.map((milestone) => `${milestone}`).join(",")
+        : otherValue !== ""
+        ? otherValue
+        : editableValue;
 
     onSave({ ...conditionAttributeItem, value: updatedValue });
 
     if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
-      const parsedChips = updatedValue
-        .replace(/[{}]/g, "")
-        .split(",")
-        .map((item) => item.trim().replace(/^"|"$/g, ""))
-        .filter((item) => item !== "");
+      const parsedChips =
+        updatedValue
+          ?.replace(/[{}]/g, "")
+          .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+          ?.map((item) => item.trim().replace(/^"|"$/g, "")) || [];
+
       setChips(parsedChips);
     }
 
     if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
-      const parsedPlanNames = updatedValue
-        .replace(/[{}]/g, "")
-        .split(",")
-        .map((item) => item.trim().replace(/^"|"$/g, ""))
-        .filter((item) => item !== "");
+      const parsedPlanNames =
+        updatedValue
+          ?.replace(/[{}]/g, "")
+          .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
+          ?.map((item) => item.trim().replace(/^"|"$/g, "")) || [];
+
       setPlanNames(parsedPlanNames);
     }
 
