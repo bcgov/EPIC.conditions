@@ -189,17 +189,27 @@ const ConditionAttributeTable = memo(({
     const [chips, setChips] = useState<string[]>(
       selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
         ? attributeValue
-            ?.replace(/[{}]/g, "")
-            .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
-            ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
+            ?.replace(/[{}]/g, "") // Remove curly braces
+            .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+            ?.map((item) =>
+              item
+                .trim()
+                .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+                .replace(/\\"/g, '"') // Fix escaped quotes
+            ) || []
         : []
     );
     const [planNames, setPlanNames] = useState<string[]>(
       selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
         ? attributeValue
-            ?.replace(/[{}]/g, "")
-            .match(/"(?:[^"\\]|\\.)*"|[^,]+/g)
-            ?.map((item) => item.trim().replace(/^"|"$/g, "")) || []
+            ?.replace(/[{}]/g, "") // Remove curly braces
+            .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+            ?.map((item) =>
+              item
+                .trim()
+                .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+                .replace(/\\"/g, '"') // Fix escaped quotes
+            ) || []
         : []
     );
     const [milestones, setMilestones] = useState<string[]>([]);
@@ -221,20 +231,23 @@ const ConditionAttributeTable = memo(({
         return;
       }
 
+      const formatArray = (arr: string[]) =>
+        `{${arr.filter((item) => item.trim() !== "").map((item) => `"${item.replace(/"/g, '\\"')}"`).join(",")}}`;
+
       updateAttributes([
         {
           id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
           key: selectedAttribute,
-          value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED ?
-          `{${chips.filter((chip) => chip !== null && chip !== "").map((chip) => `"${chip}"`).join(",")}}`
-          : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME ?
-          `{${planNames.filter((planName) => planName !== null && planName !== "").map((planName) => `"${planName}"`).join(",")}}`
-          : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION ?
-          milestones.map((milestone) => `${milestone}`).join(",")
-          : otherValue !== "" ? otherValue : attributeValue,
+          value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
+            ? formatArray(chips)
+            : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+            ? formatArray(planNames)
+            : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
+            ? milestones.map((milestone) => `${milestone}`).join(",")
+            : otherValue !== "" ? otherValue : attributeValue,
         }
       ]);
-  
+
       // Close the modal and reset the selection
       setModalOpen(false);
       setSelectedAttribute("");
