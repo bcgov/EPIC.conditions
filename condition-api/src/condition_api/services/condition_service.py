@@ -1,4 +1,5 @@
 """Service for condition management."""
+import re
 from datetime import datetime
 from sqlalchemy import and_, case, func, extract
 from sqlalchemy.orm import aliased
@@ -14,6 +15,7 @@ from condition_api.models.document_category import DocumentCategory
 from condition_api.models.db import db
 from condition_api.models.project import Project
 from condition_api.schemas.condition import ProjectDocumentConditionSchema, ConsolidatedConditionSchema
+from condition_api.utils.enums import AttributeKeys
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -849,11 +851,6 @@ class ConditionService:
         conditions_map = {}
 
         for row in condition_data:
-            condition_attributes = (
-                ConditionService._fetch_condition_attributes(
-                    row.condition_id, include_condition_attributes, True)
-            )
-
             conditions_map[row.condition_id] = {
                 "condition_id": row.condition_id,
                 "condition_name": row.condition_name,
@@ -864,7 +861,6 @@ class ConditionService:
                 "amendment_names": row.amendment_names,
                 "year_issued": row.year_issued,
                 "effective_document_id": row.effective_document_id,
-                "condition_attributes": condition_attributes,
                 "source_document": row.amendment_name if row.amendment_name else row.document_label
             }
 
@@ -884,7 +880,7 @@ class ConditionService:
         for row in condition_data:
             condition_attributes = (
                 ConditionService._fetch_condition_attributes(
-                    row.condition_id, include_condition_attributes, False)
+                    row.condition_id, include_condition_attributes)
             )
             result.append({
                 "condition_name": row.condition_name,
@@ -898,13 +894,13 @@ class ConditionService:
         return {"conditions": conditions_schema.dump(result)}
 
     @staticmethod
-    def _fetch_condition_attributes(condition_id, include_condition_attributes, user_is_internal):
+    def _fetch_condition_attributes(condition_id, include_condition_attributes):
         """Fetch condition attributes based on the user type and flags."""
         if not include_condition_attributes:
             return []
 
         attributes_data = db.session.query(
-            AttributeKey.key_name,
+            AttributeKey.id,
             AttributeKey.external_key,
             ConditionAttribute.attribute_value,
         ).outerjoin(
@@ -914,14 +910,37 @@ class ConditionService:
             ~ConditionAttribute.attribute_key_id.in_([5]), # exlucding Parties required to be submitted from attribute_keys
         ).order_by(ConditionAttribute.attribute_key_id).all()
 
-        if user_is_internal:
-            return [{"key": record[0], "value": record[1]} for record in attributes_data]
-        else:
-            return {
-                record[1]: (
+        formatted_keys = {
+            AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
+            AttributeKeys.MANAGEMENT_PLAN_NAME,
+        }
+
+        return {
+            record[1]: (
+                ConditionService.format_attribute_value(record[2])
+                if record[0] in formatted_keys
+                else (
                     record[2].replace("{", "").replace("}", "").replace('"', "")
-                    if record[2] and record[2] != "N/A"  # Exclude attributes with 'N/A' values
+                    if record[2] and record[2] != "N/A"
                     else None
                 )
-                for record in attributes_data if record[1] and record[2] != "N/A"  # Exclude 'N/A' attributes
-            }
+            )
+            for record in attributes_data if record[1]  # Ensure record[1] is valid
+        }
+
+    @staticmethod
+    def format_attribute_value(raw_value):
+        if not raw_value or raw_value == "N/A":
+            return None
+
+        # Match values inside `{}` correctly, including those with escaped quotes
+        matches = re.findall(r'"((?:[^"\\]|\\.)*)"|([^,{}]+)', raw_value)
+
+        # Clean up extracted values (preserve quotes properly)
+        clean_list = [
+            (match[0].replace('\\"', '"').strip() if match[0] else match[1].strip())  # Handle escaped quotes properly
+            for match in matches
+        ]
+
+        return clean_list  # Return as a proper JSON list (not a string!)
