@@ -8,14 +8,14 @@ resources:
     limit: 200m
     request: 200m
   memory:
-    limit: 200Mi
+    limit: 150Mi
     request: 100Mi
 image:
   name: condition-web
   tag: latest
   repository: image-registry.openshift-image-registry.svc:5000/c8b80a-tools/
 keycloak:
-  url: "https://dev.loginproxy.gov.bc.ca"
+  url: "https://dev.loginproxy.gov.bc.ca/auth/realms/eao-epic"
   realm: eao-epic
   client: epic-condition
 service:

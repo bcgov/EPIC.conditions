@@ -19,6 +19,8 @@ database:
   service:
     name: condition-patroni
     port: 5432
+  username:
+  password:
 
 
 
@@ -30,16 +32,18 @@ service:
 auth:
   jwt:
     alg: RS256
-    aud: condition-web
+    aud: epic-condition
     cacheEnabled: true
-    issuer: https://test.loginproxy.gov.bc.ca/auth/realms/eao-epic
+    issuer: https://dev.loginproxy.gov.bc.ca/auth/realms/eao-epic
     cacheTimeout: "300"
-    wellKnownConfig: https://test.loginproxy.gov.bc.ca/auth/realms/eao-epic/.well-known/openid-configuration
+    wellKnownConfig: https://dev.loginproxy.gov.bc.ca/auth/realms/eao-epic/.well-known/openid-configuration
   keycloak:
-    uri: https://test.loginproxy.gov.bc.ca
+    uri: https://dev.loginproxy.gov.bc.ca
     realm: eao-epic
     adminClientId:
     adminClientSecret:
 python:
   pythonBuffered: 1
   connectTimeout: 60
+cors:
+  origin:
