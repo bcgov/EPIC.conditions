@@ -55,6 +55,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 }) => {
     const [timeUnit, setTimeUnit] = useState<string>("");
     const [timeValue, setTimeValue] = useState<string>("");
+    const [timeDirection, setTimeDirection] = useState("");
     const [customTimeValue, setCustomTimeValue] = useState<string>("");
     const [error, setError] = useState(false);
     const [showCustomInput, setShowCustomInput] = useState(false);
@@ -109,11 +110,11 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             } else {
                 const value = customTimeValue || timeValue;
                 if (value) {
-                    attributeData.setValue(`${value} ${timeUnit}`);
+                    attributeData.setValue(`${value} ${timeUnit} ${timeDirection}`);
                 }
             }
         }
-    }, [timeValue, timeUnit, customTimeValue, attributeData]);    
+    }, [timeValue, timeUnit, timeDirection, customTimeValue, attributeData]);    
 
     const handleTimeUnitChange = (e: SelectChangeEvent<string>) => {
         const selectedUnit = e.target.value;
@@ -192,7 +193,30 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         )}
                     </Select>
                 </ThemeProvider>
-      
+                <ThemeProvider theme={theme}>
+                    <Select
+                        value={timeDirection}
+                        onChange={(e) => setTimeDirection(e.target.value)}
+                        displayEmpty
+                        fullWidth
+                        disabled={!timeUnit || timeUnit === "N/A"}
+                        sx={{
+                            fontSize: "inherit",
+                            lineHeight: "inherit",
+                            width: editMode ? "30%" : "100%",
+                            "& .MuiSelect-select": {
+                            padding: "8px",
+                            },
+                            marginBottom: "10px",
+                        }}
+                        >
+                        <MenuItem value="" disabled sx={{ fontFamily: 'BC Sans' }}>
+                            Select Direction
+                        </MenuItem>
+                        <MenuItem value="Before">Before</MenuItem>
+                        <MenuItem value="After">After</MenuItem>
+                    </Select>
+                </ThemeProvider>
                 {timeValue === "Other" ? (
                     <TextField
                         value={customTimeValue}

@@ -89,6 +89,9 @@ class ConditionAttributeService:
             ConditionAttributeService._handle_requires_consultation(
                 condition_id, attribute_key_id, attribute.get("value"), add_to_result_list
             )
+            ConditionAttributeService._handle_requires_iem_terms_of_engagement(
+                condition_id, attribute_key_id, attribute.get("value"), add_to_result_list
+            )
 
         db.session.commit()
 
@@ -168,3 +171,40 @@ class ConditionAttributeService:
                     consultation_key.key_name,
                     new_attribute.attribute_value
                 )
+
+    @staticmethod
+    def _handle_requires_iem_terms_of_engagement(condition_id, attribute_key_id, attribute_value, add_to_result_list):
+        """
+        Handles additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true.
+
+        :param condition_id: ID of the condition.
+        :param attribute_key_id: Key ID of the current attribute.
+        :param attribute_value: Value of the current attribute.
+        :param add_to_result_list: Function to add attributes to the result list.
+        """
+        if attribute_key_id == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT and attribute_value == 'true':
+            ATTRIBUTE_KEY_IDS = [
+                AttributeKeys.SUBMITTED_TO_EAO_FOR,
+                AttributeKeys.MILESTONE_RELATED_TO_PLAN_SUBMISSION,
+                AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
+                AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
+                AttributeKeys.REQUIRES_CONSULTATION,
+            ]
+
+            all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(ATTRIBUTE_KEY_IDS)).all()
+            for key in all_attribute_keys:
+                existing_attribute = db.session.query(ConditionAttribute).filter_by(
+                    condition_id=condition_id, attribute_key_id=key.id
+                ).first()
+
+                if not existing_attribute:
+                    # Check if the current key is MANAGEMENT_PLAN_NAME
+                    attribute_value = '{}' if key.id == AttributeKeys.MANAGEMENT_PLAN_NAME else None
+                    new_attribute = ConditionAttribute(
+                        condition_id=condition_id,
+                        attribute_key_id=key.id,
+                        attribute_value=attribute_value
+                    )
+                    db.session.add(new_attribute)
+                    db.session.flush()
+                    add_to_result_list(new_attribute.id, key.id, key.key_name, new_attribute.attribute_value)

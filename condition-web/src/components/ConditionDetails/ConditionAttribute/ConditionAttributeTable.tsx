@@ -16,7 +16,8 @@ import {
   Select,
   Stack,
   MenuItem,
-  Paper
+  Paper,
+  Tooltip
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { BCDesignTokens } from "epic.theme";
@@ -57,6 +58,7 @@ const ConditionAttributeTable = memo(({
 
     const queryClient = useQueryClient();
     const [conditionAttributeError, setConditionAttributeError] = useState(false);
+    const [isAnyRowEditing, setIsAnyRowEditing] = useState(false);
 
     const onCreateFailure = () => {
       notify.error("Failed to save condition attributes");
@@ -313,6 +315,9 @@ const ConditionAttributeTable = memo(({
                   conditionAttributeItem={attribute}
                   onSave={handleSave}
                   is_approved={condition.is_condition_attributes_approved}
+                  onEditModeChange={(isEditing) => {
+                    setIsAnyRowEditing(isEditing);
+                  }}
                 />
               ))}
             </TableBody>
@@ -460,20 +465,33 @@ const ConditionAttributeTable = memo(({
           </Modal>
 
           {origin != 'create' && <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              sx={{
-                width: "250px", 
-                padding: "4px 8px",
-                borderRadius: "4px",
-              }}
-              onClick={approveConditionAttributes}
+            <Tooltip
+              title={
+                isAnyRowEditing
+                  ? "Please save your changes before approving attributes"
+                  : ""
+              }
             >
-              {condition.is_condition_attributes_approved ?
-              'Un-approve Condition Attributes' : 'Approve Condition Attributes'}
-            </Button>
+              {/* Span wrapper needed for tooltip to work on disabled buttons */}
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  sx={{
+                    width: "250px",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                  }}
+                  onClick={approveConditionAttributes}
+                  disabled={isAnyRowEditing}
+                >
+                  {condition.is_condition_attributes_approved
+                    ? "Un-approve Condition Attributes"
+                    : "Approve Condition Attributes"}
+                </Button>
+              </span>
+            </Tooltip>
           </Box>}
         </Stack>
       </Box>
