@@ -41,17 +41,23 @@ type ConditionAttributeRowProps = {
   conditionAttributeItem: ConditionAttributeModel;
   onSave: (updatedAttribute: ConditionAttributeModel) => void;
   is_approved?: boolean;
+  onEditModeChange?: (isEditing: boolean) => void;
 };
 
 const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   conditionAttributeItem,
   onSave,
-  is_approved
+  is_approved,
+  onEditModeChange
 }) => {
   const { key: conditionKey, value: attributeValue } = conditionAttributeItem;
   const [isEditable, setIsEditable] = useState(false);
   const [editableValue, setEditableValue] = useState(attributeValue);
   const [otherValue, setOtherValue] = useState("");
+
+  useEffect(() => {
+    onEditModeChange?.(isEditable);
+  }, [isEditable]);
 
   const [chips, setChips] = useState<string[]>(
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED

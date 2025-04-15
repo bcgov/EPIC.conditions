@@ -366,7 +366,7 @@ const ConditionHeader = ({
                 </Grid>
               </Grid>
               <Grid container direction={{ xs: "column", sm: "row" }}>
-                <Grid item xs={12} sm={8} sx={{ pl: 2, pb: 2 }}>
+                <Grid item xs={12} sm={8} sx={{ pl: 2, pb: 2, pt: 1 }}>
                   <Stack 
                       direction="row" 
                       alignItems="center" // Aligns items in a visually consistent way
@@ -375,7 +375,7 @@ const ConditionHeader = ({
                       <StyledLabel sx={{ whiteSpace: "nowrap" }}>
                         Source:
                       </StyledLabel>
-                      <Typography variant="body2" sx={{ wordBreak: "break-word", pt: 2.5 }}>
+                      <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
                           {documentLabel}
                       </Typography>
                   </Stack>

@@ -24,6 +24,7 @@ class ConditionAttributeSchema(BaseSchema):
     parties_required_to_be_consulted = fields.List(fields.Str(), data_key="parties_required_to_be_consulted")
     parties_required_to_be_submitted = fields.List(fields.Str(), data_key="parties_required_to_be_submitted")
     requires_consultation = fields.Bool(data_key="requires_consultation")
+    requires_iem_terms_of_engagement = fields.Bool(data_key="requires_iem_terms_of_engagement")
 
 class ConditionAttributeUpdateSchema(BaseSchema):
     """Condition Attribute schema."""

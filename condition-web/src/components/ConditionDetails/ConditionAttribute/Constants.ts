@@ -8,6 +8,7 @@ export const CONDITION_KEYS = {
   PARTIES_REQUIRED: "Parties required to be consulted",
   MANAGEMENT_PLAN_ACRONYM: "Management plan acronym",
   MANAGEMENT_PLAN_NAME: "Management plan name",
+  REQUIRES_IEM_TERMS_OF_ENGAGEMENT: "Requires IEM Terms of Engagement",
 };
 
 export const TIME_UNITS = [
@@ -59,10 +60,15 @@ export const SELECT_OPTIONS = {
       { value: "true", label: "Yes" },
       { value: "false", label: "No" },
   ],
+  [CONDITION_KEYS.REQUIRES_IEM_TERMS_OF_ENGAGEMENT]: [
+    { value: "true", label: "Yes" },
+    { value: "false", label: "No" },
+  ],
   [CONDITION_KEYS.SUBMITTED_TO_EAO_FOR]: [
     { value: "Approval", label: "Approval" },
     { value: "Acceptance", label: "Acceptance" },
     { value: "Satisfaction", label: "Satisfaction" },
+    { value: "Review", label: "Review" },
     { value: "N/A", label: "N/A" },
   ],
   [CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION]: [
