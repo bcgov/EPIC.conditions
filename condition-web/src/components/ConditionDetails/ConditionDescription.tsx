@@ -35,6 +35,7 @@ const ConditionDescription = memo(({
   setIsLoading
 }: ConditionDescriptionProps) => {
   const [isEditing, setIsEditing] = useState(editMode);
+  const [showEditingError, setShowEditingError] = useState(false);
 
   const {
     subconditions,
@@ -90,6 +91,13 @@ const ConditionDescription = memo(({
   }, [conditionDetails]);
   
   const approveConditionDescription = () => {
+    if (isEditing) {
+      setShowEditingError(true);
+      return;
+    }
+
+    setShowEditingError(false);
+
     const data: updateTopicTagsModel = {
       is_approved: !isConditionApproved }
     updateConditionDetails(data);
@@ -142,20 +150,35 @@ const ConditionDescription = memo(({
           )}
         </Box>
         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              sx={{
-                width: "260px", 
-                padding: "4px 8px",
-                borderRadius: "4px",
-              }}
-              onClick={approveConditionDescription}
-          >
-            {isConditionApproved ?
-            'Un-approve Condition Requirements' : 'Approve Condition Requirements'}
-          </Button>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                sx={{
+                  width: "260px", 
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                }}
+                onClick={approveConditionDescription}
+            >
+              {isConditionApproved ?
+              'Un-approve Condition Requirements' : 'Approve Condition Requirements'}
+            </Button>
+            {showEditingError && isEditing && (
+              <Box
+                sx={{
+                  color: "#CE3E39",
+                  fontSize: "14px",
+                  marginTop: 1,
+                  marginBottom: "15px",
+                  textAlign: 'right',
+                }}
+              >
+                Please navigate to the top of this section to save your changes before approving Condition Requirements.
+              </Box>
+            )}
+          </Box>
         </Box>
       </Stack>
     </Box>
