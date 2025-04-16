@@ -19,6 +19,7 @@ from marshmallow import ValidationError
 
 from condition_api.schemas.document_category import DocumentCategorySchema
 from condition_api.services.document_service import DocumentService
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
 from ..auth import auth
@@ -41,7 +42,7 @@ class DocumentCategoryResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents for document category")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(project_id, category_id):
         """Fetch all documents for a specific document category."""

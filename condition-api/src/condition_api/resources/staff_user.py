@@ -18,6 +18,7 @@ from http import HTTPStatus
 from flask_restx import Namespace, Resource, cors
 
 from condition_api.exceptions import BadRequestError, ResourceNotFoundError
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
 from ..auth import auth
@@ -45,7 +46,7 @@ class Users(Resource):
     @API.expect(user_model)
     @API.response(code=HTTPStatus.CREATED, model=user_model, description="Staff user Created")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def post():
         """Create a staff user."""
@@ -65,7 +66,7 @@ class User(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Fetch a user by guid")
     @API.response(code=200, model=user_model, description="Success")
     @API.response(404, "Not Found")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(guid):
         """Fetch a staff user by id."""

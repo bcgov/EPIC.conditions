@@ -11,8 +11,10 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as UnauthorizedImport } from './routes/unauthorized'
 import { Route as OidcCallbackImport } from './routes/oidc-callback'
 import { Route as NotFoundImport } from './routes/not-found'
+import { Route as LogoutImport } from './routes/logout'
 import { Route as ErrorImport } from './routes/error'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
@@ -28,6 +30,11 @@ import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocume
 
 // Create/Update Routes
 
+const UnauthorizedRoute = UnauthorizedImport.update({
+  path: '/unauthorized',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const OidcCallbackRoute = OidcCallbackImport.update({
   path: '/oidc-callback',
   getParentRoute: () => rootRoute,
@@ -35,6 +42,11 @@ const OidcCallbackRoute = OidcCallbackImport.update({
 
 const NotFoundRoute = NotFoundImport.update({
   path: '/not-found',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LogoutRoute = LogoutImport.update({
+  path: '/logout',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -141,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ErrorImport
       parentRoute: typeof rootRoute
     }
+    '/logout': {
+      id: '/logout'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof LogoutImport
+      parentRoute: typeof rootRoute
+    }
     '/not-found': {
       id: '/not-found'
       path: '/not-found'
@@ -153,6 +172,13 @@ declare module '@tanstack/react-router' {
       path: '/oidc-callback'
       fullPath: '/oidc-callback'
       preLoaderRoute: typeof OidcCallbackImport
+      parentRoute: typeof rootRoute
+    }
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedImport
       parentRoute: typeof rootRoute
     }
     '/_authenticated/_dashboard': {
@@ -238,8 +264,10 @@ export const routeTree = rootRoute.addChildren({
     }),
   }),
   ErrorRoute,
+  LogoutRoute,
   NotFoundRoute,
   OidcCallbackRoute,
+  UnauthorizedRoute,
 })
 
 /* prettier-ignore-end */
@@ -253,8 +281,10 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/_authenticated",
         "/error",
+        "/logout",
         "/not-found",
-        "/oidc-callback"
+        "/oidc-callback",
+        "/unauthorized"
       ]
     },
     "/": {
@@ -269,11 +299,17 @@ export const routeTree = rootRoute.addChildren({
     "/error": {
       "filePath": "error.tsx"
     },
+    "/logout": {
+      "filePath": "logout.tsx"
+    },
     "/not-found": {
       "filePath": "not-found.tsx"
     },
     "/oidc-callback": {
       "filePath": "oidc-callback.tsx"
+    },
+    "/unauthorized": {
+      "filePath": "unauthorized.tsx"
     },
     "/_authenticated/_dashboard": {
       "filePath": "_authenticated/_dashboard.tsx",

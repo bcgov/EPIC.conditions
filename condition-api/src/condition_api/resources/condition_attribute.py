@@ -19,6 +19,7 @@ from marshmallow import ValidationError
 
 from condition_api.schemas.condition_attribute import ConditionAttributeUpdateSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
 from ..auth import auth
@@ -44,7 +45,7 @@ class ConditionAttributeaResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition attributes data."""
         try:

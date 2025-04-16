@@ -20,6 +20,7 @@ from marshmallow import ValidationError
 from condition_api.models.document import Document
 from condition_api.schemas.amendment import AmendmentSchema
 from condition_api.services.amendment_service import AmendmentService
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
 from ..auth import auth
@@ -42,7 +43,7 @@ class AmendmentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Create new amendments")
     @API.response(code=HTTPStatus.OK, model=amendment_model, description="Create amendments")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def post(document_id):
         """Create a new amendment."""

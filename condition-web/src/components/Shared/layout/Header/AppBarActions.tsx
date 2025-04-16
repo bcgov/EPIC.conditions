@@ -13,9 +13,11 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useState } from "react";
 import { OidcConfig } from "@/utils/config";
 import { BCDesignTokens } from "epic.theme";
+import { useNavigate } from "@tanstack/react-router";
 
 export default function AppBarActions() {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -23,6 +25,11 @@ export default function AppBarActions() {
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleNavigate = (path: string) => {
+    setAnchorEl(null);
+    navigate({ to: path });
   };
 
   return (
@@ -62,7 +69,7 @@ export default function AppBarActions() {
           >
             <MenuItem
               onClick={() => {
-                auth.signoutRedirect();
+                handleNavigate("/logout");
               }}
             >
               Sign Out
