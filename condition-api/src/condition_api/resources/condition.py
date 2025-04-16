@@ -21,6 +21,7 @@ from condition_api.exceptions import ConditionNumberExistsError, ConditionNumber
 from condition_api.models.condition import Condition as ConditionModel
 from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
 from ..auth import auth
@@ -43,7 +44,7 @@ class ConditionDetailsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(project_id, document_id, condition_id):
         """Fetch conditions and condition attributes by project ID."""
@@ -67,7 +68,7 @@ class ConditionDetailsResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(project_id, document_id, condition_id):
         """Edit condition data."""
         try:
@@ -96,7 +97,7 @@ class ConditionDetailResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id and document id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(project_id, document_id):
         """Fetch conditions and condition attributes by project ID."""
@@ -120,7 +121,7 @@ class ConditionDetailResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Create new condition")
     @API.response(code=HTTPStatus.OK, model=condition_model, description="Create condition")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def post(project_id, document_id):
         """Create a new condition."""
@@ -145,7 +146,7 @@ class ConditionResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(condition_id):
         """Fetch conditions and condition attributes by condition ID."""
@@ -169,7 +170,7 @@ class ConditionResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition data."""
         try:
@@ -197,7 +198,7 @@ class ConditionResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def delete(condition_id):
         """Remove condition data."""
         try:

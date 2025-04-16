@@ -22,6 +22,7 @@ from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
 from condition_api.schemas.document import DocumentSchema, DocumentTypeSchema
 from condition_api.services.document_service import DocumentService
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
 from ..auth import auth
@@ -44,7 +45,7 @@ class DocumentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Create new documents")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Create documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def post(project_id):
         """Create a new document."""
@@ -65,7 +66,7 @@ class DocumentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get all documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(project_id):
         """Get all documents."""
@@ -88,7 +89,7 @@ class DocumentTypeResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all document type")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get all document type")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get():
         """Get all document type."""
@@ -111,7 +112,7 @@ class DocumentResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get document details")
     @API.response(code=HTTPStatus.CREATED, model=document_model, description="Get document details")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     @cors.crossdomain(origin="*")
     def get(document_id):
         """Fetch document details by document ID."""
@@ -132,7 +133,7 @@ class DocumentResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
-    @auth.require
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(document_id):
         """Edit document label."""
         try:
