@@ -66,7 +66,7 @@ class User(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Fetch a user by guid")
     @API.response(code=200, model=user_model, description="Success")
     @API.response(404, "Not Found")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.require
     @cors.crossdomain(origin="*")
     def get(guid):
         """Fetch a staff user by id."""
