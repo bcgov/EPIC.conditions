@@ -33,5 +33,5 @@ jobs:
           oc tag condition-api:latest condition-api:${{ github.event.inputs.environment }}
           oc tag condition-web:latest condition-web:${{ github.event.inputs.environment }}
           
-          oc rollout status dc/condition-api -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }} -w
-          oc rollout status dc/condition-web -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }} -w
+          oc rollout restart deployment/condition-api -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }} -w
+          oc rollout restart deployment/condition-web -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }} -w
