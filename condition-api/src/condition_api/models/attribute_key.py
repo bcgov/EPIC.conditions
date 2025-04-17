@@ -13,3 +13,4 @@ class AttributeKey(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     key_name = Column(Text, nullable=False, unique=True)
     external_key = Column(Text, nullable=False, unique=True)
+    sort_order = Column(Integer, nullable=False, unique=True)
