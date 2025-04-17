@@ -30,7 +30,13 @@ import { updateTopicTagsModel } from "@/models/Condition";
 import { useGetAttributes } from "@/hooks/api/useAttributeKey";
 import ConditionAttributeRow from "./ConditionAttributeRow";
 import { useQueryClient } from "@tanstack/react-query";
-import { CONDITION_KEYS, SELECT_OPTIONS } from "./Constants";
+import {
+  CONDITION_KEYS,
+  SELECT_OPTIONS,
+  managementRequiredKeys,
+  consultationRequiredKeys,
+  iemRequiredKeys
+} from "./Constants";
 import CloseIcon from '@mui/icons-material/Close';
 import DynamicFieldRenderer from "./DynamicFieldRenderer";
 
@@ -59,6 +65,12 @@ const ConditionAttributeTable = memo(({
     const [conditionAttributeError, setConditionAttributeError] = useState(false);
     const [isAnyRowEditing, setIsAnyRowEditing] = useState(false);
     const [showEditingError, setShowEditingError] = useState(false);
+
+    /* State variables to track the requirement status of mandatory attributes.
+      These flags determine if management, consultation, or IEM attributes are still required. */
+    const [isManagementRequired, setIsManagementRequired] = useState(false);
+    const [isConsultationRequired, setIsConsultationRequired] = useState(false);
+    const [isIEMRequired, setIsIEMRequired] = useState(false);
 
     const onCreateFailure = () => {
       notify.error("Failed to save condition attributes");
@@ -129,6 +141,28 @@ const ConditionAttributeTable = memo(({
           };
         });
       }
+
+      if (conditionAttributeDetails) {
+      /* Check if requires management plan is true */
+      const managementRequired = conditionAttributeDetails.some((attr: ConditionAttributeModel) => 
+        attr.key === CONDITION_KEYS.REQUIRES_MANAGEMENT_PLAN && 
+        (attr.value === "true")
+      );
+      setIsManagementRequired(!!managementRequired);
+      /* Check if requires consultation is true */
+      const consultationRequired = conditionAttributeDetails.some((attr: ConditionAttributeModel) => 
+        attr.key === CONDITION_KEYS.REQUIRES_CONSULTATION && 
+        (attr.value === "true")
+      );
+      setIsConsultationRequired(!!consultationRequired);
+      /* Check if requires IEM terms of engagement is true */
+      const IEMRequired = conditionAttributeDetails.some((attr: ConditionAttributeModel) => 
+        attr.key === CONDITION_KEYS.REQUIRES_IEM_TERMS_OF_ENGAGEMENT && 
+        (attr.value === "true")
+      );
+      setIsIEMRequired(!!IEMRequired);
+    }
+
     }, [conditionAttributeDetails]);
 
     const approveConditionAttributes = () => {
@@ -139,12 +173,30 @@ const ConditionAttributeTable = memo(({
 
       setShowEditingError(false);
 
-      /* Check if any condition attribute has a null or {} value except
-         for management plan acronym as this is not mandatory */
-      const hasInvalidAttributes = condition?.condition_attributes?.some(attr => 
-        attr.key !== CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM && 
-        (attr.value === null || attr.value === '{}')
-      );
+      /* Validation logic to check if all mandatory attributes are filled in.
+        - `getAttrValue` retrieves the value of an attribute based on the key.
+        - `isEmpty` checks if a value is either null or an empty object (`{}`).
+        - The `managementInvalid`, `consultationInvalid`, and `iemInvalid` variables are
+          used to check whether the mandatory attributes for management, consultation,
+          and IEM are filled in based on the respective required keys.
+        - `hasInvalidAttributes` combines these checks to determine if any mandatory attributes
+          are missing or invalid. */
+      const getAttrValue = (key: string) =>
+        condition?.condition_attributes?.find(attr => attr.key === key)?.value;
+
+      const isEmpty = (value: any) => value === null || value === '{}';
+
+      const managementInvalid = isManagementRequired
+      ? managementRequiredKeys.some(key => isEmpty(getAttrValue(key)))
+      : false;
+      const consultationInvalid = isConsultationRequired
+        ? consultationRequiredKeys.some(key => isEmpty(getAttrValue(key)))
+        : false;
+      const iemInvalid = isIEMRequired
+        ? iemRequiredKeys.some(key => isEmpty(getAttrValue(key)))
+        : false;
+      const hasInvalidAttributes =
+        managementInvalid || consultationInvalid || iemInvalid;
 
       if (hasInvalidAttributes) {
         // Trigger a notification for invalid attributes
@@ -325,6 +377,9 @@ const ConditionAttributeTable = memo(({
                   onEditModeChange={(isEditing) => {
                     setIsAnyRowEditing(isEditing);
                   }}
+                  isManagementRequired={isManagementRequired}
+                  isConsultationRequired={isConsultationRequired}
+                  isIEMRequired={isIEMRequired}
                 />
               ))}
             </TableBody>

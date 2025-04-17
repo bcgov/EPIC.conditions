@@ -25,9 +25,9 @@ class StaffUser(BaseModel):
     middle_name = Column(db.String(50), nullable=True)
     last_name = Column(db.String(50), nullable=False)
     full_name = column_property(first_name + ' ' + last_name)
-    position = Column(db.String(100), nullable=False)
-    work_email_address = Column(db.String(100), nullable=False)
-    work_contact_number = Column(db.String(50), nullable=False)
+    position = Column(db.String(100), nullable=True)
+    work_email_address = Column(db.String(100), nullable=True)
+    work_contact_number = Column(db.String(50), nullable=True)
     auth_guid = Column(db.String(), nullable=False, index=True, unique=True)
     status_id = db.Column(db.Integer, ForeignKey('condition.user_status.id'), nullable=False, default=1)
 

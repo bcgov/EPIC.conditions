@@ -7,7 +7,13 @@ import { Save } from "@mui/icons-material";
 import RemoveIcon from '@mui/icons-material/Remove';
 import { BCDesignTokens } from "epic.theme";
 import { ConditionAttributeModel } from "@/models/ConditionAttribute";
-import { CONDITION_KEYS, SELECT_OPTIONS } from "./Constants";
+import {
+  CONDITION_KEYS,
+  SELECT_OPTIONS,
+  managementRequiredKeys,
+  consultationRequiredKeys,
+  iemRequiredKeys
+} from "./Constants";
 import DynamicFieldRenderer from "./DynamicFieldRenderer";
 
 const StyledTableRow = styled(TableRow)(() => ({}));
@@ -42,13 +48,19 @@ type ConditionAttributeRowProps = {
   onSave: (updatedAttribute: ConditionAttributeModel) => void;
   is_approved?: boolean;
   onEditModeChange?: (isEditing: boolean) => void;
+  isManagementRequired: boolean;
+  isConsultationRequired: boolean;
+  isIEMRequired: boolean;
 };
 
 const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   conditionAttributeItem,
   onSave,
   is_approved,
-  onEditModeChange
+  onEditModeChange,
+  isManagementRequired,
+  isConsultationRequired,
+  isIEMRequired
 }) => {
   const { key: conditionKey, value: attributeValue } = conditionAttributeItem;
   const [isEditable, setIsEditable] = useState(false);
@@ -262,8 +274,11 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     <PackageTableRow>
       <ConditionAttributeHeadTableCell align="left">
         {conditionKey}
-        {conditionKey !== CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM && 
-        (!attributeValue || attributeValue === "{}") && (
+        {(!attributeValue || attributeValue === "{}") && (
+          (isManagementRequired && managementRequiredKeys.includes(conditionKey)) ||
+          (isConsultationRequired && consultationRequiredKeys.includes(conditionKey)) ||
+          (isIEMRequired && iemRequiredKeys.includes(conditionKey))
+        ) && (
           <CustomTooltip title="This attribute is required and cannot be empty" arrow>
             <span style={{ color: "red", fontSize: "16px", marginLeft: "4px" }}>*</span>
           </CustomTooltip>
