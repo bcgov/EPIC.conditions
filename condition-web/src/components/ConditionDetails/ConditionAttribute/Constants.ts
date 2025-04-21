@@ -2,7 +2,7 @@ export const CONDITION_KEYS = {
   REQUIRES_MANAGEMENT_PLAN: "Requires management plan",
   REQUIRES_CONSULTATION: "Requires consultation",
   SUBMITTED_TO_EAO_FOR: "Submitted to EAO for",
-  MILESTONE_RELATED_TO_PLAN_SUBMISSION: "Milestone related to plan submission",
+  MILESTONES_RELATED_TO_PLAN_SUBMISSION: "Milestone(s) related to plan submission",
   MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION: "Milestone(s) related to plan implementation",
   TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE: "Time associated with submission milestone",
   PARTIES_REQUIRED: "Parties required to be consulted",
@@ -70,7 +70,7 @@ export const SELECT_OPTIONS = {
     { value: "Satisfaction", label: "Satisfaction" },
     { value: "Review", label: "Review" },
   ],
-  [CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION]: [
+  [CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION]: [
     { value: "Pre-Construction", label: "Pre-Construction" },
     { value: "Construction", label: "Construction" },
     { value: "Commissioning", label: "Commissioning" },
@@ -94,7 +94,7 @@ export const SELECT_OPTIONS = {
 export const managementRequiredKeys = [
   CONDITION_KEYS.SUBMITTED_TO_EAO_FOR,
   CONDITION_KEYS.MANAGEMENT_PLAN_NAME,
-  CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION,
+  CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
   CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
   CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
   CONDITION_KEYS.REQUIRES_CONSULTATION,
@@ -106,7 +106,7 @@ export const consultationRequiredKeys = [
 
 export const iemRequiredKeys = [
   CONDITION_KEYS.SUBMITTED_TO_EAO_FOR,
-  CONDITION_KEYS.MILESTONE_RELATED_TO_PLAN_SUBMISSION,
+  CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
   CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
   CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
   CONDITION_KEYS.REQUIRES_CONSULTATION,

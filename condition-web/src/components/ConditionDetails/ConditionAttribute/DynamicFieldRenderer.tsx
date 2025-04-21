@@ -29,6 +29,10 @@ type DynamicFieldRendererProps = {
       chips: string[];
       setChips: (value: string[]) => void;
     };
+    submissionMilestonesData: {
+        submissionMilestones: string[];
+        setSubmissionMilestones: (value: string[]) => void;
+    };
     milestonesData: {
       milestones: string[];
       setMilestones: (value: string[]) => void;
@@ -49,6 +53,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     options,
     attributeData,
     chipsData,
+    submissionMilestonesData,
     milestonesData,
     planNamesData,
     otherData,
@@ -58,12 +63,27 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     const [timeDirection, setTimeDirection] = useState("");
     const [customTimeValue, setCustomTimeValue] = useState<string>("");
     const [error, setError] = useState(false);
+    const [showCustomSubmissionInput, setShowCustomSubmissionInput] = useState(false);
     const [showCustomInput, setShowCustomInput] = useState(false);
     const [showCustomPlanNames, setShowCustomPlanNames] = useState(false);
+    const [customSubmissionMilestone, setCustomSubmissionMilestone] = useState("");
     const [customMilestone, setCustomMilestone] = useState("");
     const [additionalPlanNames, setAdditionalPlanNames] = useState("");
+    const [dynamicSubmissionWidth, setDynamicSubmissionWidth] = useState<number>(100);
     const [dynamicWidth, setDynamicWidth] = useState<number>(100);
     const textRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (textRef.current) {
+            const totalLength = submissionMilestonesData.submissionMilestones.join(", ");
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            if (context) {
+                const textWidth = context.measureText(totalLength).width;
+                setDynamicSubmissionWidth(Math.max(textWidth + 180, 200));
+            }
+        }
+    }, [submissionMilestonesData]);
 
     useEffect(() => {
         if (textRef.current) {
@@ -242,6 +262,109 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 placeholder="Add a party"
                 inputWidth={editMode ? "30%" : "100%"}
             />
+        );
+    }
+
+    if (attributeData.key === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION) {
+        const submissionMilestoneOptions = SELECT_OPTIONS[CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION];
+    
+        const handleAddCustomSubmissionMilestone = () => {
+            if (customSubmissionMilestone.trim()) {
+              submissionMilestonesData.setSubmissionMilestones(
+                [...submissionMilestonesData.submissionMilestones, customSubmissionMilestone]);
+              setCustomSubmissionMilestone(""); // Clear the input field
+              setShowCustomSubmissionInput(false); // Hide the custom input field
+            }
+        };
+
+        return (
+          <>
+            <Select
+                multiple // Enables multiple selection
+                value={Array.isArray(
+                    submissionMilestonesData.submissionMilestones) ? submissionMilestonesData.submissionMilestones : []}
+                onChange={(e) => submissionMilestonesData.setSubmissionMilestones(e.target.value as string[])} // Handle multiple values
+                renderValue={(selected) => (
+                    <Box ref={textRef}>
+                        {(selected as string[]).join(", ")}
+                    </Box>
+                )}
+                fullWidth
+                sx={{
+                    fontSize: "inherit",
+                    lineHeight: "inherit",
+                    width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
+                    minWidth: "30%",
+                    "& .MuiSelect-select": {
+                        padding: "8px",
+                    },
+                    marginBottom: "10px",
+                }}
+            >
+                {submissionMilestoneOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                        <Checkbox
+                            checked={
+                                Array.isArray(submissionMilestonesData.submissionMilestones) &&
+                                submissionMilestonesData.submissionMilestones.includes(option.value)
+                            }
+                        />
+                        <ListItemText primary={option.label} />
+                    </MenuItem>
+                ))}
+            </Select>
+
+            <Typography
+                variant="body2"
+                color="primary"
+                onClick={() => setShowCustomSubmissionInput(true)}
+                sx={{
+                marginTop: "8px",
+                cursor: "pointer",
+                textDecoration: "underline",
+                }}
+            >
+                + Other Milestone
+            </Typography>
+
+            {showCustomSubmissionInput && (
+                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <TextField
+                        value={customSubmissionMilestone}
+                        onChange={(e) => setCustomSubmissionMilestone(e.target.value)}
+                        placeholder="Enter custom milestone"
+                        size="small"
+                        fullWidth
+                        sx={{
+                            flex: "0 0 auto",
+                            width: editMode ? "30%" : "100%",
+                        }}
+                        InputProps={{
+                            endAdornment: customSubmissionMilestone ? (
+                              <InputAdornment position="end" sx={{ marginRight: "-5px" }}>
+                                <IconButton
+                                  onClick={handleAddCustomSubmissionMilestone}
+                                  sx={{
+                                    padding: 0,
+                                    borderRadius: "50%",
+                                    backgroundColor: "green",
+                                    color: "white",
+                                    "&:hover": { backgroundColor: "darkgreen" },
+                                  }}
+                                >
+                                  <AddIcon
+                                    sx={{
+                                        fontSize: "20px",
+                                    }}
+                                  />
+                                </IconButton>
+                              </InputAdornment>
+                            ) : null,
+                        }}
+                    />
+                </div>
+            )}
+          </>
         );
     }
 
