@@ -273,6 +273,7 @@ const ConditionAttributeTable = memo(({
             ) || []
         : []
     );
+    const [submissionMilestones, setSubmissionMilestones] = useState<string[]>([]);
     const [milestones, setMilestones] = useState<string[]>([]);
 
     const handleCloseModal = () => {
@@ -303,6 +304,8 @@ const ConditionAttributeTable = memo(({
             ? formatArray(chips)
             : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
             ? formatArray(planNames)
+            : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
+            ? submissionMilestones.map((submissionMilestone) => `${submissionMilestone}`).join(",")
             : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
             ? milestones.map((milestone) => `${milestone}`).join(",")
             : otherValue !== "" ? otherValue : attributeValue,
@@ -329,6 +332,7 @@ const ConditionAttributeTable = memo(({
             setValue: setAttributeValue,
           }}
           chipsData={{ chips, setChips }}
+          submissionMilestonesData={{ submissionMilestones, setSubmissionMilestones }}
           milestonesData={{ milestones, setMilestones }}
           planNamesData={{ planNames, setPlanNames }}
           otherData={{ otherValue, setOtherValue }}
@@ -488,7 +492,9 @@ const ConditionAttributeTable = memo(({
                   {selectedAttribute && (
                     <>
                       <Typography variant="body1">
-                        {selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
+                        {selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
+                          ? 'Select Value(s)'
+                          : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
                           ? 'Select Value(s)'
                           : selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
                           ? 'Add Parties to the List'

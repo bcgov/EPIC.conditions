@@ -912,6 +912,7 @@ class ConditionService:
 
         formatted_keys = {
             AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
             AttributeKeys.MANAGEMENT_PLAN_NAME,
         }

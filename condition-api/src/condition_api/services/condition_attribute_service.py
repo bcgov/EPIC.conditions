@@ -114,7 +114,7 @@ class ConditionAttributeService:
                 AttributeKeys.SUBMITTED_TO_EAO_FOR,
                 AttributeKeys.MANAGEMENT_PLAN_NAME,
                 AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
-                AttributeKeys.MILESTONE_RELATED_TO_PLAN_SUBMISSION,
+                AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
                 AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
                 AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
                 AttributeKeys.REQUIRES_CONSULTATION,
@@ -185,7 +185,7 @@ class ConditionAttributeService:
         if attribute_key_id == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT and attribute_value == 'true':
             ATTRIBUTE_KEY_IDS = [
                 AttributeKeys.SUBMITTED_TO_EAO_FOR,
-                AttributeKeys.MILESTONE_RELATED_TO_PLAN_SUBMISSION,
+                AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
                 AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
                 AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
                 AttributeKeys.REQUIRES_CONSULTATION,

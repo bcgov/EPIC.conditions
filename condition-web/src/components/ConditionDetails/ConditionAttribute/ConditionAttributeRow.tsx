@@ -84,6 +84,14 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           ) || []
       : []
   );
+  const [submissionMilestones, setSubmissionMilestones] = useState<string[]>(
+    conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
+      ? attributeValue
+          ?.replace(/[{}]/g, "")
+          .split(",")
+          .map((item) => item.trim().replace(/^"|"$/g, ""))
+      : []
+  );
   const [milestones, setMilestones] = useState<string[]>(
     conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
       ? attributeValue
@@ -158,6 +166,8 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
             .filter((planName) => planName !== null && planName !== "")
             .map((planName) => escapeValue(planName))
             .join(",")}}`
+        : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
+        ? submissionMilestones.map((submissionMilestone) => `${submissionMilestone}`).join(",")
         : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
         ? milestones.map((milestone) => `${milestone}`).join(",")
         : otherValue !== ""
@@ -210,6 +220,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           setValue: setEditableValue,
         }}
         chipsData={{ chips, setChips }}
+        submissionMilestonesData={{ submissionMilestones, setSubmissionMilestones }}
         milestonesData={{ milestones, setMilestones }}
         planNamesData={{ planNames, setPlanNames }}
         otherData={{ otherValue, setOtherValue }}
@@ -224,6 +235,16 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
           {chips?.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION) {
+      return (
+        <ul style={{ margin: 0, paddingLeft: "16px" }}>
+          {submissionMilestones?.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>
