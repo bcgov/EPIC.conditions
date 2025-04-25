@@ -46,6 +46,7 @@ def insert_subconditions(condition_id, parent_subcondition_id, subconditions):
 def reset_tables():
     """Clear all data from tables and reset ID sequences."""
     tables = [
+        "amendments",
         "condition_attributes",
         "subconditions",
         "conditions",
@@ -163,7 +164,9 @@ def load_data(folder_path):
                     'days_prior_to_commencement': "Time associated with submission milestone",
                     'stakeholders_to_consult': "Parties required to be consulted",
                     'deliverable_name': "Management plan name",
-                    'stakeholders_to_submit_to': "Parties required to be submitted"
+                    'stakeholders_to_submit_to': "Parties required to be submitted",
+                    'management_plan_acronym': "Management plan acronym",
+                    "implementation_phase": "Milestone(s) related to plan implementation"
                 }
                 # Insert into condition requirements table
                 if 'deliverables' in condition:
@@ -244,7 +247,8 @@ def load_data(folder_path):
 
                     # Finalize aggregated values
                     if deliverable_names:
-                        deliverable_names_str = f"{{{', '.join(deliverable_names)}}}"
+                        flattened_names = [str(item) for sublist in deliverable_names for item in (sublist if isinstance(sublist, list) else [sublist])]
+                        deliverable_names_str = f"{{{', '.join(flattened_names)}}}"
                         insert_data.append((condition_id, deliverable_names_id, deliverable_names_str))
 
                     if is_plan is not None:
@@ -270,7 +274,65 @@ def load_data(folder_path):
                         stakeholders_to_submit_to_str = f"{{{', '.join(sorted(stakeholders_to_submit_to_set))}}}"
                         insert_data.append((condition_id, stakeholders_to_submit_to_set_id, stakeholders_to_submit_to_str))
 
-                    # Insert only the data that exists
+                    # ---------- Handle is_plan default attribute insertions ----------
+                    if is_plan:
+                        default_keys = [
+                            'approval_type', 'deliverable_name', 'management_plan_acronym',
+                            'related_phase', 'implementation_phase', 'days_prior_to_commencement',
+                            'fn_consultation_required'
+                        ]
+
+                        for default_key in default_keys:
+                            attribute_label = key_to_label_map.get(default_key)
+                            if not attribute_label:
+                                continue
+
+                            cur.execute("""
+                                SELECT id FROM condition.attribute_keys WHERE key_name = %s
+                            """, (attribute_label,))
+                            result = cur.fetchone()
+
+                            if not result:
+                                continue
+
+                            attribute_key_id = result[0]
+
+                            # Only insert if not already inserted above
+                            already_exists = any(entry[1] == attribute_key_id for entry in insert_data)
+                            if not already_exists:
+                                value = None
+
+                                if default_key == 'approval_type' and approval_type:
+                                    value = approval_type
+                                elif default_key == 'deliverable_name' and deliverable_names:
+                                    value = f"{{{', '.join(deliverable_names)}}}"
+                                elif default_key == 'related_phase' and related_phase:
+                                    value = related_phase
+                                elif default_key == 'fn_consultation_required':
+                                    value = 'true' if fn_consultation_required else 'false'
+                                elif default_key == 'days_prior_to_commencement' and days_prior_to_commencement:
+                                    value = str(days_prior_to_commencement)
+                                # management_plan_acronym and implementation_phase may be missing, insert as null
+                                insert_data.append((condition_id, attribute_key_id, value))
+
+                    # ---------- Handle requires consultation inserting stakeholders ----------
+                    if fn_consultation_required:
+                        consult_label = key_to_label_map.get('stakeholders_to_consult')
+                        cur.execute("""
+                            SELECT id FROM condition.attribute_keys WHERE key_name = %s
+                        """, (consult_label,))
+                        result = cur.fetchone()
+
+                        if result:
+                            consult_key_id = result[0]
+                            consult_value = f"{{{', '.join(sorted(stakeholders_to_consult_set))}}}" if stakeholders_to_consult_set else None
+
+                            # Avoid duplication if already added
+                            already_exists = any(entry[1] == consult_key_id for entry in insert_data)
+                            if not already_exists:
+                                insert_data.append((condition_id, consult_key_id, consult_value))
+
+                    # ---------- Final Insertion ----------
                     for data in insert_data:
                         cur.execute("""
                             INSERT INTO condition.condition_attributes (
