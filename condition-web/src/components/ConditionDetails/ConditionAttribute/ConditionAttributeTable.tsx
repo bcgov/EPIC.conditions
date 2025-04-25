@@ -281,6 +281,10 @@ const ConditionAttributeTable = memo(({
       setSelectedAttribute("");
       setAttributeValue("");
       setOtherValue("");
+      setMilestones([]);
+      setSubmissionMilestones([]);
+      setPlanNames([]);
+      setChips([]);
 
       queryClient.invalidateQueries({
         queryKey: ["conditions", condition.condition_id],
@@ -521,6 +525,7 @@ const ConditionAttributeTable = memo(({
                         !attributeValue &&
                         chips.length === 0 &&
                         milestones.length === 0 &&
+                        submissionMilestones.length == 0 &&
                         planNames.length === 0
                       }
                     >
