@@ -158,15 +158,15 @@ def load_data(folder_path):
 
                 key_to_label_map = {
                     'fn_consultation_required': "Requires consultation",
-                    'is_plan': "Requires management plan",
+                    'is_plan': "Requires management plan(s)",
                     'approval_type': "Submitted to EAO for",
                     'related_phase': "Milestone related to plan submission",
                     'days_prior_to_commencement': "Time associated with submission milestone",
                     'stakeholders_to_consult': "Parties required to be consulted",
-                    'deliverable_name': "Management plan name",
+                    'deliverable_name': "Management plan name(s)",
                     'stakeholders_to_submit_to': "Parties required to be submitted",
-                    'management_plan_acronym': "Management plan acronym",
-                    "implementation_phase": "Milestone(s) related to plan implementation"
+                    'management_plan_acronym': "Management plan acronym(s)",
+                    "implementation_phase": "Project phases(s) related to plan implementation"
                 }
                 # Insert into condition requirements table
                 if 'deliverables' in condition:
