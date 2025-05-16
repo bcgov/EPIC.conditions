@@ -396,92 +396,110 @@ class ConditionService:
         if not condition:
             raise ValueError("Condition not found for the given condition ID.")
 
+        condition_number = conditions_data.get("condition_number")
+
         if check_condition_exists:
-            # Query by condition_id
-            if condition.amended_document_id is None:
-                existing_condition_numbers = db.session.query(Condition.condition_number).filter(
-                    Condition.document_id == condition.document_id,
-                    Condition.amended_document_id.is_(None),
-                    Condition.id!=condition_id
-                ).all()
-            else:
-                existing_condition_numbers = db.session.query(Condition.condition_number).filter(
-                    Condition.amended_document_id == condition.amended_document_id,
-                    Condition.id!=condition_id
-                ).all()
-                    
-            existing_condition_numbers = [num[0] for num in existing_condition_numbers if num[0] is not None]
-            if conditions_data.get("condition_number") in existing_condition_numbers:
-                raise ConditionNumberExistsError("This condition number already exists. Please enter a new one.")
+            ConditionService._check_duplicate_condition_number(condition, condition_id, condition_number)
 
-        # Check existing condition number if related document is not amended document
-        if condition.amended_document_id is None:
-            if check_condition_over_project:
-                # Check if condition number exists across the project
-                project_condition_numbers = db.session.query(
-                    Condition.condition_number, Condition.project_id, Condition.document_id
-                ).filter(
-                    and_(Condition.project_id == condition.project_id,
-                         Condition.amended_document_id.is_(None))
-                ).all()
-                # Extract the condition numbers and their corresponding project and document IDs
-                project_condition_map = {
-                    num[0]: {"project_id": num[1], "document_id": num[2]}
-                    for num in project_condition_numbers if num[0] is not None
-                }
+        if check_condition_over_project:
+            ConditionService._check_condition_conflict_in_project(condition, condition_number)
+        # Mark existing condition inactive if needed
+        if condition.amended_document_id and not check_condition_over_project:
+            ConditionService._deactivate_existing_condition(condition, condition_number)
 
-                # Check if the provided condition number exists in the project
-                condition_number = conditions_data.get("condition_number")
-                if condition_number in project_condition_map:
-                    # Get the project_id and document_id associated with the condition number
-                    project_id = project_condition_map[condition_number]["project_id"]
-                    document_id = project_condition_map[condition_number]["document_id"]
-
-                    # Fetch the project name from the Project table
-                    project = db.session.query(Project).filter_by(project_id=project_id).first()
-                    project_name = project.project_name if project else "Unknown Project"
-
-                    # Fetch the document name from the Document table (if needed)
-                    document = db.session.query(Document).filter_by(document_id=document_id).first()
-                    document_name = document.document_label if document else "Unknown Document"
-
-                    raise ConditionNumberExistsInProjectError(
-                        f"This condition number already exists in <b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>"
-                        f"Are you sure you wish to proceed?"
-                    )
-        else:
-            existing_condition = (
-                db.session.query(Condition)
-                .filter(
-                    Condition.document_id == condition.document_id,
-                    Condition.condition_number == conditions_data.get("condition_number"),
-                    Condition.amended_document_id.is_(None)
-                )
-                .first()
-            )
-            # If it exists, update is_active to False
-            if existing_condition:
-                existing_condition.is_active = False
-                existing_condition.effective_to = datetime.utcnow()
-                db.session.add(existing_condition)
-
-        if any(key for key in conditions_data.keys() if key != "subconditions"):
+        # Update condition fields
+        if any(k != "subconditions" for k in conditions_data):
             ConditionService._update_from_dict(condition, conditions_data)
 
-        if conditions_data.get("subconditions"):
-            existing_subcondition_ids = [
-                subcond["subcondition_id"] for subcond in conditions_data["subconditions"]
-                if isinstance(subcond["subcondition_id"], str) and "-" not in subcond["subcondition_id"]
-            ]
-            db.session.query(Subcondition).filter(
-                Subcondition.condition_id == condition_id,
-                Subcondition.id.notin_(existing_subcondition_ids)
-            ).delete(synchronize_session=False)
-            ConditionService.upsert_subconditions(
-                condition_id, conditions_data.get("subconditions"), None)
+        # Handle subconditions
+        if subconditions := conditions_data.get("subconditions"):
+            ConditionService._update_subconditions(condition_id, subconditions)
 
         condition.commit()
         return condition
+
+    @staticmethod
+    def _check_duplicate_condition_number(condition, condition_id, condition_number):
+        # Check if the same condition number exists in the same document or amendment
+        query = db.session.query(Condition.condition_number).filter(
+            Condition.id != condition_id
+        )
+
+        if condition.amended_document_id is None:
+            query = query.filter(
+                Condition.document_id == condition.document_id,
+                Condition.amended_document_id.is_(None),
+            )
+        else:
+            query = query.filter(
+                Condition.amended_document_id == condition.amended_document_id
+            )
+
+        existing_numbers = [num[0] for num in query.all() if num[0] is not None]
+        if condition_number in existing_numbers:
+            raise ConditionNumberExistsError("This condition number already exists. Please enter a new one.")
+
+    @staticmethod
+    def _check_condition_conflict_in_project(condition, condition_number):
+        query = db.session.query(
+            Condition.condition_number, Condition.project_id, Condition.document_id, Condition.condition_name
+        ).filter(
+            Condition.project_id == condition.project_id,
+            Condition.amended_document_id.is_(None),
+        )
+
+        condition_map = {
+            c[0]: {"project_id": c[1], "document_id": c[2], "condition_name": c[3]}
+            for c in query.all() if c[0] is not None
+        }
+
+        if condition_number in condition_map:
+            meta = condition_map[condition_number]
+            project = db.session.query(Project).filter_by(project_id=meta["project_id"]).first()
+            document = db.session.query(Document).filter_by(document_id=meta["document_id"]).first()
+
+            project_name = project.project_name if project else "Unknown Project"
+            document_name = document.document_label if document else "Unknown Document"
+            condition_name = meta.get("condition_name", "Unknown")
+
+            if condition.amended_document_id:
+                raise ConditionNumberExistsInProjectError(
+                    f"Adding this condition will amend {condition_number}) {condition_name} in "
+                    f"<b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?"
+                )
+            else:
+                raise ConditionNumberExistsInProjectError(
+                    f"This condition number already exists in <b>{document_name}</b> of "
+                    f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?"
+                )
+
+    @staticmethod
+    def _deactivate_existing_condition(condition, condition_number):
+        existing = db.session.query(Condition).filter(
+            Condition.document_id == condition.document_id,
+            Condition.condition_number == condition_number,
+            Condition.amended_document_id.is_(None)
+        ).first()
+
+        if existing:
+            existing.is_active = False
+            existing.effective_to = datetime.utcnow()
+            db.session.add(existing)
+
+    @staticmethod
+    def _update_subconditions(condition_id, subconditions):
+        existing_ids = [
+            sub["subcondition_id"]
+            for sub in subconditions
+            if isinstance(sub.get("subcondition_id"), str) and "-" not in sub["subcondition_id"]
+        ]
+
+        db.session.query(Subcondition).filter(
+            Subcondition.condition_id == condition_id,
+            Subcondition.id.notin_(existing_ids)
+        ).delete(synchronize_session=False)
+
+        ConditionService.upsert_subconditions(condition_id, subconditions, None)
 
     @staticmethod
     def _update_from_dict(condition_item: Condition, input_dict: dict):
