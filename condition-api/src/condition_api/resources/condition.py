@@ -83,7 +83,11 @@ class ConditionDetailsResource(Resource):
         except ConditionNumberExistsError as err:
             return {"message": str(err)}, HTTPStatus.CONFLICT
         except ConditionNumberExistsInProjectError as err:
-            return {"message": str(err)}, HTTPStatus.PRECONDITION_FAILED
+            response = {
+                "message": str(err),
+                "is_amendment": err.is_amendment
+            }
+            return response, HTTPStatus.PRECONDITION_FAILED
         except ValueError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
@@ -187,7 +191,11 @@ class ConditionResource(Resource):
         except ConditionNumberExistsError as err:
             return {"message": str(err)}, HTTPStatus.CONFLICT
         except ConditionNumberExistsInProjectError as err:
-            return {"message": str(err)}, HTTPStatus.PRECONDITION_FAILED
+            response = {
+                "message": str(err),
+                "is_amendment": err.is_amendment
+            }
+            return response, HTTPStatus.PRECONDITION_FAILED
         except ValueError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
