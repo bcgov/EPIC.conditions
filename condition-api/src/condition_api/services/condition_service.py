@@ -461,16 +461,17 @@ class ConditionService:
             project_name = project.project_name if project else "Unknown Project"
             document_name = document.document_label if document else "Unknown Document"
             condition_name = meta.get("condition_name", "Unknown")
-
             if condition.amended_document_id:
                 raise ConditionNumberExistsInProjectError(
-                    f"Adding this condition will amend {condition_number}) {condition_name} in "
-                    f"<b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?"
+                    f"Adding this condition will amend <b>{condition_number}) {condition_name}</b> in "
+                    f"<b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
+                    is_amendment=True
                 )
             else:
                 raise ConditionNumberExistsInProjectError(
                     f"This condition number already exists in <b>{document_name}</b> of "
-                    f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?"
+                    f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
+                    is_amendment=False
                 )
 
     @staticmethod

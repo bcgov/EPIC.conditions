@@ -52,6 +52,7 @@ export const CreateConditionPage = ({
   const [conditionConflictError, setConditionConflictError] = useState(false);
   const [preconditionFailedError, setPreconditionFailedError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(true);
@@ -132,13 +133,22 @@ export const CreateConditionPage = ({
       }
     } catch (error) {
       const responseError = error as {
-        response?: { data?: { message?: string }; status?: number };
+        response?: {
+          data?: {
+            message?: string;
+            is_amendment?: boolean;
+          };
+          status?: number;
+        };
       };
       if (responseError.response?.status === 409) {
         setConditionConflictError(true);
       } else if (responseError.response?.status === 412) {
         setPreconditionFailedError(true);
         setErrorMessage(responseError.response.data?.message || ""); // Set error message
+        setModalTitle(responseError.response?.data?.is_amendment
+          ? "Amending Existing Condition"
+          : "Duplicate Condition Number")
         setModalOpen(true); // Open the modal
       } else if (responseError.response?.status) {
         notify.error("Failed to save condition."); // Only for unhandled status codes
@@ -330,7 +340,9 @@ export const CreateConditionPage = ({
               alignItems="center"
               padding={"14px 5px 14px 14px"}
             >
-              <Typography variant="h6">Duplicate Condition Number</Typography>
+              <Typography variant="h6">
+                {modalTitle}
+              </Typography>
               <IconButton onClick={handleModalClose}>
                 <CloseIcon />
               </IconButton>
