@@ -463,7 +463,7 @@ class ConditionService:
             condition_name = meta.get("condition_name", "Unknown")
             if condition.amended_document_id:
                 raise ConditionNumberExistsInProjectError(
-                    f"Adding this condition will amend <b>{condition_number}) {condition_name}</b> in "
+                    f"Adding this condition will amend condition <b>{condition_number}) {condition_name}</b> in "
                     f"<b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
                     is_amendment=True
                 )
