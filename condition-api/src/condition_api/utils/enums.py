@@ -13,6 +13,7 @@
 # limitations under the License.
 """Enum definitions."""
 from enum import IntEnum
+from typing import List
 
 
 class UserStatus(IntEnum):
@@ -33,9 +34,25 @@ class AttributeKeys(IntEnum):
     REQUIRES_CONSULTATION = 2
     MANAGEMENT_PLAN_NAME = 3
     MANAGEMENT_PLAN_ACRONYM = 4
+    PARTIES_REQUIRED_TO_BE_SUBMITTED = 5
     PARTIES_REQUIRED_TO_BE_CONSULTED = 6
     SUBMITTED_TO_EAO_FOR = 7
     TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE = 8
     MILESTONES_RELATED_TO_PLAN_SUBMISSION = 9
     MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION = 10
     REQUIRES_IEM_TERMS_OF_ENGAGEMENT = 11
+    DELIVERABLE_NAME = 12
+
+class IEMTermsConfig:
+    DELIVERABLE_VALUE = "Independent Environmental Monitor Terms of Engagement"
+
+    @staticmethod
+    def required_attribute_keys() -> List[int]:
+        return [
+            AttributeKeys.SUBMITTED_TO_EAO_FOR,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
+            AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
+            AttributeKeys.REQUIRES_CONSULTATION,
+            AttributeKeys.DELIVERABLE_NAME,
+        ]

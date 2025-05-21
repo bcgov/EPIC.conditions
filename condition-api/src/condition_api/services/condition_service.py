@@ -15,7 +15,7 @@ from condition_api.models.document_category import DocumentCategory
 from condition_api.models.db import db
 from condition_api.models.project import Project
 from condition_api.schemas.condition import ProjectDocumentConditionSchema, ConsolidatedConditionSchema
-from condition_api.utils.enums import AttributeKeys
+from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -177,7 +177,7 @@ class ConditionService:
                 condition_attributes.condition_id == condition_data[0].id,
                 ~condition_attributes.attribute_key_id.in_([5]) # exlucding Parties required to be submitted from attribute_keys
             )
-            .order_by(condition_attributes.attribute_key_id)
+            .order_by(attribute_keys.sort_order)
             .all()
         )
 
@@ -918,6 +918,15 @@ class ConditionService:
         if not include_condition_attributes:
             return []
 
+
+        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED}
+        FORMATTED_KEYS = {
+            AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
+            AttributeKeys.MANAGEMENT_PLAN_NAME,
+        }
+
         attributes_data = db.session.query(
             AttributeKey.id,
             AttributeKey.external_key,
@@ -926,28 +935,72 @@ class ConditionService:
             AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id
         ).filter(
             ConditionAttribute.condition_id == condition_id,
-            ~ConditionAttribute.attribute_key_id.in_([5]), # exlucding Parties required to be submitted from attribute_keys
-        ).order_by(ConditionAttribute.attribute_key_id).all()
+            ~ConditionAttribute.attribute_key_id.in_([key.value for key in EXCLUDED_KEYS]),
+        ).order_by(AttributeKey.sort_order).all()
 
-        formatted_keys = {
-            AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
-            AttributeKeys.MANAGEMENT_PLAN_NAME,
-        }
+        result = {}
+        requires_iem = False
+        deliverables = []
 
-        return {
-            record[1]: (
-                ConditionService.format_attribute_value(record[2])
-                if record[0] in formatted_keys
-                else (
-                    record[2].replace("{", "").replace("}", "").replace('"', "")
-                    if record[2] and record[2] != "N/A"
+        for attr_id, external_key, raw_value in attributes_data:
+            if not external_key:
+                continue
+
+            key_enum = AttributeKeys(attr_id)
+
+            # Handle requires_iem_terms_of_engagement
+            if key_enum == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT:
+                requires_iem = raw_value
+                result[external_key] = requires_iem
+                continue
+
+            # Handle deliverable_name separately
+            if key_enum == AttributeKeys.DELIVERABLE_NAME:
+                deliverables.append((raw_value or "", attr_id))
+                continue
+
+            # Format value
+            if key_enum in FORMATTED_KEYS:
+                value = ConditionService.format_attribute_value(raw_value)
+            else:
+                value = (
+                    raw_value.replace("{", "").replace("}", "").replace('"', "")
+                    if raw_value and raw_value != "N/A"
                     else None
                 )
-            )
-            for record in attributes_data if record[1]  # Ensure record[1] is valid
-        }
+
+            result[external_key] = value
+
+        # Handle deliverables
+        if deliverables:
+            selected_value = None
+            deliverable_phrase = IEMTermsConfig.DELIVERABLE_VALUE
+
+            if requires_iem:
+                selected_value = next(
+                    (val for val, _ in deliverables if deliverable_phrase in val),
+                    None
+                )
+            else:
+                selected_value = next(
+                    (val for val, _ in deliverables if deliverable_phrase not in val),
+                    None
+                )
+
+            if not selected_value and deliverables:
+                selected_value = deliverables[0][0]  # fallback
+
+            if selected_value:
+                if AttributeKeys.DELIVERABLE_NAME in FORMATTED_KEYS:
+                    result["deliverable_name"] = [ConditionService.format_attribute_value(selected_value)]
+                else:
+                    result["deliverable_name"] = [
+                        selected_value.replace("{", "").replace("}", "").replace('"', "")
+                        if selected_value and selected_value != "N/A"
+                        else None
+                    ]
+
+        return result
 
     @staticmethod
     def format_attribute_value(raw_value):

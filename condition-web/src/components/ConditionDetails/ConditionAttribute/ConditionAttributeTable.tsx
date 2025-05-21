@@ -125,19 +125,9 @@ const ConditionAttributeTable = memo(({
     useEffect(() => {
       if (conditionAttributeDetails) {
         setCondition((prevCondition) => {
-          const existingAttributes = prevCondition.condition_attributes || [];
-    
-          // Explicitly type the attributes
-          const mergedAttributes = [
-            ...existingAttributes.filter((attr: { id: string }) => 
-              !conditionAttributeDetails.some((newAttr: { id: string }) => newAttr.id === attr.id)
-            ),
-            ...conditionAttributeDetails,
-          ];
-    
           return {
             ...prevCondition,
-            condition_attributes: mergedAttributes,
+            condition_attributes: conditionAttributeDetails,
           };
         });
       }
