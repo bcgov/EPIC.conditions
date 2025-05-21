@@ -919,7 +919,7 @@ class ConditionService:
             return []
 
 
-        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED}
+        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
         FORMATTED_KEYS = {
             AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
