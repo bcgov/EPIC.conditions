@@ -3,6 +3,7 @@ from sqlalchemy.orm import aliased
 from condition_api.models.db import db
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition_attribute import ConditionAttribute
+from condition_api.utils.enums import AttributeKeys
 
 
 class AttributeKeyService:
@@ -28,7 +29,7 @@ class AttributeKeyService:
             )
             .filter(
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
-                ~attribute_keys.id.in_([5]) # exlucding Parties required to be submitted from attribute_keys
+                ~attribute_keys.id.in_([AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED, AttributeKeys.DELIVERABLE_NAME]), # exlucding Parties required to be submitted from attribute_keys
             )
             .order_by(attribute_keys.sort_order)
             .all()
