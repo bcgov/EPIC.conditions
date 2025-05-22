@@ -174,7 +174,7 @@ const ConditionAttributeTable = memo(({
       const getAttrValue = (key: string) =>
         condition?.condition_attributes?.find(attr => attr.key === key)?.value;
 
-      const isEmpty = (value: any) => value === null || value === '{}';
+      const isEmpty = (value: any) => value === null || value === '{}' || value === '';
 
       const managementInvalid = isManagementRequired
       ? managementRequiredKeys.some(key => isEmpty(getAttrValue(key)))
