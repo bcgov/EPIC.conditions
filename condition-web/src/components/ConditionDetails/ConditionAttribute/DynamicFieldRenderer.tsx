@@ -276,93 +276,128 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
               setShowCustomSubmissionInput(false); // Hide the custom input field
             }
         };
-
+      
+        const handleDeleteChip = (chipToDelete: string) => {
+          submissionMilestonesData.setSubmissionMilestones(
+            submissionMilestonesData.submissionMilestones.filter((chip) => chip !== chipToDelete)
+          );
+        };
+      
         return (
           <>
-            <Select
-                multiple // Enables multiple selection
-                value={Array.isArray(
-                    submissionMilestonesData.submissionMilestones) ? submissionMilestonesData.submissionMilestones : []}
-                onChange={(e) => submissionMilestonesData.setSubmissionMilestones(e.target.value as string[])} // Handle multiple values
-                renderValue={(selected) => (
-                    <Box ref={textRef}>
-                        {(selected as string[]).join(", ")}
-                    </Box>
-                )}
-                fullWidth
+            {/* Chips above the select */}
+            <Box
                 sx={{
-                    fontSize: "inherit",
-                    lineHeight: "inherit",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    mb: 1,
                     width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
                     minWidth: "30%",
-                    "& .MuiSelect-select": {
-                        padding: "8px",
-                    },
-                    marginBottom: "10px",
                 }}
             >
-                {submissionMilestoneOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                        <Checkbox
-                            checked={
-                                Array.isArray(submissionMilestonesData.submissionMilestones) &&
-                                submissionMilestonesData.submissionMilestones.includes(option.value)
-                            }
-                        />
-                        <ListItemText primary={option.label} />
-                    </MenuItem>
-                ))}
+              {submissionMilestonesData.submissionMilestones.map((value) => {
+                const optionLabel =
+                  submissionMilestoneOptions.find((opt) => opt.value === value)?.label || value;
+      
+                return (
+                    <Chip
+                        key={value}
+                        label={optionLabel}
+                        onDelete={() => handleDeleteChip(value)}
+                        sx={{
+                        bgcolor: theme.palette.grey[300],
+                        fontWeight: 500,
+                        fontSize: "14px",
+                        borderColor: theme.palette.grey[300],
+                        color: 'black',
+                    }}
+                  />
+                );
+              })}
+            </Box>
+            <Select
+              multiple
+              displayEmpty
+              value={
+                Array.isArray(submissionMilestonesData.submissionMilestones)
+                  ? submissionMilestonesData.submissionMilestones
+                  : []
+              }
+              onChange={(e) =>
+                submissionMilestonesData.setSubmissionMilestones(e.target.value as string[])
+              }
+              renderValue={() => " "} // suppress built-in render to avoid duplicated chips
+              fullWidth
+              sx={{
+                  fontSize: "inherit",
+                  lineHeight: "inherit",
+                  width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
+                  minWidth: "30%",
+                  "& .MuiSelect-select": {
+                      padding: "8px",
+                  },
+                  marginBottom: "10px",
+              }}
+            >
+              {submissionMilestoneOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  <Checkbox
+                    checked={
+                      Array.isArray(submissionMilestonesData.submissionMilestones) &&
+                      submissionMilestonesData.submissionMilestones.includes(option.value)
+                    }
+                  />
+                  <ListItemText primary={option.label} />
+                </MenuItem>
+              ))}
             </Select>
 
             <Typography
-                variant="body2"
-                color="primary"
-                onClick={() => setShowCustomSubmissionInput(true)}
-                sx={{
+              variant="body2"
+              color="primary"
+              onClick={() => setShowCustomSubmissionInput(true)}
+              sx={{
                 marginTop: "8px",
                 cursor: "pointer",
                 textDecoration: "underline",
-                }}
+              }}
             >
-                + Other Milestone
+              + Other Milestone
             </Typography>
 
             {showCustomSubmissionInput && (
-                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <TextField
-                        value={customSubmissionMilestone}
-                        onChange={(e) => setCustomSubmissionMilestone(e.target.value)}
-                        placeholder="Enter custom milestone"
-                        size="small"
-                        fullWidth
-                        sx={{
-                            flex: "0 0 auto",
-                            width: editMode ? "30%" : "100%",
-                        }}
-                        InputProps={{
-                            endAdornment: customSubmissionMilestone ? (
-                              <InputAdornment position="end" sx={{ marginRight: "-5px" }}>
-                                <IconButton
-                                  onClick={handleAddCustomSubmissionMilestone}
-                                  sx={{
-                                    padding: 0,
-                                    borderRadius: "50%",
-                                    backgroundColor: "green",
-                                    color: "white",
-                                    "&:hover": { backgroundColor: "darkgreen" },
-                                  }}
-                                >
-                                  <AddIcon
-                                    sx={{
-                                        fontSize: "20px",
-                                    }}
-                                  />
-                                </IconButton>
-                              </InputAdornment>
-                            ) : null,
-                        }}
-                    />
-                </div>
+              <Box sx={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <TextField
+                  value={customSubmissionMilestone}
+                  onChange={(e) => setCustomSubmissionMilestone(e.target.value)}
+                  placeholder="Enter custom milestone"
+                  size="small"
+                  fullWidth
+                  sx={{
+                    flex: "0 0 auto",
+                    width: editMode ? "30%" : "100%",
+                  }}
+                  InputProps={{
+                    endAdornment: customSubmissionMilestone ? (
+                      <InputAdornment position="end" sx={{ marginRight: "-5px" }}>
+                        <IconButton
+                          onClick={handleAddCustomSubmissionMilestone}
+                          sx={{
+                            padding: 0,
+                            borderRadius: "50%",
+                            backgroundColor: "green",
+                            color: "white",
+                            "&:hover": { backgroundColor: "darkgreen" },
+                          }}
+                        >
+                          <AddIcon sx={{ fontSize: "20px" }} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+              </Box>
             )}
           </>
         );
@@ -378,92 +413,128 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
               setShowCustomInput(false); // Hide the custom input field
             }
         };
-
+      
+        const handleDeleteChip = (chipToDelete: string) => {
+          milestonesData.setMilestones(
+            milestonesData.milestones.filter((chip) => chip !== chipToDelete)
+          );
+        };
+      
         return (
           <>
-            <Select
-                multiple // Enables multiple selection
-                value={Array.isArray(milestonesData.milestones) ? milestonesData.milestones : []}
-                onChange={(e) => milestonesData.setMilestones(e.target.value as string[])} // Handle multiple values
-                renderValue={(selected) => (
-                    <Box ref={textRef}>
-                        {(selected as string[]).join(", ")}
-                    </Box>
-                )}
-                fullWidth
+            {/* Chips above the select */}
+            <Box
                 sx={{
-                    fontSize: "inherit",
-                    lineHeight: "inherit",
-                    width: editMode ? `${dynamicWidth}px` : "100%",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    mb: 1,
+                    width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
                     minWidth: "30%",
-                    "& .MuiSelect-select": {
-                        padding: "8px",
-                    },
-                    marginBottom: "10px",
                 }}
             >
-                {milestoneOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                        <Checkbox
-                            checked={
-                                Array.isArray(milestonesData.milestones) &&
-                                milestonesData.milestones.includes(option.value)
-                            }
-                        />
-                        <ListItemText primary={option.label} />
-                    </MenuItem>
-                ))}
+              {milestonesData.milestones.map((value) => {
+                const optionLabel =
+                  milestoneOptions.find((opt) => opt.value === value)?.label || value;
+      
+                return (
+                    <Chip
+                        key={value}
+                        label={optionLabel}
+                        onDelete={() => handleDeleteChip(value)}
+                        sx={{
+                        bgcolor: theme.palette.grey[300],
+                        fontWeight: 500,
+                        fontSize: "14px",
+                        borderColor: theme.palette.grey[300],
+                        color: 'black',
+                    }}
+                  />
+                );
+              })}
+            </Box>
+            <Select
+              multiple
+              displayEmpty
+              value={
+                Array.isArray(milestonesData.milestones)
+                  ? milestonesData.milestones
+                  : []
+              }
+              onChange={(e) =>
+                milestonesData.setMilestones(e.target.value as string[])
+              }
+              renderValue={() => " "} // suppress built-in render to avoid duplicated chips
+              fullWidth
+              sx={{
+                  fontSize: "inherit",
+                  lineHeight: "inherit",
+                  width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
+                  minWidth: "30%",
+                  "& .MuiSelect-select": {
+                      padding: "8px",
+                  },
+                  marginBottom: "10px",
+              }}
+            >
+              {milestoneOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  <Checkbox
+                    checked={
+                      Array.isArray(milestonesData.milestones) &&
+                      milestonesData.milestones.includes(option.value)
+                    }
+                  />
+                  <ListItemText primary={option.label} />
+                </MenuItem>
+              ))}
             </Select>
 
             <Typography
-                variant="body2"
-                color="primary"
-                onClick={() => setShowCustomInput(true)}
-                sx={{
+              variant="body2"
+              color="primary"
+              onClick={() => setShowCustomInput(true)}
+              sx={{
                 marginTop: "8px",
                 cursor: "pointer",
                 textDecoration: "underline",
-                }}
+              }}
             >
-                + Other Milestone
+              + Other Phase
             </Typography>
 
             {showCustomInput && (
-                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <TextField
-                        value={customMilestone}
-                        onChange={(e) => setCustomMilestone(e.target.value)}
-                        placeholder="Enter custom milestone"
-                        size="small"
-                        fullWidth
-                        sx={{
-                            flex: "0 0 auto",
-                            width: editMode ? "30%" : "100%",
-                        }}
-                        InputProps={{
-                            endAdornment: customMilestone ? (
-                              <InputAdornment position="end" sx={{ marginRight: "-5px" }}>
-                                <IconButton
-                                  onClick={handleAddCustomMilestone}
-                                  sx={{
-                                    padding: 0,
-                                    borderRadius: "50%",
-                                    backgroundColor: "green",
-                                    color: "white",
-                                    "&:hover": { backgroundColor: "darkgreen" },
-                                  }}
-                                >
-                                  <AddIcon
-                                    sx={{
-                                        fontSize: "20px",
-                                    }}
-                                  />
-                                </IconButton>
-                              </InputAdornment>
-                            ) : null,
-                        }}
-                    />
-                </div>
+              <Box sx={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <TextField
+                  value={customMilestone}
+                  onChange={(e) => setCustomMilestone(e.target.value)}
+                  placeholder="Enter custom phase"
+                  size="small"
+                  fullWidth
+                  sx={{
+                    flex: "0 0 auto",
+                    width: editMode ? "30%" : "100%",
+                  }}
+                  InputProps={{
+                    endAdornment: customMilestone ? (
+                      <InputAdornment position="end" sx={{ marginRight: "-5px" }}>
+                        <IconButton
+                          onClick={handleAddCustomMilestone}
+                          sx={{
+                            padding: 0,
+                            borderRadius: "50%",
+                            backgroundColor: "green",
+                            color: "white",
+                            "&:hover": { backgroundColor: "darkgreen" },
+                          }}
+                        >
+                          <AddIcon sx={{ fontSize: "20px" }} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+              </Box>
             )}
           </>
         );
