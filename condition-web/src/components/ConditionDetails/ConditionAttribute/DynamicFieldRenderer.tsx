@@ -296,7 +296,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                     minWidth: "30%",
                 }}
             >
-              {submissionMilestonesData.submissionMilestones.map((value) => {
+              {submissionMilestonesData?.submissionMilestones?.map((value) => {
                 const optionLabel =
                   submissionMilestoneOptions.find((opt) => opt.value === value)?.label || value;
       
@@ -433,7 +433,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                     minWidth: "30%",
                 }}
             >
-              {milestonesData.milestones.map((value) => {
+              {milestonesData?.milestones?.map((value) => {
                 const optionLabel =
                   milestoneOptions.find((opt) => opt.value === value)?.label || value;
       
