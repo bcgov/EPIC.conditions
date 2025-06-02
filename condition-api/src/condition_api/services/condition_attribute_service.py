@@ -98,11 +98,15 @@ class ConditionAttributeService:
 
         db.session.commit()
 
+        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
         # Fetch all attributes for this condition, joined with keys, and sort using sort_key
         all_condition_attributes = (
             db.session.query(ConditionAttribute, AttributeKey)
             .join(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
-            .filter(ConditionAttribute.condition_id == condition_id)
+            .filter(
+                ConditionAttribute.condition_id == condition_id,
+                ~ConditionAttribute.attribute_key_id.in_([key.value for key in EXCLUDED_KEYS]),
+            )
             .order_by(AttributeKey.sort_order)
             .all()
         )
