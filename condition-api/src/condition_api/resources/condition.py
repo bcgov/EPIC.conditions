@@ -107,10 +107,9 @@ class ConditionDetailResource(Resource):
         """Fetch conditions and condition attributes by project ID."""
         try:
             query_params = request.args
-            include_condition_attributes = query_params.get('include_condition_attributes', '', type=str)
             include_nested_conditions = query_params.get('include_subconditions', '', type=str)
             condition_details = ConditionService.get_all_conditions(
-                project_id, document_id, include_condition_attributes, include_nested_conditions)
+                project_id, document_id, include_nested_conditions)
             if not condition_details:
                 return {}
             # Instantiate the schema

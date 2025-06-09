@@ -9,6 +9,12 @@ import { updateTopicTagsModel } from "@/models/Condition";
 import { BCDesignTokens } from "epic.theme";
 import SubconditionComponent from "./SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult
+} from '@hello-pangea/dnd';
 
 type ConditionDescriptionProps = {
   editMode: boolean;
@@ -110,26 +116,133 @@ const ConditionDescription = memo(({
     updateConditionDetails(data);
   };
 
+  const buildSortOrderMap = (
+    items: any[],
+    parentId: string = "null",
+    map: Record<string, number> = {}
+  ): Record<string, number> => {
+    return items.reduce((acc, item, index) => {
+      const key = `${parentId}-${item.subcondition_id}`;
+      acc[key] = index;
+      return item.subconditions?.length
+        ? buildSortOrderMap(item.subconditions, item.subcondition_id, acc)
+        : acc;
+    }, map);
+  };
+
+  const applySortOrder = (
+    nodes: any[],
+    sortOrderMap: Record<string, number>,
+    parentId: string | null = null
+  ): any[] => {
+    const apply = (items: any[], parentId: string): any[] => {
+      return items
+        .map((item) => ({
+          ...item,
+          subconditions: item.subconditions
+            ? apply(item.subconditions, item.subcondition_id)
+            : [],
+        }))
+        .sort((a, b) => {
+          const keyA = `${parentId}-${a.subcondition_id}`;
+          const keyB = `${parentId}-${b.subcondition_id}`;
+          return (sortOrderMap[keyA] ?? 0) - (sortOrderMap[keyB] ?? 0);
+        });
+    };
+  
+    return apply(nodes, parentId ?? "null");
+  };
+
+  const reorderNested = (
+    items: any[],
+    parentId: string | null,
+    sourceIndex: number,
+    destinationIndex: number
+  ): any[] => {
+    if (parentId === "subconditions-droppable") {
+      const newItems = [...items];
+      const [moved] = newItems.splice(sourceIndex, 1);
+      newItems.splice(destinationIndex, 0, moved);
+      return newItems;
+    }
+  
+    return items.map((item) => {
+      if (item.subcondition_id === parentId && item.subconditions) {
+        const newSub = [...item.subconditions];
+        const [moved] = newSub.splice(sourceIndex, 1);
+        newSub.splice(destinationIndex, 0, moved);
+        return {
+          ...item,
+          subconditions: newSub,
+        };
+      }
+      return {
+        ...item,
+        subconditions: item.subconditions
+          ? reorderNested(item.subconditions, parentId, sourceIndex, destinationIndex)
+          : [],
+      };
+    });
+  }; 
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+  
+    const sourceId = result.source.droppableId;
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+  
+    const reordered = reorderNested(subconditions, sourceId, sourceIndex, destinationIndex);
+    const sortOrderMap = buildSortOrderMap(reordered);
+    const sorted = applySortOrder(reordered, sortOrderMap);
+    setSubconditions(sorted);
+  };
+
   if (!condition) {
     return <Typography>No condition available</Typography>;
   }
 
   return (
     <Box>
-      {subconditions.map((sub, index) => (
-        <SubconditionComponent
-          key={index}
-          subcondition={sub}
-          indentLevel={1}
-          isEditing={isEditing}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAdd={handleAdd}
-          identifierValue={sub.subcondition_identifier || ""}
-          textValue={sub.subcondition_text || ""}
-          is_approved={isConditionApproved || false}
-        />
-      ))}
+      <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="subconditions-droppable" type="SUBCONDITION">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef}>
+              {subconditions.map((sub, index) => (
+                <Draggable
+                  key={sub.subcondition_id}
+                  draggableId={sub.subcondition_id}
+                  index={index}
+                  isDragDisabled={!isEditing}
+                >
+                  {(dragProvided) => (
+                    <div
+                      ref={dragProvided.innerRef}
+                      {...dragProvided.draggableProps}
+                      style={{ ...dragProvided.draggableProps.style }}
+                    >
+                      <SubconditionComponent
+                        key={index}
+                        subcondition={sub}
+                        indentLevel={1}
+                        isEditing={isEditing}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onAdd={handleAdd}
+                        identifierValue={sub.subcondition_identifier || ""}
+                        textValue={sub.subcondition_text || ""}
+                        is_approved={isConditionApproved || false}
+                        dragHandleProps={dragProvided.dragHandleProps ?? undefined}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
       <Stack sx={{ mt: 5 }} direction={"row"}>
         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
           {isEditing && (

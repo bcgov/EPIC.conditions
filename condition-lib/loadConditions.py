@@ -43,22 +43,6 @@ def insert_subconditions(condition_id, parent_subcondition_id, subconditions):
         if 'subconditions' in subcondition and subcondition['subconditions']:
             insert_subconditions(condition_id, subcondition_id, subcondition['subconditions'])
 
-def reset_tables():
-    """Clear all data from tables and reset ID sequences."""
-    tables = [
-        "amendments",
-        "condition_attributes",
-        "subconditions",
-        "conditions",
-        "documents",
-        "projects"
-    ]
-    
-    for table in tables:
-        cur.execute(f"TRUNCATE TABLE condition.{table} CASCADE")
-        cur.execute(f"ALTER SEQUENCE condition.{table}_id_seq RESTART WITH 1")
-    print("All tables cleared and ID sequences reset.")
-
 def get_document_category_id(document_type):
     """Determine the document_category_id based on document_type."""
     if document_type == "Order":
@@ -160,7 +144,7 @@ def load_data(folder_path):
                     'fn_consultation_required': "Requires consultation",
                     'is_plan': "Requires management plan(s)",
                     'approval_type': "Submitted to EAO for",
-                    'related_phase': "Milestone related to plan submission",
+                    'related_phase': "Milestone(s) related to plan submission",
                     'days_prior_to_commencement': "Time associated with submission milestone",
                     'stakeholders_to_consult': "Parties required to be consulted",
                     'deliverable_name': "Management plan name(s)",
@@ -343,7 +327,6 @@ def load_data(folder_path):
     conn.commit()
 
 # Folder path containing JSON files
-reset_tables()
 folder_path = './condition_jsons'
 load_data(folder_path)
 
