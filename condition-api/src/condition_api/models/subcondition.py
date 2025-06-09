@@ -7,6 +7,7 @@ class Subcondition(BaseModel):
     __tablename__ = 'subconditions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    sort_order = Column(Integer, nullable=True)
     condition_id = Column(Integer, ForeignKey('condition.conditions.id', ondelete='CASCADE'))
     amended_document_id = Column(String, ForeignKey('condition.amendments.amended_document_id', ondelete='CASCADE'), nullable=True)
     subcondition_identifier = Column(String, nullable=True)
