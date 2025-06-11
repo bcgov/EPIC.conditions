@@ -71,18 +71,6 @@ class Auth:  # pylint: disable=too-few-public-methods
             roles (list[str]): List of valid roles
         """
 
-        def decorated(f):
-            @Auth.require
-            @wraps(f)
-            def wrapper(*args, **kwargs):
-                if jwt.contains_role(roles):  # pylint: disable=no-value-for-parameter
-                    return f(*args, **kwargs)
-                raise PermissionDeniedError("Access Denied", HTTPStatus.UNAUTHORIZED)
+        return jwt.has_one_of_roles(roles)
 
-            return wrapper
-
-        return decorated
-
-auth = (
-    Auth()
-)
+auth = Auth()
