@@ -27,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3]
+        python-version: [3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -72,7 +72,7 @@ jobs:
 
      strategy:
        matrix:
-         python-version: [3]
+         python-version: [3.9]
 
      services:
       postgres:
@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3]
+        python-version: [3.9]
     name: Build
     steps:
       - uses: actions/checkout@v2
