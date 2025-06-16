@@ -49,7 +49,6 @@ class ConditionResource(Resource):
                 True if user_is_internal
                 else query_params.get('include_attributes', '').lower() == 'true'
             )
-            include_nested_conditions = True if user_is_internal else query_params.get('include_subconditions', '', type=str)
             all_conditions = query_params.get('all_conditions', '').lower() == 'true'
             category_id = query_params.get('category_id', '')
 
@@ -58,7 +57,6 @@ class ConditionResource(Resource):
                 category_id,
                 all_conditions,
                 include_condition_attributes,
-                include_nested_conditions,
                 user_is_internal
             )
 

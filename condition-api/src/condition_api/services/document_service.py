@@ -29,7 +29,7 @@ class DocumentService:
             extract('year', Document.date_issued).label('year_issued'),
             case(
                 (
-                    func.count(
+                    func.count( # pylint: disable=not-callable
                         case(
                             # Include only valid conditions for the count
                             (
@@ -114,7 +114,8 @@ class DocumentService:
                 Amendment.created_date,
                 extract('year', Amendment.date_issued).label('year_issued'),
                 case(
-                    (func.count(Condition.id) == 0, None),  # If there are no conditions, return None
+                     # If there are no conditions, return None
+                    (func.count(Condition.id) == 0, None), # pylint: disable=not-callable
                     else_=func.min(
                         case(
                             (

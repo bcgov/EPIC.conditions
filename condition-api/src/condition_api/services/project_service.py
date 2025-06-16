@@ -26,7 +26,7 @@ class ProjectService:
                 DocumentCategory.category_name.label("document_category"),
                 func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
                 func.greatest(func.max(Document.date_issued), func.max(Amendment.date_issued)).label("max_date_issued"),
-                func.count(Amendment.document_id).label("amendment_count"),
+                func.count(Amendment.document_id).label("amendment_count"), # pylint: disable=not-callable
                 func.bool_or(Document.is_latest_amendment_added).label("is_latest_amendment_added")
             )
             .outerjoin(Document, Document.project_id == Project.project_id)
@@ -70,7 +70,8 @@ class ProjectService:
         # Convert the map to a list of projects
         return list(projects_map.values())
 
-    def check_project_conditions(self, project_id, document_category_id):
+    @staticmethod
+    def check_project_conditions(project_id, document_category_id):
         """
         Check all documents in the `documents` table for a specific project.
 
@@ -94,7 +95,7 @@ class ProjectService:
             document_id = document.document_id
             # Check if the document has any conditions
             condition_count = (
-                db.session.query(func.count(Condition.id))
+                db.session.query(func.count(Condition.id)) # pylint: disable=not-callable
                 .filter(Condition.document_id == document_id, Condition.amended_document_id.is_(None))
                 .filter(
                     not_(
@@ -119,7 +120,7 @@ class ProjectService:
             for amendment in amendments:
                 amended_document_id = amendment.amended_document_id
                 amendment_condition_count = (
-                    db.session.query(func.count(Condition.id))
+                    db.session.query(func.count(Condition.id)) # pylint: disable=not-callable
                     .filter(Condition.amended_document_id == amended_document_id)
                     .filter(
                         not_(

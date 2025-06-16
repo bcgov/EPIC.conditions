@@ -32,8 +32,6 @@ class ConditionService:
         document_categories = aliased(DocumentCategory)
         conditions = aliased(Condition)
         subconditions = aliased(Subcondition)
-        condition_attributes = aliased(ConditionAttribute)
-        attribute_keys = aliased(AttributeKey)
         amendments = aliased(Amendment)
 
         # Check for amendment and resolve base document info
@@ -61,9 +59,7 @@ class ConditionService:
         condition = ConditionService._build_condition_structure(condition_rows)
 
         # Fetch and attach condition attributes
-        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(
-            condition_id, condition_attributes, attribute_keys
-        )
+        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(condition_id)
 
         # Extract static document metadata from the first row
         first = condition_rows[0]
@@ -173,7 +169,7 @@ class ConditionService:
                         conditions.condition_name.is_(None),
                         conditions.condition_number.is_(None)
                     )
-                )      
+                )
             )
             .group_by(
                 conditions.id,
@@ -396,7 +392,7 @@ class ConditionService:
 
     @staticmethod
     def upsert_subconditions(condition_id, subconditions, parent_id=None):
-
+        """Update on insert sub conditions"""
         for idx, subcond_data in enumerate(subconditions):
             subcondition_id = subcond_data.get("subcondition_id")
             sort_order = idx + 1
@@ -499,6 +495,7 @@ class ConditionService:
 
     @staticmethod
     def create_subconditions(condition_id, subconditions, parent_id=None):
+        """Create sub conditions"""
         for idx, subcond_data in enumerate(subconditions):
             sort_order = idx + 1
             new_subcondition = Subcondition(
@@ -644,7 +641,6 @@ class ConditionService:
         query = db.session.query(Condition).filter(Condition.id == condition_id)
         query.delete()
         db.session.commit()
-        return None
 
     @staticmethod
     def get_consolidated_conditions(
@@ -652,7 +648,6 @@ class ConditionService:
         category_id=None,
         all_conditions=False,
         include_condition_attributes=False,
-        include_nested_conditions=False,
         user_is_internal=False,
     ):
         """Fetch all consolidated conditions."""
@@ -714,7 +709,7 @@ class ConditionService:
             .join(Condition, Condition.document_id == Document.document_id)
             .outerjoin(Amendment, Amendment.amended_document_id == Condition.amended_document_id)
             .filter(filter_condition)
-            .filter(Condition.is_active == True)
+            .filter(Condition.is_active is True)
         )
 
         if user_is_internal:
@@ -728,14 +723,16 @@ class ConditionService:
             )
 
         if not user_is_internal:
-            query = query.filter(and_(Condition.is_approved == True,
-                                      Condition.is_condition_attributes_approved == True,
-                                      Condition.is_topic_tags_approved == True))
+            query = query.filter(and_(Condition.is_approved is True,
+                                      Condition.is_condition_attributes_approved is True,
+                                      Condition.is_topic_tags_approved is True))
 
         query = query.filter(
-            ~and_(
-                Condition.condition_name.is_(None),
-                Condition.condition_number.is_(None)
+            not_(
+                and_(
+                    Condition.condition_name.is_(None),
+                    Condition.condition_number.is_(None)
+                )
             )
         ).order_by(Condition.condition_number)
 
@@ -746,8 +743,8 @@ class ConditionService:
 
         if user_is_internal:
             return ConditionService._process_internal_conditions(condition_data)
-        else:
-            return ConditionService._process_external_conditions(condition_data, include_condition_attributes)
+
+        return ConditionService._process_external_conditions(condition_data, include_condition_attributes)
 
     @staticmethod
     def _process_internal_conditions(condition_data):
@@ -802,19 +799,19 @@ class ConditionService:
             subcondition_map = {}
 
             # Build nested subcondition structure
-            for sc in sub_condition_data:
-                subcond_id = sc.subcondition_id
+            for sub_condition in sub_condition_data:
+                subcond_id = sub_condition.subcondition_id
                 if subcond_id:
                     subcondition = {
-                        "subcondition_id": sc.subcondition_id,
-                        "subcondition_identifier": sc.subcondition_identifier,
-                        "subcondition_text": sc.subcondition_text,
+                        "subcondition_id": sub_condition.subcondition_id,
+                        "subcondition_identifier": sub_condition.subcondition_identifier,
+                        "subcondition_text": sub_condition.subcondition_text,
                         "subconditions": []
                     }
                     subcondition_map[subcond_id] = subcondition
 
-                    if sc.parent_subcondition_id:
-                        parent = subcondition_map.get(sc.parent_subcondition_id)
+                    if sub_condition.parent_subcondition_id:
+                        parent = subcondition_map.get(sub_condition.parent_subcondition_id)
                         if parent:
                             parent["subconditions"].append(subcondition)
                     else:
@@ -823,12 +820,12 @@ class ConditionService:
             # Recursively build condition_text from nested subconditions
             def build_condition_text(subconditions):
                 parts = []
-                for sc in subconditions:
-                    prefix = f"{sc['subcondition_identifier']} " if sc['subcondition_identifier'] else ""
-                    text = prefix + sc['subcondition_text']
-                    if sc['subconditions']:
+                for sub_condition in subconditions:
+                    prefix = f"{sub_condition['subcondition_identifier']} " if sub_condition['subcondition_identifier'] else ""
+                    text = prefix + sub_condition['subcondition_text']
+                    if sub_condition['subconditions']:
                         # Recursively append nested subconditions
-                        nested_text = build_condition_text(sc['subconditions'])
+                        nested_text = build_condition_text(sub_condition['subconditions'])
                         text += " " + nested_text
                     parts.append(text)
                 return " ".join(parts)
@@ -860,8 +857,8 @@ class ConditionService:
             return []
 
 
-        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
-        FORMATTED_KEYS = {
+        excluded_keys = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
+        formatted_keys = {
             AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
@@ -876,7 +873,7 @@ class ConditionService:
             AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id
         ).filter(
             ConditionAttribute.condition_id == condition_id,
-            ~ConditionAttribute.attribute_key_id.in_([key.value for key in EXCLUDED_KEYS]),
+            ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
         ).order_by(AttributeKey.sort_order).all()
 
         result = {}
@@ -901,7 +898,7 @@ class ConditionService:
                 continue
 
             # Format value
-            if key_enum in FORMATTED_KEYS:
+            if key_enum in formatted_keys:
                 value = ConditionService.format_attribute_value(raw_value)
             else:
                 value = (
@@ -932,7 +929,7 @@ class ConditionService:
                 selected_value = deliverables[0][0]  # fallback
 
             if selected_value:
-                if AttributeKeys.DELIVERABLE_NAME in FORMATTED_KEYS:
+                if AttributeKeys.DELIVERABLE_NAME in formatted_keys:
                     result["deliverable_name"] = [ConditionService.format_attribute_value(selected_value)]
                 else:
                     result["deliverable_name"] = [
@@ -945,6 +942,7 @@ class ConditionService:
 
     @staticmethod
     def format_attribute_value(raw_value):
+        """Format attribute"""
         if not raw_value or raw_value == "N/A":
             return None
 
@@ -1086,19 +1084,19 @@ class ConditionService:
         return condition
 
     @staticmethod
-    def _fetch_condition_attributes(condition_id, ConditionAttributes, AttributeKeys):
+    def _fetch_condition_attributes(condition_id):
         """Fetch and return condition attributes excluding restricted key IDs."""
 
         rows = (
             db.session.query(
-                ConditionAttributes.id,
+                ConditionAttribute.id,
                 AttributeKeys.key_name,
-                ConditionAttributes.attribute_value,
+                ConditionAttribute.attribute_value,
             )
-            .outerjoin(AttributeKeys, ConditionAttributes.attribute_key_id == AttributeKeys.id)
+            .outerjoin(AttributeKeys, ConditionAttribute.attribute_key_id == AttributeKeys.id)
             .filter(
-                ConditionAttributes.condition_id == condition_id,
-                ~ConditionAttributes.attribute_key_id.in_([5])  # Exclude "Parties required"
+                ConditionAttribute.condition_id == condition_id,
+                ~ConditionAttribute.attribute_key_id.in_([5])  # Exclude "Parties required"
             )
             .order_by(AttributeKeys.sort_order)
             .all()

@@ -69,7 +69,7 @@ class ConditionDetailsResource(Resource):
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    def patch(project_id, document_id, condition_id):
+    def patch(condition_id):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
