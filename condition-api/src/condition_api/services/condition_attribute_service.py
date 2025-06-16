@@ -93,7 +93,7 @@ class ConditionAttributeService:
                 condition_id, attribute_key_id, attribute.get("value"), add_to_result_list
             )
             ConditionAttributeService._handle_requires_iem_terms_of_engagement(
-                condition_id, attribute_key_id, attribute.get("value"), add_to_result_list
+                condition_id, attribute.get("value"), add_to_result_list
             )
 
         db.session.commit()
@@ -198,7 +198,7 @@ class ConditionAttributeService:
                 )
 
     @staticmethod
-    def _handle_requires_iem_terms_of_engagement(condition_id, attribute_key_id, attribute_value, add_to_result_list):
+    def _handle_requires_iem_terms_of_engagement(condition_id, attribute_value, add_to_result_list):
         """
         Handles additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true.
 

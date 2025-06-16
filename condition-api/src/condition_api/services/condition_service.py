@@ -2,7 +2,7 @@
 import re
 from collections import defaultdict
 from datetime import datetime
-from sqlalchemy import and_, case, func, extract
+from sqlalchemy import and_, not_, case, func, extract
 from sqlalchemy.orm import aliased
 from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError
 from condition_api.models.amendment import Amendment
@@ -138,9 +138,9 @@ class ConditionService:
                 case(
                     (
                         and_(
-                            conditions.is_approved == True,  # Check if condition is approved
-                            conditions.is_condition_attributes_approved == True,  # Check if attributes are approved
-                            conditions.is_topic_tags_approved == True  # Check if topic tags are approved
+                            conditions.is_approved is True,  # Check if condition is approved
+                            conditions.is_condition_attributes_approved is True,  # Check if attributes are approved
+                            conditions.is_topic_tags_approved is True  # Check if topic tags are approved
                         ),
                         True  # All conditions are met
                     ),
@@ -168,10 +168,12 @@ class ConditionService:
                 )
             )
             .filter(
-                ~and_(
-                    conditions.condition_name.is_(None),
-                    conditions.condition_number.is_(None)
-                )
+                not_(
+                    and_(
+                        conditions.condition_name.is_(None),
+                        conditions.condition_number.is_(None)
+                    )
+                )      
             )
             .group_by(
                 conditions.id,
@@ -226,21 +228,21 @@ class ConditionService:
                     )
                     .filter(subconditions.condition_id == cond_id)
                 )
-                for row in subconditions_data:
+                for sub_row in subconditions_data:
                     # Handle subconditions
-                    subcond_id = row.subcondition_id
+                    subcond_id = sub_row.subcondition_id
                     if subcond_id:
                         subcondition = {
-                            "subcondition_identifier": row.subcondition_identifier,
-                            "subcondition_text": row.subcondition_text,
-                            "sort_order": row.sort_order,
+                            "subcondition_identifier": sub_row.subcondition_identifier,
+                            "subcondition_text": sub_row.subcondition_text,
+                            "sort_order": sub_row.sort_order,
                             "subconditions": []
                         }
                         subcondition_map[subcond_id] = subcondition
 
                         # If the subcondition has a parent, append it to the parent's subcondition list
-                        if row.parent_subcondition_id:
-                            parent = subcondition_map.get(row.parent_subcondition_id)
+                        if sub_row.parent_subcondition_id:
+                            parent = subcondition_map.get(sub_row.parent_subcondition_id)
                             if parent:
                                 parent["subconditions"].append(subcondition)
                         else:
@@ -255,8 +257,6 @@ class ConditionService:
     @staticmethod
     def update_condition(
         conditions_data,
-        project_id=None,
-        document_id=None,
         condition_id=None,
         check_condition_exists=None,
         check_condition_over_project=None,
@@ -343,12 +343,12 @@ class ConditionService:
                     f"<b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
                     is_amendment=True
                 )
-            else:
-                raise ConditionNumberExistsInProjectError(
-                    f"This condition number already exists in <b>{document_name}</b> of "
-                    f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
-                    is_amendment=False
-                )
+
+            raise ConditionNumberExistsInProjectError(
+                f"This condition number already exists in <b>{document_name}</b> of "
+                f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
+                is_amendment=False
+            )
 
     @staticmethod
     def _deactivate_existing_condition(condition, condition_number):
@@ -413,7 +413,7 @@ class ConditionService:
                 # Update the existing subcondition
                 existing_subcondition.subcondition_identifier = subcond_data.get("subcondition_identifier")
                 existing_subcondition.subcondition_text = subcond_data.get("subcondition_text")
-                existing_subcondition.parent_subcondition_id = parent_id,
+                existing_subcondition.parent_subcondition_id = parent_id
                 existing_subcondition.sort_order = sort_order
             else:
                 # Insert a new subcondition
@@ -743,7 +743,7 @@ class ConditionService:
 
         if not condition_data:
             return []
-        
+
         if user_is_internal:
             return ConditionService._process_internal_conditions(condition_data)
         else:

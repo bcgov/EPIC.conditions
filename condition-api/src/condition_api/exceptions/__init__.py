@@ -85,7 +85,6 @@ class UnprocessableEntityError(UnprocessableEntity):
 
 class ConditionNumberExistsError(ValueError):
     """Raised when the condition number already exists in the document."""
-    pass
 
 
 class ConditionNumberExistsInProjectError(ValueError):

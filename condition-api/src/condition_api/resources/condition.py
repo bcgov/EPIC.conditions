@@ -77,7 +77,7 @@ class ConditionDetailsResource(Resource):
             check_condition_exists = query_params.get('check_condition_exists', '', type=str)
             check_condition_over_project = query_params.get('check_condition_over_project', '', type=str)
             updated_condition = ConditionService.update_condition(
-                conditions_data, project_id, document_id, condition_id, check_condition_exists,
+                conditions_data, condition_id, check_condition_exists,
                 check_condition_over_project)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ConditionNumberExistsError as err:
@@ -181,7 +181,7 @@ class ConditionResource(Resource):
             query_params = request.args
             check_condition_over_project = query_params.get(
                 'check_condition_over_project', 'true').lower() == 'true'
-            updated_condition = ConditionService.update_condition(conditions_data, None, None,
+            updated_condition = ConditionService.update_condition(conditions_data,
                                                                   condition_id, True,
                                                                   check_condition_over_project)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK

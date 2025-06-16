@@ -52,7 +52,7 @@ class Users(Resource):
         """Create a staff user."""
         created_account = StaffUserService.create_or_update_staff_user(API.payload)
         if not created_account:
-            return BadRequestError(f"Staff user cannot be created")
+            return BadRequestError("Staff user cannot be created")
         return StaffUserSchema().dump(created_account), HTTPStatus.CREATED
 
 

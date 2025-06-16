@@ -1,6 +1,5 @@
 """Service for staff user management."""
 from flask import g
-from condition_api.exceptions import ResourceNotFoundError
 from condition_api.models.staff_user import StaffUser
 
 
@@ -19,12 +18,13 @@ class StaffUserService:
     @classmethod
     def create_or_update_staff_user(cls, data: dict) -> StaffUser:
         """Create a new staff user or update an existing one."""
-        if cls.is_existing_user(data.get("auth_guid")):
+        auth_guid=data.get("auth_guid")
+        if cls.is_existing_user(auth_guid):
             # If user exists, update their information
-            return StaffUser.update_user(data)
-        else:
-            # Otherwise, create a new user
-            return StaffUser.create_user(data)
+            return StaffUser.update_user(auth_guid, data)
+
+        # Otherwise, create a new user
+        return StaffUser.create_user(data)
 
     @classmethod
     def is_existing_user(cls, auth_guid: str) -> bool:

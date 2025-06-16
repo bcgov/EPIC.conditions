@@ -11,6 +11,7 @@ class AmendmentService:
 
     @staticmethod
     def create_amendment(document_id, amendment):
+        """Create a new amendment document"""
         amended_document_id = amendment.get("amended_document_id")
         is_latest_amendment_added=amendment.get("is_latest_amendment_added")
         if not amended_document_id:
