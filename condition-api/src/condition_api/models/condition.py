@@ -1,3 +1,7 @@
+"""Condition model class.
+
+Manages the Condition
+"""
 from sqlalchemy import Column, DateTime, Integer, String, Text, Boolean, ForeignKey, ARRAY
 from sqlalchemy.orm import relationship
 from .base_model import BaseModel

@@ -2,7 +2,7 @@
 
 Manages the amendment
 """
-from sqlalchemy import Column, Integer, String, Text, Date, Boolean, ARRAY, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Date, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint

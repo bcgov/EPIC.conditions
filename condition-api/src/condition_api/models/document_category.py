@@ -21,10 +21,10 @@ class DocumentCategory(BaseModel):
 
     @classmethod
     def get_all(cls):
-        """Get all document types."""
+        """Get all document categories."""
         return cls.query.all()
 
     @classmethod
-    def get_by_id(cls, id):
-        """Get document by document_id."""
-        return cls.query.filter_by(id=id).first()
+    def get_by_id(cls, category_id):
+        """Get document by category_id."""
+        return cls.query.filter_by(id=category_id).first()

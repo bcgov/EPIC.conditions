@@ -1,3 +1,7 @@
+"""Sub condition model class.
+
+Manages the Sub condition
+"""
 from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from .base_model import BaseModel

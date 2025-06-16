@@ -175,10 +175,12 @@ class DocumentService:
 
     @staticmethod
     def create_document(project_id, document):
+        """Create new document."""
+
         required_fields = ["document_label", "document_type_id", "is_latest_amendment_added"]
-        
+
         # Check if any required field is missing
-        if any(document.get(field) is None or document.get(field) == "" 
+        if any(document.get(field) is None or document.get(field) == ""
                for field in required_fields) or project_id is None:
             raise ValueError("Missing required fields. All fields except 'document_link' \
                              must be provided and cannot be empty.")
@@ -224,7 +226,7 @@ class DocumentService:
         if not documents:
             # If no original document is found, return an empty list
             return []
-        
+
         result = []
 
         for document in documents:
@@ -306,7 +308,7 @@ class DocumentService:
     def update_document(document_id: str, document_label: str):
         """
         Update the document label for a specific document.
-        
+
         If the document is an amendment, update `amendment_name`.
         Otherwise, update `document_label`.
         """
@@ -323,7 +325,7 @@ class DocumentService:
             document = db.session.query(Document).filter_by(document_id=document_id).first()
             if not document:
                 return None  # Document does not exist
-            
+
             document.document_label = document_label
             db.session.add(document)
 

@@ -2,7 +2,7 @@
 
 Manages the Condition Attribute
 """
-from sqlalchemy import Column, Integer, Text, String, Boolean, ARRAY, ForeignKey
+from sqlalchemy import Column, Integer, Text, ForeignKey
 from .base_model import BaseModel
 
 class ConditionAttribute(BaseModel):

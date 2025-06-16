@@ -70,7 +70,7 @@ class ProjectService:
         # Convert the map to a list of projects
         return list(projects_map.values())
 
-    def check_project_conditions(project_id, document_category_id):
+    def check_project_conditions(self, project_id, document_category_id):
         """
         Check all documents in the `documents` table for a specific project.
 
@@ -90,16 +90,18 @@ class ProjectService:
             return None
 
         for document in documents:
-            id = document.id
+            document_pk = document.id
             document_id = document.document_id
             # Check if the document has any conditions
             condition_count = (
                 db.session.query(func.count(Condition.id))
                 .filter(Condition.document_id == document_id, Condition.amended_document_id.is_(None))
                 .filter(
-                    ~and_(
-                        Condition.condition_name.is_(None),
-                        Condition.condition_number.is_(None)
+                    not_(
+                        and_(
+                            Condition.condition_name.is_(None),
+                            Condition.condition_number.is_(None)
+                        )
                     )
                 )
                 .scalar()
@@ -109,7 +111,7 @@ class ProjectService:
             # Fetch all amendments related to the document
             amendments = (
                 db.session.query(Amendment.amended_document_id)
-                .filter(Amendment.document_id == id)
+                .filter(Amendment.document_id == document_pk)
                 .all()
             )
 
@@ -120,9 +122,11 @@ class ProjectService:
                     db.session.query(func.count(Condition.id))
                     .filter(Condition.amended_document_id == amended_document_id)
                     .filter(
-                        ~and_(
-                            Condition.condition_name.is_(None),
-                            Condition.condition_number.is_(None)
+                        not_(
+                            and_(
+                                Condition.condition_name.is_(None),
+                                Condition.condition_number.is_(None)
+                            )
                         )
                     )
                     .scalar()
@@ -151,13 +155,15 @@ class ProjectService:
         ).join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
         ).filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id)
         ).filter(
-            ~and_(
-                Condition.condition_name.is_(None),
-                Condition.condition_number.is_(None)
+            not_(
+                and_(
+                    Condition.condition_name.is_(None),
+                    Condition.condition_number.is_(None)
+                )
             )
         ).first()
 
         if all_approved is None:
             return None
-        else:
-            return all_approved[0]
+
+        return all_approved[0]

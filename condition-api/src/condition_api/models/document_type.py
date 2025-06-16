@@ -26,6 +26,6 @@ class DocumentType(BaseModel):
         return cls.query.all()
 
     @classmethod
-    def get_by_id(cls, id):
+    def get_by_id(cls, document_id):
         """Get document by document_id."""
-        return cls.query.filter_by(id=id).first()
+        return cls.query.filter_by(id=document_id).first()

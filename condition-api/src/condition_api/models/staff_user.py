@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from sqlalchemy import Column, ForeignKey, func, String
+from sqlalchemy import Column, ForeignKey, func
 from sqlalchemy.orm import column_property
 
 from condition_api.utils.enums import UserStatus
