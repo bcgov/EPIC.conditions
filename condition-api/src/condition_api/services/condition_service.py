@@ -27,11 +27,6 @@ class ConditionService:
 
         # Aliases for the tables
         projects = aliased(Project)
-        documents = aliased(Document)
-        document_types = aliased(DocumentType)
-        document_categories = aliased(DocumentCategory)
-        conditions = aliased(Condition)
-        subconditions = aliased(Subcondition)
         amendments = aliased(Amendment)
 
         # Check for amendment and resolve base document info
@@ -46,11 +41,6 @@ class ConditionService:
             base_document_info,
             document_id,
             condition_id,
-            documents,
-            document_types,
-            document_categories,
-            conditions,
-            subconditions,
             amendments
         )
         if not condition_rows:
@@ -975,20 +965,9 @@ class ConditionService:
         return result[0] if result else None
 
     @staticmethod
-    def _fetch_condition_data(
-        is_amendment,
-        base_document_info,
-        document_id,
-        condition_id,
-        documents,
-        document_types,
-        document_categories,
-        conditions,
-        subconditions,
-        amendments
-    ):
-        """Retrieve condition with subconditions and document metadata."""
-
+    def _get_document_joins_and_columns(
+        is_amendment, base_document_info, document_id, amendments,
+        documents, document_types, conditions):
         if is_amendment:
             # Use amendment join path
             document_join = amendments.amended_document_id == conditions.amended_document_id
@@ -1004,6 +983,30 @@ class ConditionService:
             date_col = extract("year", documents.date_issued).label("year_issued")
             document_filter = documents.document_id == document_id
             doc_entity = documents
+
+        return document_join, document_type_join, document_label_col, date_col, document_filter, doc_entity
+
+    @staticmethod
+    def _fetch_condition_data(
+        is_amendment,
+        base_document_info,
+        document_id,
+        condition_id,
+        amendments
+    ):
+        """Retrieve condition with subconditions and document metadata."""
+
+        documents = aliased(Document)
+        document_types = aliased(DocumentType)
+        document_categories = aliased(DocumentCategory)
+        conditions = aliased(Condition)
+        subconditions = aliased(Subcondition)
+
+        document_join, document_type_join, document_label_col, date_col, document_filter, doc_entity =\
+            ConditionService._get_document_joins_and_columns(
+                is_amendment, base_document_info, document_id,
+                amendments, documents, document_types, conditions
+            )
 
         query = (
             db.session.query(
@@ -1090,15 +1093,15 @@ class ConditionService:
         rows = (
             db.session.query(
                 ConditionAttribute.id,
-                AttributeKeys.key_name,
+                AttributeKey.key_name,
                 ConditionAttribute.attribute_value,
             )
-            .outerjoin(AttributeKeys, ConditionAttribute.attribute_key_id == AttributeKeys.id)
+            .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
             .filter(
                 ConditionAttribute.condition_id == condition_id,
                 ~ConditionAttribute.attribute_key_id.in_([5])  # Exclude "Parties required"
             )
-            .order_by(AttributeKeys.sort_order)
+            .order_by(AttributeKey.sort_order)
             .all()
         )
 
