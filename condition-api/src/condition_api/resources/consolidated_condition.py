@@ -18,11 +18,11 @@ from http import HTTPStatus
 from flask import request
 from flask_restx import Namespace, Resource, cors
 
+from marshmallow import ValidationError
+
 from condition_api.services import authorization
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.util import cors_preflight
-
-from marshmallow import ValidationError
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth

@@ -17,13 +17,13 @@ from http import HTTPStatus
 
 from flask_restx import Namespace, Resource, cors
 
+from marshmallow import ValidationError
+
 from condition_api.models.document import Document
 from condition_api.schemas.amendment import AmendmentSchema
 from condition_api.services.amendment_service import AmendmentService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
-
-from marshmallow import ValidationError
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth

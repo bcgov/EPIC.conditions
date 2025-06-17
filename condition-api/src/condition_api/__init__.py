@@ -6,16 +6,16 @@ This module is for the initiation of the flask app.
 import os
 from http import HTTPStatus
 
+from flask import Flask, current_app, g, request
+from flask_cors import CORS
+
+import secure
+
 from condition_api.auth import jwt
 from condition_api.config import get_named_config
 from condition_api.models import db, ma, migrate
 from condition_api.utils.cache import cache
 from condition_api.utils.util import allowedorigins
-
-from flask import Flask, current_app, g, request
-from flask_cors import CORS
-
-import secure
 
 
 # Security Response headers
