@@ -61,7 +61,8 @@ class ConditionService:
             "condition": condition,
         }
 
-    @staticmethod # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals
+    @staticmethod
     def get_all_conditions(
         project_id,
         document_id,
