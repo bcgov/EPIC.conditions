@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 """Service for condition management."""
 import re
 from collections import defaultdict
@@ -74,7 +76,6 @@ class ConditionService:
         documents = aliased(Document)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
-        subconditions = aliased(Subcondition)
 
         # Check if the document_id is an amendment
         is_amendment, base_document_info = ConditionService._get_base_document_info(document_id, amendments)
@@ -181,7 +182,6 @@ class ConditionService:
         )
 
         conditions_map = {}
-        subcondition_map = {}
 
         # Process the query result
         for row in condition_data:
@@ -204,41 +204,50 @@ class ConditionService:
             }
 
             if include_nested_conditions:
-                subconditions_data = (
-                    db.session.query(
-                        subconditions.id.label('subcondition_id'),
-                        subconditions.subcondition_identifier,
-                        subconditions.subcondition_text,
-                        subconditions.sort_order,
-                        subconditions.parent_subcondition_id
-                    )
-                    .filter(subconditions.condition_id == cond_id)
-                )
-                for sub_row in subconditions_data:
-                    # Handle subconditions
-                    subcond_id = sub_row.subcondition_id
-                    if subcond_id:
-                        subcondition = {
-                            "subcondition_identifier": sub_row.subcondition_identifier,
-                            "subcondition_text": sub_row.subcondition_text,
-                            "sort_order": sub_row.sort_order,
-                            "subconditions": []
-                        }
-                        subcondition_map[subcond_id] = subcondition
-
-                        # If the subcondition has a parent, append it to the parent's subcondition list
-                        if sub_row.parent_subcondition_id:
-                            parent = subcondition_map.get(sub_row.parent_subcondition_id)
-                            if parent:
-                                parent["subconditions"].append(subcondition)
-                        else:
-                            # Top-level subcondition for this condition
-                            conditions_map[cond_id]["subconditions"].append(subcondition)
+                ConditionService._populate_subconditions(conditions_map, cond_id)
 
         # Return all conditions
         return {
             "conditions": list(conditions_map.values())
         }
+
+    @staticmethod
+    def _populate_subconditions(conditions_map, cond_id):
+        """Populates sub conditions"""
+        subcondition_map = {}
+        for sub_row in ConditionService._fetch_subconditions(cond_id):
+            # Handle subconditions
+            subcond_id = sub_row.subcondition_id
+            if subcond_id:
+                subcondition = {
+                    "subcondition_identifier": sub_row.subcondition_identifier,
+                    "subcondition_text": sub_row.subcondition_text,
+                    "sort_order": sub_row.sort_order,
+                    "subconditions": []
+                }
+                subcondition_map[subcond_id] = subcondition
+
+                # If the subcondition has a parent, append it to the parent's subcondition list
+                if sub_row.parent_subcondition_id:
+                    parent = subcondition_map.get(sub_row.parent_subcondition_id)
+                    if parent:
+                        parent["subconditions"].append(subcondition)
+                else:
+                    # Top-level subcondition for this condition
+                    conditions_map[cond_id]["subconditions"].append(subcondition)
+
+    @staticmethod
+    def _fetch_subconditions(cond_id):
+        """Fetch sub conditions"""
+        subconditions = aliased(Subcondition)
+        results = db.session.query(
+            subconditions.id.label('subcondition_id'),
+            subconditions.subcondition_identifier,
+            subconditions.subcondition_text,
+            subconditions.sort_order,
+            subconditions.parent_subcondition_id
+        ).filter(subconditions.condition_id == cond_id).all()
+        return results
 
     @staticmethod
     def update_condition(
