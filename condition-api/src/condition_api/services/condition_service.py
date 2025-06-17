@@ -31,7 +31,7 @@ class ConditionService:
         projects = aliased(Project)
 
         # Check for amendment and resolve base document info
-        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id, amendments)
+        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id)
 
         # Fetch project metadata
         project_name = ConditionService._get_project_name(project_id, projects)
@@ -70,47 +70,18 @@ class ConditionService:
         """Fetch all conditions and their related subconditions by project ID and document ID."""
 
         # Aliases for the tables
-        projects = aliased(Project)
         documents = aliased(Document)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
 
         # Check if the document_id is an amendment
-        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id, amendments)
+        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id)
 
-        if is_amendment:
-            # Join conditions to amendments instead of documents
-            amendment_label_subquery = (
-                db.session.query(amendments.amendment_name)
-                .filter(amendments.amended_document_id == base_document_info.amended_document_id)
-                .subquery()
-            )
-            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
-            condition_join = amendments.amended_document_id == conditions.amended_document_id
-            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
-        else:
-            # Join conditions directly to documents
-            condition_join = and_(
-                documents.document_id == conditions.document_id,
-                conditions.amended_document_id.is_(None)
-            )
-            document_label_query = documents.document_label
-            date_issued_query = extract("year", documents.date_issued).label("year_issued")
-
-        amendment_subquery = (
-            db.session.query(
-                conditions.condition_number,
-                func.string_agg(amendments.amendment_name.distinct(), ', ').label('amendment_names')
-            )
-            .join(conditions, conditions.amended_document_id == amendments.amended_document_id)  # Join amendments to conditions
-            .join(documents, conditions.document_id == documents.document_id)  # Join conditions to documents
-            .join(projects, projects.project_id == documents.project_id)  # Join documents to projects
-            .filter(
-                (projects.project_id == project_id) & (documents.document_id == document_id)
-            )
-            .group_by(conditions.condition_number)
-            .subquery()
+        condition_join, document_label_query, date_issued_query = (
+            ConditionService._get_document_context(is_amendment, base_document_info)
         )
+
+        amendment_subquery = ConditionService._build_amendment_subquery(project_id, document_id)
 
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
@@ -208,6 +179,53 @@ class ConditionService:
         return {
             "conditions": list(conditions_map.values())
         }
+
+    @staticmethod
+    def _get_document_context(is_amendment, base_document_info):
+        documents = aliased(Document)
+        amendments = aliased(Amendment)
+        conditions = aliased(Condition)
+
+        if is_amendment:
+            amendment_label_subquery = (
+                db.session.query(amendments.amendment_name)
+                .filter(amendments.amended_document_id == base_document_info.amended_document_id)
+                .subquery()
+            )
+            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
+            condition_join = amendments.amended_document_id == conditions.amended_document_id
+            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+        else:
+            condition_join = and_(
+                documents.document_id == conditions.document_id,
+                conditions.amended_document_id.is_(None)
+            )
+            document_label_query = documents.document_label
+            date_issued_query = extract("year", documents.date_issued).label("year_issued")
+
+        return condition_join, document_label_query, date_issued_query
+
+    @staticmethod
+    def _build_amendment_subquery(project_id, document_id):
+        projects = aliased(Project)
+        documents = aliased(Document)
+        amendments = aliased(Amendment)
+        conditions = aliased(Condition)
+
+        return (
+            db.session.query(
+                conditions.condition_number,
+                func.string_agg(amendments.amendment_name.distinct(), ', ').label('amendment_names')
+            )
+            .join(conditions, conditions.amended_document_id == amendments.amended_document_id)
+            .join(documents, conditions.document_id == documents.document_id)
+            .join(projects, projects.project_id == documents.project_id)
+            .filter(
+                (projects.project_id == project_id) & (documents.document_id == document_id)
+            )
+            .group_by(conditions.condition_number)
+            .subquery()
+        )
 
     @staticmethod
     def _populate_subconditions(conditions_map, cond_id):
@@ -515,48 +533,11 @@ class ConditionService:
     def get_condition_details_by_id(condition_id):
         """Fetch all conditions and their related details by condition ID."""
 
-        condition_data = (
-            db.session.query(
-                Condition.id,
-                Condition.document_id,
-                Condition.amended_document_id,
-                Condition.condition_name,
-                Condition.condition_number,
-                Condition.condition_text,
-                Condition.is_approved,
-                Condition.is_standard_condition,
-                Condition.topic_tags,
-                Condition.subtopic_tags
-            ).filter(Condition.id == condition_id).first()
-        )
-
+        condition_data = ConditionService._get_condition_data(condition_id)
         if not condition_data:
             return None
 
-        amended_document_id = condition_data.amended_document_id
-
-        if amended_document_id:
-            amendment_data = (
-                db.session.query(
-                    Amendment.amended_document_id,
-                    Amendment.amendment_name.label("document_label"),
-                    extract("year", Amendment.date_issued).label("year_issued")
-                )
-                .filter(Amendment.amended_document_id == amended_document_id)
-                .first()
-            )
-            actual_document_id = amendment_data.amended_document_id if amendment_data else None
-            document_label = amendment_data.document_label if amendment_data else None
-            year_issued = amendment_data.year_issued if amendment_data else None
-        else:
-            actual_document_id = condition_data.document_id
-            document_details = db.session.query(
-                Document.document_label,
-                extract("year", Document.date_issued).label("year_issued")
-            ).filter(Document.document_id == actual_document_id).first()
-
-            document_label = document_details.document_label if document_details else None
-            year_issued = document_details.year_issued if document_details else None
+        document_label, year_issued, actual_document_id = ConditionService._get_document_info(condition_data)
 
         project_data = db.session.query(
             Project.project_id,
@@ -587,40 +568,7 @@ class ConditionService:
             "subconditions": []
         }
 
-        sub_condition_data = (
-            db.session.query(
-                Subcondition.id.label('subcondition_id'),
-                Subcondition.subcondition_identifier,
-                Subcondition.subcondition_text,
-                Subcondition.parent_subcondition_id,
-            )
-            .filter(Subcondition.condition_id == condition_id)
-            .all()
-            .order_by(Subcondition.sort_order)
-        )
-
-        subcondition_map = {}
-
-        for row in sub_condition_data:
-            subcond_id = row.subcondition_id
-            if subcond_id:
-                subcondition = {
-                    "subcondition_id": row.subcondition_id,
-                    "subcondition_identifier": row.subcondition_identifier,
-                    "subcondition_text": row.subcondition_text,
-                    "sort_order": row.sort_order,
-                    "subconditions": []
-                }
-                subcondition_map[subcond_id] = subcondition
-
-                # If the subcondition has a parent, append it to the parent's subcondition list
-                if row.parent_subcondition_id:
-                    parent = subcondition_map.get(row.parent_subcondition_id)
-                    if parent:
-                        parent["subconditions"].append(subcondition)
-                else:
-                    # Top-level subcondition for this condition
-                    condition_details["subconditions"].append(subcondition)
+        condition_details["subconditions"] = ConditionService._build_nested_subconditions(condition_id)
 
         return {
             "project_id": project_id,
@@ -631,6 +579,88 @@ class ConditionService:
             "document_label": document_label,
             "condition": condition_details
         }
+
+    @staticmethod
+    def _get_condition_data(condition_id):
+        return db.session.query(
+            Condition.id,
+            Condition.document_id,
+            Condition.amended_document_id,
+            Condition.condition_name,
+            Condition.condition_number,
+            Condition.condition_text,
+            Condition.is_approved,
+            Condition.is_standard_condition,
+            Condition.topic_tags,
+            Condition.subtopic_tags
+        ).filter(Condition.id == condition_id).first()
+
+    @staticmethod
+    def _get_document_info(condition_data):
+        amended_document_id = condition_data.amended_document_id
+
+        if amended_document_id:
+            amendment_data = (
+                db.session.query(
+                    Amendment.amended_document_id,
+                    Amendment.amendment_name.label("document_label"),
+                    extract("year", Amendment.date_issued).label("year_issued")
+                )
+                .filter(Amendment.amended_document_id == amended_document_id)
+                .first()
+            )
+            actual_document_id = amendment_data.amended_document_id if amendment_data else None
+            document_label = amendment_data.document_label if amendment_data else None
+            year_issued = amendment_data.year_issued if amendment_data else None
+        else:
+            actual_document_id = condition_data.document_id
+            document_details = db.session.query(
+                Document.document_label,
+                extract("year", Document.date_issued).label("year_issued")
+            ).filter(Document.document_id == actual_document_id).first()
+
+            document_label = document_details.document_label if document_details else None
+            year_issued = document_details.year_issued if document_details else None
+
+        return document_label, year_issued, actual_document_id
+
+    @staticmethod
+    def _build_nested_subconditions(condition_id):
+        sub_condition_data = (
+            db.session.query(
+                Subcondition.id.label('subcondition_id'),
+                Subcondition.subcondition_identifier,
+                Subcondition.subcondition_text,
+                Subcondition.parent_subcondition_id,
+                Subcondition.sort_order
+            )
+            .filter(Subcondition.condition_id == condition_id)
+            .order_by(Subcondition.sort_order)
+            .all()
+        )
+
+        subcondition_map = {}
+        nested_subconditions = []
+
+        for row in sub_condition_data:
+            subcond = {
+                "subcondition_id": row.subcondition_id,
+                "subcondition_identifier": row.subcondition_identifier,
+                "subcondition_text": row.subcondition_text,
+                "sort_order": row.sort_order,
+                "subconditions": []
+            }
+
+            subcondition_map[row.subcondition_id] = subcond
+
+            if row.parent_subcondition_id:
+                parent = subcondition_map.get(row.parent_subcondition_id)
+                if parent:
+                    parent["subconditions"].append(subcond)
+            else:
+                nested_subconditions.append(subcond)
+
+        return nested_subconditions
 
     @staticmethod
     def delete_condition(condition_id):
@@ -936,14 +966,14 @@ class ConditionService:
 
         if AttributeKeys.DELIVERABLE_NAME in formatted_keys:
             return {"deliverable_name": [ConditionService.format_attribute_value(selected_value)]}
-        else:
-            return {
-                "deliverable_name": [
-                    selected_value.replace("{", "").replace("}", "").replace('"', "")
-                    if selected_value and selected_value != "N/A"
-                    else None
-                ]
-            }
+
+        return {
+            "deliverable_name": [
+                selected_value.replace("{", "").replace("}", "").replace('"', "")
+                if selected_value and selected_value != "N/A"
+                else None
+            ]
+        }
 
     @staticmethod
     def format_attribute_value(raw_value):
@@ -963,8 +993,10 @@ class ConditionService:
         return clean_list  # Return as a proper JSON list (not a string!)
 
     @staticmethod
-    def _get_base_document_info(document_id, amendments):
+    def _get_base_document_info(document_id):
         """Determine if document is an amendment and return base info."""
+        amendments = aliased(Amendment)
+
         amendment = db.session.query(
             amendments.document_id, amendments.amended_document_id
         ).filter(amendments.amended_document_id == document_id).first()
