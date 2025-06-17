@@ -29,7 +29,6 @@ class ConditionService:
 
         # Aliases for the tables
         projects = aliased(Project)
-        amendments = aliased(Amendment)
 
         # Check for amendment and resolve base document info
         is_amendment, base_document_info = ConditionService._get_base_document_info(document_id, amendments)
@@ -42,8 +41,7 @@ class ConditionService:
             is_amendment,
             base_document_info,
             document_id,
-            condition_id,
-            amendments
+            condition_id
         )
         if not condition_rows:
             return None
@@ -816,21 +814,8 @@ class ConditionService:
                     else:
                         condition_details["subconditions"].append(subcondition)
 
-            # Recursively build condition_text from nested subconditions
-            def build_condition_text(subconditions):
-                parts = []
-                for sub_condition in subconditions:
-                    prefix = f"{sub_condition['subcondition_identifier']} " if sub_condition['subcondition_identifier'] else ""
-                    text = prefix + sub_condition['subcondition_text']
-                    if sub_condition['subconditions']:
-                        # Recursively append nested subconditions
-                        nested_text = build_condition_text(sub_condition['subconditions'])
-                        text += " " + nested_text
-                    parts.append(text)
-                return " ".join(parts)
-
             if condition_details["subconditions"]:
-                condition_text = build_condition_text(condition_details["subconditions"])
+                condition_text = ConditionService._build_condition_text(condition_details["subconditions"])
             else:
                 condition_text = row.condition_text  # fallback if no subconditions
 
@@ -848,6 +833,20 @@ class ConditionService:
 
         conditions_schema = ConsolidatedConditionSchema(many=True)
         return {"conditions": conditions_schema.dump(result)}
+
+    @staticmethod
+    def _build_condition_text(subconditions):
+        """Recursively build condition_text from nested subconditions"""
+        parts = []
+        for sub_condition in subconditions:
+            prefix = f"{sub_condition['subcondition_identifier']} " if sub_condition['subcondition_identifier'] else ""
+            text = prefix + sub_condition['subcondition_text']
+            if sub_condition['subconditions']:
+                # Recursively append nested subconditions
+                nested_text = ConditionService._build_condition_text(sub_condition['subconditions'])
+                text += " " + nested_text
+            parts.append(text)
+        return " ".join(parts)
 
     @staticmethod
     def _fetch_condition_attributes_external(condition_id, include_condition_attributes):
@@ -897,47 +896,54 @@ class ConditionService:
                 continue
 
             # Format value
-            if key_enum in formatted_keys:
-                value = ConditionService.format_attribute_value(raw_value)
-            else:
-                value = (
-                    raw_value.replace("{", "").replace("}", "").replace('"', "")
-                    if raw_value and raw_value != "N/A"
-                    else None
-                )
-
+            value = ConditionService._format_attribute_value(key_enum, raw_value, formatted_keys)
             result[external_key] = value
 
         # Handle deliverables
         if deliverables:
-            selected_value = None
-            deliverable_phrase = IEMTermsConfig.DELIVERABLE_VALUE
-
-            if requires_iem:
-                selected_value = next(
-                    (val for val, _ in deliverables if deliverable_phrase in val),
-                    None
-                )
-            else:
-                selected_value = next(
-                    (val for val, _ in deliverables if deliverable_phrase not in val),
-                    None
-                )
-
-            if not selected_value and deliverables:
-                selected_value = deliverables[0][0]  # fallback
-
-            if selected_value:
-                if AttributeKeys.DELIVERABLE_NAME in formatted_keys:
-                    result["deliverable_name"] = [ConditionService.format_attribute_value(selected_value)]
-                else:
-                    result["deliverable_name"] = [
-                        selected_value.replace("{", "").replace("}", "").replace('"', "")
-                        if selected_value and selected_value != "N/A"
-                        else None
-                    ]
+            result.update(
+                ConditionService._process_deliverables(deliverables, requires_iem, formatted_keys)
+            )
 
         return result
+
+    @staticmethod
+    def _format_attribute_value(key_enum, raw_value, formatted_keys):
+        """Format value"""
+        if key_enum in formatted_keys:
+            return ConditionService.format_attribute_value(raw_value)
+        return (
+            raw_value.replace("{", "").replace("}", "").replace('"', "")
+            if raw_value and raw_value != "N/A"
+            else None
+        )
+
+    @staticmethod
+    def _process_deliverables(deliverables, requires_iem, formatted_keys):
+        deliverable_phrase = IEMTermsConfig.DELIVERABLE_VALUE
+        selected_value = None
+
+        if requires_iem:
+            selected_value = next((val for val, _ in deliverables if deliverable_phrase in val), None)
+        else:
+            selected_value = next((val for val, _ in deliverables if deliverable_phrase not in val), None)
+
+        if not selected_value and deliverables:
+            selected_value = deliverables[0][0]
+
+        if not selected_value:
+            return {}
+
+        if AttributeKeys.DELIVERABLE_NAME in formatted_keys:
+            return {"deliverable_name": [ConditionService.format_attribute_value(selected_value)]}
+        else:
+            return {
+                "deliverable_name": [
+                    selected_value.replace("{", "").replace("}", "").replace('"', "")
+                    if selected_value and selected_value != "N/A"
+                    else None
+                ]
+            }
 
     @staticmethod
     def format_attribute_value(raw_value):
@@ -975,8 +981,11 @@ class ConditionService:
 
     @staticmethod
     def _get_document_joins_and_columns(
-        is_amendment, base_document_info, document_id, amendments,
-        documents, document_types, conditions):
+        is_amendment, base_document_info, document_id, document_types, conditions):
+        """get joins needed for fetching condition data"""
+        documents = aliased(Document)
+        amendments = aliased(Amendment)
+
         if is_amendment:
             # Use amendment join path
             document_join = amendments.amended_document_id == conditions.amended_document_id
@@ -1000,12 +1009,10 @@ class ConditionService:
         is_amendment,
         base_document_info,
         document_id,
-        condition_id,
-        amendments
+        condition_id
     ):
         """Retrieve condition with subconditions and document metadata."""
 
-        documents = aliased(Document)
         document_types = aliased(DocumentType)
         document_categories = aliased(DocumentCategory)
         conditions = aliased(Condition)
@@ -1014,7 +1021,7 @@ class ConditionService:
         document_join, document_type_join, document_label_col, date_col, document_filter, doc_entity =\
             ConditionService._get_document_joins_and_columns(
                 is_amendment, base_document_info, document_id,
-                amendments, documents, document_types, conditions
+                document_types, conditions
             )
 
         query = (
