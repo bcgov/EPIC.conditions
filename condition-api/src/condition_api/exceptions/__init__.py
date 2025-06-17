@@ -89,6 +89,8 @@ class ConditionNumberExistsError(ValueError):
 
 class ConditionNumberExistsInProjectError(ValueError):
     """Raised when the condition number already exists in the project."""
+
     def __init__(self, message, is_amendment=False):
+        """Init"""
         super().__init__(message)
         self.is_amendment = is_amendment

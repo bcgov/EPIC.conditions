@@ -14,8 +14,8 @@
 """API endpoints for managing a amendment resource."""
 
 from http import HTTPStatus
+
 from flask_restx import Namespace, Resource, cors
-from marshmallow import ValidationError
 
 from condition_api.models.document import Document
 from condition_api.schemas.amendment import AmendmentSchema
@@ -23,8 +23,10 @@ from condition_api.services.amendment_service import AmendmentService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
+from marshmallow import ValidationError
+
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("amendments", description="Endpoints for Amendment Management")
 """Custom exception messages
@@ -33,6 +35,7 @@ API = Namespace("amendments", description="Endpoints for Amendment Management")
 amendment_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, AmendmentSchema(), "Amendment"
 )
+
 
 @cors_preflight("POST, OPTIONS")
 @API.route("/document/<string:document_id>", methods=["POST", "OPTIONS"])

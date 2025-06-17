@@ -17,9 +17,9 @@ Test Utility for creating test scenarios.
 """
 from enum import Enum
 
-from faker import Faker
-
 from condition_api.config import get_named_config
+
+from faker import Faker
 
 
 fake = Faker()

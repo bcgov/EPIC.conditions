@@ -1,6 +1,7 @@
 """Service for staff user management."""
-from flask import g
 from condition_api.models.staff_user import StaffUser
+
+from flask import g
 
 
 class StaffUserService:
@@ -18,7 +19,7 @@ class StaffUserService:
     @classmethod
     def create_or_update_staff_user(cls, data: dict) -> StaffUser:
         """Create a new staff user or update an existing one."""
-        auth_guid=data.get("auth_guid")
+        auth_guid = data.get("auth_guid")
         if cls.is_existing_user(auth_guid):
             # If user exists, update their information
             return StaffUser.update_user(auth_guid, data)

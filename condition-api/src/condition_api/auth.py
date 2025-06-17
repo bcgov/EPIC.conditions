@@ -15,6 +15,7 @@
 from functools import wraps
 
 from flask import g, request
+
 from flask_jwt_oidc import JwtManager
 from flask_jwt_oidc.exceptions import AuthError
 
@@ -67,7 +68,7 @@ class Auth:  # pylint: disable=too-few-public-methods
         Args:
             roles (list[str]): List of valid roles
         """
-
         return jwt.has_one_of_roles(roles)
+
 
 auth = Auth()

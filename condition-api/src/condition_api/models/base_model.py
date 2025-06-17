@@ -13,11 +13,15 @@
 # limitations under the License.
 """Super class to handle all operations related to base model."""
 from datetime import datetime
-from sqlalchemy import Column
-from sqlalchemy.ext.declarative import declared_attr
+
 from condition_api.utils.token_info import TokenInfo
 
+from sqlalchemy import Column
+
+from sqlalchemy.ext.declarative import declared_attr
+
 from .db import db
+
 
 class BaseModel(db.Model):
     """This class manages all of the base model functions."""

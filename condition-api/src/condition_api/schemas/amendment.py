@@ -5,6 +5,7 @@ Manages the amendment
 
 from marshmallow import Schema, fields
 
+
 class AmendmentSchema(Schema):
     """Amendment schema."""
 

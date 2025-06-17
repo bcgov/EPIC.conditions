@@ -1,13 +1,14 @@
 """Service for project management."""
-from sqlalchemy import and_, func, case, not_, String
-from sqlalchemy.dialects.postgresql import ARRAY
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
+from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
-from condition_api.models.db import db
 from condition_api.models.project import Project
+
+from sqlalchemy import String, and_, case, func, not_
+from sqlalchemy.dialects.postgresql import ARRAY
 
 
 class ProjectService:
@@ -16,7 +17,6 @@ class ProjectService:
     @staticmethod
     def get_all_projects():
         """Fetch all projects along with related documents in a single query."""
-
         # Fetch all projects with their related documents, document types, and conditions in one query
         project_data = (
             db.session.query(
@@ -26,7 +26,7 @@ class ProjectService:
                 DocumentCategory.category_name.label("document_category"),
                 func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
                 func.greatest(func.max(Document.date_issued), func.max(Amendment.date_issued)).label("max_date_issued"),
-                func.count(Amendment.document_id).label("amendment_count"), # pylint: disable=not-callable
+                func.count(Amendment.document_id).label("amendment_count"),  # pylint: disable=not-callable
                 func.bool_or(Document.is_latest_amendment_added).label("is_latest_amendment_added")
             )
             .outerjoin(Document, Document.project_id == Project.project_id)
@@ -95,7 +95,7 @@ class ProjectService:
             document_id = document.document_id
             # Check if the document has any conditions
             condition_count = (
-                db.session.query(func.count(Condition.id)) # pylint: disable=not-callable
+                db.session.query(func.count(Condition.id))  # pylint: disable=not-callable
                 .filter(Condition.document_id == document_id, Condition.amended_document_id.is_(None))
                 .filter(
                     not_(
@@ -120,7 +120,7 @@ class ProjectService:
             for amendment in amendments:
                 amended_document_id = amendment.amended_document_id
                 amendment_condition_count = (
-                    db.session.query(func.count(Condition.id)) # pylint: disable=not-callable
+                    db.session.query(func.count(Condition.id))  # pylint: disable=not-callable
                     .filter(Condition.amended_document_id == amended_document_id)
                     .filter(
                         not_(
@@ -135,34 +135,42 @@ class ProjectService:
                 if amendment_condition_count == 0:
                     return None
 
-        all_approved = db.session.query(
-            func.min(
-                case(
-                    (
-                        not_(
-                            and_(
-                                Condition.is_approved.is_(True),  # Ensure is_approved is True
-                                Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
-                                Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
-                            )
-                        ),  # If any of the conditions are not True
-                        0  # Not approved
-                    ),
-                    else_=1  # Approved
-                )
-            ).label("all_approved")
-        ).join(Document, Document.document_id == Condition.document_id
-        ).join(DocumentType, DocumentType.id == Document.document_type_id
-        ).join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
-        ).filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id)
-        ).filter(
-            not_(
+        all_approved = (
+            db.session.query(
+                func.min(
+                    case(
+                        (
+                            not_(
+                                and_(
+                                    Condition.is_approved.is_(True),
+                                    Condition.is_condition_attributes_approved.is_(True),
+                                    Condition.is_topic_tags_approved.is_(True)
+                                )
+                            ),  # If any of the conditions are not True
+                            0  # Not approved
+                        ),
+                        else_=1  # Approved
+                    )
+                ).label("all_approved"))
+            .join(Document, Document.document_id == Condition.document_id)
+            .join(DocumentType, DocumentType.id == Document.document_type_id)
+            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .filter(
                 and_(
-                    Condition.condition_name.is_(None),
-                    Condition.condition_number.is_(None)
+                    Document.project_id == project_id,
+                    DocumentCategory.id == document_category_id
                 )
             )
-        ).first()
+            .filter(
+                not_(
+                    and_(
+                        Condition.condition_name.is_(None),
+                        Condition.condition_number.is_(None)
+                    )
+                )
+            )
+            .first()
+        )
 
         if all_approved is None:
             return None

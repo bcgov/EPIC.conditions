@@ -2,16 +2,19 @@
 
 Manages the amendment
 """
-from sqlalchemy import Column, Integer, String, Text, Date, ForeignKey
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
+
 from .base_model import BaseModel
 
 Base = declarative_base()
 
+
 class Amendment(BaseModel):
     """Definition of the Amendments entity."""
+
     __tablename__ = 'amendments'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

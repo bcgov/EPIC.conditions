@@ -11,8 +11,10 @@ from .base_model import BaseModel
 
 Base = declarative_base()
 
+
 class Project(BaseModel):
     """Definition of the Projects entity."""
+
     __tablename__ = 'projects'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

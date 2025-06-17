@@ -15,16 +15,16 @@
 
 from http import HTTPStatus
 
-from flask_restx import Namespace, Resource, cors
-
 from condition_api.exceptions import BadRequestError, ResourceNotFoundError
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
+from flask_restx import Namespace, Resource, cors
+
+from .apihelper import Api as ApiHelper
 from ..auth import auth
 from ..schemas.staff_user import StaffUserSchema
 from ..services.staff_user_service import StaffUserService
-from .apihelper import Api as ApiHelper
 
 
 API = Namespace("users", description="Endpoints for Staff User Management")

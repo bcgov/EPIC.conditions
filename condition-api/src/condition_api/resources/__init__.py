@@ -24,14 +24,14 @@ That are used to expose operational health information about the service, and me
 from flask import Blueprint
 
 from .apihelper import Api
-from .ops import API as OPS_API
 from .amendment import API as AMENDMENT_API
 from .attribute_key import API as ATTRIBUTE_KEY_API
 from .condition import API as CONDITION_API
-from .consolidated_condition import API as CONSOLIDATED_CONDITION_API
 from .condition_attribute import API as CONDITION_ATTRIBUTE_API
-from .document_category import API as DOCUMENT_CATEGORY_API
+from .consolidated_condition import API as CONSOLIDATED_CONDITION_API
 from .document import API as DOCUMENT_API
+from .document_category import API as DOCUMENT_CATEGORY_API
+from .ops import API as OPS_API
 from .project import API as PROJECT_API
 from .staff_user import API as STAFF_USER_API
 

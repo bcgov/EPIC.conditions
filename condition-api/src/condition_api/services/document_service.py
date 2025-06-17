@@ -1,14 +1,17 @@
 """Service for document management."""
 import uuid
 from datetime import date
-from sqlalchemy import and_, not_, case, func, extract
+
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
+from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
-from condition_api.models.db import db
+
+from sqlalchemy import and_, case, extract, func, not_
+
 
 class DocumentService:
     """Service for managing document-related operations."""
@@ -16,7 +19,6 @@ class DocumentService:
     @staticmethod
     def get_all_documents_by_category(project_id, category_id):
         """Fetch all documents and its amendments for the given project_id and category_id."""
-
         # Fetch the original document
         documents = db.session.query(
             Project.project_name.label('project_name'),
@@ -29,7 +31,7 @@ class DocumentService:
             extract('year', Document.date_issued).label('year_issued'),
             case(
                 (
-                    func.count( # pylint: disable=not-callable
+                    func.count(  # pylint: disable=not-callable
                         case(
                             # Include only valid conditions for the count
                             (
@@ -58,9 +60,9 @@ class DocumentService:
                                 ),  # Exclude invalid conditions
                                 not_(
                                     and_(
-                                        Condition.is_approved.is_(True),  # Ensure is_approved is True
-                                        Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
-                                        Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
+                                        Condition.is_approved.is_(True),
+                                        Condition.is_condition_attributes_approved.is_(True),
+                                        Condition.is_topic_tags_approved.is_(True)
                                     )
                                 )  # If all are not True, mark as not approved
                             ),
@@ -107,7 +109,7 @@ class DocumentService:
 
         # Iterate over documents and fetch amendments
         for document in documents:
-        # Fetch all amendments associated with the original document
+            # Fetch all amendments associated with the original document
             amendments_query = db.session.query(
                 Amendment.amended_document_id.label('document_id'),
                 Amendment.amendment_name.label('document_label'),
@@ -115,22 +117,22 @@ class DocumentService:
                 extract('year', Amendment.date_issued).label('year_issued'),
                 case(
                      # If there are no conditions, return None
-                    (func.count(Condition.id) == 0, None), # pylint: disable=not-callable
-                    else_=func.min(
-                        case(
-                            (
-                                not_(
-                                    and_(
-                                        Condition.is_approved.is_(True),  # Ensure is_approved is True
-                                        Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
-                                        Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
-                                    )
-                                ),  # If any of the conditions are not True
-                                0  # Not approved
-                            ),
-                            else_=1  # Approved
+                    (func.count(Condition.id) == 0, None),  # pylint: disable=not-callable
+                        else_=func.min(
+                            case(
+                                (
+                                    not_(
+                                        and_(
+                                            Condition.is_approved.is_(True),
+                                            Condition.is_condition_attributes_approved.is_(True),
+                                            Condition.is_topic_tags_approved.is_(True)
+                                        )
+                                    ),  # If any of the conditions are not True
+                                    0  # Not approved
+                                ),
+                                else_=1  # Approved
+                            )
                         )
-                    )
                 ).label("status")
             ).outerjoin(
                 Condition,
@@ -177,7 +179,6 @@ class DocumentService:
     @staticmethod
     def create_document(project_id, document):
         """Create new document."""
-
         required_fields = ["document_label", "document_type_id", "is_latest_amendment_added"]
 
         # Check if any required field is missing
@@ -242,7 +243,6 @@ class DocumentService:
     @staticmethod
     def get_document_details(document_id):
         """Fetch document details by document_id."""
-
         # Check if the document_id is an amendment
         is_amendment_document = (
             db.session.query(
@@ -270,7 +270,8 @@ class DocumentService:
                 DocumentCategory,
                 DocumentCategory.id == DocumentType.document_category_id
             ).filter(Document.id == is_amendment_document.document_id
-            ).first()
+            ).first(
+            )
         else:
             # Fetch the original document
             document = db.session.query(
@@ -290,7 +291,8 @@ class DocumentService:
                 DocumentCategory,
                 DocumentCategory.id == DocumentType.document_category_id
             ).filter(Document.document_id == document_id
-            ).first()
+            ).first(
+            )
 
             if not document:
                 # If no original document is found, return
@@ -301,8 +303,10 @@ class DocumentService:
             "document_category_id": document.document_category_id,
             "document_category": document.document_category,
             "document_id": is_amendment_document.amended_document_id if is_amendment_document else document.document_id,
-            "document_label": is_amendment_document.amendment_name if is_amendment_document else document.document_label,
-            "document_type_id": is_amendment_document.document_type_id if is_amendment_document else document.document_type_id,
+            "document_label": is_amendment_document.amendment_name if\
+                is_amendment_document else document.document_label,
+            "document_type_id": is_amendment_document.document_type_id if\
+                is_amendment_document else document.document_type_id,
         }
 
     @staticmethod

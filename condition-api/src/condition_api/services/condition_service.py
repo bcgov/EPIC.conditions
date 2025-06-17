@@ -4,21 +4,24 @@
 import re
 from collections import defaultdict
 from datetime import datetime
-from sqlalchemy import and_, not_, case, func, extract
-from sqlalchemy.orm import aliased
+
 from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
-from condition_api.models.subcondition import Subcondition
 from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.models.document import Document
-from condition_api.models.document_type import DocumentType
 from condition_api.models.document_category import DocumentCategory
+from condition_api.models.document_type import DocumentType
 from condition_api.models.db import db
 from condition_api.models.project import Project
-from condition_api.schemas.condition import ProjectDocumentConditionSchema, ConsolidatedConditionSchema
+from condition_api.models.subcondition import Subcondition
+from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
 from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
+
+from sqlalchemy import and_, case, extract, func, not_
+from sqlalchemy.orm import aliased
+
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -26,7 +29,6 @@ class ConditionService:
     @staticmethod
     def get_condition_details(project_id, document_id, condition_id):
         """Fetch condition details along with related condition attributes by project ID."""
-
         # Aliases for the tables
         projects = aliased(Project)
 
@@ -69,7 +71,6 @@ class ConditionService:
         include_nested_conditions=False
     ):
         """Fetch all conditions and their related subconditions by project ID and document ID."""
-
         # Aliases for the tables
         documents = aliased(Document)
         amendments = aliased(Amendment)
@@ -533,7 +534,6 @@ class ConditionService:
     @staticmethod
     def get_condition_details_by_id(condition_id):
         """Fetch all conditions and their related details by condition ID."""
-
         condition_data = ConditionService._get_condition_data(condition_id)
         if not condition_data:
             return None
@@ -548,7 +548,8 @@ class ConditionService:
         ).outerjoin(Document, Project.project_id == Document.project_id
         ).outerjoin(DocumentType, DocumentType.id == Document.document_type_id
         ).outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
-        ).filter(Document.document_id == condition_data.document_id).first()
+        ).filter(Document.document_id == condition_data.document_id
+        ).first()
 
         project_id = project_data.project_id if project_data else None
         project_name = project_data.project_name if project_data else None
@@ -885,7 +886,6 @@ class ConditionService:
         if not include_condition_attributes:
             return []
 
-
         excluded_keys = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
         formatted_keys = {
             AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
@@ -1014,8 +1014,8 @@ class ConditionService:
 
     @staticmethod
     def _get_document_joins_and_columns(
-        is_amendment, base_document_info, document_id, document_types, conditions):
-        """get joins needed for fetching condition data"""
+            is_amendment, base_document_info, document_id, document_types, conditions):
+        """Get joins needed for fetching condition data"""
         documents = aliased(Document)
         amendments = aliased(Amendment)
 
@@ -1045,7 +1045,6 @@ class ConditionService:
         condition_id
     ):
         """Retrieve condition with subconditions and document metadata."""
-
         document_types = aliased(DocumentType)
         document_categories = aliased(DocumentCategory)
         conditions = aliased(Condition)
@@ -1092,7 +1091,6 @@ class ConditionService:
     @staticmethod
     def _build_condition_structure(condition_rows):
         """Organize the condition and subconditions into hierarchical structure."""
-
         first = condition_rows[0]
         condition = {
             "condition_id": first.id,
@@ -1138,7 +1136,6 @@ class ConditionService:
     @staticmethod
     def _fetch_condition_attributes(condition_id):
         """Fetch and return condition attributes excluding restricted key IDs."""
-
         rows = (
             db.session.query(
                 ConditionAttribute.id,

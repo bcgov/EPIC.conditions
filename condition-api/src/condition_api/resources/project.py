@@ -14,16 +14,18 @@
 """API endpoints for managing a project resource."""
 
 from http import HTTPStatus
+
 from flask_restx import Namespace, Resource, cors
-from marshmallow import ValidationError
 
 from condition_api.schemas.project import ProjectSchema
 from condition_api.services.project_service import ProjectService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
+from marshmallow import ValidationError
+
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("projects", description="Endpoints for Project Management")
 """Custom exception messages
@@ -32,6 +34,7 @@ API = Namespace("projects", description="Endpoints for Project Management")
 projects_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, ProjectSchema(), "Projects"
 )
+
 
 @cors_preflight("GET, OPTIONS")
 @API.route("", methods=["GET", "OPTIONS"])

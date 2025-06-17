@@ -4,12 +4,15 @@ Manages the Document Category
 """
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+
 from .base_model import BaseModel
 
 Base = declarative_base()
 
+
 class DocumentCategory(BaseModel):
     """Definition of the Document Category entity."""
+
     __tablename__ = 'document_categories'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

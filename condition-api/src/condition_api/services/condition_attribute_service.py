@@ -7,7 +7,9 @@ from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
 
 class AttributeKeyNotFoundError(Exception):
     """Custom exception for missing attribute key."""
+
     def __init__(self, key_name):
+        """Init"""
         super().__init__(f"Attribute key '{key_name}' does not exist.")
         self.key_name = key_name
 

@@ -14,18 +14,23 @@
 """API endpoints for managing a condition resource."""
 
 from http import HTTPStatus
+
 from flask import request
 from flask_restx import Namespace, Resource, cors
+
 from marshmallow import ValidationError
-from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError, ResourceNotFoundError
+
+from condition_api.exceptions import ConditionNumberExistsError,\
+ConditionNumberExistsInProjectError, ResourceNotFoundError
 from condition_api.models.condition import Condition as ConditionModel
-from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
+from condition_api.schemas.condition import ConditionSchema,\
+ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("conditions", description="Endpoints for Condition Management")
 """Custom exception messages
@@ -35,8 +40,10 @@ condition_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, ConditionSchema(), "Condition"
 )
 
+
 @cors_preflight("GET, OPTIONS, PATCH")
-@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_id>", methods=["PATCH", "GET", "OPTIONS"])
+@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_id>",
+           methods=["PATCH", "GET", "OPTIONS"])
 class ConditionDetailsResource(Resource):
     """Resource for fetching condition details by project_id."""
 

@@ -1,7 +1,8 @@
 """Helper for token decoding."""
-from flask import g
 
 from condition_api.utils.user_context import UserContext, user_context
+
+from flask import g
 
 
 class TokenInfo:

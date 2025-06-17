@@ -14,16 +14,18 @@
 """API endpoints for managing a condition attribute resource."""
 
 from http import HTTPStatus
+
 from flask_restx import Namespace, Resource, cors
-from marshmallow import ValidationError
 
 from condition_api.schemas.condition_attribute import ConditionAttributeUpdateSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
+from marshmallow import ValidationError
+
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("attributes", description="Endpoints for Condition Attribute Management")
 """Custom exception messages
@@ -32,6 +34,7 @@ API = Namespace("attributes", description="Endpoints for Condition Attribute Man
 condition_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, ConditionAttributeUpdateSchema(), "Attribute"
 )
+
 
 @cors_preflight("OPTIONS, PATCH")
 @API.route("/condition/<int:condition_id>", methods=["PATCH", "OPTIONS"])

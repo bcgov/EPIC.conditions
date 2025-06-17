@@ -196,8 +196,6 @@ VS+CMnSpT0PIVOiafB9RCHQteVOA927L1lQR13sKoSgoapgW60SFJA==
 -----END RSA PRIVATE KEY-----"""
 
 
-
-
 class DockerConfig(_Config):  # pylint: disable=too-few-public-methods
     """In support of testing only.used by the py.test suite."""
 

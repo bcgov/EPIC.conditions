@@ -22,13 +22,16 @@ class UserStatus(IntEnum):
     ACTIVE = 1
     INACTIVE = 2
 
+
 class DocumentType(IntEnum):
     """Document type."""
 
     Amendment = 3
 
+
 class AttributeKeys(IntEnum):
     """Attribute Keys."""
+
     # The numbers are same as the id for each attribute key within the table attribute_keys
     REQUIRES_MANAGEMENT_PLAN = 1
     REQUIRES_CONSULTATION = 2
@@ -43,7 +46,10 @@ class AttributeKeys(IntEnum):
     REQUIRES_IEM_TERMS_OF_ENGAGEMENT = 11
     DELIVERABLE_NAME = 12
 
+
 class IEMTermsConfig:
+    """IEM Terms"""
+
     DELIVERABLE_VALUE = "Independent Environmental Monitor Terms of Engagement"
 
     @staticmethod

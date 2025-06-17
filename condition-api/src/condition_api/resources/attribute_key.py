@@ -14,16 +14,18 @@
 """API endpoints for managing a attribute key resource."""
 
 from http import HTTPStatus
+
 from flask_restx import Namespace, Resource, cors
-from marshmallow import ValidationError
 
 from condition_api.schemas.attribute_key import AttributeKeySchema
 from condition_api.services.attribute_key_service import AttributeKeyService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
+from marshmallow import ValidationError
+
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("attributekeys", description="Endpoints for attribute key Management")
 """Custom exception messages

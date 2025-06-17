@@ -14,16 +14,16 @@
 
 """This exports all of the models and schemas used by the application."""
 
-from .base_model import BaseModel
-from .db import db, ma, migrate
+from .amendment import Amendment
 from .attribute_key import AttributeKey
-from .project import Project
+from .base_model import BaseModel
+from .condition import Condition
+from .condition_attribute import ConditionAttribute
+from .db import db, ma, migrate
 from .document import Document
 from.document_category import DocumentCategory
 from.document_type import DocumentType
-from .condition import Condition
+from .project import Project
 from .subcondition import Subcondition
-from .condition_attribute import ConditionAttribute
 from .user_status import UserStatus
 from .staff_user import StaffUser
-from .amendment import Amendment
