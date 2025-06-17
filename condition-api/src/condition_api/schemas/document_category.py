@@ -7,6 +7,7 @@ from condition_api.schemas.document import DocumentSchema
 
 from marshmallow import Schema, fields
 
+
 class DocumentCategorySchema(Schema):
     """Top-level schema to include all amendments related to a document."""
 

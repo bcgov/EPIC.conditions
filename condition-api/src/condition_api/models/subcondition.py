@@ -3,7 +3,6 @@
 Manages the Sub condition
 """
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
-
 from sqlalchemy.orm import relationship
 
 from .base_model import BaseModel

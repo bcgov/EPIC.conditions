@@ -22,6 +22,6 @@ class ProjectSchema(BaseSchema):
 
     project_id = fields.Str(data_key="project_id")
     project_name = fields.Str(data_key="project_name")
-    
+
     # A project can have multiple documents
     documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")

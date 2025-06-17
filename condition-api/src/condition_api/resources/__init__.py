@@ -23,8 +23,8 @@ That are used to expose operational health information about the service, and me
 
 from flask import Blueprint
 
-from .apihelper import Api
 from .amendment import API as AMENDMENT_API
+from .apihelper import Api
 from .attribute_key import API as ATTRIBUTE_KEY_API
 from .condition import API as CONDITION_API
 from .condition_attribute import API as CONDITION_ATTRIBUTE_API

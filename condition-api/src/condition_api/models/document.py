@@ -6,6 +6,7 @@ from sqlalchemy import ARRAY, Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
+
 from .base_model import BaseModel
 
 Base = declarative_base()

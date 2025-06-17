@@ -5,9 +5,9 @@ Manages the Condition Attribute
 
 from marshmallow import EXCLUDE, Schema, fields
 
+
 class BaseSchema(Schema):
     """Base schema to exclude unknown fields in the deserialized output."""
-
 
     class Meta:
         """Meta"""

@@ -54,6 +54,7 @@ class IEMTermsConfig:
 
     @staticmethod
     def required_attribute_keys() -> List[int]:
+        """Required attribute Keys for IEM"""
         return [
             AttributeKeys.SUBMITTED_TO_EAO_FOR,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,

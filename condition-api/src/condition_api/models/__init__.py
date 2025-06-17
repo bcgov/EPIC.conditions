@@ -21,9 +21,9 @@ from .condition import Condition
 from .condition_attribute import ConditionAttribute
 from .db import db, ma, migrate
 from .document import Document
-from.document_category import DocumentCategory
-from.document_type import DocumentType
+from .document_category import DocumentCategory
+from .document_type import DocumentType
 from .project import Project
 from .subcondition import Subcondition
-from .user_status import UserStatus
 from .staff_user import StaffUser
+from .user_status import UserStatus

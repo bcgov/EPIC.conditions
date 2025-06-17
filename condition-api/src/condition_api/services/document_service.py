@@ -17,8 +17,6 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import and_, case, extract, func, not_
-
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
 from condition_api.models.db import db
@@ -27,6 +25,7 @@ from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
 
+from sqlalchemy import and_, case, extract, func, not_
 
 class DocumentService:
     """Service for managing document-related operations."""
@@ -125,30 +124,32 @@ class DocumentService:
         # Iterate over documents and fetch amendments
         for document in documents:
             # Fetch all amendments associated with the original document
-            amendments_query = db.session.query(
+            amendments_query = db.session.query
+            (
                 Amendment.amended_document_id.label('document_id'),
                 Amendment.amendment_name.label('document_label'),
                 Amendment.created_date,
                 extract('year', Amendment.date_issued).label('year_issued'),
-                case(
-                     # If there are no conditions, return None
-                    (func.count(Condition.id) == 0, None),  # pylint: disable=not-callable
-                        else_=func.min(
-                            case(
-                                (
-                                    not_(
-                                        and_(
-                                            Condition.is_approved.is_(True),
-                                            Condition.is_condition_attributes_approved.is_(True),
-                                            Condition.is_topic_tags_approved.is_(True)
-                                        )
-                                    ),  # If any of the conditions are not True
-                                    0  # Not approved
-                                ),
-                                else_=1  # Approved
+                case
+                    (
+                        # If there are no conditions, return None
+                        (func.count(Condition.id) == 0, None),  # pylint: disable=not-callable
+                            else_=func.min(
+                                case(
+                                        (
+                                            not_(
+                                                and_(
+                                                    Condition.is_approved.is_(True),
+                                                    Condition.is_condition_attributes_approved.is_(True),
+                                                    Condition.is_topic_tags_approved.is_(True)
+                                                )
+                                            ),  # If any of the conditions are not True
+                                            0  # Not approved
+                                        ),
+                                    else_=1  # Approved
+                                )
                             )
-                        )
-                ).label("status")
+                    ).label("status")
             ).outerjoin(
                 Condition,
                 Condition.amended_document_id == Amendment.amended_document_id

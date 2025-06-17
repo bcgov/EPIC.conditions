@@ -15,10 +15,9 @@
 from datetime import datetime
 
 from sqlalchemy import Column
-
 from sqlalchemy.ext.declarative import declared_attr
 
-from condition_api.utils.token_info import TokenInfo
+from ..utils.token_info import TokenInfo
 
 from .db import db
 

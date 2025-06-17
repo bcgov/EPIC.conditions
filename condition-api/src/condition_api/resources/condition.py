@@ -16,18 +16,19 @@
 from http import HTTPStatus
 
 from flask import request
+
 from flask_restx import Namespace, Resource, cors
 
-from marshmallow import ValidationError
-
 from condition_api.exceptions import ConditionNumberExistsError,\
-ConditionNumberExistsInProjectError, ResourceNotFoundError
+    ConditionNumberExistsInProjectError, ResourceNotFoundError
 from condition_api.models.condition import Condition as ConditionModel
 from condition_api.schemas.condition import ConditionSchema,\
-ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
+    ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
+
+from marshmallow import ValidationError
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
