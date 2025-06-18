@@ -71,16 +71,17 @@ def db(app):
     """Return a session-wide initialized database with schema setup."""
     schema_name = "condition"
     db_user = CONFIG.DB_USER  # Should be 'condition'
+    db_password = CONFIG.DB_PASSWORD
 
     with app.app_context():
         g.jwt_oidc_token_info = TestJwtClaims.staff_admin_role
         sess = _db.session()
 
-        print('-===========' * 100)
+        print(f"Ensuring role {db_user} exists...")
         # Ensure the role exists
         sess.execute(text(f"DO $$ BEGIN "
                           f"IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{db_user}') THEN "
-                          f"CREATE ROLE {db_user} LOGIN PASSWORD '{CONFIG.DB_PASSWORD}'; "
+                          f"CREATE ROLE {db_user} LOGIN PASSWORD '{db_password}'; "
                           f"END IF; END $$;"))
 
         # Drop and recreate schema

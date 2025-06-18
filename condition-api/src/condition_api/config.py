@@ -104,7 +104,7 @@ class TestConfig(_Config):  # pylint: disable=too-few-public-methods
     TESTING = True
 
     # POSTGRESQL
-    DB_USER = os.getenv("DATABASE_TEST_USERNAME", "postgres")
+    DB_USER = os.getenv("DATABASE_TEST_USERNAME", "condition")
     DB_PASSWORD = os.getenv("DATABASE_TEST_PASSWORD", "postgres")
     DB_NAME = os.getenv("DATABASE_TEST_NAME", "postgres")
     DB_HOST = os.getenv("DATABASE_TEST_HOST", "localhost")
