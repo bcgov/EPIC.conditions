@@ -58,8 +58,8 @@ class _Config():  # pylint: disable=too-few-public-methods
     DEBUG = False
 
     # POSTGRESQL
-    DB_USER = os.getenv('DATABASE_USERNAME', 'condition')
-    DB_PASSWORD = os.getenv('DATABASE_PASSWORD', 'condition')
+    DB_USER = os.getenv('DATABASE_USERNAME', 'postgres')
+    DB_PASSWORD = os.getenv('DATABASE_PASSWORD', 'postgres')
     DB_NAME = os.getenv('DATABASE_NAME', '')
     DB_HOST = os.getenv('DATABASE_HOST', '')
     DB_PORT = os.getenv('DATABASE_PORT', '5432')
