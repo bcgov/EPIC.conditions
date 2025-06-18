@@ -14,7 +14,6 @@
 
 
 """Service for staff user management."""
-
 from flask import g
 
 from condition_api.models.staff_user import StaffUser

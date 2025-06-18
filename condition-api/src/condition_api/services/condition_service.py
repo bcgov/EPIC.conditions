@@ -16,7 +16,6 @@
 # pylint: disable=too-many-lines
 
 """Service for condition management."""
-
 import re
 from collections import defaultdict
 from datetime import datetime

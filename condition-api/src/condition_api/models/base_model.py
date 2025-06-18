@@ -20,6 +20,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from .db import db
 from ..utils.token_info import TokenInfo
 
+
 class BaseModel(db.Model):
     """This class manages all of the base model functions."""
 

@@ -14,16 +14,15 @@
 
 """Common setup and fixtures for the py-test suite used by this service."""
 from flask import g
-from flask_migrate import Migrate, upgrade
 
 import pytest
+from flask_migrate import Migrate, upgrade
+from sqlalchemy import event, text
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from condition_api import create_app, get_named_config
 from condition_api import jwt as _jwt
 from condition_api.models import db as _db
-
-from sqlalchemy import event, text
-from sqlalchemy.orm import scoped_session, sessionmaker
 
 from tests.utilities.factory_scenarios import TestJwtClaims
 from tests.utilities.factory_utils import factory_auth_header

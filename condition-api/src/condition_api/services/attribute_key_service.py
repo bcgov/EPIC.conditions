@@ -14,7 +14,6 @@
 
 
 """Service for attribute key management."""
-
 from sqlalchemy.orm import aliased
 
 from condition_api.models.attribute_key import AttributeKey
