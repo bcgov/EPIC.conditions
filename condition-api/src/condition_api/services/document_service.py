@@ -308,11 +308,18 @@ class DocumentService:
             "project_name": document.project_name,
             "document_category_id": document.document_category_id,
             "document_category": document.document_category,
-            "document_id": is_amendment_document.amended_document_id if is_amendment_document else document.document_id,
-            "document_label": is_amendment_document.amendment_name
-                if is_amendment_document else document.document_label,
-            "document_type_id": is_amendment_document.document_type_id
-                if is_amendment_document else document.document_type_id,
+            "document_id": (
+                is_amendment_document.amended_document_id
+                if is_amendment_document else document.document_id
+            ),
+            "document_label": (
+                is_amendment_document.amendment_name
+                if is_amendment_document else document.document_label
+            ),
+            "document_type_id": (
+                is_amendment_document.document_type_id
+                if is_amendment_document else document.document_type_id
+            ),
         }
 
     @staticmethod
