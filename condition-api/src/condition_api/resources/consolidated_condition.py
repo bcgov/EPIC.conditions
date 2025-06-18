@@ -14,20 +14,24 @@
 """API endpoints for managing a consolidated condition resource."""
 
 from http import HTTPStatus
+
 from flask import request
+
 from flask_restx import Namespace, Resource, cors
+
 from marshmallow import ValidationError
 
 from condition_api.services import authorization
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("conditions", description="Endpoints for Consolidated Condition Management")
 """Custom exception messages
 """
+
 
 @cors_preflight("GET, OPTIONS")
 @API.route("/project/<string:project_id>", methods=["GET", "OPTIONS"])
@@ -49,7 +53,6 @@ class ConditionResource(Resource):
                 True if user_is_internal
                 else query_params.get('include_attributes', '').lower() == 'true'
             )
-            include_nested_conditions = True if user_is_internal else query_params.get('include_subconditions', '', type=str)
             all_conditions = query_params.get('all_conditions', '').lower() == 'true'
             category_id = query_params.get('category_id', '')
 
@@ -58,7 +61,6 @@ class ConditionResource(Resource):
                 category_id,
                 all_conditions,
                 include_condition_attributes,
-                include_nested_conditions,
                 user_is_internal
             )
 

@@ -14,7 +14,9 @@
 """API endpoints for managing a attribute key resource."""
 
 from http import HTTPStatus
+
 from flask_restx import Namespace, Resource, cors
+
 from marshmallow import ValidationError
 
 from condition_api.schemas.attribute_key import AttributeKeySchema
@@ -22,8 +24,8 @@ from condition_api.services.attribute_key_service import AttributeKeyService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("attributekeys", description="Endpoints for attribute key Management")
 """Custom exception messages
@@ -32,6 +34,7 @@ API = Namespace("attributekeys", description="Endpoints for attribute key Manage
 attributes_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, AttributeKeySchema(), "AttributeKey"
 )
+
 
 @cors_preflight("GET, OPTIONS")
 @API.route("/condition/<int:condition_id>", methods=["GET", "OPTIONS"])

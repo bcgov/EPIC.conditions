@@ -1,8 +1,24 @@
+# Copyright © 2019 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 """Service for attribute key management."""
 from sqlalchemy.orm import aliased
-from condition_api.models.db import db
+
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition_attribute import ConditionAttribute
+from condition_api.models.db import db
 from condition_api.utils.enums import AttributeKeys
 
 
@@ -12,7 +28,6 @@ class AttributeKeyService:
     @staticmethod
     def get_all_attributes(condition_id):
         """Fetch all attributes."""
-
         condition_attributes = aliased(ConditionAttribute)
         attribute_keys = aliased(AttributeKey)
 
@@ -29,7 +44,9 @@ class AttributeKeyService:
             )
             .filter(
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
-                ~attribute_keys.id.in_([AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED, AttributeKeys.DELIVERABLE_NAME]), # exlucding Parties required to be submitted from attribute_keys
+                ~attribute_keys.id.in_([AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED,
+                                        # exlucding Parties required to be submitted from attribute_keys
+                                        AttributeKeys.DELIVERABLE_NAME]),
             )
             .order_by(attribute_keys.sort_order)
             .all()

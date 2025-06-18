@@ -13,13 +13,11 @@
 # limitations under the License.
 """Bring in the common JWT Manager."""
 from functools import wraps
-from http import HTTPStatus
 
 from flask import g, request
+
 from flask_jwt_oidc import JwtManager
 from flask_jwt_oidc.exceptions import AuthError
-
-from condition_api.exceptions import PermissionDeniedError
 
 
 jwt = (
@@ -62,7 +60,7 @@ class Auth:  # pylint: disable=too-few-public-methods
             return f(*args, **kwargs)
 
         return decorated
-    
+
     @classmethod
     def has_one_of_roles(cls, roles):
         """Check that at least one of the realm roles are in the token.
@@ -70,7 +68,7 @@ class Auth:  # pylint: disable=too-few-public-methods
         Args:
             roles (list[str]): List of valid roles
         """
-
         return jwt.has_one_of_roles(roles)
+
 
 auth = Auth()

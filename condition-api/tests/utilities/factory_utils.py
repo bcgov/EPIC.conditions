@@ -18,12 +18,12 @@ Test Utility for creating model factory.
 import uuid
 from datetime import datetime
 
-from sqlalchemy import func
-
 from condition_api.config import get_named_config
 from condition_api.models import (
-    db, Project, Document, DocumentType, DocumentCategory, Amendment, Condition
+    Amendment, Condition, Document, DocumentCategory, DocumentType, Project, db
 )
+
+from sqlalchemy import func
 
 
 CONFIG = get_named_config("testing")
@@ -35,6 +35,7 @@ JWT_HEADER = {
     "typ": "JWT",
     "kid": CONFIG.JWT_OIDC_TEST_AUDIENCE,
 }
+
 
 def factory_auth_header(jwt, claims):
     """Produce JWT tokens for use in tests."""
@@ -58,7 +59,9 @@ def factory_project_model(
     db.session.commit()
     return project
 
+
 def factory_document_category_model(name="Environmental Reports"):
+    """Document Category"""
     existing = DocumentCategory.query.filter_by(category_name=name).first()
     if existing:
         return existing
@@ -70,6 +73,7 @@ def factory_document_category_model(name="Environmental Reports"):
 
 
 def factory_document_type_model(category, name="Impact Report"):
+    """Document Type"""
     doc_type = DocumentType(document_type=name, document_category_id=category.id)
     db.session.add(doc_type)
     db.session.commit()
@@ -77,6 +81,7 @@ def factory_document_type_model(category, name="Impact Report"):
 
 
 def factory_document_model(project, doc_type, is_latest=True):
+    """Document"""
     document = Document(
         document_id=str(uuid.uuid4()),
         project_id=project.project_id,
@@ -109,6 +114,7 @@ def factory_condition_model(document_id, project_id, is_approved=True):
 
 
 def factory_amendment_model(document):
+    """Amendment"""
     amendment = Amendment(
         document_id=document.id,
         amended_document_id=str(uuid.uuid4()),
@@ -121,6 +127,7 @@ def factory_amendment_model(document):
 
 
 def get_seeded_document_category(name="Certificate and Amendments"):
+    """Seeded Document Category"""
     from condition_api.models import DocumentCategory
     from sqlalchemy import func
 
@@ -128,7 +135,9 @@ def get_seeded_document_category(name="Certificate and Amendments"):
         func.lower(DocumentCategory.category_name) == name.lower()
     ).first()
 
+
 def get_seeded_document_type(type_name="Certificate"):
+    """Seeded Document Type"""
     return (
         DocumentType.query
         .filter(func.lower(DocumentType.document_type) == type_name.lower())

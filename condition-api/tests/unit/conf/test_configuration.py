@@ -17,9 +17,9 @@ Test-Suite to ensure that the Configuration Classes are working as expected.
 """
 from importlib import reload
 
-import pytest
-
 import condition_api.config as config
+
+import pytest
 
 
 # testdata pattern is ({str: environment}, {expected return value})

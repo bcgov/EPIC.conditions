@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """Common setup and fixtures for the py-test suite used by this service."""
-import os
-import pytest
 from flask import g
+
+import pytest
 from flask_migrate import Migrate, upgrade
 from sqlalchemy import event, text
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -23,8 +23,10 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from condition_api import create_app, get_named_config
 from condition_api import jwt as _jwt
 from condition_api.models import db as _db
+
 from tests.utilities.factory_scenarios import TestJwtClaims
 from tests.utilities.factory_utils import factory_auth_header
+
 CONFIG = get_named_config("testing")
 
 
@@ -67,26 +69,27 @@ def client_ctx(app):
 @pytest.fixture(scope='session')
 def db(app):
     """Return a session-wide initialized database with schema setup."""
-    SCHEMA_NAME = "condition"
-    DB_USER = CONFIG.DB_USER  # Should be 'condition'
+    schema_name = "condition"
+    db_user = CONFIG.DB_USER  # Should be 'condition'
+    db_password = CONFIG.DB_PASSWORD
 
     with app.app_context():
         g.jwt_oidc_token_info = TestJwtClaims.staff_admin_role
         sess = _db.session()
 
-        print('-==========='*100)
+        print(f"Ensuring role {db_user} exists...")
         # Ensure the role exists
         sess.execute(text(f"DO $$ BEGIN "
-                          f"IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{DB_USER}') THEN "
-                          f"CREATE ROLE {DB_USER} LOGIN PASSWORD '{CONFIG.DB_PASSWORD}'; "
+                          f"IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{db_user}') THEN "
+                          f"CREATE ROLE {db_user} LOGIN PASSWORD '{db_password}'; "
                           f"END IF; END $$;"))
 
         # Drop and recreate schema
-        sess.execute(text(f"DROP SCHEMA IF EXISTS {SCHEMA_NAME} CASCADE"))
-        sess.execute(text(f"CREATE SCHEMA {SCHEMA_NAME}"))
-        sess.execute(text(f"GRANT ALL ON SCHEMA {SCHEMA_NAME} TO {DB_USER}"))
-        sess.execute(text(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {SCHEMA_NAME} TO {DB_USER}"))
-        sess.execute(text(f"SET search_path TO {SCHEMA_NAME}"))
+        sess.execute(text(f"DROP SCHEMA IF EXISTS {schema_name} CASCADE"))
+        sess.execute(text(f"CREATE SCHEMA {schema_name}"))
+        sess.execute(text(f"GRANT ALL ON SCHEMA {schema_name} TO {db_user}"))
+        sess.execute(text(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {schema_name} TO {db_user}"))
+        sess.execute(text(f"SET search_path TO {schema_name}"))
         sess.commit()
 
         # Apply migrations
@@ -94,7 +97,6 @@ def db(app):
         upgrade()
 
         return _db
-
 
 
 @pytest.fixture(scope="session")
@@ -105,8 +107,6 @@ def docker_compose_files(pytestconfig):
     return [
         os.path.join(str(pytestconfig.rootdir), "tests/docker", "docker-compose.yml")
     ]
-
-
 
 
 @pytest.fixture(scope="function", autouse=True)

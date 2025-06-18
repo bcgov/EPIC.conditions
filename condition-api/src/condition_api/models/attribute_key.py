@@ -3,10 +3,13 @@
 Manages the Attribute Value
 """
 from sqlalchemy import Column, Integer, Text
+
 from .base_model import BaseModel
+
 
 class AttributeKey(BaseModel):
     """Definition of the Attribute Key entity."""
+
     __tablename__ = 'attribute_keys'
     __table_args__ = {'schema': 'condition'}
 

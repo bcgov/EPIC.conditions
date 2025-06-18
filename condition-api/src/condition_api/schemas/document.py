@@ -3,8 +3,10 @@
 Manages the document
 """
 
-from marshmallow import Schema, fields
 from condition_api.schemas.condition import ConditionSchema
+
+from marshmallow import Schema, fields
+
 
 class DocumentTypeSchema(Schema):
     """Documents type schema."""
@@ -12,6 +14,7 @@ class DocumentTypeSchema(Schema):
     id = fields.Int(data_key="id")
     document_category_id = fields.Int(data_key="document_category_id")
     document_type = fields.Str(data_key="document_type")
+
 
 class DocumentSchema(Schema):
     """Documents schema."""
@@ -35,12 +38,14 @@ class DocumentSchema(Schema):
     amendment_count = fields.Int(data_key="amendment_count")
     is_latest_amendment_added = fields.Bool(data_key="is_latest_amendment_added")
     project_name = fields.Str(data_key="project_name")
-    
+
     # Each document can have multiple conditions
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")
 
+
 class ProjectDocumentAllAmendmentsSchema(Schema):
     """Top-level schema to include all amendments related to a document."""
+
     project_name = fields.Str(data_key="project_name")
     document_category = fields.Str(data_key="document_category")
     documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")

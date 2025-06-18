@@ -21,10 +21,10 @@ from condition_api.exceptions import BadRequestError, ResourceNotFoundError
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
+from .apihelper import Api as ApiHelper
 from ..auth import auth
 from ..schemas.staff_user import StaffUserSchema
 from ..services.staff_user_service import StaffUserService
-from .apihelper import Api as ApiHelper
 
 
 API = Namespace("users", description="Endpoints for Staff User Management")
@@ -52,7 +52,7 @@ class Users(Resource):
         """Create a staff user."""
         created_account = StaffUserService.create_or_update_staff_user(API.payload)
         if not created_account:
-            return BadRequestError(f"Staff user cannot be created")
+            return BadRequestError("Staff user cannot be created")
         return StaffUserSchema().dump(created_account), HTTPStatus.CREATED
 
 

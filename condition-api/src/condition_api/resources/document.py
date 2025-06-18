@@ -14,8 +14,11 @@
 """API endpoints for managing a document resource."""
 
 from http import HTTPStatus
+
 from flask import request
+
 from flask_restx import Namespace, Resource, cors
+
 from marshmallow import ValidationError
 
 from condition_api.models.document_type import DocumentType
@@ -25,8 +28,8 @@ from condition_api.services.document_service import DocumentService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("documents", description="Endpoints for Document Management")
 """Custom exception messages
@@ -35,6 +38,7 @@ API = Namespace("documents", description="Endpoints for Document Management")
 document_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, DocumentSchema(), "Document"
 )
+
 
 @cors_preflight("GET, POST, OPTIONS")
 @API.route("/project/<string:project_id>", methods=["GET", "POST", "OPTIONS"])

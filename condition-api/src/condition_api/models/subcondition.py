@@ -1,18 +1,29 @@
-from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
+"""Sub condition model class.
+
+Manages the Sub condition
+"""
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from .base_model import BaseModel
+
 
 class Subcondition(BaseModel):
     """Definition of the Subconditions entity."""
+
     __tablename__ = 'subconditions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     sort_order = Column(Integer, nullable=True)
     condition_id = Column(Integer, ForeignKey('condition.conditions.id', ondelete='CASCADE'))
-    amended_document_id = Column(String, ForeignKey('condition.amendments.amended_document_id', ondelete='CASCADE'), nullable=True)
+    amended_document_id = Column(String,
+                                 ForeignKey('condition.amendments.amended_document_id',
+                                            ondelete='CASCADE'), nullable=True)
     subcondition_identifier = Column(String, nullable=True)
     subcondition_text = Column(Text, nullable=True)
-    parent_subcondition_id = Column(Integer, ForeignKey('condition.subconditions.id', ondelete='CASCADE'), nullable=True)
+    parent_subcondition_id = Column(Integer,
+                                    ForeignKey('condition.subconditions.id',
+                                               ondelete='CASCADE'), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
 
     # Self-referencing relationship to allow subconditions to have sub subconditions

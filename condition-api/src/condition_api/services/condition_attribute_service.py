@@ -1,3 +1,18 @@
+# Copyright © 2019 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 """Service for condition attribute management."""
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition_attribute import ConditionAttribute
@@ -7,7 +22,9 @@ from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
 
 class AttributeKeyNotFoundError(Exception):
     """Custom exception for missing attribute key."""
+
     def __init__(self, key_name):
+        """Init"""
         super().__init__(f"Attribute key '{key_name}' does not exist.")
         self.key_name = key_name
 
@@ -70,20 +87,20 @@ class ConditionAttributeService:
                 # Create a new attribute
                 if attribute_key_id == AttributeKeys.DELIVERABLE_NAME:
                     continue
-                else:
-                    new_condition_attribute = ConditionAttribute(
-                        condition_id=condition_id,
-                        attribute_key_id=attribute_key_id,
-                        attribute_value=attribute.get("value")
-                    )
-                    db.session.add(new_condition_attribute)
-                    db.session.flush()  # Ensure ID is generated
-                    add_to_result_list(
-                        new_condition_attribute.id,
-                        attribute_key_id,
-                        attribute_key_name,
-                        new_condition_attribute.attribute_value
-                    )
+
+                new_condition_attribute = ConditionAttribute(
+                    condition_id=condition_id,
+                    attribute_key_id=attribute_key_id,
+                    attribute_value=attribute.get("value")
+                )
+                db.session.add(new_condition_attribute)
+                db.session.flush()  # Ensure ID is generated
+                add_to_result_list(
+                    new_condition_attribute.id,
+                    attribute_key_id,
+                    attribute_key_name,
+                    new_condition_attribute.attribute_value
+                )
 
             # Handle special logic for specific attributes
             ConditionAttributeService._handle_requires_management_plan(
@@ -93,19 +110,19 @@ class ConditionAttributeService:
                 condition_id, attribute_key_id, attribute.get("value"), add_to_result_list
             )
             ConditionAttributeService._handle_requires_iem_terms_of_engagement(
-                condition_id, attribute_key_id, attribute.get("value"), add_to_result_list
+                condition_id, attribute.get("value"), add_to_result_list
             )
 
         db.session.commit()
 
-        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
+        excluded_keys = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
         # Fetch all attributes for this condition, joined with keys, and sort using sort_key
         all_condition_attributes = (
             db.session.query(ConditionAttribute, AttributeKey)
             .join(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
             .filter(
                 ConditionAttribute.condition_id == condition_id,
-                ~ConditionAttribute.attribute_key_id.in_([key.value for key in EXCLUDED_KEYS]),
+                ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
             )
             .order_by(AttributeKey.sort_order)
             .all()
@@ -135,7 +152,7 @@ class ConditionAttributeService:
         :param add_to_result_list: Function to add attributes to the result list.
         """
         if attribute_key_id == AttributeKeys.REQUIRES_MANAGEMENT_PLAN and attribute_value == 'true':
-            ATTRIBUTE_KEY_IDS = [
+            attribute_key_ids = [
                 AttributeKeys.SUBMITTED_TO_EAO_FOR,
                 AttributeKeys.MANAGEMENT_PLAN_NAME,
                 AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
@@ -145,7 +162,7 @@ class ConditionAttributeService:
                 AttributeKeys.REQUIRES_CONSULTATION,
             ]
 
-            all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(ATTRIBUTE_KEY_IDS)).all()
+            all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(attribute_key_ids)).all()
             for key in all_attribute_keys:
                 existing_attribute = db.session.query(ConditionAttribute).filter_by(
                     condition_id=condition_id, attribute_key_id=key.id
@@ -198,7 +215,7 @@ class ConditionAttributeService:
                 )
 
     @staticmethod
-    def _handle_requires_iem_terms_of_engagement(condition_id, attribute_key_id, attribute_value, add_to_result_list):
+    def _handle_requires_iem_terms_of_engagement(condition_id, attribute_value, add_to_result_list):
         """
         Handles additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true.
 
@@ -207,51 +224,51 @@ class ConditionAttributeService:
         :param attribute_value: Value of the current attribute.
         :param add_to_result_list: Function to add attributes to the result list.
         """
-        if attribute_key_id == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT:
-            deliverable_key_id = AttributeKeys.DELIVERABLE_NAME
-            deliverable_value = IEMTermsConfig.DELIVERABLE_VALUE
-            required_keys = IEMTermsConfig.required_attribute_keys()
+        deliverable_key_id = AttributeKeys.DELIVERABLE_NAME
+        deliverable_value = IEMTermsConfig.DELIVERABLE_VALUE
+        required_keys = IEMTermsConfig.required_attribute_keys()
 
-            if attribute_value == 'true':
-                keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(required_keys)).all()
-                for key in keys:
-                    existing = db.session.query(ConditionAttribute).filter_by(
-                        condition_id=condition_id, attribute_key_id=key.id
-                    ).first()
+        if attribute_value != 'true':
+            # Remove deliverable attribute if present
+            db.session.query(ConditionAttribute).filter_by(
+                condition_id=condition_id,
+                attribute_key_id=deliverable_key_id
+            ).delete()
+            db.session.commit()
+            return
 
-                    if not existing:
-                        # Check if the current key is DELIVERABLE_NAME
-                        attribute_value = deliverable_value if key.id == deliverable_key_id else None
-                        new_attribute = ConditionAttribute(
-                            condition_id=condition_id,
-                            attribute_key_id=key.id,
-                            attribute_value=attribute_value
-                        )
-                        db.session.add(new_attribute)
-                        db.session.flush()
-                        add_to_result_list(new_attribute.id, key.id, key.key_name, new_attribute.attribute_value)
-                    else:
-                        # Update DELIVERABLE_NAME if it already exists
-                        if key.id == deliverable_key_id:
-                            current_value = existing.attribute_value or ""
-                            values = current_value.strip('{}').split(',') if current_value else []
-                            values = [v.strip() for v in values if v.strip()]
+        keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(required_keys)).all()
+        for key in keys:
+            existing = db.session.query(ConditionAttribute).filter_by(
+                condition_id=condition_id, attribute_key_id=key.id
+            ).first()
 
-                            if deliverable_value not in values:
-                                values.append(deliverable_value)
-                                updated_value = "{" + ",".join(values) + "}"
-                                existing.attribute_value = updated_value
-                                db.session.flush()
-                                add_to_result_list(
-                                    existing.id,
-                                    key.id,
-                                    key.key_name,
-                                    existing.attribute_value
-                                )
-            else:
-                query = db.session.query(ConditionAttribute).filter_by(
+            if not existing:
+                # Check if the current key is DELIVERABLE_NAME
+                attribute_value = deliverable_value if key.id == deliverable_key_id else None
+                new_attribute = ConditionAttribute(
                     condition_id=condition_id,
-                    attribute_key_id=deliverable_key_id
+                    attribute_key_id=key.id,
+                    attribute_value=attribute_value
                 )
-                query.delete()
-                db.session.commit()
+                db.session.add(new_attribute)
+                db.session.flush()
+                add_to_result_list(new_attribute.id, key.id, key.key_name, new_attribute.attribute_value)
+            else:
+                # Update DELIVERABLE_NAME if it already exists
+                if key.id == deliverable_key_id:
+                    current_value = existing.attribute_value or ""
+                    values = current_value.strip('{}').split(',') if current_value else []
+                    values = [v.strip() for v in values if v.strip()]
+
+                    if deliverable_value not in values:
+                        values.append(deliverable_value)
+                        updated_value = "{" + ",".join(values) + "}"
+                        existing.attribute_value = updated_value
+                        db.session.flush()
+                        add_to_result_list(
+                            existing.id,
+                            key.id,
+                            key.key_name,
+                            existing.attribute_value
+                        )

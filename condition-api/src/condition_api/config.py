@@ -58,8 +58,8 @@ class _Config():  # pylint: disable=too-few-public-methods
     DEBUG = False
 
     # POSTGRESQL
-    DB_USER = os.getenv('DATABASE_USERNAME', '')
-    DB_PASSWORD = os.getenv('DATABASE_PASSWORD', '')
+    DB_USER = os.getenv('DATABASE_USERNAME', 'postgres')
+    DB_PASSWORD = os.getenv('DATABASE_PASSWORD', 'postgres')
     DB_NAME = os.getenv('DATABASE_NAME', '')
     DB_HOST = os.getenv('DATABASE_HOST', '')
     DB_PORT = os.getenv('DATABASE_PORT', '5432')
@@ -104,7 +104,7 @@ class TestConfig(_Config):  # pylint: disable=too-few-public-methods
     TESTING = True
 
     # POSTGRESQL
-    DB_USER = os.getenv("DATABASE_TEST_USERNAME", "postgres")
+    DB_USER = os.getenv("DATABASE_TEST_USERNAME", "condition")
     DB_PASSWORD = os.getenv("DATABASE_TEST_PASSWORD", "postgres")
     DB_NAME = os.getenv("DATABASE_TEST_NAME", "postgres")
     DB_HOST = os.getenv("DATABASE_TEST_HOST", "localhost")
@@ -194,8 +194,6 @@ eSizuQKBgQCXe8j8d5enRKGDZIRi/5hlEcDgVaueByIdjvAQCWROYCoJrTpw53WJ
 bzZ9jbd/juNGwzNvNT2pkgzepXG3003DJqsz1sdC1koGtcNOLoGkCCZbXyacVWnp
 VS+CMnSpT0PIVOiafB9RCHQteVOA927L1lQR13sKoSgoapgW60SFJA==
 -----END RSA PRIVATE KEY-----"""
-
-
 
 
 class DockerConfig(_Config):  # pylint: disable=too-few-public-methods

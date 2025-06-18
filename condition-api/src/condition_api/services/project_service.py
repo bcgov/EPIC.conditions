@@ -1,12 +1,28 @@
+# Copyright © 2019 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 """Service for project management."""
-from sqlalchemy import and_, func, case, not_, String
+from sqlalchemy import String, and_, case, func, not_
 from sqlalchemy.dialects.postgresql import ARRAY
+
 from condition_api.models.amendment import Amendment
 from condition_api.models.condition import Condition
+from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
-from condition_api.models.db import db
 from condition_api.models.project import Project
 
 
@@ -16,7 +32,6 @@ class ProjectService:
     @staticmethod
     def get_all_projects():
         """Fetch all projects along with related documents in a single query."""
-
         # Fetch all projects with their related documents, document types, and conditions in one query
         project_data = (
             db.session.query(
@@ -26,7 +41,7 @@ class ProjectService:
                 DocumentCategory.category_name.label("document_category"),
                 func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
                 func.greatest(func.max(Document.date_issued), func.max(Amendment.date_issued)).label("max_date_issued"),
-                func.count(Amendment.document_id).label("amendment_count"),
+                func.count(Amendment.document_id).label("amendment_count"),  # pylint: disable=not-callable
                 func.bool_or(Document.is_latest_amendment_added).label("is_latest_amendment_added")
             )
             .outerjoin(Document, Document.project_id == Project.project_id)
@@ -70,6 +85,7 @@ class ProjectService:
         # Convert the map to a list of projects
         return list(projects_map.values())
 
+    @staticmethod
     def check_project_conditions(project_id, document_category_id):
         """
         Check all documents in the `documents` table for a specific project.
@@ -90,16 +106,18 @@ class ProjectService:
             return None
 
         for document in documents:
-            id = document.id
+            document_pk = document.id
             document_id = document.document_id
             # Check if the document has any conditions
             condition_count = (
-                db.session.query(func.count(Condition.id))
+                db.session.query(func.count(Condition.id))  # pylint: disable=not-callable
                 .filter(Condition.document_id == document_id, Condition.amended_document_id.is_(None))
                 .filter(
-                    ~and_(
-                        Condition.condition_name.is_(None),
-                        Condition.condition_number.is_(None)
+                    not_(
+                        and_(
+                            Condition.condition_name.is_(None),
+                            Condition.condition_number.is_(None)
+                        )
                     )
                 )
                 .scalar()
@@ -109,7 +127,7 @@ class ProjectService:
             # Fetch all amendments related to the document
             amendments = (
                 db.session.query(Amendment.amended_document_id)
-                .filter(Amendment.document_id == id)
+                .filter(Amendment.document_id == document_pk)
                 .all()
             )
 
@@ -117,12 +135,14 @@ class ProjectService:
             for amendment in amendments:
                 amended_document_id = amendment.amended_document_id
                 amendment_condition_count = (
-                    db.session.query(func.count(Condition.id))
+                    db.session.query(func.count(Condition.id))  # pylint: disable=not-callable
                     .filter(Condition.amended_document_id == amended_document_id)
                     .filter(
-                        ~and_(
-                            Condition.condition_name.is_(None),
-                            Condition.condition_number.is_(None)
+                        not_(
+                            and_(
+                                Condition.condition_name.is_(None),
+                                Condition.condition_number.is_(None)
+                            )
                         )
                     )
                     .scalar()
@@ -130,34 +150,44 @@ class ProjectService:
                 if amendment_condition_count == 0:
                     return None
 
-        all_approved = db.session.query(
-            func.min(
-                case(
-                    (
-                        not_(
-                            and_(
-                                Condition.is_approved.is_(True),  # Ensure is_approved is True
-                                Condition.is_condition_attributes_approved.is_(True),  # Ensure attributes are approved
-                                Condition.is_topic_tags_approved.is_(True)  # Ensure topic tags are approved
-                            )
-                        ),  # If any of the conditions are not True
-                        0  # Not approved
-                    ),
-                    else_=1  # Approved
+        all_approved = (
+            db.session.query(
+                func.min(
+                    case(
+                        (
+                            not_(
+                                and_(
+                                    Condition.is_approved.is_(True),
+                                    Condition.is_condition_attributes_approved.is_(True),
+                                    Condition.is_topic_tags_approved.is_(True)
+                                )
+                            ),  # If any of the conditions are not True
+                            0  # Not approved
+                        ),
+                        else_=1  # Approved
+                    )
+                ).label("all_approved"))
+            .join(Document, Document.document_id == Condition.document_id)
+            .join(DocumentType, DocumentType.id == Document.document_type_id)
+            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .filter(
+                and_(
+                    Document.project_id == project_id,
+                    DocumentCategory.id == document_category_id
                 )
-            ).label("all_approved")
-        ).join(Document, Document.document_id == Condition.document_id
-        ).join(DocumentType, DocumentType.id == Document.document_type_id
-        ).join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
-        ).filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id)
-        ).filter(
-            ~and_(
-                Condition.condition_name.is_(None),
-                Condition.condition_number.is_(None)
             )
-        ).first()
+            .filter(
+                not_(
+                    and_(
+                        Condition.condition_name.is_(None),
+                        Condition.condition_number.is_(None)
+                    )
+                )
+            )
+            .first()
+        )
 
         if all_approved is None:
             return None
-        else:
-            return all_approved[0]
+
+        return all_approved[0]

@@ -14,7 +14,9 @@
 """API endpoints for managing a document resource."""
 
 from http import HTTPStatus
+
 from flask_restx import Namespace, Resource, cors
+
 from marshmallow import ValidationError
 
 from condition_api.schemas.document_category import DocumentCategorySchema
@@ -22,8 +24,8 @@ from condition_api.services.document_service import DocumentService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("document-category", description="Endpoints for Document Management")
 """Custom exception messages
@@ -32,6 +34,7 @@ API = Namespace("document-category", description="Endpoints for Document Managem
 document_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, DocumentCategorySchema(), "Document"
 )
+
 
 @cors_preflight("GET, OPTIONS")
 @API.route("/project/<string:project_id>/category/<int:category_id>", methods=["GET", "OPTIONS"])

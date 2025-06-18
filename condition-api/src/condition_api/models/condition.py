@@ -1,15 +1,24 @@
-from sqlalchemy import Column, DateTime, Integer, String, Text, Boolean, ForeignKey, ARRAY
+"""Condition model class.
+
+Manages the Condition
+"""
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from .base_model import BaseModel
+
 
 class Condition(BaseModel):
     """Definition of the Conditions entity."""
+
     __tablename__ = 'conditions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(String, ForeignKey('condition.projects.project_id', ondelete='CASCADE'), nullable=False)
     document_id = Column(String, ForeignKey('condition.documents.document_id', ondelete='CASCADE'), nullable=False)
-    amended_document_id = Column(String, ForeignKey('condition.amendments.amended_document_id', ondelete='CASCADE'), nullable=True)
+    amended_document_id = Column(String,
+                                 ForeignKey('condition.amendments.amended_document_id',
+                                            ondelete='CASCADE'), nullable=True)
     condition_name = Column(Text, nullable=True)
     condition_number = Column(Integer, nullable=True)
     condition_text = Column(Text, nullable=True)

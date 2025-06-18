@@ -1,6 +1,21 @@
+# Copyright © 2019 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 """Service for staff user management."""
 from flask import g
-from condition_api.exceptions import ResourceNotFoundError
+
 from condition_api.models.staff_user import StaffUser
 
 
@@ -19,12 +34,13 @@ class StaffUserService:
     @classmethod
     def create_or_update_staff_user(cls, data: dict) -> StaffUser:
         """Create a new staff user or update an existing one."""
-        if cls.is_existing_user(data.get("auth_guid")):
+        auth_guid = data.get("auth_guid")
+        if cls.is_existing_user(auth_guid):
             # If user exists, update their information
-            return StaffUser.update_user(data)
-        else:
-            # Otherwise, create a new user
-            return StaffUser.create_user(data)
+            return StaffUser.update_user(auth_guid, data)
+
+        # Otherwise, create a new user
+        return StaffUser.create_user(data)
 
     @classmethod
     def is_existing_user(cls, auth_guid: str) -> bool:

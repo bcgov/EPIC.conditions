@@ -2,11 +2,14 @@
 
 Manages the Condition Attribute
 """
-from sqlalchemy import Column, Integer, Text, String, Boolean, ARRAY, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, Text
+
 from .base_model import BaseModel
+
 
 class ConditionAttribute(BaseModel):
     """Definition of the Condition Attribute entity."""
+
     __tablename__ = 'condition_attributes'
     __table_args__ = {'schema': 'condition'}
 

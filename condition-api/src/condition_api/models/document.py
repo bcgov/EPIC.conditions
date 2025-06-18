@@ -2,16 +2,19 @@
 
 Manages the document
 """
-from sqlalchemy import Column, Integer, String, Text, Date, Boolean, ARRAY, ForeignKey
+from sqlalchemy import ARRAY, Boolean, Column, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
+
 from .base_model import BaseModel
 
 Base = declarative_base()
 
+
 class Document(BaseModel):
     """Definition of the Documents entity."""
+
     __tablename__ = 'documents'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

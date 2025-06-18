@@ -1,22 +1,42 @@
+# Copyright © 2019 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# pylint: disable=too-many-lines
+
 """Service for condition management."""
 import re
 from collections import defaultdict
 from datetime import datetime
-from sqlalchemy import and_, case, func, extract
+
+from sqlalchemy import and_, case, extract, func, not_
 from sqlalchemy.orm import aliased
+
 from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
-from condition_api.models.subcondition import Subcondition
 from condition_api.models.condition_attribute import ConditionAttribute
-from condition_api.models.document import Document
-from condition_api.models.document_type import DocumentType
-from condition_api.models.document_category import DocumentCategory
 from condition_api.models.db import db
+from condition_api.models.document import Document
+from condition_api.models.document_category import DocumentCategory
+from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
-from condition_api.schemas.condition import ProjectDocumentConditionSchema, ConsolidatedConditionSchema
+from condition_api.models.subcondition import Subcondition
+from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
 from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
+
 
 class ConditionService:
     """Service for managing condition-related operations."""
@@ -24,20 +44,11 @@ class ConditionService:
     @staticmethod
     def get_condition_details(project_id, document_id, condition_id):
         """Fetch condition details along with related condition attributes by project ID."""
-
         # Aliases for the tables
         projects = aliased(Project)
-        documents = aliased(Document)
-        document_types = aliased(DocumentType)
-        document_categories = aliased(DocumentCategory)
-        conditions = aliased(Condition)
-        subconditions = aliased(Subcondition)
-        condition_attributes = aliased(ConditionAttribute)
-        attribute_keys = aliased(AttributeKey)
-        amendments = aliased(Amendment)
 
         # Check for amendment and resolve base document info
-        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id, amendments)
+        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id)
 
         # Fetch project metadata
         project_name = ConditionService._get_project_name(project_id, projects)
@@ -47,13 +58,7 @@ class ConditionService:
             is_amendment,
             base_document_info,
             document_id,
-            condition_id,
-            documents,
-            document_types,
-            document_categories,
-            conditions,
-            subconditions,
-            amendments
+            condition_id
         )
         if not condition_rows:
             return None
@@ -61,9 +66,7 @@ class ConditionService:
         condition = ConditionService._build_condition_structure(condition_rows)
 
         # Fetch and attach condition attributes
-        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(
-            condition_id, condition_attributes, attribute_keys
-        )
+        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(condition_id)
 
         # Extract static document metadata from the first row
         first = condition_rows[0]
@@ -75,6 +78,7 @@ class ConditionService:
             "condition": condition,
         }
 
+    # pylint: disable=too-many-locals
     @staticmethod
     def get_all_conditions(
         project_id,
@@ -82,50 +86,19 @@ class ConditionService:
         include_nested_conditions=False
     ):
         """Fetch all conditions and their related subconditions by project ID and document ID."""
-
         # Aliases for the tables
-        projects = aliased(Project)
         documents = aliased(Document)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
-        subconditions = aliased(Subcondition)
 
         # Check if the document_id is an amendment
-        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id, amendments)
+        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id)
 
-        if is_amendment:
-            # Join conditions to amendments instead of documents
-            amendment_label_subquery = (
-                db.session.query(amendments.amendment_name)
-                .filter(amendments.amended_document_id == base_document_info.amended_document_id)
-                .subquery()
-            )
-            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
-            condition_join = amendments.amended_document_id == conditions.amended_document_id
-            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
-        else:
-            # Join conditions directly to documents
-            condition_join = and_(
-                documents.document_id == conditions.document_id,
-                conditions.amended_document_id.is_(None)
-            )
-            document_label_query = documents.document_label
-            date_issued_query = extract("year", documents.date_issued).label("year_issued")
-
-        amendment_subquery = (
-            db.session.query(
-                conditions.condition_number,
-                func.string_agg(amendments.amendment_name.distinct(), ', ').label('amendment_names')
-            )
-            .join(conditions, conditions.amended_document_id == amendments.amended_document_id)  # Join amendments to conditions
-            .join(documents, conditions.document_id == documents.document_id)  # Join conditions to documents
-            .join(projects, projects.project_id == documents.project_id)  # Join documents to projects
-            .filter(
-                (projects.project_id == project_id) & (documents.document_id == document_id)
-            )
-            .group_by(conditions.condition_number)
-            .subquery()
+        condition_join, document_label_query, date_issued_query = (
+            ConditionService._get_document_context(is_amendment, base_document_info)
         )
+
+        amendment_subquery = ConditionService._build_amendment_subquery(project_id, document_id)
 
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
@@ -138,9 +111,9 @@ class ConditionService:
                 case(
                     (
                         and_(
-                            conditions.is_approved == True,  # Check if condition is approved
-                            conditions.is_condition_attributes_approved == True,  # Check if attributes are approved
-                            conditions.is_topic_tags_approved == True  # Check if topic tags are approved
+                            conditions.is_approved is True,  # Check if condition is approved
+                            conditions.is_condition_attributes_approved is True,  # Check if attributes are approved
+                            conditions.is_topic_tags_approved is True  # Check if topic tags are approved
                         ),
                         True  # All conditions are met
                     ),
@@ -168,9 +141,11 @@ class ConditionService:
                 )
             )
             .filter(
-                ~and_(
-                    conditions.condition_name.is_(None),
-                    conditions.condition_number.is_(None)
+                not_(
+                    and_(
+                        conditions.condition_name.is_(None),
+                        conditions.condition_number.is_(None)
+                    )
                 )
             )
             .group_by(
@@ -193,7 +168,6 @@ class ConditionService:
         )
 
         conditions_map = {}
-        subcondition_map = {}
 
         # Process the query result
         for row in condition_data:
@@ -216,36 +190,7 @@ class ConditionService:
             }
 
             if include_nested_conditions:
-                subconditions_data = (
-                    db.session.query(
-                        subconditions.id.label('subcondition_id'),
-                        subconditions.subcondition_identifier,
-                        subconditions.subcondition_text,
-                        subconditions.sort_order,
-                        subconditions.parent_subcondition_id
-                    )
-                    .filter(subconditions.condition_id == cond_id)
-                )
-                for row in subconditions_data:
-                    # Handle subconditions
-                    subcond_id = row.subcondition_id
-                    if subcond_id:
-                        subcondition = {
-                            "subcondition_identifier": row.subcondition_identifier,
-                            "subcondition_text": row.subcondition_text,
-                            "sort_order": row.sort_order,
-                            "subconditions": []
-                        }
-                        subcondition_map[subcond_id] = subcondition
-
-                        # If the subcondition has a parent, append it to the parent's subcondition list
-                        if row.parent_subcondition_id:
-                            parent = subcondition_map.get(row.parent_subcondition_id)
-                            if parent:
-                                parent["subconditions"].append(subcondition)
-                        else:
-                            # Top-level subcondition for this condition
-                            conditions_map[cond_id]["subconditions"].append(subcondition)
+                ConditionService._populate_subconditions(conditions_map, cond_id)
 
         # Return all conditions
         return {
@@ -253,10 +198,93 @@ class ConditionService:
         }
 
     @staticmethod
+    def _get_document_context(is_amendment, base_document_info):
+        documents = aliased(Document)
+        amendments = aliased(Amendment)
+        conditions = aliased(Condition)
+
+        if is_amendment:
+            amendment_label_subquery = (
+                db.session.query(amendments.amendment_name)
+                .filter(amendments.amended_document_id == base_document_info.amended_document_id)
+                .subquery()
+            )
+            document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
+            condition_join = amendments.amended_document_id == conditions.amended_document_id
+            date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+        else:
+            condition_join = and_(
+                documents.document_id == conditions.document_id,
+                conditions.amended_document_id.is_(None)
+            )
+            document_label_query = documents.document_label
+            date_issued_query = extract("year", documents.date_issued).label("year_issued")
+
+        return condition_join, document_label_query, date_issued_query
+
+    @staticmethod
+    def _build_amendment_subquery(project_id, document_id):
+        projects = aliased(Project)
+        documents = aliased(Document)
+        amendments = aliased(Amendment)
+        conditions = aliased(Condition)
+
+        return (
+            db.session.query(
+                conditions.condition_number,
+                func.string_agg(amendments.amendment_name.distinct(), ', ').label('amendment_names')
+            )
+            .join(conditions, conditions.amended_document_id == amendments.amended_document_id)
+            .join(documents, conditions.document_id == documents.document_id)
+            .join(projects, projects.project_id == documents.project_id)
+            .filter(
+                (projects.project_id == project_id) & (documents.document_id == document_id)
+            )
+            .group_by(conditions.condition_number)
+            .subquery()
+        )
+
+    @staticmethod
+    def _populate_subconditions(conditions_map, cond_id):
+        """Populates sub conditions"""
+        subcondition_map = {}
+        for sub_row in ConditionService._fetch_subconditions(cond_id):
+            # Handle subconditions
+            subcond_id = sub_row.subcondition_id
+            if subcond_id:
+                subcondition = {
+                    "subcondition_identifier": sub_row.subcondition_identifier,
+                    "subcondition_text": sub_row.subcondition_text,
+                    "sort_order": sub_row.sort_order,
+                    "subconditions": []
+                }
+                subcondition_map[subcond_id] = subcondition
+
+                # If the subcondition has a parent, append it to the parent's subcondition list
+                if sub_row.parent_subcondition_id:
+                    parent = subcondition_map.get(sub_row.parent_subcondition_id)
+                    if parent:
+                        parent["subconditions"].append(subcondition)
+                else:
+                    # Top-level subcondition for this condition
+                    conditions_map[cond_id]["subconditions"].append(subcondition)
+
+    @staticmethod
+    def _fetch_subconditions(cond_id):
+        """Fetch sub conditions"""
+        subconditions = aliased(Subcondition)
+        results = db.session.query(
+            subconditions.id.label('subcondition_id'),
+            subconditions.subcondition_identifier,
+            subconditions.subcondition_text,
+            subconditions.sort_order,
+            subconditions.parent_subcondition_id
+        ).filter(subconditions.condition_id == cond_id).all()
+        return results
+
+    @staticmethod
     def update_condition(
         conditions_data,
-        project_id=None,
-        document_id=None,
         condition_id=None,
         check_condition_exists=None,
         check_condition_over_project=None,
@@ -343,12 +371,12 @@ class ConditionService:
                     f"<b>{document_name}</b> of <b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
                     is_amendment=True
                 )
-            else:
-                raise ConditionNumberExistsInProjectError(
-                    f"This condition number already exists in <b>{document_name}</b> of "
-                    f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
-                    is_amendment=False
-                )
+
+            raise ConditionNumberExistsInProjectError(
+                f"This condition number already exists in <b>{document_name}</b> of "
+                f"<b>{project_name}</b>.<br/><br/>Are you sure you wish to proceed?",
+                is_amendment=False
+            )
 
     @staticmethod
     def _deactivate_existing_condition(condition, condition_number):
@@ -396,7 +424,7 @@ class ConditionService:
 
     @staticmethod
     def upsert_subconditions(condition_id, subconditions, parent_id=None):
-
+        """Update on insert sub conditions"""
         for idx, subcond_data in enumerate(subconditions):
             subcondition_id = subcond_data.get("subcondition_id")
             sort_order = idx + 1
@@ -413,7 +441,7 @@ class ConditionService:
                 # Update the existing subcondition
                 existing_subcondition.subcondition_identifier = subcond_data.get("subcondition_identifier")
                 existing_subcondition.subcondition_text = subcond_data.get("subcondition_text")
-                existing_subcondition.parent_subcondition_id = parent_id,
+                existing_subcondition.parent_subcondition_id = parent_id
                 existing_subcondition.sort_order = sort_order
             else:
                 # Insert a new subcondition
@@ -499,6 +527,7 @@ class ConditionService:
 
     @staticmethod
     def create_subconditions(condition_id, subconditions, parent_id=None):
+        """Create sub conditions"""
         for idx, subcond_data in enumerate(subconditions):
             sort_order = idx + 1
             new_subcondition = Subcondition(
@@ -520,25 +549,74 @@ class ConditionService:
     @staticmethod
     def get_condition_details_by_id(condition_id):
         """Fetch all conditions and their related details by condition ID."""
-
-        condition_data = (
-            db.session.query(
-                Condition.id,
-                Condition.document_id,
-                Condition.amended_document_id,
-                Condition.condition_name,
-                Condition.condition_number,
-                Condition.condition_text,
-                Condition.is_approved,
-                Condition.is_standard_condition,
-                Condition.topic_tags,
-                Condition.subtopic_tags
-            ).filter(Condition.id == condition_id).first()
-        )
-
+        condition_data = ConditionService._get_condition_data(condition_id)
         if not condition_data:
             return None
 
+        document_label, year_issued, actual_document_id = ConditionService._get_document_info(condition_data)
+
+        project_data = (
+            db.session.query(
+                Project.project_id,
+                Project.project_name,
+                DocumentType.document_category_id,
+                DocumentCategory.category_name.label("document_category")
+            )
+            .outerjoin(Document, Project.project_id == Document.project_id)
+            .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
+            .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .filter(Document.document_id == condition_data.document_id)
+            .first()
+        )
+
+        project_id = project_data.project_id if project_data else None
+        project_name = project_data.project_name if project_data else None
+        document_category = project_data.document_category if project_data else None
+        document_category_id = project_data.document_category_id if project_data else None
+
+        condition_details = {
+            "condition_id": condition_data.id,
+            "condition_name": condition_data.condition_name,
+            "condition_number": condition_data.condition_number,
+            "condition_text": condition_data.condition_text,
+            "is_approved": condition_data.is_approved,
+            "is_standard_condition": condition_data.is_standard_condition,
+            "topic_tags": condition_data.topic_tags,
+            "subtopic_tags": condition_data.subtopic_tags,
+            "year_issued": year_issued,
+            "condition_attributes": [],
+            "subconditions": []
+        }
+
+        condition_details["subconditions"] = ConditionService._build_nested_subconditions(condition_id)
+
+        return {
+            "project_id": project_id,
+            "project_name": project_name,
+            "document_category_id": document_category_id,
+            "document_category": document_category,
+            "document_id": actual_document_id,
+            "document_label": document_label,
+            "condition": condition_details
+        }
+
+    @staticmethod
+    def _get_condition_data(condition_id):
+        return db.session.query(
+            Condition.id,
+            Condition.document_id,
+            Condition.amended_document_id,
+            Condition.condition_name,
+            Condition.condition_number,
+            Condition.condition_text,
+            Condition.is_approved,
+            Condition.is_standard_condition,
+            Condition.topic_tags,
+            Condition.subtopic_tags
+        ).filter(Condition.id == condition_id).first()
+
+    @staticmethod
+    def _get_document_info(condition_data):
         amended_document_id = condition_data.amended_document_id
 
         if amended_document_id:
@@ -564,79 +642,45 @@ class ConditionService:
             document_label = document_details.document_label if document_details else None
             year_issued = document_details.year_issued if document_details else None
 
-        project_data = db.session.query(
-            Project.project_id,
-            Project.project_name,
-            DocumentType.document_category_id,
-            DocumentCategory.category_name.label("document_category")
-        ).outerjoin(Document, Project.project_id == Document.project_id
-        ).outerjoin(DocumentType, DocumentType.id == Document.document_type_id
-        ).outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
-        ).filter(Document.document_id == condition_data.document_id).first()
+        return document_label, year_issued, actual_document_id
 
-        project_id = project_data.project_id if project_data else None
-        project_name = project_data.project_name if project_data else None
-        document_category = project_data.document_category if project_data else None
-        document_category_id = project_data.document_category_id if project_data else None
-
-        condition_details = {
-            "condition_id": condition_data.id,
-            "condition_name": condition_data.condition_name,
-            "condition_number": condition_data.condition_number,
-            "condition_text": condition_data.condition_text,
-            "is_approved": condition_data.is_approved,
-            "is_standard_condition": condition_data.is_standard_condition,
-            "topic_tags": condition_data.topic_tags,
-            "subtopic_tags": condition_data.subtopic_tags,
-            "year_issued": year_issued,
-            "condition_attributes": [],
-            "subconditions": []
-        }
-
+    @staticmethod
+    def _build_nested_subconditions(condition_id):
         sub_condition_data = (
             db.session.query(
                 Subcondition.id.label('subcondition_id'),
                 Subcondition.subcondition_identifier,
                 Subcondition.subcondition_text,
                 Subcondition.parent_subcondition_id,
+                Subcondition.sort_order
             )
             .filter(Subcondition.condition_id == condition_id)
-            .all()
             .order_by(Subcondition.sort_order)
+            .all()
         )
 
         subcondition_map = {}
+        nested_subconditions = []
 
         for row in sub_condition_data:
-            subcond_id = row.subcondition_id
-            if subcond_id:
-                subcondition = {
-                    "subcondition_id": row.subcondition_id,
-                    "subcondition_identifier": row.subcondition_identifier,
-                    "subcondition_text": row.subcondition_text,
-                    "sort_order": row.sort_order,
-                    "subconditions": []
-                }
-                subcondition_map[subcond_id] = subcondition
+            subcond = {
+                "subcondition_id": row.subcondition_id,
+                "subcondition_identifier": row.subcondition_identifier,
+                "subcondition_text": row.subcondition_text,
+                "sort_order": row.sort_order,
+                "subconditions": []
+            }
 
-                # If the subcondition has a parent, append it to the parent's subcondition list
-                if row.parent_subcondition_id:
-                    parent = subcondition_map.get(row.parent_subcondition_id)
-                    if parent:
-                        parent["subconditions"].append(subcondition)
-                else:
-                    # Top-level subcondition for this condition
-                    condition_details["subconditions"].append(subcondition)
+            subcondition_map[row.subcondition_id] = subcond
 
-        return {
-            "project_id": project_id,
-            "project_name": project_name,
-            "document_category_id": document_category_id,
-            "document_category": document_category,
-            "document_id": actual_document_id,
-            "document_label": document_label,
-            "condition": condition_details
-        }
+            if row.parent_subcondition_id:
+                parent = subcondition_map.get(row.parent_subcondition_id)
+                if parent:
+                    parent["subconditions"].append(subcond)
+            else:
+                nested_subconditions.append(subcond)
+
+        return nested_subconditions
 
     @staticmethod
     def delete_condition(condition_id):
@@ -644,7 +688,6 @@ class ConditionService:
         query = db.session.query(Condition).filter(Condition.id == condition_id)
         query.delete()
         db.session.commit()
-        return None
 
     @staticmethod
     def get_consolidated_conditions(
@@ -652,7 +695,6 @@ class ConditionService:
         category_id=None,
         all_conditions=False,
         include_condition_attributes=False,
-        include_nested_conditions=False,
         user_is_internal=False,
     ):
         """Fetch all consolidated conditions."""
@@ -714,7 +756,7 @@ class ConditionService:
             .join(Condition, Condition.document_id == Document.document_id)
             .outerjoin(Amendment, Amendment.amended_document_id == Condition.amended_document_id)
             .filter(filter_condition)
-            .filter(Condition.is_active == True)
+            .filter(Condition.is_active is True)
         )
 
         if user_is_internal:
@@ -728,14 +770,16 @@ class ConditionService:
             )
 
         if not user_is_internal:
-            query = query.filter(and_(Condition.is_approved == True,
-                                      Condition.is_condition_attributes_approved == True,
-                                      Condition.is_topic_tags_approved == True))
+            query = query.filter(and_(Condition.is_approved is True,
+                                      Condition.is_condition_attributes_approved is True,
+                                      Condition.is_topic_tags_approved is True))
 
         query = query.filter(
-            ~and_(
-                Condition.condition_name.is_(None),
-                Condition.condition_number.is_(None)
+            not_(
+                and_(
+                    Condition.condition_name.is_(None),
+                    Condition.condition_number.is_(None)
+                )
             )
         ).order_by(Condition.condition_number)
 
@@ -743,11 +787,11 @@ class ConditionService:
 
         if not condition_data:
             return []
-        
+
         if user_is_internal:
             return ConditionService._process_internal_conditions(condition_data)
-        else:
-            return ConditionService._process_external_conditions(condition_data, include_condition_attributes)
+
+        return ConditionService._process_external_conditions(condition_data, include_condition_attributes)
 
     @staticmethod
     def _process_internal_conditions(condition_data):
@@ -802,39 +846,26 @@ class ConditionService:
             subcondition_map = {}
 
             # Build nested subcondition structure
-            for sc in sub_condition_data:
-                subcond_id = sc.subcondition_id
+            for sub_condition in sub_condition_data:
+                subcond_id = sub_condition.subcondition_id
                 if subcond_id:
                     subcondition = {
-                        "subcondition_id": sc.subcondition_id,
-                        "subcondition_identifier": sc.subcondition_identifier,
-                        "subcondition_text": sc.subcondition_text,
+                        "subcondition_id": sub_condition.subcondition_id,
+                        "subcondition_identifier": sub_condition.subcondition_identifier,
+                        "subcondition_text": sub_condition.subcondition_text,
                         "subconditions": []
                     }
                     subcondition_map[subcond_id] = subcondition
 
-                    if sc.parent_subcondition_id:
-                        parent = subcondition_map.get(sc.parent_subcondition_id)
+                    if sub_condition.parent_subcondition_id:
+                        parent = subcondition_map.get(sub_condition.parent_subcondition_id)
                         if parent:
                             parent["subconditions"].append(subcondition)
                     else:
                         condition_details["subconditions"].append(subcondition)
 
-            # Recursively build condition_text from nested subconditions
-            def build_condition_text(subconditions):
-                parts = []
-                for sc in subconditions:
-                    prefix = f"{sc['subcondition_identifier']} " if sc['subcondition_identifier'] else ""
-                    text = prefix + sc['subcondition_text']
-                    if sc['subconditions']:
-                        # Recursively append nested subconditions
-                        nested_text = build_condition_text(sc['subconditions'])
-                        text += " " + nested_text
-                    parts.append(text)
-                return " ".join(parts)
-
             if condition_details["subconditions"]:
-                condition_text = build_condition_text(condition_details["subconditions"])
+                condition_text = ConditionService._build_condition_text(condition_details["subconditions"])
             else:
                 condition_text = row.condition_text  # fallback if no subconditions
 
@@ -854,14 +885,27 @@ class ConditionService:
         return {"conditions": conditions_schema.dump(result)}
 
     @staticmethod
+    def _build_condition_text(subconditions):
+        """Recursively build condition_text from nested subconditions"""
+        parts = []
+        for sub_condition in subconditions:
+            prefix = f"{sub_condition['subcondition_identifier']} " if sub_condition['subcondition_identifier'] else ""
+            text = prefix + sub_condition['subcondition_text']
+            if sub_condition['subconditions']:
+                # Recursively append nested subconditions
+                nested_text = ConditionService._build_condition_text(sub_condition['subconditions'])
+                text += " " + nested_text
+            parts.append(text)
+        return " ".join(parts)
+
+    @staticmethod
     def _fetch_condition_attributes_external(condition_id, include_condition_attributes):
         """Fetch condition attributes based on the user type and flags."""
         if not include_condition_attributes:
             return []
 
-
-        EXCLUDED_KEYS = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
-        FORMATTED_KEYS = {
+        excluded_keys = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
+        formatted_keys = {
             AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
@@ -876,7 +920,7 @@ class ConditionService:
             AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id
         ).filter(
             ConditionAttribute.condition_id == condition_id,
-            ~ConditionAttribute.attribute_key_id.in_([key.value for key in EXCLUDED_KEYS]),
+            ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
         ).order_by(AttributeKey.sort_order).all()
 
         result = {}
@@ -901,50 +945,58 @@ class ConditionService:
                 continue
 
             # Format value
-            if key_enum in FORMATTED_KEYS:
-                value = ConditionService.format_attribute_value(raw_value)
-            else:
-                value = (
-                    raw_value.replace("{", "").replace("}", "").replace('"', "")
-                    if raw_value and raw_value != "N/A"
-                    else None
-                )
-
+            value = ConditionService._format_attribute_value(key_enum, raw_value, formatted_keys)
             result[external_key] = value
 
         # Handle deliverables
         if deliverables:
-            selected_value = None
-            deliverable_phrase = IEMTermsConfig.DELIVERABLE_VALUE
-
-            if requires_iem:
-                selected_value = next(
-                    (val for val, _ in deliverables if deliverable_phrase in val),
-                    None
-                )
-            else:
-                selected_value = next(
-                    (val for val, _ in deliverables if deliverable_phrase not in val),
-                    None
-                )
-
-            if not selected_value and deliverables:
-                selected_value = deliverables[0][0]  # fallback
-
-            if selected_value:
-                if AttributeKeys.DELIVERABLE_NAME in FORMATTED_KEYS:
-                    result["deliverable_name"] = [ConditionService.format_attribute_value(selected_value)]
-                else:
-                    result["deliverable_name"] = [
-                        selected_value.replace("{", "").replace("}", "").replace('"', "")
-                        if selected_value and selected_value != "N/A"
-                        else None
-                    ]
+            result.update(
+                ConditionService._process_deliverables(deliverables, requires_iem, formatted_keys)
+            )
 
         return result
 
     @staticmethod
+    def _format_attribute_value(key_enum, raw_value, formatted_keys):
+        """Format value"""
+        if key_enum in formatted_keys:
+            return ConditionService.format_attribute_value(raw_value)
+        return (
+            raw_value.replace("{", "").replace("}", "").replace('"', "")
+            if raw_value and raw_value != "N/A"
+            else None
+        )
+
+    @staticmethod
+    def _process_deliverables(deliverables, requires_iem, formatted_keys):
+        deliverable_phrase = IEMTermsConfig.DELIVERABLE_VALUE
+        selected_value = None
+
+        if requires_iem:
+            selected_value = next((val for val, _ in deliverables if deliverable_phrase in val), None)
+        else:
+            selected_value = next((val for val, _ in deliverables if deliverable_phrase not in val), None)
+
+        if not selected_value and deliverables:
+            selected_value = deliverables[0][0]
+
+        if not selected_value:
+            return {}
+
+        if AttributeKeys.DELIVERABLE_NAME in formatted_keys:
+            return {"deliverable_name": [ConditionService.format_attribute_value(selected_value)]}
+
+        return {
+            "deliverable_name": [
+                selected_value.replace("{", "").replace("}", "").replace('"', "")
+                if selected_value and selected_value != "N/A"
+                else None
+            ]
+        }
+
+    @staticmethod
     def format_attribute_value(raw_value):
+        """Format attribute"""
         if not raw_value or raw_value == "N/A":
             return None
 
@@ -960,8 +1012,10 @@ class ConditionService:
         return clean_list  # Return as a proper JSON list (not a string!)
 
     @staticmethod
-    def _get_base_document_info(document_id, amendments):
+    def _get_base_document_info(document_id):
         """Determine if document is an amendment and return base info."""
+        amendments = aliased(Amendment)
+
         amendment = db.session.query(
             amendments.document_id, amendments.amended_document_id
         ).filter(amendments.amended_document_id == document_id).first()
@@ -977,19 +1031,11 @@ class ConditionService:
         return result[0] if result else None
 
     @staticmethod
-    def _fetch_condition_data(
-        is_amendment,
-        base_document_info,
-        document_id,
-        condition_id,
-        documents,
-        document_types,
-        document_categories,
-        conditions,
-        subconditions,
-        amendments
-    ):
-        """Retrieve condition with subconditions and document metadata."""
+    def _get_document_joins_and_columns(
+            is_amendment, base_document_info, document_id, document_types, conditions):
+        """Get joins needed for fetching condition data"""
+        documents = aliased(Document)
+        amendments = aliased(Amendment)
 
         if is_amendment:
             # Use amendment join path
@@ -1006,6 +1052,27 @@ class ConditionService:
             date_col = extract("year", documents.date_issued).label("year_issued")
             document_filter = documents.document_id == document_id
             doc_entity = documents
+
+        return document_join, document_type_join, document_label_col, date_col, document_filter, doc_entity
+
+    @staticmethod
+    def _fetch_condition_data(
+        is_amendment,
+        base_document_info,
+        document_id,
+        condition_id
+    ):
+        """Retrieve condition with subconditions and document metadata."""
+        document_types = aliased(DocumentType)
+        document_categories = aliased(DocumentCategory)
+        conditions = aliased(Condition)
+        subconditions = aliased(Subcondition)
+
+        document_join, document_type_join, document_label_col, date_col, document_filter, doc_entity =\
+            ConditionService._get_document_joins_and_columns(
+                is_amendment, base_document_info, document_id,
+                document_types, conditions
+            )
 
         query = (
             db.session.query(
@@ -1042,7 +1109,6 @@ class ConditionService:
     @staticmethod
     def _build_condition_structure(condition_rows):
         """Organize the condition and subconditions into hierarchical structure."""
-
         first = condition_rows[0]
         condition = {
             "condition_id": first.id,
@@ -1086,21 +1152,20 @@ class ConditionService:
         return condition
 
     @staticmethod
-    def _fetch_condition_attributes(condition_id, ConditionAttributes, AttributeKeys):
+    def _fetch_condition_attributes(condition_id):
         """Fetch and return condition attributes excluding restricted key IDs."""
-
         rows = (
             db.session.query(
-                ConditionAttributes.id,
-                AttributeKeys.key_name,
-                ConditionAttributes.attribute_value,
+                ConditionAttribute.id,
+                AttributeKey.key_name,
+                ConditionAttribute.attribute_value,
             )
-            .outerjoin(AttributeKeys, ConditionAttributes.attribute_key_id == AttributeKeys.id)
+            .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
             .filter(
-                ConditionAttributes.condition_id == condition_id,
-                ~ConditionAttributes.attribute_key_id.in_([5])  # Exclude "Parties required"
+                ConditionAttribute.condition_id == condition_id,
+                ~ConditionAttribute.attribute_key_id.in_([5])  # Exclude "Parties required"
             )
-            .order_by(AttributeKeys.sort_order)
+            .order_by(AttributeKey.sort_order)
             .all()
         )
 

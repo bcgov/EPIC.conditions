@@ -14,18 +14,24 @@
 """API endpoints for managing a condition resource."""
 
 from http import HTTPStatus
+
 from flask import request
+
 from flask_restx import Namespace, Resource, cors
+
 from marshmallow import ValidationError
-from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError, ResourceNotFoundError
+
+from condition_api.exceptions import ConditionNumberExistsError,\
+    ConditionNumberExistsInProjectError, ResourceNotFoundError
 from condition_api.models.condition import Condition as ConditionModel
-from condition_api.schemas.condition import ConditionSchema, ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
+from condition_api.schemas.condition import ConditionSchema,\
+    ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
 
-from ..auth import auth
 from .apihelper import Api as ApiHelper
+from ..auth import auth
 
 API = Namespace("conditions", description="Endpoints for Condition Management")
 """Custom exception messages
@@ -35,8 +41,10 @@ condition_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, ConditionSchema(), "Condition"
 )
 
+
 @cors_preflight("GET, OPTIONS, PATCH")
-@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_id>", methods=["PATCH", "GET", "OPTIONS"])
+@API.route("/project/<string:project_id>/document/<string:document_id>/condition/<int:condition_id>",
+           methods=["PATCH", "GET", "OPTIONS"])
 class ConditionDetailsResource(Resource):
     """Resource for fetching condition details by project_id."""
 
@@ -69,7 +77,7 @@ class ConditionDetailsResource(Resource):
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cors.crossdomain(origin="*")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    def patch(project_id, document_id, condition_id):
+    def patch(condition_id):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
@@ -77,7 +85,7 @@ class ConditionDetailsResource(Resource):
             check_condition_exists = query_params.get('check_condition_exists', '', type=str)
             check_condition_over_project = query_params.get('check_condition_over_project', '', type=str)
             updated_condition = ConditionService.update_condition(
-                conditions_data, project_id, document_id, condition_id, check_condition_exists,
+                conditions_data, condition_id, check_condition_exists,
                 check_condition_over_project)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ConditionNumberExistsError as err:
@@ -181,7 +189,7 @@ class ConditionResource(Resource):
             query_params = request.args
             check_condition_over_project = query_params.get(
                 'check_condition_over_project', 'true').lower() == 'true'
-            updated_condition = ConditionService.update_condition(conditions_data, None, None,
+            updated_condition = ConditionService.update_condition(conditions_data,
                                                                   condition_id, True,
                                                                   check_condition_over_project)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
