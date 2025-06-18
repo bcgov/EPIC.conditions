@@ -32,6 +32,7 @@ API = Namespace("conditions", description="Endpoints for Consolidated Condition 
 """Custom exception messages
 """
 
+
 @cors_preflight("GET, OPTIONS")
 @API.route("/project/<string:project_id>", methods=["GET", "OPTIONS"])
 class ConditionResource(Resource):

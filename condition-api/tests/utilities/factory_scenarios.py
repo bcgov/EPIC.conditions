@@ -202,7 +202,6 @@ class TestPipOrgType(Enum):
     }
 
 
-
 class TestRoleEnum(Enum):
     """Test scenarios for roles"""
 

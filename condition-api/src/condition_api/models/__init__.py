@@ -24,6 +24,6 @@ from .document import Document
 from .document_category import DocumentCategory
 from .document_type import DocumentType
 from .project import Project
-from .subcondition import Subcondition
 from .staff_user import StaffUser
+from .subcondition import Subcondition
 from .user_status import UserStatus

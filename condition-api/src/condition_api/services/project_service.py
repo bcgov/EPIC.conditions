@@ -14,6 +14,7 @@
 
 
 """Service for project management."""
+
 from sqlalchemy import String, and_, case, func, not_
 from sqlalchemy.dialects.postgresql import ARRAY
 

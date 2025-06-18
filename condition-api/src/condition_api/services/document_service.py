@@ -14,6 +14,7 @@
 
 
 """Service for document management."""
+
 import uuid
 from datetime import date
 
@@ -26,6 +27,7 @@ from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
+
 
 class DocumentService:
     """Service for managing document-related operations."""
@@ -270,21 +272,17 @@ class DocumentService:
         )
 
         if is_amendment_document:
-            document = db.session.query(
-                Project.project_name.label('project_name'),
-                DocumentCategory.id.label('document_category_id'),
-                DocumentCategory.category_name.label('document_category')
-            ).outerjoin(
-                Document,
-                Document.project_id == Project.project_id
-            ).outerjoin(
-                DocumentType,
-                DocumentType.id == Document.document_type_id
-            ).outerjoin(
-                DocumentCategory,
-                DocumentCategory.id == DocumentType.document_category_id
-            ).filter(Document.id == is_amendment_document.document_id
-            ).first(
+            document = (
+                db.session.query(
+                    Project.project_name.label('project_name'),
+                    DocumentCategory.id.label('document_category_id'),
+                    DocumentCategory.category_name.label('document_category')
+                )
+                .outerjoin( Document, Document.project_id == Project.project_id)
+                .outerjoin( DocumentType, DocumentType.id == Document.document_type_id)
+                .outerjoin( DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                .filter(Document.id == is_amendment_document.document_id)
+                .first()
             )
         else:
             # Fetch the original document

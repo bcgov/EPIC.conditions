@@ -14,6 +14,7 @@
 
 
 """Service for attribute key management."""
+
 from sqlalchemy.orm import aliased
 
 from condition_api.models.attribute_key import AttributeKey
@@ -45,7 +46,8 @@ class AttributeKeyService:
             .filter(
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
                 ~attribute_keys.id.in_([AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED,
-                                        AttributeKeys.DELIVERABLE_NAME]),  # exlucding Parties required to be submitted from attribute_keys
+                                        # exlucding Parties required to be submitted from attribute_keys
+                                        AttributeKeys.DELIVERABLE_NAME]),
             )
             .order_by(attribute_keys.sort_order)
             .all()

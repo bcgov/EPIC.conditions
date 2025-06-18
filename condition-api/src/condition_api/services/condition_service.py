@@ -16,6 +16,7 @@
 # pylint: disable=too-many-lines
 
 """Service for condition management."""
+
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -28,10 +29,10 @@ from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
 from condition_api.models.condition_attribute import ConditionAttribute
+from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
-from condition_api.models.db import db
 from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
@@ -555,16 +556,19 @@ class ConditionService:
 
         document_label, year_issued, actual_document_id = ConditionService._get_document_info(condition_data)
 
-        project_data = db.session.query(
-            Project.project_id,
-            Project.project_name,
-            DocumentType.document_category_id,
-            DocumentCategory.category_name.label("document_category")
-        ).outerjoin(Document, Project.project_id == Document.project_id
-        ).outerjoin(DocumentType, DocumentType.id == Document.document_type_id
-        ).outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id
-        ).filter(Document.document_id == condition_data.document_id
-        ).first()
+        project_data = (
+            db.session.query(
+                Project.project_id,
+                Project.project_name,
+                DocumentType.document_category_id,
+                DocumentCategory.category_name.label("document_category")
+            )
+            .outerjoin(Document, Project.project_id == Document.project_id)
+            .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
+            .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .filter(Document.document_id == condition_data.document_id)
+            .first()
+        )
 
         project_id = project_data.project_id if project_data else None
         project_name = project_data.project_name if project_data else None

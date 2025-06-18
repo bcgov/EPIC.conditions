@@ -9,10 +9,9 @@ from typing import Optional
 from sqlalchemy import Column, ForeignKey, func
 from sqlalchemy.orm import column_property
 
-from ..utils.enums import UserStatus
-
 from .base_model import BaseModel
 from .db import db
+from ..utils.enums import UserStatus
 
 
 class StaffUser(BaseModel):
