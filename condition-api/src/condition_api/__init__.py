@@ -6,9 +6,9 @@ This module is for the initiation of the flask app.
 import os
 from http import HTTPStatus
 
+import secure
 from flask import Flask, current_app, g, request
 from flask_cors import CORS
-import secure
 
 from condition_api.auth import jwt
 from condition_api.config import get_named_config
