@@ -284,24 +284,21 @@ class DocumentService:
             )
         else:
             # Fetch the original document
-            document = db.session.query(
-                Project.project_name.label('project_name'),
-                DocumentCategory.id.label('document_category_id'),
-                DocumentCategory.category_name.label('document_category'),
-                Document.document_id.label('document_id'),
-                Document.document_label.label('document_label'),
-                DocumentType.id.label('document_type_id')
-            ).outerjoin(
-                Project,
-                Project.project_id == Document.project_id
-            ).outerjoin(
-                DocumentType,
-                DocumentType.id == Document.document_type_id
-            ).outerjoin(
-                DocumentCategory,
-                DocumentCategory.id == DocumentType.document_category_id
-            ).filter(Document.document_id == document_id
-            ).first()
+            document = (
+                db.session.query(
+                    Project.project_name.label('project_name'),
+                    DocumentCategory.id.label('document_category_id'),
+                    DocumentCategory.category_name.label('document_category'),
+                    Document.document_id.label('document_id'),
+                    Document.document_label.label('document_label'),
+                    DocumentType.id.label('document_type_id')
+                )
+                .outerjoin(Project, Project.project_id == Document.project_id)
+                .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
+                .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                .filter(Document.document_id == document_id)
+                .first()
+            )
 
             if not document:
                 # If no original document is found, return
@@ -312,10 +309,10 @@ class DocumentService:
             "document_category_id": document.document_category_id,
             "document_category": document.document_category,
             "document_id": is_amendment_document.amended_document_id if is_amendment_document else document.document_id,
-            "document_label": is_amendment_document.amendment_name if
-                is_amendment_document else document.document_label,
-            "document_type_id": is_amendment_document.document_type_id if
-                is_amendment_document else document.document_type_id,
+            "document_label": is_amendment_document.amendment_name
+                if is_amendment_document else document.document_label,
+            "document_type_id": is_amendment_document.document_type_id
+                if is_amendment_document else document.document_type_id,
         }
 
     @staticmethod
