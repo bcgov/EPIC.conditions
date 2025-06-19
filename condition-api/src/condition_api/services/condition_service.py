@@ -92,20 +92,27 @@ class ConditionService:
         documents = aliased(Document)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
-        projects = aliased(Project)
+
+        aliases = {
+            "projects": aliased(Project),
+            "documents": aliased(Document),
+            "amendments": aliased(Amendment),
+            "conditions": aliased(Condition),
+        }
 
         # Check if the document_id is an amendment
         is_amendment, base_document_info = ConditionService._get_base_document_info(
-            document_id, amendments)
+            document_id, aliases["amendments"])
 
         condition_join, document_label_query, date_issued_query, base_table = (
             ConditionService._get_document_context(
-                is_amendment, base_document_info, documents, amendments, conditions
+                is_amendment, base_document_info,
+                aliases["documents"], aliases["amendments"], aliases["conditions"]
             )
         )
 
         amendment_subquery = ConditionService._build_amendment_subquery(
-            project_id, document_id, projects, documents, amendments, conditions
+            project_id, document_id, aliases
         )
 
         # Query for all conditions and their related subconditions and attributes
@@ -231,7 +238,11 @@ class ConditionService:
         return condition_join, document_label_query, date_issued_query, base_table
 
     @staticmethod
-    def _build_amendment_subquery(project_id, document_id, projects, documents, amendments, conditions):
+    def _build_amendment_subquery(project_id, document_id, aliases):
+        projects = aliases["projects"]
+        documents = aliases["documents"]
+        amendments = aliases["amendments"]
+        conditions = aliases["conditions"]
 
         return (
             db.session.query(
