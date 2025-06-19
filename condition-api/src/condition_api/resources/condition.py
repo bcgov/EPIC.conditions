@@ -69,6 +69,13 @@ class ConditionDetailsResource(Resource):
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
+
+@cors_preflight("OPTIONS, PATCH")
+@API.route("/<int:condition_id>/edit",
+           methods=["PATCH", "OPTIONS"])
+class ConditionDetailsPatchResource(Resource):
+    """Resource for patching condition details by condition_id."""
+
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Edit condition data")
     @API.response(

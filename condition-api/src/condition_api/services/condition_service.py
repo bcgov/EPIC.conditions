@@ -46,9 +46,11 @@ class ConditionService:
         """Fetch condition details along with related condition attributes by project ID."""
         # Aliases for the tables
         projects = aliased(Project)
+        amendments = aliased(Amendment)
 
         # Check for amendment and resolve base document info
-        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id)
+        is_amendment, base_document_info = ConditionService._get_base_document_info(
+            document_id, amendments)
 
         # Fetch project metadata
         project_name = ConditionService._get_project_name(project_id, projects)
@@ -90,15 +92,21 @@ class ConditionService:
         documents = aliased(Document)
         amendments = aliased(Amendment)
         conditions = aliased(Condition)
+        projects = aliased(Project)
 
         # Check if the document_id is an amendment
-        is_amendment, base_document_info = ConditionService._get_base_document_info(document_id)
+        is_amendment, base_document_info = ConditionService._get_base_document_info(
+            document_id, amendments)
 
-        condition_join, document_label_query, date_issued_query = (
-            ConditionService._get_document_context(is_amendment, base_document_info)
+        condition_join, document_label_query, date_issued_query, base_table = (
+            ConditionService._get_document_context(
+                is_amendment, base_document_info, documents, amendments, conditions
+            )
         )
 
-        amendment_subquery = ConditionService._build_amendment_subquery(project_id, document_id)
+        amendment_subquery = ConditionService._build_amendment_subquery(
+            project_id, document_id, projects, documents, amendments, conditions
+        )
 
         # Query for all conditions and their related subconditions and attributes
         condition_data = (
@@ -125,6 +133,7 @@ class ConditionService:
                 amendment_subquery.c.amendment_names,
                 date_issued_query
             )
+            .select_from(base_table)
             .outerjoin(
                 conditions,
                 condition_join
@@ -198,10 +207,7 @@ class ConditionService:
         }
 
     @staticmethod
-    def _get_document_context(is_amendment, base_document_info):
-        documents = aliased(Document)
-        amendments = aliased(Amendment)
-        conditions = aliased(Condition)
+    def _get_document_context(is_amendment, base_document_info, documents, amendments, conditions):
 
         if is_amendment:
             amendment_label_subquery = (
@@ -212,6 +218,7 @@ class ConditionService:
             document_label_query = amendment_label_subquery.c.amendment_name.label("document_label")
             condition_join = amendments.amended_document_id == conditions.amended_document_id
             date_issued_query = extract("year", amendments.date_issued).label("year_issued")
+            base_table = amendments
         else:
             condition_join = and_(
                 documents.document_id == conditions.document_id,
@@ -219,15 +226,12 @@ class ConditionService:
             )
             document_label_query = documents.document_label
             date_issued_query = extract("year", documents.date_issued).label("year_issued")
+            base_table = documents
 
-        return condition_join, document_label_query, date_issued_query
+        return condition_join, document_label_query, date_issued_query, base_table
 
     @staticmethod
-    def _build_amendment_subquery(project_id, document_id):
-        projects = aliased(Project)
-        documents = aliased(Document)
-        amendments = aliased(Amendment)
-        conditions = aliased(Condition)
+    def _build_amendment_subquery(project_id, document_id, projects, documents, amendments, conditions):
 
         return (
             db.session.query(
@@ -293,7 +297,7 @@ class ConditionService:
         Update the approved status, topic tags, and subconditions of a specific condition.
 
         This method accepts either:
-        1. project_id, document_id, and condition_id as input.
+        1. condition_id as input.
         """
         condition = db.session.query(Condition).filter_by(id=condition_id).one_or_none()
 
@@ -1012,9 +1016,8 @@ class ConditionService:
         return clean_list  # Return as a proper JSON list (not a string!)
 
     @staticmethod
-    def _get_base_document_info(document_id):
+    def _get_base_document_info(document_id, amendments):
         """Determine if document is an amendment and return base info."""
-        amendments = aliased(Amendment)
 
         amendment = db.session.query(
             amendments.document_id, amendments.amended_document_id

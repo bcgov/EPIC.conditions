@@ -59,15 +59,13 @@ export const useLoadConditionDetails = (projectId?: string, documentId?: string,
 };
 
 const updateConditionDetails = (
-  projectId: string,
-  documentId: string,
   conditionId: number,
   conditionDetails: updateTopicTagsModel,
   checkConditionExists: boolean,
   check_condition_over_project: boolean,
 ) => {
   return submitRequest({
-    url: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}` +
+    url: `/conditions/${conditionId}/edit` +
          `?check_condition_exists=${checkConditionExists}&check_condition_over_project=${check_condition_over_project}`,
     method: "patch",
     data: conditionDetails,
@@ -77,23 +75,15 @@ const updateConditionDetails = (
 export const useUpdateConditionDetails = (
   checkConditionExists: boolean,
   check_condition_over_project: boolean,
-  projectId?: string,
-  documentId?: string,
   conditionId?: number,
   options? : Options
 ) => {
   return useMutation({
     mutationFn: (conditionDetails: updateTopicTagsModel) => {
-      if (!projectId) {
-        return Promise.reject(new Error("Project ID is required"));
-      }
-      if (!documentId) {
-        return Promise.reject(new Error("Document ID is required"));
-      }
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }
-      return updateConditionDetails(projectId, documentId, conditionId,
+      return updateConditionDetails(conditionId,
         conditionDetails, checkConditionExists, check_condition_over_project);
     },
     ...options,
