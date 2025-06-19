@@ -1029,7 +1029,6 @@ class ConditionService:
     @staticmethod
     def _get_base_document_info(document_id, amendments):
         """Determine if document is an amendment and return base info."""
-
         amendment = db.session.query(
             amendments.document_id, amendments.amended_document_id
         ).filter(amendments.amended_document_id == document_id).first()
