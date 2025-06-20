@@ -126,9 +126,9 @@ class ConditionService:
                 case(
                     (
                         and_(
-                            conditions.is_approved is True,  # Check if condition is approved
-                            conditions.is_condition_attributes_approved is True,  # Check if attributes are approved
-                            conditions.is_topic_tags_approved is True  # Check if topic tags are approved
+                            conditions.is_approved.is_(True),  # Check if condition is approved
+                            conditions.is_condition_attributes_approved.is_(True),  # Check if attributes are approved
+                            conditions.is_topic_tags_approved.is_(True)  # Check if topic tags are approved
                         ),
                         True  # All conditions are met
                     ),
@@ -771,7 +771,7 @@ class ConditionService:
             .join(Condition, Condition.document_id == Document.document_id)
             .outerjoin(Amendment, Amendment.amended_document_id == Condition.amended_document_id)
             .filter(filter_condition)
-            .filter(Condition.is_active is True)
+            .filter(Condition.is_active.is_(True))
         )
 
         if user_is_internal:
@@ -785,9 +785,9 @@ class ConditionService:
             )
 
         if not user_is_internal:
-            query = query.filter(and_(Condition.is_approved is True,
-                                      Condition.is_condition_attributes_approved is True,
-                                      Condition.is_topic_tags_approved is True))
+            query = query.filter(and_(Condition.is_approved.is_(True),
+                                      Condition.is_condition_attributes_approved.is_(True),
+                                      Condition.is_topic_tags_approved.is_(True)))
 
         query = query.filter(
             not_(
