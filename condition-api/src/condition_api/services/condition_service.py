@@ -89,16 +89,16 @@ class ConditionService:
     ):
         """Fetch all conditions and their related subconditions by project ID and document ID."""
         # Aliases for the tables
-        documents = aliased(Document)
-        amendments = aliased(Amendment)
-        conditions = aliased(Condition)
-
         aliases = {
             "projects": aliased(Project),
             "documents": aliased(Document),
             "amendments": aliased(Amendment),
             "conditions": aliased(Condition),
         }
+
+        documents = aliases["documents"]
+        amendments = aliases["amendments"]
+        conditions = aliases["conditions"]
 
         # Check if the document_id is an amendment
         is_amendment, base_document_info = ConditionService._get_base_document_info(
