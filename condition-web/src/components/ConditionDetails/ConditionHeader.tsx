@@ -54,8 +54,6 @@ const ConditionHeader = ({
     const { data: conditionDetails, mutateAsync: updateConditionDetails } = useUpdateConditionDetails(
         checkConditionExists,
         checkConditionExistsForProject,
-        projectId,
-        documentId,
         conditionId,
         {
           onSuccess: onCreateSuccess,
