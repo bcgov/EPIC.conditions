@@ -204,42 +204,44 @@ const ConditionDescription = memo(({
     <Box>
       <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="subconditions-droppable" type="SUBCONDITION">
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {subconditions.map((sub, index) => (
-                <Draggable
-                  key={sub.subcondition_id}
-                  draggableId={sub.subcondition_id}
-                  index={index}
-                  isDragDisabled={!isEditing}
-                >
-                  {(dragProvided) => (
-                    <div
-                      ref={dragProvided.innerRef}
-                      {...dragProvided.draggableProps}
-                      style={{ ...dragProvided.draggableProps.style }}
-                    >
-                      <SubconditionComponent
-                        key={index}
-                        subcondition={sub}
-                        indentLevel={1}
-                        isEditing={isEditing}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onAdd={handleAdd}
-                        identifierValue={sub.subcondition_identifier || ""}
-                        textValue={sub.subcondition_text || ""}
-                        is_approved={isConditionApproved || false}
-                        dragHandleProps={dragProvided.dragHandleProps ?? undefined}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+        {(provided) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+          >
+            {subconditions.map((sub, index) => (
+              <Draggable
+                key={sub.subcondition_id}
+                draggableId={sub.subcondition_id}
+                index={index}
+                isDragDisabled={!isEditing}
+              >
+                {(dragProvided) => (
+                  <div
+                    ref={dragProvided.innerRef}
+                    {...dragProvided.draggableProps}
+                    {...dragProvided.dragHandleProps}
+                    style={{ ...dragProvided.draggableProps.style }}
+                  >
+                    <SubconditionComponent
+                      subcondition={sub}
+                      indentLevel={1}
+                      isEditing={isEditing}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onAdd={handleAdd}
+                      identifierValue={sub.subcondition_identifier || ""}
+                      textValue={sub.subcondition_text || ""}
+                      is_approved={isConditionApproved || false}
+                    />
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
       </DragDropContext>
       <Stack sx={{ mt: 5 }} direction={"row"}>
         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>

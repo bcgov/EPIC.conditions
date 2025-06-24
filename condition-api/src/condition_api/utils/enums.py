@@ -63,3 +63,20 @@ class IEMTermsConfig:
             AttributeKeys.REQUIRES_CONSULTATION,
             AttributeKeys.DELIVERABLE_NAME,
         ]
+
+
+class ManagementPlanConfig:
+    """Management Plan"""
+
+    @staticmethod
+    def required_attribute_keys() -> List[int]:
+        """Required attribute Keys for Management Plan"""
+        return [
+            AttributeKeys.SUBMITTED_TO_EAO_FOR,
+            AttributeKeys.MANAGEMENT_PLAN_NAME,
+            AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
+            AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
+            AttributeKeys.REQUIRES_CONSULTATION,
+        ]
