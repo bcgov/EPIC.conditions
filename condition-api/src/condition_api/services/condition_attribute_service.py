@@ -17,7 +17,7 @@
 from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.models.db import db
-from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
+from condition_api.utils.enums import AttributeKeys, IEMTermsConfig, ManagementPlanConfig
 
 
 class AttributeKeyNotFoundError(Exception):
@@ -152,17 +152,9 @@ class ConditionAttributeService:
         :param add_to_result_list: Function to add attributes to the result list.
         """
         if attribute_key_id == AttributeKeys.REQUIRES_MANAGEMENT_PLAN and attribute_value == 'true':
-            attribute_key_ids = [
-                AttributeKeys.SUBMITTED_TO_EAO_FOR,
-                AttributeKeys.MANAGEMENT_PLAN_NAME,
-                AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
-                AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
-                AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
-                AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
-                AttributeKeys.REQUIRES_CONSULTATION,
-            ]
+            required_keys = ManagementPlanConfig.required_attribute_keys()
 
-            all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(attribute_key_ids)).all()
+            all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(required_keys)).all()
             for key in all_attribute_keys:
                 existing_attribute = db.session.query(ConditionAttribute).filter_by(
                     condition_id=condition_id, attribute_key_id=key.id

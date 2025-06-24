@@ -29,10 +29,12 @@ export const useSubconditionHandler = (initialSubconditions: SubconditionModel[]
     const addSubcondition = (subconds: SubconditionModel[] | undefined): SubconditionModel[] => {
       return (subconds || []).map((sub) => {
         if (sub.subcondition_id === targetId) {
+          const existingCount = sub.subconditions?.length || 0;
           const newSubcondition: SubconditionModel = {
             subcondition_id: `${targetId}-${Date.now()}`,
             subcondition_identifier: "",
             subcondition_text: "",
+            sort_order: existingCount + 1,
             subconditions: [],
           };
 
@@ -66,14 +68,17 @@ export const useSubconditionHandler = (initialSubconditions: SubconditionModel[]
   };
 
   const handleAddParentCondition = () => {
-    const newCondition: SubconditionModel = {
-      subcondition_id: `parent-${Date.now()}`,
-      subcondition_identifier: "",
-      subcondition_text: "",
-      subconditions: [],
-    };
-
-    setSubconditions((prev) => [...prev, newCondition]);
+    setSubconditions((prev) => {
+      const newCondition: SubconditionModel = {
+        subcondition_id: `parent-${Date.now()}`,
+        subcondition_identifier: "",
+        subcondition_text: "",
+        sort_order: prev.length + 1, // dynamic sort_order
+        subconditions: [],
+      };
+  
+      return [...prev, newCondition];
+    });
   };
 
   return {
