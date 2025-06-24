@@ -233,8 +233,9 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         <MenuItem value="" disabled sx={{ fontFamily: 'BC Sans' }}>
                             Select Direction
                         </MenuItem>
-                        <MenuItem value="Before">Before</MenuItem>
                         <MenuItem value="After">After</MenuItem>
+                        <MenuItem value="Before">Before</MenuItem>
+                        <MenuItem value="Prior to">Prior to</MenuItem>
                     </Select>
                 </ThemeProvider>
                 {timeValue === "Other" ? (
