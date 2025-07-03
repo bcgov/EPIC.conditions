@@ -38,6 +38,7 @@ class ConditionAttributeService:
     def upsert_condition_attribute(requires_management_plan, condition_id, attributes):
         """
         Updates or inserts condition attributes for a given condition.
+
         Also updates the 'requires_management_plan' field on the Condition record.
 
         :param requires_management_plan: Boolean flag indicating whether management plans are required.
@@ -96,8 +97,7 @@ class ConditionAttributeService:
             requires_management_plan, condition_id)
 
     @staticmethod
-    def _upsert_single_attribute(
-        condition_id, attribute_data, management_plan_id=None):
+    def _upsert_single_attribute(condition_id, attribute_data, management_plan_id=None):
         """Update of insert the attributes"""
         attribute_id = attribute_data.get("id")
         key_name = attribute_data.get("key")

@@ -1171,7 +1171,6 @@ class ConditionService:
     @staticmethod
     def _fetch_condition_attributes(requires_management_plan, condition_id):
         """Fetch and return condition attributes, grouping those linked to management plans."""
-
         if requires_management_plan:
             # Fetch management plans and their attributes
             plan_attrs = (

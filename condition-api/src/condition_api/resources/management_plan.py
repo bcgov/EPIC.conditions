@@ -60,7 +60,6 @@ class ManagementPlanResource(Resource):
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
-
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Delete management plan data")
     @API.response(

@@ -26,7 +26,7 @@ class AttributeKeyService:
     """Attribute Key management service."""
 
     @staticmethod
-    def get_all_attributes(condition_id, management_plan_id = None):
+    def get_all_attributes(condition_id, management_plan_id=None):
         """Fetch all attributes."""
         condition_attributes = aliased(ConditionAttribute)
         attribute_keys = aliased(AttributeKey)
