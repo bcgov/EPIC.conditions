@@ -33,7 +33,6 @@ class AttributeKeys(IntEnum):
     """Attribute Keys."""
 
     # The numbers are same as the id for each attribute key within the table attribute_keys
-    REQUIRES_MANAGEMENT_PLAN = 1
     REQUIRES_CONSULTATION = 2
     MANAGEMENT_PLAN_NAME = 3
     MANAGEMENT_PLAN_ACRONYM = 4
