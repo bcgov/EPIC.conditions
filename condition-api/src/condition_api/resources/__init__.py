@@ -31,6 +31,7 @@ from .condition_attribute import API as CONDITION_ATTRIBUTE_API
 from .consolidated_condition import API as CONSOLIDATED_CONDITION_API
 from .document import API as DOCUMENT_API
 from .document_category import API as DOCUMENT_CATEGORY_API
+from .management_plan import API as MANAGEMENT_PLAN_API
 from .ops import API as OPS_API
 from .project import API as PROJECT_API
 from .staff_user import API as STAFF_USER_API
@@ -67,5 +68,6 @@ API.add_namespace(CONDITION_ATTRIBUTE_API)
 API.add_namespace(CONSOLIDATED_CONDITION_API)
 API.add_namespace(DOCUMENT_CATEGORY_API)
 API.add_namespace(DOCUMENT_API)
+API.add_namespace(MANAGEMENT_PLAN_API)
 API.add_namespace(PROJECT_API)
 API.add_namespace(STAFF_USER_API)

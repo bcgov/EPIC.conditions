@@ -37,10 +37,6 @@ type DynamicFieldRendererProps = {
       milestones: string[];
       setMilestones: (value: string[]) => void;
     };
-    planNamesData: {
-        planNames: string[];
-        setPlanNames: (value: string[]) => void;
-    };
     otherData: {
         otherValue: string;
         setOtherValue: (value: string) => void;
@@ -55,7 +51,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     chipsData,
     submissionMilestonesData,
     milestonesData,
-    planNamesData,
     otherData,
 }) => {
     const [timeUnit, setTimeUnit] = useState<string>("");
@@ -65,10 +60,8 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     const [error, setError] = useState(false);
     const [showCustomSubmissionInput, setShowCustomSubmissionInput] = useState(false);
     const [showCustomInput, setShowCustomInput] = useState(false);
-    const [showCustomPlanNames, setShowCustomPlanNames] = useState(false);
     const [customSubmissionMilestone, setCustomSubmissionMilestone] = useState("");
     const [customMilestone, setCustomMilestone] = useState("");
-    const [additionalPlanNames, setAdditionalPlanNames] = useState("");
     const [dynamicSubmissionWidth, setDynamicSubmissionWidth] = useState<number>(100);
     const [dynamicWidth, setDynamicWidth] = useState<number>(100);
     const textRef = useRef<HTMLDivElement>(null);
@@ -430,7 +423,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                     flexWrap: "wrap",
                     gap: 1,
                     mb: 1,
-                    width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
+                    width: editMode ? `${dynamicWidth}px` : "100%",
                     minWidth: "30%",
                 }}
             >
@@ -470,7 +463,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
               sx={{
                   fontSize: "inherit",
                   lineHeight: "inherit",
-                  width: editMode ? `${dynamicSubmissionWidth}px` : "100%",
+                  width: editMode ? `${dynamicWidth}px` : "100%",
                   minWidth: "30%",
                   "& .MuiSelect-select": {
                       padding: "8px",
@@ -540,126 +533,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
           </>
         );
     }
-
-    if (attributeData.key === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
-        const handleAddAdditionalPlanNames = () => {
-            if (additionalPlanNames.trim()) {
-                planNamesData.setPlanNames([...planNamesData.planNames, additionalPlanNames]);
-                setAdditionalPlanNames(""); // Clear the input field
-                setShowCustomPlanNames(false); // Hide the custom input field
-            }
-        };
-    
-        const handleDeleteChip = (chipToDelete: string) => {
-            setShowCustomPlanNames(false);
-            planNamesData.setPlanNames(
-                planNamesData.planNames.filter((chip) => chip !== chipToDelete)
-            );
-        };
-    
-        const shouldRenderChipInput =
-        planNamesData.planNames.length === 0 ||
-        (planNamesData.planNames.length === 1 && planNamesData.planNames[0] === "");
-
-        return (
-            <>
-                {shouldRenderChipInput ? (
-                    // Render the ChipInput component if no plan names exist
-                    <ChipInput
-                        chips={planNamesData.planNames}
-                        setChips={(newChips) => planNamesData.setPlanNames(newChips)}
-                        placeholder="Add a management plan name"
-                        inputWidth={editMode ? "30%" : "100%"}
-                    />
-                ) : (
-                    // Render chips if there are plan names
-                    <div>
-                        {/* Chips displayed in a flexible row */}
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
-                            {planNamesData.planNames
-                            .filter((chip) => chip.trim() !== "")
-                            .map((name, index) => (
-                                <Chip
-                                    key={index}
-                                    label={name}
-                                    onDelete={() => handleDeleteChip(name)}
-                                    sx={{
-                                        backgroundColor: "#e0e0e0",
-                                        color: "black",
-                                        fontSize: "14px",
-                                    }}
-                                />
-                            ))}
-                        </div>
-    
-                        {/* "+ Add name for another Management Plan" appears on the next line */}
-                        <div>
-                            <Typography
-                                variant="body2"
-                                color="primary"
-                                onClick={() => setShowCustomPlanNames(true)}
-                                sx={{
-                                    cursor: "pointer",
-                                    textDecoration: "underline",
-                                }}
-                            >
-                                + Add name for another Management Plan
-                            </Typography>
-                        </div>
-                    </div>
-                )}
-    
-                {showCustomPlanNames && (
-                    <div
-                        style={{
-                            marginTop: "8px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                        }}
-                    >
-                        <TextField
-                            value={additionalPlanNames}
-                            onChange={(e) => setAdditionalPlanNames(e.target.value)}
-                            placeholder="Add a management plan name"
-                            size="small"
-                            fullWidth
-                            sx={{
-                                flex: "0 0 auto",
-                                width: editMode ? "30%" : "100%",
-                            }}
-                            InputProps={{
-                                endAdornment: additionalPlanNames ? (
-                                    <InputAdornment
-                                        position="end"
-                                        sx={{ marginRight: "-5px" }}
-                                    >
-                                        <IconButton
-                                            onClick={handleAddAdditionalPlanNames}
-                                            sx={{
-                                                padding: 0,
-                                                borderRadius: "50%",
-                                                backgroundColor: "green",
-                                                color: "white",
-                                                "&:hover": { backgroundColor: "darkgreen" },
-                                            }}
-                                        >
-                                            <AddIcon
-                                                sx={{
-                                                    fontSize: "20px",
-                                                }}
-                                            />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ) : null,
-                            }}
-                        />
-                    </div>
-                )}
-            </>
-        );
-    }    
-
+ 
     if (options) {
         return (
             <Stack direction="column">

@@ -309,8 +309,6 @@ export const CreateConditionPage = ({
         >
           {conditionData ? (
             <CreateConditionInfoTabs
-              projectId={conditionData.project_id}
-              documentId={conditionData.document_id}
               condition={condition}
               setCondition={setCondition}
             />

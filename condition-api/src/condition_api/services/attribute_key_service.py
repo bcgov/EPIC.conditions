@@ -26,16 +26,23 @@ class AttributeKeyService:
     """Attribute Key management service."""
 
     @staticmethod
-    def get_all_attributes(condition_id):
+    def get_all_attributes(condition_id, management_plan_id = None):
         """Fetch all attributes."""
         condition_attributes = aliased(ConditionAttribute)
         attribute_keys = aliased(AttributeKey)
 
-        subquery = (
-            db.session.query(condition_attributes.attribute_key_id)
-            .filter(condition_attributes.condition_id == condition_id)
-            .subquery()
-        )
+        if management_plan_id:
+            subquery = (
+                db.session.query(condition_attributes.attribute_key_id)
+                .filter(condition_attributes.management_plan_id == management_plan_id)
+                .subquery()
+            )
+        else:
+            subquery = (
+                db.session.query(condition_attributes.attribute_key_id)
+                .filter(condition_attributes.condition_id == condition_id)
+                .subquery()
+            )
 
         attributes_data = (
             db.session.query(
