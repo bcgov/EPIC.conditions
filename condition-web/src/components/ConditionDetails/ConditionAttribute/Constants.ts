@@ -1,5 +1,4 @@
 export const CONDITION_KEYS = {
-  REQUIRES_MANAGEMENT_PLAN: "Requires management plan(s)",
   REQUIRES_CONSULTATION: "Requires consultation",
   SUBMITTED_TO_EAO_FOR: "Submitted to EAO for",
   MILESTONES_RELATED_TO_PLAN_SUBMISSION: "Milestone(s) related to plan submission",
@@ -54,10 +53,6 @@ export const TIME_VALUES = {
 };
 
 export const SELECT_OPTIONS = {
-  [CONDITION_KEYS.REQUIRES_MANAGEMENT_PLAN]: [
-    { value: "true", label: "Yes" },
-    { value: "false", label: "No" },
-  ],
   [CONDITION_KEYS.REQUIRES_CONSULTATION]: [
       { value: "true", label: "Yes" },
       { value: "false", label: "No" },
