@@ -20,8 +20,6 @@ from flask_restx import Namespace, Resource, cors
 
 from marshmallow import ValidationError
 
-from condition_api.exceptions import ResourceNotFoundError
-from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.schemas.condition_attribute import ConditionAttributesSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.roles import EpicConditionRole

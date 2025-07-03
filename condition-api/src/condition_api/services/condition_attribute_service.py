@@ -63,7 +63,7 @@ class ConditionAttributeService:
                     existing_plan = db.session.query(ManagementPlan).filter_by(id=plan_id).first()
                 else:
                     existing_plan = None
-                
+
                 if existing_plan:
                     existing_plan.name = plan_name
                 else:
@@ -298,33 +298,33 @@ class ConditionAttributeService:
                 "independent_attributes": [],
                 "management_plans": management_plans
             }
-        else:
-            independent_attrs = (
-                db.session.query(ConditionAttribute, AttributeKey)
-                .join(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
-                .filter(
-                    ConditionAttribute.condition_id == condition_id,
-                    ConditionAttribute.management_plan_id.is_(None),
-                    ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
-                )
-                .order_by(AttributeKey.sort_order)
-                .all()
+
+        independent_attrs = (
+            db.session.query(ConditionAttribute, AttributeKey)
+            .join(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
+            .filter(
+                ConditionAttribute.condition_id == condition_id,
+                ConditionAttribute.management_plan_id.is_(None),
+                ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
             )
+            .order_by(AttributeKey.sort_order)
+            .all()
+        )
 
-            # Format the result
-            independent_attributes = [
-                {
-                    "id": attr.id,
-                    "key": key.key_name,
-                    "value": attr.attribute_value,
-                }
-                for attr, key in independent_attrs
-            ]
-
-            return {
-                "independent_attributes": independent_attributes,
-                "management_plans": []
+        # Format the result
+        independent_attributes = [
+            {
+                "id": attr.id,
+                "key": key.key_name,
+                "value": attr.attribute_value,
             }
+            for attr, key in independent_attrs
+        ]
+
+        return {
+            "independent_attributes": independent_attributes,
+            "management_plans": []
+        }
 
     @staticmethod
     def delete_condition_attribute(condition_id, requires_management_plan=None):

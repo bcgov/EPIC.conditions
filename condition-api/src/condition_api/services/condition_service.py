@@ -1214,29 +1214,29 @@ class ConditionService:
                 "independent_attributes": [],
                 "management_plans": list(plan_map.values())
             }
-        else:
-            # Fetch independent attributes (no management_plan_id)
-            independent_attrs = (
-                db.session.query(
-                    ConditionAttribute.id,
-                    AttributeKey.key_name,
-                    ConditionAttribute.attribute_value,
-                )
-                .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
-                .filter(
-                    ConditionAttribute.condition_id == condition_id,
-                    ConditionAttribute.management_plan_id.is_(None),
-                    ~ConditionAttribute.attribute_key_id.in_([5])  # Exclude "Parties required"
-                )
-                .order_by(AttributeKey.sort_order)
-                .all()
-            )
 
-            independent_results = [
-                {"id": row.id, "key": row.key_name, "value": row.attribute_value}
-                for row in independent_attrs
-            ]
-            return {
-                "independent_attributes": independent_results,
-                "management_plans": []
-            }
+        # Fetch independent attributes (no management_plan_id)
+        independent_attrs = (
+            db.session.query(
+                ConditionAttribute.id,
+                AttributeKey.key_name,
+                ConditionAttribute.attribute_value,
+            )
+            .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
+            .filter(
+                ConditionAttribute.condition_id == condition_id,
+                ConditionAttribute.management_plan_id.is_(None),
+                ~ConditionAttribute.attribute_key_id.in_([5])  # Exclude "Parties required"
+            )
+            .order_by(AttributeKey.sort_order)
+            .all()
+        )
+
+        independent_results = [
+            {"id": row.id, "key": row.key_name, "value": row.attribute_value}
+            for row in independent_attrs
+        ]
+        return {
+            "independent_attributes": independent_results,
+            "management_plans": []
+        }
