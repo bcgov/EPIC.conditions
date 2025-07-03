@@ -1,4 +1,5 @@
 import { SubconditionModel } from "./Subcondition";
+import { ConditionAttributeModel } from "./ConditionAttribute";
 
 export interface ConditionModel {
   condition_id?: number;
@@ -13,14 +14,11 @@ export interface ConditionModel {
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
   is_standard_condition?: boolean;
+  requires_management_plan?: boolean;
   source_document?: string;
   subtopic_tags?: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
-  condition_attributes?: Array<{
-    id: string;
-    key: string;
-    value: string;
-  }>; 
+  condition_attributes?: ConditionAttributeModel;
 }
 
 export const createDefaultCondition = (): ConditionModel => {
@@ -36,9 +34,13 @@ export const createDefaultCondition = (): ConditionModel => {
       topic_tags: [],
       is_topic_tags_approved: false,
       is_condition_attributes_approved: false,
+      requires_management_plan: false,
       subtopic_tags: [],
       subconditions: [],
-      condition_attributes: [],
+      condition_attributes: {
+        independent_attributes: [],
+        management_plans: [],
+      },
   };
 };
 

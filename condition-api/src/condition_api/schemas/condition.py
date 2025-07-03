@@ -3,7 +3,7 @@
 Manages the condition
 """
 
-from condition_api.schemas.condition_attribute import ConditionAttributeUpdateSchema
+from condition_api.schemas.condition_attribute import ConditionAttributesSchema
 from condition_api.schemas.subcondition import SubconditionSchema
 
 from marshmallow import Schema, fields
@@ -24,9 +24,9 @@ class ConditionSchema(Schema):
     is_topic_tags_approved = fields.Bool(data_key="is_topic_tags_approved", allow_none=True)
     is_condition_attributes_approved = fields.Bool(
         data_key="is_condition_attributes_approved", allow_none=True)
-    condition_attributes = fields.List(
-        fields.Nested(ConditionAttributeUpdateSchema),
-        data_key="condition_attributes", allow_none=True)
+    requires_management_plan = fields.Bool(
+        data_key="requires_management_plan", allow_none=True)
+    condition_attributes = fields.Nested(ConditionAttributesSchema, data_key="condition_attributes")
     effective_document_id = fields.Str(data_key="effective_document_id", allow_none=True)
     is_standard_condition = fields.Bool(data_key="is_standard_condition", allow_none=True)
     source_document = fields.Str(data_key="source_document", allow_none=True)

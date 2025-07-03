@@ -15,11 +15,12 @@
 
 from http import HTTPStatus
 
+from flask import request
 from flask_restx import Namespace, Resource, cors
 
 from marshmallow import ValidationError
 
-from condition_api.schemas.condition_attribute import ConditionAttributeUpdateSchema
+from condition_api.schemas.condition_attribute import ConditionAttributesSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import cors_preflight
@@ -32,12 +33,12 @@ API = Namespace("attributes", description="Endpoints for Condition Attribute Man
 """
 
 condition_model = ApiHelper.convert_ma_schema_to_restx_model(
-    API, ConditionAttributeUpdateSchema(), "Attribute"
+    API, ConditionAttributesSchema(), "Attribute"
 )
 
 
-@cors_preflight("OPTIONS, PATCH")
-@API.route("/condition/<int:condition_id>", methods=["PATCH", "OPTIONS"])
+@cors_preflight("OPTIONS, PATCH, DELETE")
+@API.route("/condition/<int:condition_id>", methods=["PATCH", "DELETE", "OPTIONS"])
 class ConditionAttributeaResource(Resource):
     """Resource for updating condition attributes."""
 
@@ -52,9 +53,33 @@ class ConditionAttributeaResource(Resource):
     def patch(condition_id):
         """Edit condition attributes data."""
         try:
-            conditions_attributes_data = ConditionAttributeUpdateSchema(many=True).load(API.payload)
+            requires_management_plan = API.payload.get("requires_management_plan", [])
+            condition_attribute = API.payload.get("condition_attribute", [])
+            conditions_attributes_data = ConditionAttributesSchema().load(condition_attribute)
             updated_conditions_attributes = ConditionAttributeService.upsert_condition_attribute(
-                condition_id, conditions_attributes_data)
-            return ConditionAttributeUpdateSchema(many=True).dump(updated_conditions_attributes), HTTPStatus.OK
+                requires_management_plan, condition_id, conditions_attributes_data)
+            return ConditionAttributesSchema().dump(updated_conditions_attributes), HTTPStatus.OK
         except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Delete condition attribute data")
+    @API.response(
+        code=HTTPStatus.OK, model=condition_model, description="Delete condition attributes"
+    )
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @cors.crossdomain(origin="*")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    def delete(condition_id):
+        """Remove condition attribute data."""
+        try:
+            requires_management_plan = request.args.get(
+                "requires_management_plan", "false").lower() == "true"
+            deleted = ConditionAttributeService().delete_condition_attribute(
+                condition_id, requires_management_plan)
+            if not deleted:
+                # No data found to delete, but still OK
+                return 'No condition attribute data found to remove', HTTPStatus.OK
+            return 'Condition attribute successfully removed', HTTPStatus.OK
+        except (KeyError, ValueError) as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

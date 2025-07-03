@@ -15,6 +15,8 @@
 
 from http import HTTPStatus
 
+from flask import request
+
 from flask_restx import Namespace, Resource, cors
 
 from marshmallow import ValidationError
@@ -49,8 +51,9 @@ class AttributeKeyResource(Resource):
     @cors.crossdomain(origin="*")
     def get(condition_id):
         """Fetch attribute keys."""
+        management_plan_id = request.args.get("management_plan_id", type=int)
         try:
-            attributes = AttributeKeyService.get_all_attributes(condition_id)
+            attributes = AttributeKeyService.get_all_attributes(condition_id, management_plan_id)
             if not attributes:
                 return []
             # Instantiate the schema

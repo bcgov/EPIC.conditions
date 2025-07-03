@@ -31,6 +31,7 @@ class Condition(BaseModel):
     is_condition_attributes_approved = Column(Boolean, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     is_standard_condition = Column(Boolean, nullable=True)
+    requires_management_plan = Column(Boolean, nullable=True)
 
     # Establish a one-to-many relationship with subcondition
     subconditions = relationship('Subcondition', back_populates='condition', cascade='all, delete-orphan')

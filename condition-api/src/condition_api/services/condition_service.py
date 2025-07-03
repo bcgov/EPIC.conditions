@@ -32,6 +32,7 @@ from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
+from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
@@ -68,7 +69,8 @@ class ConditionService:
         condition = ConditionService._build_condition_structure(condition_rows)
 
         # Fetch and attach condition attributes
-        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(condition_id)
+        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(
+            condition_rows[0].requires_management_plan, condition_id)
 
         # Extract static document metadata from the first row
         first = condition_rows[0]
@@ -1102,6 +1104,7 @@ class ConditionService:
                 conditions.is_topic_tags_approved,
                 conditions.is_condition_attributes_approved,
                 conditions.is_standard_condition,
+                conditions.requires_management_plan,
                 conditions.subtopic_tags,
                 subconditions.id.label("subcondition_id"),
                 subconditions.subcondition_identifier,
@@ -1133,6 +1136,7 @@ class ConditionService:
             "is_topic_tags_approved": first.is_topic_tags_approved,
             "is_condition_attributes_approved": first.is_condition_attributes_approved,
             "is_standard_condition": first.is_standard_condition,
+            "requires_management_plan": first.requires_management_plan,
             "subtopic_tags": first.subtopic_tags,
             "year_issued": first.year_issued,
             "condition_attributes": [],
@@ -1165,9 +1169,53 @@ class ConditionService:
         return condition
 
     @staticmethod
-    def _fetch_condition_attributes(condition_id):
-        """Fetch and return condition attributes excluding restricted key IDs."""
-        rows = (
+    def _fetch_condition_attributes(requires_management_plan, condition_id):
+        """Fetch and return condition attributes, grouping those linked to management plans."""
+        if requires_management_plan:
+            # Fetch management plans and their attributes
+            plan_attrs = (
+                db.session.query(
+                    ManagementPlan.id.label("plan_id"),
+                    ManagementPlan.name.label("plan_name"),
+                    ManagementPlan.is_approved.label("is_approved"),
+                    ConditionAttribute.id.label("attribute_id"),
+                    AttributeKey.key_name,
+                    ConditionAttribute.attribute_value,
+                )
+                .join(ConditionAttribute, ManagementPlan.id == ConditionAttribute.management_plan_id)
+                .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
+                .filter(
+                    ManagementPlan.condition_id == condition_id,
+                    ~ConditionAttribute.attribute_key_id.in_([5])
+                )
+                .order_by(ManagementPlan.id, AttributeKey.sort_order)
+                .all()
+            )
+
+            # Group plan attributes
+            plan_map = {}
+            for row in plan_attrs:
+                plan_id = row.plan_id
+                if plan_id not in plan_map:
+                    plan_map[plan_id] = {
+                        "id": plan_id,
+                        "name": row.plan_name,
+                        "is_approved": row.is_approved,
+                        "attributes": []
+                    }
+                plan_map[plan_id]["attributes"].append({
+                    "id": row.attribute_id,
+                    "key": row.key_name,
+                    "value": row.attribute_value
+                })
+
+            return {
+                "independent_attributes": [],
+                "management_plans": list(plan_map.values())
+            }
+
+        # Fetch independent attributes (no management_plan_id)
+        independent_attrs = (
             db.session.query(
                 ConditionAttribute.id,
                 AttributeKey.key_name,
@@ -1176,10 +1224,18 @@ class ConditionService:
             .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
             .filter(
                 ConditionAttribute.condition_id == condition_id,
+                ConditionAttribute.management_plan_id.is_(None),
                 ~ConditionAttribute.attribute_key_id.in_([5])  # Exclude "Parties required"
             )
             .order_by(AttributeKey.sort_order)
             .all()
         )
 
-        return [{"id": row.id, "key": row.key_name, "value": row.attribute_value} for row in rows]
+        independent_results = [
+            {"id": row.id, "key": row.key_name, "value": row.attribute_value}
+            for row in independent_attrs
+        ]
+        return {
+            "independent_attributes": independent_results,
+            "management_plans": []
+        }
