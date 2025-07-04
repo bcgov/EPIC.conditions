@@ -60,7 +60,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             }}
             dangerouslySetInnerHTML={{
                 __html: `
-                    By deleting this Management Plan, you will lose all of its associated attributes<br/><br/>Are you sure you wish to proceed?
+                    By deleting this Management Plan, you will lose all of its associated attributes.<br/><br/>Are you sure you wish to proceed?
                 `,
             }}
         />
