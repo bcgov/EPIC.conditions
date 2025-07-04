@@ -916,8 +916,10 @@ class ConditionService:
                 )
                 condition_name = row.condition_name
 
-                if condition_attributes.get("requires_iem_terms_of_engagement")\
-                and condition_attributes.get("deliverable_name"):
+                if (
+                    condition_attributes.get("requires_iem_terms_of_engagement")
+                    and condition_attributes.get("deliverable_name")
+                ):
                     deliverable_name = condition_attributes.get("deliverable_name")
                     condition_name = deliverable_name[0]
 
