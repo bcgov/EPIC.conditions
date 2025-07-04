@@ -760,6 +760,7 @@ class ConditionService:
                 Condition.is_condition_attributes_approved,
                 Condition.is_topic_tags_approved,
                 Condition.is_standard_condition,
+                Condition.requires_management_plan,
                 case(
                     (Condition.amended_document_id.isnot(None), Condition.amended_document_id),
                     else_=Condition.document_id,
@@ -886,17 +887,48 @@ class ConditionService:
             else:
                 condition_text = row.condition_text  # fallback if no subconditions
 
-            condition_attributes = (
-                ConditionService._fetch_condition_attributes_external(
-                    row.condition_id, include_condition_attributes)
-            )
-            result.append({
-                "condition_name": row.condition_name,
-                "condition_number": row.condition_number,
-                "condition_text": condition_text,
-                "is_standard_condition": row.is_standard_condition,
-                "condition_attributes": condition_attributes,
-            })
+            if row.requires_management_plan:
+                plans = db.session.query(ManagementPlan).filter(
+                    ManagementPlan.condition_id == row.condition_id,
+                    ManagementPlan.is_approved.is_(True)
+                ).all()
+
+                for plan in plans:
+                    condition_name = plan.name
+
+                    condition_attributes = (
+                        ConditionService._fetch_condition_attributes_external(
+                            row.condition_id, include_condition_attributes, plan.id)
+                    )
+
+                    result.append({
+                        "condition_name": condition_name,
+                        "actual_condition_name": row.condition_name,
+                        "condition_number": row.condition_number,
+                        "condition_text": condition_text,
+                        "is_standard_condition": row.is_standard_condition,
+                        "condition_attributes": condition_attributes
+                    })
+            else:
+                condition_attributes = (
+                    ConditionService._fetch_condition_attributes_external(
+                        row.condition_id, include_condition_attributes)
+                )
+                condition_name = row.condition_name
+
+                if condition_attributes.get("requires_iem_terms_of_engagement")\
+                    and condition_attributes.get("deliverable_name"):
+                    deliverable_name = condition_attributes.get("deliverable_name")
+                    condition_name = deliverable_name[0]
+
+                result.append({
+                    "condition_name": condition_name,
+                    "actual_condition_name": row.condition_name,
+                    "condition_number": row.condition_number,
+                    "condition_text": condition_text,
+                    "is_standard_condition": row.is_standard_condition,
+                    "condition_attributes": condition_attributes,
+                })
 
         conditions_schema = ConsolidatedConditionSchema(many=True)
         return {"conditions": conditions_schema.dump(result)}
@@ -916,7 +948,8 @@ class ConditionService:
         return " ".join(parts)
 
     @staticmethod
-    def _fetch_condition_attributes_external(condition_id, include_condition_attributes):
+    def _fetch_condition_attributes_external(
+        condition_id, include_condition_attributes, management_plan_id=None):
         """Fetch condition attributes based on the user type and flags."""
         if not include_condition_attributes:
             return []
@@ -929,7 +962,7 @@ class ConditionService:
             AttributeKeys.MANAGEMENT_PLAN_NAME,
         }
 
-        attributes_data = db.session.query(
+        query = db.session.query(
             AttributeKey.id,
             AttributeKey.external_key,
             ConditionAttribute.attribute_value,
@@ -938,7 +971,14 @@ class ConditionService:
         ).filter(
             ConditionAttribute.condition_id == condition_id,
             ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
-        ).order_by(AttributeKey.sort_order).all()
+        )
+
+        if management_plan_id:
+            query = query.filter(ConditionAttribute.management_plan_id == management_plan_id)
+        else:
+            query = query.filter(ConditionAttribute.management_plan_id.is_(None))
+
+        attributes_data = query.order_by(AttributeKey.sort_order).all()
 
         result = {}
         requires_iem = False
