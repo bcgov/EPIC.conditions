@@ -296,24 +296,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
           sx={{ flexDirection: "row-reverse", justifyContent: "start", gap: 1 }}
         >
             <Box display="flex" flexDirection="row" alignItems="center" width="100%">
-              <Tooltip title="Delete Management Plan">
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent accordion toggle
-                    setIsDeleteModalOpen(true);
-                  }}
-                  size="small"
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    right: -5,
-                    zIndex: 2,
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-              <Box display="flex" flexDirection="column" width="80%" marginTop="15px">
+              <Box display="flex" flexDirection="column" width="76%">
                   <Typography>Management Plan</Typography>
 
                   {editMode && expanded ? (
@@ -390,10 +373,29 @@ const ManagementPlanAccordion: React.FC<Props> = ({
               </Box>
             </Box>
 
-            <Box display="flex" flexDirection="column" width="20%" marginTop="25px" alignItems="flex-end">
+            <Box display="flex" flexDirection="column" width="20%" marginTop="12px" alignItems="flex-end">
               <DocumentStatusChip
                 status={!attributeHasData ? "nodata" : attributes.is_approved ? "true" : "false"}
               />
+            </Box>
+            <Box
+              display="flex"
+              flexDirection="column"
+              width="4%"
+              marginTop="5px"
+              alignItems="flex-end"
+            >
+              <Tooltip title="Delete Management Plan">
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent accordion toggle
+                    setIsDeleteModalOpen(true);
+                  }}
+                  size="small"
+                >
+                  <DeleteIcon sx={{ fontSize: '34px' }} />
+                </IconButton>
+              </Tooltip>
             </Box>
         </AccordionSummary>
 
@@ -447,7 +449,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
 
           <ErrorMessage
             visible={conditionAttributeError}
-            message="Please complete all the required attribute fields before approving the Condition Attributes."
+            message="Please complete all the required attribute fields before approving the Management Plan Attributes."
           />
 
           <Stack sx={{ mt: 5 }} direction={"row"}>
