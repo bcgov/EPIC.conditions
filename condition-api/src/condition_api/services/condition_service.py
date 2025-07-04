@@ -917,7 +917,7 @@ class ConditionService:
                 condition_name = row.condition_name
 
                 if condition_attributes.get("requires_iem_terms_of_engagement")\
-                    and condition_attributes.get("deliverable_name"):
+                and condition_attributes.get("deliverable_name"):
                     deliverable_name = condition_attributes.get("deliverable_name")
                     condition_name = deliverable_name[0]
 
@@ -949,7 +949,10 @@ class ConditionService:
 
     @staticmethod
     def _fetch_condition_attributes_external(
-        condition_id, include_condition_attributes, management_plan_id=None):
+        condition_id,
+        include_condition_attributes,
+        management_plan_id=None
+    ):
         """Fetch condition attributes based on the user type and flags."""
         if not include_condition_attributes:
             return []
