@@ -160,7 +160,9 @@ class ConditionAttributeService:
         ).first()
 
         existing_attribute = db.session.query(ConditionAttribute).filter_by(
-            condition_id=condition_id, attribute_key_id=consultation_key.id
+            condition_id=condition_id,
+            attribute_key_id=consultation_key.id,
+            management_plan_id=management_plan_id
         ).first()
 
         if not existing_attribute:
