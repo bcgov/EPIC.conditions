@@ -58,7 +58,7 @@ class ConsolidatedConditionSchema(Schema):
     """Condition schema."""
 
     condition_name = fields.Str(data_key="condition_name", allow_none=True)
-    actual_condition_name = fields.Str(data_key="actual_condition_name", allow_none=True)
+    plan_name = fields.Str(data_key="plan_name", allow_none=True)
     condition_number = fields.Int(data_key="condition_number", allow_none=True)
     condition_text = fields.Str(data_key="condition_text", allow_none=True)
     topic_tags = fields.List(fields.Str(), data_key="topic_tags", allow_none=True)
