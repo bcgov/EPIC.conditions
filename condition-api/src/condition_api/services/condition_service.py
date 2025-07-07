@@ -898,7 +898,7 @@ class ConditionService:
 
                     condition_attributes = (
                         ConditionService._fetch_condition_attributes_external(
-                            row.condition_id, include_condition_attributes, plan.id)
+                            row.condition_id, include_condition_attributes, plan.id, plan_name)
                     )
 
                     result.append({
@@ -953,7 +953,8 @@ class ConditionService:
     def _fetch_condition_attributes_external(
         condition_id,
         include_condition_attributes,
-        management_plan_id=None
+        management_plan_id=None,
+        plan_name=None
     ):
         """Fetch condition attributes based on the user type and flags."""
         if not include_condition_attributes:
@@ -1018,6 +1019,7 @@ class ConditionService:
 
         if management_plan_id:
             result["requires_management_plan"] = "true"
+            result["deliverable_name"] = plan_name
 
         return result
 
