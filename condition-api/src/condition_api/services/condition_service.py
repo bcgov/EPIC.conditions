@@ -894,7 +894,7 @@ class ConditionService:
                 ).all()
 
                 for plan in plans:
-                    condition_name = plan.name
+                    plan_name = plan.name
 
                     condition_attributes = (
                         ConditionService._fetch_condition_attributes_external(
@@ -902,8 +902,8 @@ class ConditionService:
                     )
 
                     result.append({
-                        "condition_name": condition_name,
-                        "actual_condition_name": row.condition_name,
+                        "condition_name": row.condition_name,
+                        "plan_name": plan_name,
                         "condition_number": row.condition_number,
                         "condition_text": condition_text,
                         "is_standard_condition": row.is_standard_condition,
@@ -914,18 +914,18 @@ class ConditionService:
                     ConditionService._fetch_condition_attributes_external(
                         row.condition_id, include_condition_attributes)
                 )
-                condition_name = row.condition_name
+                plan_name = row.condition_name
 
                 if (
                     condition_attributes.get("requires_iem_terms_of_engagement")
                     and condition_attributes.get("deliverable_name")
                 ):
                     deliverable_name = condition_attributes.get("deliverable_name")
-                    condition_name = deliverable_name[0]
+                    plan_name = deliverable_name[0]
 
                 result.append({
-                    "condition_name": condition_name,
-                    "actual_condition_name": row.condition_name,
+                    "condition_name": row.condition_name,
+                    "plan_name": plan_name,
                     "condition_number": row.condition_number,
                     "condition_text": condition_text,
                     "is_standard_condition": row.is_standard_condition,
@@ -1015,6 +1015,9 @@ class ConditionService:
             result.update(
                 ConditionService._process_deliverables(deliverables, requires_iem, formatted_keys)
             )
+
+        if management_plan_id:
+            result["requires_management_plan"] = "true"
 
         return result
 
