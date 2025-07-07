@@ -346,7 +346,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                   ) : (
                   <Box display="flex" alignItems="center" gap={1}>
                       <Typography fontWeight="bold">{planName}</Typography>
-                      {expanded && (
+                      {expanded && !attributes.is_approved && (
                       <Button
                           variant="contained"
                           size="small"
