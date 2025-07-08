@@ -7,8 +7,10 @@ Create Date: 2025-06-19 16:05:18.488843
 """
 from alembic import op
 from datetime import datetime
+from io import StringIO
 import sqlalchemy as sa
 from sqlalchemy.sql import text
+import csv
 import re
 
 
@@ -70,26 +72,43 @@ def upgrade():
     normalized_plan_entries = []  # list of (condition_id, plan_name)
     for condition_id, value in rows:
         # Detect if it’s a list-style string like "{abc, def}"
-        if re.match(r'^\{.*\}$', value.strip()):
-            # Remove braces and split
+        if value.strip().startswith('{') and value.strip().endswith('}'):
             inner = value.strip()[1:-1]
-            plan_names = [name.strip() for name in inner.split(',') if name.strip()]
-            normalized_plan_entries.extend((condition_id, name) for name in plan_names)
+            reader = csv.reader(StringIO(inner), skipinitialspace=True, escapechar='\\')
+            for name in next(reader):
+                name = name.strip()
+                if name:
+                    normalized_plan_entries.append((condition_id, name))
         else:
             normalized_plan_entries.append((condition_id, value.strip()))
 
-    # Fetch is_condition_attributes_approved for the condition
-    approved_result = conn.execute(text("""
-        SELECT is_condition_attributes_approved
-        FROM condition.conditions
-        WHERE id = :condition_id
-    """), {"condition_id": condition_id})
+    # Fetch original attribute values for all relevant conditions (attribute_key_id 2–10)
+    original_attrs_by_condition = {}
+    attribute_rows = conn.execute(text("""
+        SELECT condition_id, attribute_key_id, attribute_value
+        FROM condition.condition_attributes
+        WHERE attribute_key_id IN (2,3,4,5,6,7,8,9,10)
+          AND condition_id = ANY(:condition_ids)
+    """), {"condition_ids": condition_ids_with_plans}).fetchall()
 
-    is_approved = approved_result.scalar()  # returns None or boolean
+    for condition_id, attribute_key_id, attribute_value in attribute_rows:
+        original_attrs_by_condition.setdefault(condition_id, []).append((attribute_key_id,
+                                                                         attribute_value))
 
     # Insert into management_plans
     inserted_plan_map = {}
+    first_plan_done = set()
+
     for condition_id, plan_name in normalized_plan_entries:
+        # Fetch is_condition_attributes_approved for the condition
+        approved_result = conn.execute(text("""
+            SELECT is_condition_attributes_approved
+            FROM condition.conditions
+            WHERE id = :condition_id
+        """), {"condition_id": condition_id})
+
+        is_approved = approved_result.scalar()  # returns None or boolean
+
         insert_sql = text("""
             INSERT INTO condition.management_plans (condition_id, name, is_approved, created_date)
             VALUES (:condition_id, :name, :is_approved, :created_date)
@@ -104,19 +123,39 @@ def upgrade():
         inserted_id = result.fetchone()[0]
         inserted_plan_map[(condition_id, plan_name)] = inserted_id
 
-    # Update condition_attributes with management_plan_id
-    for (condition_id, plan_name), plan_id in inserted_plan_map.items():
-        # Update other related attributes
-        conn.execute(text("""
-            UPDATE condition.condition_attributes
-            SET management_plan_id = :plan_id
-            WHERE condition_id = :condition_id
-            AND attribute_key_id IN (2, 4, 5, 6, 7, 8, 9, 10)
-            AND management_plan_id IS NULL
-        """), {
-            "plan_id": plan_id,
-            "condition_id": condition_id
-        })
+        # Attach attributes to plan
+        attrs = original_attrs_by_condition.get(condition_id, [])
+        # Update condition_attributes with management_plan_id
+        if condition_id not in first_plan_done:
+            # Update existing attributes
+            for attr_key_id, _ in attrs:
+                conn.execute(text("""
+                    UPDATE condition.condition_attributes
+                    SET management_plan_id = :plan_id
+                    WHERE condition_id = :condition_id
+                      AND attribute_key_id = :attribute_key_id
+                      AND management_plan_id IS NULL
+                """), {
+                    "plan_id": inserted_id,
+                    "condition_id": condition_id,
+                    "attribute_key_id": attr_key_id
+                })
+            first_plan_done.add(condition_id)
+        else:
+            # Insert duplicates for other plans
+            for attr_key_id, attr_value in attrs:
+                conn.execute(text("""
+                    INSERT INTO condition.condition_attributes (
+                        condition_id, attribute_key_id, attribute_value, management_plan_id, created_date
+                    )
+                    VALUES (:condition_id, :attribute_key_id, :attribute_value, :plan_id, :created_date)
+                """), {
+                    "condition_id": condition_id,
+                    "attribute_key_id": attr_key_id,
+                    "attribute_value": attr_value,
+                    "plan_id": inserted_id,
+                    "created_date": datetime.utcnow()
+                })
 
     conn.execute(sa.text("""
         UPDATE condition.conditions

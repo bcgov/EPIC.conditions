@@ -111,6 +111,20 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     : []
   );
 
+  const [planNames, setPlanNames] = useState<string[]>(
+    conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+      ? attributeValue
+          ?.replace(/[{}]/g, "") // Remove curly braces
+          .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+          ?.map((item) =>
+            item
+              .trim()
+              .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+              .replace(/\\"/g, '"') // Fix escaped quotes
+          ) || []
+      : []
+  );
+
   useEffect(() => {
     setEditableValue(conditionAttributeItem.value ?? "");
     if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
@@ -124,6 +138,20 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
               .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
               .replace(/\\"/g, '"') // Fix escaped quotes
           ) || []
+      );
+    }
+
+    if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+      setPlanNames(
+        conditionAttributeItem.value
+            ?.replace(/[{}]/g, "") // Remove curly braces
+            .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+            ?.map((item) =>
+              item
+                .trim()
+                .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+                .replace(/\\"/g, '"') // Fix escaped quotes
+            ) || []
       );
     }
   }, [conditionAttributeItem, conditionKey]);
@@ -144,6 +172,11 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         ? `{${chips
             .filter((chip) => chip !== null && chip !== "")
             .map((chip) => escapeValue(chip)) // Add escape to all values
+            .join(",")}}`
+        : conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+        ? `{${planNames
+            .filter((planName) => planName !== null && planName !== "")
+            .map((planName) => escapeValue(planName))
             .join(",")}}`
         : conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
         ? submissionMilestones.map((submissionMilestone) => `${submissionMilestone}`).join(",")
@@ -170,6 +203,21 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       setChips(parsedChips);
     }
 
+    if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+      const parsedPlanNames =
+        updatedValue
+          ?.replace(/[{}]/g, "") // Remove curly braces
+          .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+          ?.map((item) =>
+            item
+              .trim()
+              .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+              .replace(/\\"/g, '"') // Fix escaped quotes
+          ) || []
+
+      setPlanNames(parsedPlanNames);
+    }
+
     setOtherValue("");
   };
 
@@ -186,6 +234,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
         chipsData={{ chips, setChips }}
         submissionMilestonesData={{ submissionMilestones, setSubmissionMilestones }}
         milestonesData={{ milestones, setMilestones }}
+        planNamesData={{ planNames, setPlanNames }}
         otherData={{ otherValue, setOtherValue }}
         options={options}
       />
@@ -218,6 +267,16 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
       return (
         <ul style={{ margin: 0, paddingLeft: "16px" }}>
           {milestones?.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
+      return (
+        <ul style={{ margin: 0, paddingLeft: "16px" }}>
+          {planNames?.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>
