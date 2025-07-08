@@ -1019,7 +1019,7 @@ class ConditionService:
 
         if management_plan_id:
             result["requires_management_plan"] = "true"
-            result["deliverable_name"] = plan_name
+            result["deliverable_name"] = [plan_name]
 
         return result
 
