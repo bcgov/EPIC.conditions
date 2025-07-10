@@ -49,7 +49,7 @@ class ManagementPlanWithAttributesSchema(Schema):
 
     id = fields.Str(data_key="id", required=True)
     name = fields.Str(data_key="name", required=True)
-    is_approved = fields.Bool(data_key="is_approved", required=False)
+    is_approved = fields.Bool(data_key="is_approved", required=False, allow_none=True)
     attributes = fields.List(fields.Nested(ConditionAttributeDetailsSchema))
 
 

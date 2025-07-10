@@ -121,22 +121,6 @@ const ManagementPlanAccordion: React.FC<Props> = ({
 
   }, [attributes]);
 
-  useEffect(() => {
-    const allPlans = condition.condition_attributes?.management_plans || [];
-  
-    // Return early if there are no plans
-    if (allPlans.length === 0) return;
-  
-    const allApproved = allPlans.every((plan) => plan.is_approved);
-  
-    // Only update if condition doesn't match the derived value
-    if (condition.is_condition_attributes_approved !== allApproved) {
-      updateConditionDetails({
-        is_condition_attributes_approved: allApproved,
-      });
-    }
-  }, [attributes, condition.condition_attributes?.management_plans]);
-
   const { data: conditionAttributeDetails, mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
     condition.condition_id,
     {
@@ -250,6 +234,21 @@ const ManagementPlanAccordion: React.FC<Props> = ({
 
     const currentApproval = attributes.is_approved;
     handleUpdatePlan({ is_approved: !currentApproval });
+
+    const allPlans = condition.condition_attributes?.management_plans || [];
+  
+    // Return early if there are no plans
+    if (allPlans.length === 0) return;
+  
+    const allApproved = allPlans.every((plan) => plan.is_approved);
+  
+    // Only update if condition doesn't match the derived value
+    if (condition.is_condition_attributes_approved !== allApproved) {
+      updateConditionDetails({
+        is_condition_attributes_approved: allApproved,
+      });
+    }
+
   };
 
   const handleSave = async (updatedAttribute: IndependentAttributeModel) => {
