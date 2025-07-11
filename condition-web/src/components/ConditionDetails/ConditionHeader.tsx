@@ -120,9 +120,6 @@ const ConditionHeader = ({
                 ...conditionDetails,
                 subconditions: prevCondition.subconditions,
             }));
-            if (!conditionDetails.condition_name) {
-              setApprovalErrorMessage("Please enter a Condition Number.");
-            }
         }
     }, [conditionDetails, setCondition]);
 
