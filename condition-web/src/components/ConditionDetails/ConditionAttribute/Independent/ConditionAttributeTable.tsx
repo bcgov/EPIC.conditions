@@ -224,6 +224,19 @@ const ConditionAttributeTable = memo(({
             ) || []
         : []
     );
+    const [planNames, setPlanNames] = useState<string[]>(
+      selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
+        ? attributeValue
+            ?.replace(/[{}]/g, "") // Remove curly braces
+            .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+            ?.map((item) =>
+              item
+                .trim()
+                .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+                .replace(/\\"/g, '"') // Fix escaped quotes
+            ) || []
+        : []
+    );
     const [submissionMilestones, setSubmissionMilestones] = useState<string[]>([]);
     const [milestones, setMilestones] = useState<string[]>([]);
 
@@ -234,6 +247,7 @@ const ConditionAttributeTable = memo(({
       setOtherValue("");
       setMilestones([]);
       setSubmissionMilestones([]);
+      setPlanNames([]);
       setChips([]);
 
       queryClient.invalidateQueries({
@@ -278,6 +292,7 @@ const ConditionAttributeTable = memo(({
       setSelectedAttribute("");
       setAttributeValue("");
       setChips([]);
+      setPlanNames([]);
       setOtherValue("");
     };
 
@@ -294,6 +309,7 @@ const ConditionAttributeTable = memo(({
           chipsData={{ chips, setChips }}
           submissionMilestonesData={{ submissionMilestones, setSubmissionMilestones }}
           milestonesData={{ milestones, setMilestones }}
+          planNamesData={{ planNames, setPlanNames }}
           otherData={{ otherValue, setOtherValue }}
           options={options}
         />
