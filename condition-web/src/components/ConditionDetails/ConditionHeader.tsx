@@ -226,52 +226,83 @@ const ConditionHeader = ({
                   </Button>
                 </Box>
               ) : (
-                <Stack direction="row">
-                  <Box
-                    sx={{
-                      border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                      borderRadius: "4px 0 0 4px",
-                      borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      padding: '1px 10px 0 10px',
-                      backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
-                    }}
-                  >
-                    <Typography variant="h6">
-                      {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
-                    </Typography>
-                  </Box>
-                  {!condition.is_topic_tags_approved && (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={handleEditToggle}
+                <>
+                  <Stack direction="row">
+                    <Box
                       sx={{
-                        alignSelf: "stretch",
-                        borderRadius: "0 4px 4px 0",
                         border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                        backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
-                        height: '100%',
-                        padding: '2.25px 0',
+                        borderRadius: "4px 0 0 4px",
+                        borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
                         display: 'flex',
-                        alignItems: 'center',
-                        color: "black",
-                        '&:hover': {
-                          backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
-                        },
+                        flexDirection: 'column',
+                        height: '100%',
+                        padding: '1px 10px 0 10px',
+                        backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
                       }}
                     >
-                      <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
-                        <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
-                          Edit
+                      {conditionName &&
+                        <Typography variant="h6">
+                          {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
+                        </Typography>
+                      }
+                      {!conditionName &&
+                        <Box display="flex" flexDirection="row" alignItems="center">
+                          <Typography variant="h6" sx={{ paddingRight: '15px' }}>
+                            {conditionNumber ? `${conditionNumber}.` : conditionNumber}
+                          </Typography>
+                          <Box
+                            sx={{
+                              borderLeft: `1px solid`,
+                              minWidth: '200px',
+                              minHeight: '30px',
+                            }}
+                          />
                         </Box>
-                      </Typography>
-                    </Button>
+                      }
+                    </Box>
+                    {!condition.is_topic_tags_approved && (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleEditToggle}
+                        sx={{
+                          alignSelf: "stretch",
+                          borderRadius: "0 4px 4px 0",
+                          border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                          backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                          height: '100%',
+                          padding: '2.25px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: "black",
+                          '&:hover': {
+                            backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                          },
+                        }}
+                      >
+                        <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                          <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                            Edit
+                          </Box>
+                        </Typography>
+                      </Button>
+                    )}
+                  </Stack>
+                  {!conditionName && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        marginBottom: "15px",
+                        marginLeft: "60px",
+                        color: "#CE3E39",
+                      }}
+                    >
+                      Missing condition name
+                    </Box>
                   )}
-                </Stack>
+                </>
               )}
               {conditionConflictError && (
                 <Box
