@@ -8,11 +8,12 @@ data:
   config.js: |-
     // runtime-config.js vars
       window["_env_"] =  {
-        "VITE_ENV": "dev",
+        "VITE_ENV": "{{ .Values.app.env }}",
         "VITE_API_URL": "{{ .Values.app.api }}",
-        "VITE_VERSION": "1.0.0",
-        "VITE_APP_TITLE": "Condition Repository",
+        "VITE_VERSION": "{{ .Values.app.version }}",
+        "VITE_APP_TITLE": "{{ .Values.app.title }}",
         "VITE_APP_URL": "{{ .Values.app.url }}",
-        "VITE_OIDC_AUTHORITY": "{{ .Values.keycloak.url }}",
-        "VITE_CLIENT_ID": "{{ .Values.keycloak.client }}",
+        "VITE_OIDC_AUTHORITY": "{{ .Values.app.oidcAuthority }}",
+        "VITE_CLIENT_ID": "{{ .Values.app.clientId }}",
+        "SUPPORT_EMAIL": "{{ .Values.app.supportEmail }}",
       }
