@@ -240,27 +240,78 @@ const ConditionHeader = ({
                         backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
                       }}
                     >
-                      {conditionName &&
+                      {condition.condition_name ? (
                         <Typography variant="h6">
                           {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
                         </Typography>
-                      }
-                      {!conditionName &&
-                        <Box display="flex" flexDirection="row" alignItems="center">
+                      ) : (
+                        <Box display="flex" alignItems="center" width="100%" height="37px">
                           <Typography variant="h6" sx={{ paddingRight: '15px' }}>
                             {conditionNumber ? `${conditionNumber}.` : conditionNumber}
                           </Typography>
-                          <Box
+                          <TextField
+                            variant="outlined"
+                            fullWidth
+                            value={conditionName}
+                            onChange={(e) => setConditionName(e.target.value)}
+                            placeholder="Enter condition name"
+                            size="small"
                             sx={{
-                              borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                              minWidth: '200px',
-                              minHeight: '30px',
+                              "& .MuiOutlinedInput-root": {
+                                height: "45px",
+                                marginTop: "22px",
+                                borderRadius: 0,
+                                borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                                borderTop: "none",
+                                borderRight: "none",
+                                borderBottom: "none",
+                                "&:hover": {
+                                  borderLeft: `1px solid`,
+                                },
+                                "&.Mui-focused": {
+                                  borderLeft: `1px solid`,
+                                },
+                              },
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                border: "none", // remove default MUI border
+                              },
                             }}
                           />
                         </Box>
-                      }
+                      )}
                     </Box>
-                    {!condition.is_topic_tags_approved && (
+                    {!condition.is_topic_tags_approved && !condition.condition_name && (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => {
+                          setCheckConditionExistsForProject(true);
+                          handleSave();
+                        }}
+                        sx={{
+                          alignSelf: "stretch",
+                          borderRadius: "0 4px 4px 0",
+                          border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                          backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                          height: '100%',
+                          padding: '5px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: "black",
+                          '&:hover': {
+                            backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                          },
+                        }}
+                      >
+                        <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <SaveAltIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                          <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                            Save
+                          </Box>
+                        </Typography>
+                      </Button>
+                    )}
+                    {!condition.is_topic_tags_approved && condition.condition_name && (
                       <Button
                         variant="contained"
                         size="small"
