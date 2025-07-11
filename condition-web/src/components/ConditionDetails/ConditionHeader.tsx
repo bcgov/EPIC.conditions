@@ -252,7 +252,7 @@ const ConditionHeader = ({
                           </Typography>
                           <Box
                             sx={{
-                              borderLeft: `1px solid`,
+                              borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
                               minWidth: '200px',
                               minHeight: '30px',
                             }}
@@ -289,19 +289,6 @@ const ConditionHeader = ({
                       </Button>
                     )}
                   </Stack>
-                  {!conditionName && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        marginBottom: "15px",
-                        marginLeft: "60px",
-                        color: "#CE3E39",
-                      }}
-                    >
-                      Missing condition name
-                    </Box>
-                  )}
                 </>
               )}
               {conditionConflictError && (
@@ -317,7 +304,7 @@ const ConditionHeader = ({
                   This condition number already exists. Please enter a new one.
                 </Box>
               )}
-              {approvalError && (
+              {(!conditionName || approvalError) && (
                 <Box
                   sx={{
                     display: "flex",
@@ -325,10 +312,10 @@ const ConditionHeader = ({
                     marginBottom: "15px",
                     color: "#CE3E39",
                     marginTop: 1,
-                    fontSize: '14px',
+                    fontSize: "14px",
                   }}
                 >
-                  {approvalErrorMessage} 
+                  {approvalError ? approvalErrorMessage : "Please enter a Condition Name."}
                 </Box>
               )}
             </Stack>

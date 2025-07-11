@@ -10,6 +10,7 @@ declare global {
       VITE_APP_URL: string;
       VITE_OIDC_AUTHORITY: string;
       VITE_CLIENT_ID: string;
+      VITE_SUPPORT_EMAIL: string;
     };
   }
 }
@@ -26,6 +27,8 @@ const OIDC_AUTHORITY =
   window._env_?.VITE_OIDC_AUTHORITY || import.meta.env.VITE_OIDC_AUTHORITY;
 const CLIENT_ID =
   window._env_?.VITE_CLIENT_ID || import.meta.env.VITE_CLIENT_ID;
+const SUPPORT_EMAIL =
+  window._env_?.VITE_SUPPORT_EMAIL || import.meta.env.VITE_SUPPORT_EMAIL;
 
 export const AppConfig = {
   apiUrl: `${API_URL}`,
@@ -33,6 +36,8 @@ export const AppConfig = {
   version: APP_VERSION,
   appTitle: APP_TITLE,
   appUrl: APP_URL,
+  clientId: CLIENT_ID,
+  supportEmail: SUPPORT_EMAIL,
 };
 
 export const OidcConfig = {
