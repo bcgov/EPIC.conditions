@@ -48,8 +48,6 @@ export const ConditionDetails = ({
         }}
       >
         <ConditionHeader
-          projectId={projectId}
-          documentId={documentId}
           conditionId={conditionId}
           projectName={initialCondition?.project_name || ""}
           documentLabel={initialCondition?.document_label || ""} 

@@ -13,8 +13,6 @@ import ChipInput from "../Shared/Chips/ChipInput";
 import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
 
 type ConditionHeaderProps = {
-    projectId: string;
-    documentId: string;
     conditionId: number;
     projectName: string;
     documentLabel: string;
@@ -23,8 +21,6 @@ type ConditionHeaderProps = {
 };
 
 const ConditionHeader = ({
-    projectId,
-    documentId,
     conditionId,
     projectName,
     documentLabel,
@@ -77,6 +73,18 @@ const ConditionHeader = ({
 
     const handleSave = async () => {
         setCheckConditionExists(true);
+
+        if (!conditionNumber) {
+          notify.error("Condition number is required.");
+          setCheckConditionExists(false);
+          return;
+        }
+
+        if (!conditionName?.trim()) {
+          notify.error("Condition name is required.");
+          setCheckConditionExists(false);
+          return;
+        }
 
         const data: PartialUpdateTopicTagsModel = {};
 
@@ -164,6 +172,7 @@ const ConditionHeader = ({
                   sx={{
                     display: "flex",
                     flexDirection: "row",
+                    marginBottom: "-22px"
                   }}
                 >
                   <TextField 
@@ -171,7 +180,7 @@ const ConditionHeader = ({
                     value={conditionNumber}
                     onChange={(e) => setConditionNumber(e.target.value)}
                     sx={{
-                      width: '100px',
+                      width: calculateWidth(String(conditionNumber)),
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "4px 0 0 4px",
                       },
