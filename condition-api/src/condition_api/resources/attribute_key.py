@@ -17,14 +17,15 @@ from http import HTTPStatus
 
 from flask import request
 
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
 from condition_api.schemas.attribute_key import AttributeKeySchema
 from condition_api.services.attribute_key_service import AttributeKeyService
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -48,7 +49,7 @@ class AttributeKeyResource(Resource):
     @API.response(code=HTTPStatus.CREATED, model=attributes_model, description="Get attribute keys")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(condition_id):
         """Fetch attribute keys."""
         management_plan_id = request.args.get("management_plan_id", type=int)

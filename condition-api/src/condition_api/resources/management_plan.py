@@ -15,7 +15,8 @@
 
 from http import HTTPStatus
 
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
@@ -23,7 +24,7 @@ from condition_api.models.management_plan import ManagementPlan
 from condition_api.schemas.management_plan import ManagementPlanSchema
 from condition_api.services.management_plan import ManagementPlanService
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -48,7 +49,7 @@ class ManagementPlanResource(Resource):
         code=HTTPStatus.OK, model=management_plan_model, description="Edit management plan"
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(plan_id):
         """Edit management plan data."""
@@ -66,7 +67,7 @@ class ManagementPlanResource(Resource):
         code=HTTPStatus.OK, model=management_plan_model, description="Delete management plans"
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def delete(plan_id):
         """Remove management plan data."""
