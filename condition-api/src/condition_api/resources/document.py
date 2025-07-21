@@ -16,8 +16,8 @@
 from http import HTTPStatus
 
 from flask import request
-
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
@@ -26,7 +26,7 @@ from condition_api.models.project import Project
 from condition_api.schemas.document import DocumentSchema, DocumentTypeSchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -50,7 +50,7 @@ class DocumentsResource(Resource):
     @API.response(code=HTTPStatus.OK, model=document_model, description="Create documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def post(project_id):
         """Create a new document."""
         try:
@@ -71,7 +71,7 @@ class DocumentsResource(Resource):
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get all documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(project_id):
         """Get all documents."""
         try:
@@ -94,7 +94,7 @@ class DocumentTypeResource(Resource):
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get all document type")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get():
         """Get all document type."""
         try:
@@ -117,7 +117,7 @@ class DocumentResource(Resource):
     @API.response(code=HTTPStatus.CREATED, model=document_model, description="Get document details")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(document_id):
         """Fetch document details by document ID."""
         try:
@@ -136,7 +136,7 @@ class DocumentResource(Resource):
         code=HTTPStatus.OK, model=document_model, description="Edit document"
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(document_id):
         """Edit document label."""
