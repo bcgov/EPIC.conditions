@@ -680,7 +680,7 @@ class ConditionService:
         nested_subconditions = []
 
         for row in sub_condition_data:
-            subcond = {
+            subcondition_map[row.subcondition_id] = {
                 "subcondition_id": row.subcondition_id,
                 "subcondition_identifier": row.subcondition_identifier,
                 "subcondition_text": row.subcondition_text,
@@ -688,14 +688,16 @@ class ConditionService:
                 "subconditions": []
             }
 
-            subcondition_map[row.subcondition_id] = subcond
-
+        for row in sub_condition_data:
+            current = subcondition_map[row.subcondition_id]
             if row.parent_subcondition_id:
                 parent = subcondition_map.get(row.parent_subcondition_id)
                 if parent:
-                    parent["subconditions"].append(subcond)
+                    parent["subconditions"].append(current)
+                else:
+                    nested_subconditions.append(current)
             else:
-                nested_subconditions.append(subcond)
+                nested_subconditions.append(current)
 
         return nested_subconditions
 
