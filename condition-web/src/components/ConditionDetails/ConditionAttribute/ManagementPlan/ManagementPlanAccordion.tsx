@@ -205,7 +205,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     }
   }, [conditionAttributeDetails]);  
 
-  const handleApprovePlan = (e: React.MouseEvent) => {
+  const handleApprovePlan = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
@@ -233,21 +233,25 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     setConditionAttributeError(false);
 
     const currentApproval = attributes.is_approved;
-    handleUpdatePlan({ is_approved: !currentApproval });
+    await handleUpdatePlan(
+      { is_approved: !currentApproval },
+      () => {
+        const updatedPlans = condition.condition_attributes?.management_plans || [];
 
-    const allPlans = condition.condition_attributes?.management_plans || [];
-  
-    // Return early if there are no plans
-    if (allPlans.length === 0) return;
-  
-    const allApproved = allPlans.every((plan) => plan.is_approved);
-  
-    // Only update if condition doesn't match the derived value
-    if (condition.is_condition_attributes_approved !== allApproved) {
-      updateConditionDetails({
-        is_condition_attributes_approved: allApproved,
-      });
-    }
+        if (updatedPlans.length === 0) return;
+
+        const allApproved = updatedPlans.every((plan) => plan.id === attributes.id
+          ? !currentApproval // this one just got toggled
+          : plan.is_approved
+        );
+
+        if (condition.is_condition_attributes_approved !== allApproved) {
+          updateConditionDetails({
+            is_condition_attributes_approved: allApproved,
+          });
+        }
+      }
+    );
 
   };
 
