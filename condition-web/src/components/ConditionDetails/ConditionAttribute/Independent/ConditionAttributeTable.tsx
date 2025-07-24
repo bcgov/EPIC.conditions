@@ -179,9 +179,9 @@ const ConditionAttributeTable = memo(({
         condition_attributes: updatedConditionAttributes,
         ...conditionDetails,
       }));
-    
+
       await updateAttributes({
-        requires_management_plan: condition.requires_management_plan ?? false,
+        requires_management_plan: false,
         condition_attribute: updatedConditionAttributes,
       });
     };
