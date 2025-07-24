@@ -19,7 +19,7 @@ export const ContentBox = ({
     <Paper
       elevation={2}
       {...rest}
-      sx={{ boxShadow: BCDesignTokens.surfaceShadowMedium, maxWidth: "1648px" }}
+      sx={{ boxShadow: BCDesignTokens.surfaceShadowMedium }}
     >
       {showHeader && ( // Conditionally render header
         <Box
