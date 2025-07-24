@@ -14,6 +14,8 @@
 
 
 """Service for condition attribute management."""
+from marshmallow import ValidationError
+
 from condition_api.models.db import db
 from condition_api.models.condition import Condition
 from condition_api.models.management_plan import ManagementPlan
@@ -31,7 +33,10 @@ class ManagementPlanService:
 
         # Update name if present
         if "name" in payload:
-            plan.name = payload["name"]
+            name = payload["name"]
+            if not isinstance(name, str) or not name.strip():
+                raise ValidationError("Management plan name cannot be blank.")
+            plan.name = name.strip()
 
         # Update is_approved if present
         if "is_approved" in payload:

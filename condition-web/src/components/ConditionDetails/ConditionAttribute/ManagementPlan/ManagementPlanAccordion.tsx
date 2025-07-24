@@ -67,6 +67,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
   const [attributeHasData, setAttributeHasData] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const isManagementRequired = true;
+  const [planNameError, setPlanNameError] = useState(false);
 
   const {
     mutateAsync: updatePlanName,
@@ -170,8 +171,15 @@ const ManagementPlanAccordion: React.FC<Props> = ({
   const handleSavePlanName = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    const trimmedName = planName.trim();
+    if (!trimmedName) {
+      setPlanNameError(true);
+      return;
+    }
+  
+    setPlanNameError(false);
     setConditionAttributeError(false);
-    handleUpdatePlan({ name: planName }, () => setEditMode(false));
+    handleUpdatePlan({ name: trimmedName }, () => setEditMode(false));
   };
 
   useEffect(() => {
@@ -303,7 +311,8 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                   <Typography>Management Plan</Typography>
 
                   {editMode && expanded ? (
-                      <Box display="flex" flexDirection="row" alignItems="stretch" gap={1}>
+                      <Box>
+                        <Box display="flex" flexDirection="row" alignItems="stretch" gap={1}>
                           <TextField
                               variant="outlined"
                               fullWidth
@@ -344,6 +353,20 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                                   <SaveAltIcon sx={{ color: "#255A90", mr: 1 }} fontSize="small" />
                                   <Box sx={{ color: "#255A90", fontWeight: "bold" }}>Save</Box>
                               </Button>
+                          )}
+                          </Box>
+                          {planNameError && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                marginTop: "-15px",
+                                color: "#CE3E39",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Please enter a Management Plan Name.
+                            </Box>
                           )}
                       </Box>
                   ) : (
