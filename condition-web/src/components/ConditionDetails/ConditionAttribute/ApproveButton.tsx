@@ -5,6 +5,7 @@ interface ApproveButtonProps {
     isApproved: boolean;
     isAnyRowEditing: boolean;
     showEditingError: boolean;
+    isEditingPlanName?: boolean;
     onApprove: (e: React.MouseEvent) => void;
     label?: string;
 }
@@ -13,6 +14,7 @@ export const ApproveButton: React.FC<ApproveButtonProps> = ({
     isApproved,
     isAnyRowEditing,
     showEditingError,
+    isEditingPlanName,
     onApprove,
     label
   }) => {
@@ -37,7 +39,7 @@ export const ApproveButton: React.FC<ApproveButtonProps> = ({
             : "Approve Condition Attributes"}
         </Button>
   
-        {showEditingError && isAnyRowEditing && (
+        {showEditingError && (isAnyRowEditing || isEditingPlanName) && (
           <Box
             sx={{
               color: "#CE3E39",

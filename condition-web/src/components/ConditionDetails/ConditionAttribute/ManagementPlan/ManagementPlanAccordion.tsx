@@ -60,6 +60,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
   const [expanded, setExpanded] = useState(false);
 
   const [isAnyRowEditing, setIsAnyRowEditing] = useState(false);
+  const [isEditingPlanName, setIsEditingPlanName] = useState(false);
   const [showEditingError, setShowEditingError] = useState(false);
   const [conditionAttributeError, setConditionAttributeError] = useState(false);
   const [isConsultationRequired, setIsConsultationRequired] = useState(false);
@@ -180,6 +181,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     setPlanNameError(false);
     setConditionAttributeError(false);
     handleUpdatePlan({ name: trimmedName }, () => setEditMode(false));
+    setIsEditingPlanName(false);
   };
 
   useEffect(() => {
@@ -217,7 +219,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     e.stopPropagation();
     e.preventDefault();
 
-    if (isAnyRowEditing) {
+    if (isAnyRowEditing || isEditingPlanName) {
         setShowEditingError(true);
         return;
     }
@@ -380,6 +382,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                               e.stopPropagation(); // Prevent accordion toggle
                               e.preventDefault();
                               setEditMode(true);
+                              setIsEditingPlanName(true);
                           }}
                           sx={{
                           height: "28px",
@@ -486,6 +489,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                             isApproved={attributes.is_approved}
                             isAnyRowEditing={isAnyRowEditing}
                             showEditingError={showEditingError}
+                            isEditingPlanName={isEditingPlanName}
                             onApprove={handleApprovePlan}
                             label={
                               attributes.is_approved
