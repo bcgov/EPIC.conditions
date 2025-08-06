@@ -265,26 +265,37 @@ class ConditionService:
     def _populate_subconditions(conditions_map, cond_id):
         """Populates sub conditions"""
         subcondition_map = {}
+        top_level_subconditions = []
+
+        # First pass: create all subcondition objects
         for sub_row in ConditionService._fetch_subconditions(cond_id):
             # Handle subconditions
             subcond_id = sub_row.subcondition_id
             if subcond_id:
-                subcondition = {
+                subcondition_map[subcond_id] = {
                     "subcondition_identifier": sub_row.subcondition_identifier,
                     "subcondition_text": sub_row.subcondition_text,
                     "sort_order": sub_row.sort_order,
                     "subconditions": []
                 }
-                subcondition_map[subcond_id] = subcondition
 
-                # If the subcondition has a parent, append it to the parent's subcondition list
-                if sub_row.parent_subcondition_id:
-                    parent = subcondition_map.get(sub_row.parent_subcondition_id)
+        # Second pass: assign parent-child relationships
+        for sub_row in ConditionService._fetch_subconditions(cond_id):
+            subcond_id = sub_row.subcondition_id
+            parent_id = sub_row.parent_subcondition_id
+
+            if subcond_id:
+                subcondition = subcondition_map[subcond_id]
+                if parent_id:
+                    parent = subcondition_map.get(parent_id)
                     if parent:
                         parent["subconditions"].append(subcondition)
                 else:
-                    # Top-level subcondition for this condition
-                    conditions_map[cond_id]["subconditions"].append(subcondition)
+                    # No parent means top-level subcondition
+                    top_level_subconditions.append(subcondition)
+
+        # Attach top-level subconditions to the condition
+        conditions_map[cond_id]["subconditions"] = top_level_subconditions
 
     @staticmethod
     def _fetch_subconditions(cond_id):
@@ -296,7 +307,12 @@ class ConditionService:
             subconditions.subcondition_text,
             subconditions.sort_order,
             subconditions.parent_subcondition_id
-        ).filter(subconditions.condition_id == cond_id).all()
+        ).filter(
+            subconditions.condition_id == cond_id
+        ).order_by(
+            subconditions.parent_subcondition_id.nullsfirst(),  # ensure parents come first
+            subconditions.sort_order
+        ).all()
         return results
 
     @staticmethod
