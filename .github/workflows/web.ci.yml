@@ -3,12 +3,12 @@ name: CONDITION WEB CI
 on:
   pull_request:
     branches:
-      - develop
+      - main
     paths:
       - "condition-web/**"
   push:
     branches:
-      - develop
+      - main
   workflow_dispatch:
     inputs:
       environment:
