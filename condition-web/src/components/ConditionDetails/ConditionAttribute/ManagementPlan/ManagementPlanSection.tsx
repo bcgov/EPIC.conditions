@@ -80,7 +80,7 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
         }));
 
       } catch (error) {
-        console.error("Error adding plan:", error);
+        notify.error("Failed to add plan.");
       }
     };
 

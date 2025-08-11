@@ -45,9 +45,9 @@ def insert_subconditions(condition_id, parent_subcondition_id, subconditions):
 
 def get_document_category_id(document_type):
     """Determine the document_category_id based on document_type."""
-    if document_type == "Order":
+    if document_type == "Exemption Order":
         return 2
-    elif document_type == "Other":
+    elif document_type == "Other Order":
         return 4
     elif document_type == "Amendment":
         return 3

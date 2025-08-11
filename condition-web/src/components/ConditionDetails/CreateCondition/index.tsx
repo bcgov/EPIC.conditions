@@ -55,7 +55,7 @@ export const CreateConditionPage = ({
   const [modalTitle, setModalTitle] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(true);
+  const [allowDuplicateCondition, setAllowDuplicateCondition] = useState(false);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = event.target.value;
@@ -77,7 +77,7 @@ export const CreateConditionPage = ({
   }, [tags, setTags]);
 
   const { mutateAsync: updateCondition } = useUpdateCondition(
-    checkConditionExistsForProject,
+    allowDuplicateCondition,
     condition?.condition_id,
   );
 
@@ -98,6 +98,7 @@ export const CreateConditionPage = ({
   );
 
   const handleSaveAndClose = async () => {
+    setAllowDuplicateCondition(true);
     setLoading(true);
     let errorFlag = false;
 
@@ -118,6 +119,7 @@ export const CreateConditionPage = ({
 
     if (errorFlag) {
       notify.error("Failed to save condition.");
+      setAllowDuplicateCondition(false);
       return;
     }
 
@@ -158,6 +160,8 @@ export const CreateConditionPage = ({
     } finally {
       setLoading(false); // Stop loading once the request is complete
     }
+
+    setAllowDuplicateCondition(false)
   }
 
   const handleRemove = async () => {
@@ -363,7 +367,6 @@ export const CreateConditionPage = ({
             </Button>
             <LoadingButton
               onClick={() => {
-                setCheckConditionExistsForProject(false); // Set the constant to true
                 handleSaveAndClose(); // Call the save function
               }}
               color="primary"

@@ -30,7 +30,25 @@ export function validateRequiredAttributes({
   const getAttrValue = (key: string): string | undefined =>
     attributes.find((attr) => attr.key === key)?.value;
 
-  const isEmpty = (value: any) => value === null || value === '{}' || value === '';
+  type EmptyValue = unknown;
+
+  const isEmpty = (value: EmptyValue): boolean => {
+    if (value === null || value === undefined) return true;
+
+    if (typeof value === "string") {
+      return value.trim() === "";
+    }
+
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+
+    if (typeof value === "object") {
+      return Object.keys(value).length === 0;
+    }
+
+    return false;
+  };
 
   const managementInvalid = isManagementRequired
     ? managementRequiredKeys.some((key) => isEmpty(getAttrValue(key)))

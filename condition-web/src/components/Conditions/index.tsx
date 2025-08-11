@@ -65,7 +65,7 @@ export const Conditions = ({
     notify.success("Condition created successfully");
   };
 
-  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, {
+  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, false, {
     onSuccess: onCreateSuccess,
     onError: onCreateFailure,
   });
@@ -92,7 +92,7 @@ export const Conditions = ({
   }, [conditions]);
 
   const handleOpenCreateNewCondition = async (conditionDetails?: ConditionModel) => {
-    setLoading(true)
+    setLoading(true);
     // Directly navigate to the 'Create Condition' page if the condition is not being added to an amendment.
     if (documentTypeId !== DocumentTypes.Amendment) {
       try {
@@ -105,7 +105,7 @@ export const Conditions = ({
       } catch (error) {
         notify.error("Failed to create condition");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     } else {
       setOpenModal(true);
@@ -114,6 +114,7 @@ export const Conditions = ({
 
   const handleCloseCreateNewCondition = () => {
     setOpenModal(false);
+    setLoading(false);
   };
 
   const { mutateAsync: updateDocument } = useUpdateDocument(documentId);
@@ -130,7 +131,6 @@ export const Conditions = ({
         onDocumentLabelChange(tempLabel);
         notify.success("Document label updated successfully");
       } catch (error) {
-        console.log(error);
         notify.error("Failed to update document label");
       }
     }

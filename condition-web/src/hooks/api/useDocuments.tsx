@@ -135,7 +135,7 @@ export const useUpdateDocument = (
     onError: (error: { response?: { data?: { message?: string } } }) => {
       const errorMessage =
         error?.response?.data?.message || "An unknown error occurred.";
-      console.log(errorMessage);
+      notify.error(errorMessage);
       
       if (options?.onError) {
         options.onError();
