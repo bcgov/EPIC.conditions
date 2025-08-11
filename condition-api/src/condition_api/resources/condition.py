@@ -149,10 +149,18 @@ class ConditionDetailResource(Resource):
                 conditions_data = ConditionSchema().load(API.payload)
             else:
                 conditions_data = {}
-            created_condition = ConditionService.create_condition(project_id, document_id, conditions_data)
+            query_params = request.args
+            allow_duplicate_condition  = query_params.get(
+                'allow_duplicate_condition', 'true').lower() == 'true'
+            created_condition = ConditionService.create_condition(project_id,
+                                                                  document_id,
+                                                                  conditions_data,
+                                                                  allow_duplicate_condition)
             return created_condition, HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+        except ConditionNumberExistsError as err:
+            return {"message": str(err)}, HTTPStatus.CONFLICT
 
 
 @cors_preflight("GET, OPTIONS, PATCH, DELETE")
@@ -194,11 +202,22 @@ class ConditionResource(Resource):
         try:
             conditions_data = ConditionSchema().load(API.payload)
             query_params = request.args
-            check_condition_over_project = query_params.get(
-                'check_condition_over_project', 'true').lower() == 'true'
+
+            allow_duplicate_condition  = query_params.get(
+                'allow_duplicate_condition', 'true').lower() == 'true'
+            if allow_duplicate_condition:
+                check_condition_exists = True
+                check_condition_over_project = False
+            else:
+                check_condition_exists = True
+                check_condition_over_project = query_params.get(
+                    'check_condition_over_project', 'true'
+                ).lower() == 'true'
+
             updated_condition = ConditionService.update_condition(conditions_data,
-                                                                  condition_id, True,
-                                                                  check_condition_over_project)
+                                                                  condition_id, check_condition_exists,
+                                                                  check_condition_over_project,
+                                                                  allow_duplicate_condition)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

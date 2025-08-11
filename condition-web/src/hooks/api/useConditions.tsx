@@ -93,10 +93,11 @@ export const useUpdateConditionDetails = (
 const createCondition = (
   projectId: string,
   documentId: string,
+  allowDuplicateCondition: boolean,
   conditionDetails?: ConditionModel
 ) => {
   return submitRequest({
-    url: `/conditions/project/${projectId}/document/${documentId}`,
+    url: `/conditions/project/${projectId}/document/${documentId}?allow_duplicate_condition=${allowDuplicateCondition}`,
     method: "post",
     data: conditionDetails,
   });
@@ -105,6 +106,7 @@ const createCondition = (
 export const useCreateCondition = (
   projectId?: string,
   documentId?: string,
+  allowDuplicateCondition: boolean = false,
   options? : Options
 ) => {
   return useMutation({
@@ -115,7 +117,7 @@ export const useCreateCondition = (
       if (!documentId) {
         return Promise.reject(new Error("Document ID is required"));
       }
-      return createCondition(projectId, documentId, conditionDetails);
+      return createCondition(projectId, documentId, allowDuplicateCondition, conditionDetails);
     },
     ...options,
   });
@@ -140,19 +142,19 @@ export const useLoadConditionByID = (conditionId?: string) => {
 };
 
 const updateCondition = (
-  check_condition_over_project: boolean,
+  allow_duplicate_condition: boolean,
   conditionId: number,
   conditionDetails: ConditionModel
 ) => {
   return submitRequest({
-    url: `/conditions/${conditionId}?check_condition_over_project=${check_condition_over_project}`,
+    url: `/conditions/${conditionId}?allow_duplicate_condition=${allow_duplicate_condition}`,
     method: "patch",
     data: conditionDetails,
   });
 };
 
 export const useUpdateCondition = (
-  check_condition_over_project?: boolean,
+  allow_duplicate_condition: boolean,
   conditionId?: number,
   options? : Options
 ) => {
@@ -161,8 +163,7 @@ export const useUpdateCondition = (
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }
-      const isCheckConditionOverProject = check_condition_over_project ?? true;
-      return updateCondition(isCheckConditionOverProject, conditionId, conditionDetails);
+      return updateCondition(allow_duplicate_condition, conditionId, conditionDetails);
     },
     onSuccess: () => {
       notify.success("Condition updated successfully!"); // Success notification

@@ -321,6 +321,7 @@ class ConditionService:
         condition_id=None,
         check_condition_exists=None,
         check_condition_over_project=None,
+        allow_duplicate_condition=None,
     ):
         """
         Update the approved status, topic tags, and subconditions of a specific condition.
@@ -341,7 +342,7 @@ class ConditionService:
         if check_condition_over_project:
             ConditionService._check_condition_conflict_in_project(condition, condition_number)
         # Mark existing condition inactive if needed
-        if condition.amended_document_id and not check_condition_over_project:
+        if condition.amended_document_id and not check_condition_over_project and not allow_duplicate_condition:
             ConditionService._deactivate_existing_condition(condition, condition_number)
 
         # Update condition fields
@@ -497,7 +498,7 @@ class ConditionService:
                     condition_id, subcond_data["subconditions"], parent_id=subcondition_id)
 
     @staticmethod
-    def create_condition(project_id, document_id, conditions_data):
+    def create_condition(project_id, document_id, conditions_data, allow_duplicate_condition=None):
         """Create a new condition."""
         amendment = (
             db.session.query(Amendment.document_id)
@@ -524,8 +525,18 @@ class ConditionService:
                 .first()
             )
 
+            if allow_duplicate_condition:
+                ConditionService._check_duplicate_condition_number(
+                    condition=Condition(
+                        document_id=final_document_id,
+                        amended_document_id=amended_document_id
+                    ),
+                    condition_id=None,  # None since we are creating a new one
+                    condition_number=conditions_data.get("condition_number")
+                )
+
             # If it exists, update is_active to False
-            if existing_condition:
+            if existing_condition and not allow_duplicate_condition:
                 existing_condition.is_active = False
                 existing_condition.effective_to = datetime.utcnow()
                 db.session.add(existing_condition)
