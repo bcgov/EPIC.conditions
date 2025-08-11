@@ -7,6 +7,7 @@ import { theme } from "@/styles/theme";
 import SubconditionComponent from "../SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
 import { ConditionModel } from "@/models/Condition";
+import { SubconditionModel } from "@/models/Subcondition";
 import ConditionAttribute from '../ConditionAttribute';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 
@@ -61,7 +62,7 @@ const CreateConditionInfoTabs: React.FC<{
       } = useSubconditionHandler(condition.subconditions || []);
 
     const buildSortOrderMap = (
-        items: any[],
+        items: SubconditionModel[],
         parentId: string = "null",
         map: Record<string, number> = {}
     ): Record<string, number> => {
@@ -75,11 +76,11 @@ const CreateConditionInfoTabs: React.FC<{
     };
       
     const applySortOrder = (
-        nodes: any[],
+        nodes: SubconditionModel[],
         sortOrderMap: Record<string, number>,
         parentId: string | null = null
-    ): any[] => {
-        const apply = (items: any[], parentId: string): any[] => {
+    ): SubconditionModel[] => {
+        const apply = (items: SubconditionModel[], parentId: string): SubconditionModel[] => {
           return items
             .map((item) => ({
               ...item,
@@ -98,11 +99,11 @@ const CreateConditionInfoTabs: React.FC<{
     };
     
     const reorderNested = (
-        items: any[],
+        items: SubconditionModel[],
         parentId: string | null,
         sourceIndex: number,
         destinationIndex: number
-    ): any[] => {
+    ): SubconditionModel[] => {
         if (parentId === "subconditions-droppable") {
           const newItems = [...items];
           const [moved] = newItems.splice(sourceIndex, 1);

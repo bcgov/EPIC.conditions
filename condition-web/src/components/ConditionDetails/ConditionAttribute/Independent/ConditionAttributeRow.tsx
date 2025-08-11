@@ -69,7 +69,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
 
   useEffect(() => {
     onEditModeChange?.(isEditable);
-  }, [isEditable]);
+  }, [isEditable, onEditModeChange]);
 
   const [chips, setChips] = useState<string[]>(
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED

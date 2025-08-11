@@ -51,7 +51,7 @@ function ConditionPage() {
         true
       );
     }
-  }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE]);
+  }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE, projectId]);
 
   if (isConditionsError) return <Navigate to="/error" />;
 

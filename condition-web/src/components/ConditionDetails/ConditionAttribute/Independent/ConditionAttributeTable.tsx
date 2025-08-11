@@ -126,7 +126,7 @@ const ConditionAttributeTable = memo(({
       setIsIEMRequired(!!IEMRequired);
     }
 
-    }, [conditionAttributeDetails?.independent_attributes]);
+    }, [conditionAttributeDetails?.independent_attributes, setCondition, setIsConsultationRequired, setIsIEMRequired]);
 
     const approveConditionAttributes = () => {
       if (isAnyRowEditing) {

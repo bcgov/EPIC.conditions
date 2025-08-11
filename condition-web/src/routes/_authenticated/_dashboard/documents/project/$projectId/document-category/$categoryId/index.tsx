@@ -57,7 +57,7 @@ function DocumentPage() {
         false
       );
     }
-  }, [allDocuments, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY]);
+  }, [allDocuments, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, projectId]);
 
   if (isAmendmentsError) return <Navigate to="/error" />;
 

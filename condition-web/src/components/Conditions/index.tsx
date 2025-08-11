@@ -131,7 +131,6 @@ export const Conditions = ({
         onDocumentLabelChange(tempLabel);
         notify.success("Document label updated successfully");
       } catch (error) {
-        console.log(error);
         notify.error("Failed to update document label");
       }
     }

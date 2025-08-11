@@ -201,7 +201,7 @@ export const CreateDocumentModal = ({
                 navigate({ to: navigateTo });
             }
         } catch (error) {
-            console.error("Failed to create document", error);
+            notify.error("Failed to create document");
         } finally {
             setLoading(false); // Stop loading once the request completes
         }

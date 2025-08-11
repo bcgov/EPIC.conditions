@@ -165,7 +165,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
   
       afterSuccess?.();
     } catch (err) {
-      console.error("Error updating management plan:", err);
+      notify.error("Failed to update management plan.");
     }
   };  
 
@@ -213,7 +213,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
       );
       setIsIEMRequired(!!IEMRequired);
     }
-  }, [conditionAttributeDetails]);  
+  }, [conditionAttributeDetails, setCondition]);
 
   const handleApprovePlan = async (e: React.MouseEvent) => {
     e.stopPropagation();
