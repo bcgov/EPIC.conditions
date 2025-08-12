@@ -150,7 +150,7 @@ class ConditionDetailResource(Resource):
             else:
                 conditions_data = {}
             query_params = request.args
-            allow_duplicate_condition  = query_params.get(
+            allow_duplicate_condition = query_params.get(
                 'allow_duplicate_condition', 'true').lower() == 'true'
             created_condition = ConditionService.create_condition(project_id,
                                                                   document_id,
@@ -203,7 +203,7 @@ class ConditionResource(Resource):
             conditions_data = ConditionSchema().load(API.payload)
             query_params = request.args
 
-            allow_duplicate_condition  = query_params.get(
+            allow_duplicate_condition = query_params.get(
                 'allow_duplicate_condition', 'true').lower() == 'true'
             if allow_duplicate_condition:
                 check_condition_exists = True
