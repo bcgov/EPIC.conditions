@@ -1,49 +1,58 @@
-## Installation
+# EPIC.conditions
+A project for the Environmental Assessment Office to manage conditions required for a certificate
 
-1. Clone the repository:
-   
-   `git clone https://github.com/bcgov/EPIC.conditions`
+Condition Repository is an online application designed to extract, store, and present environmental assessment conditions from PDF documents.
 
-   `cd EPIC.conditions`
-   
+### Key Benefits
+- **Conditions Repository**: A single repository providing access to all conditions across multiple projects
+- **Consolidated Conditions View**: Enables viewing of all conditions for a project, including amendments to the original condition documents, in a unified format
 
-2. Set up a virtual environment:
-   
-    `python -m venv venv`
+## Condition Repository Setup Instructions
 
-3. Activate the virtual environment:
-   - On Windows:
-   
-        `venv\Scripts\activate`
-   - On Linux/MacOS:
-   
-        `source venv/bin/activate`
+This document outlines the setup instructions for both the backend and front-end components of the project. Ensure you follow the steps in sequence for a smooth setup.
 
-4. Install the required packages:
-   
-    `pip install -r requirements.txt`
+## Backend Setup
+See [API Application Readme](condition-api/README.md)
 
-5. Create a file named `.env` in the root directory of the project and add your OpenAI API key:
-   ```text
-   OPENAI_API_KEY=openai_api_key_here
-   ```
+## Front End Setup
+See [Web Application Readme](condition-web/README.md)
+
 
 ## Usage
 
 ### Individual PDFs:
 
-Follow the [condition-parser README](./condition-parser) to extract info and get a JSON.
+### Extracting conditions and related details from PDF documents
+See [Data Extractor Readme](condition-parser/README.md)
 
-Follow the [condition-lib README](./condition-lib) to add the extracted JSON to the PostgreSQL database.
-
-*Note: gradio_ui.py in this directory is depreciated.* 
+### Importing extracted conditions into the database
+See [Data Loader Readme](condition-loader/README.md)
 
 ### Multiple PDFs (Batch Processing):
-
-See [batch processing README](./batch_api_calling).
+See [Batch Processing README](./batch_api_calling).
 
 For verifying the output of a batch, see [manual verification README](./batch_api_calling/manual_verification/).
 
+*Note: gradio_ui.py in this directory is depreciated.* 
+
+## Directory Structure
+
+    .github/                   - PR, CI action workflows and Issue templates
+    /docs                      - Miscellaneous documentations
+    condition-web/             - Condition Web application root
+    └── src/                   - React.js application
+    condition-api/             - Condition API Application Root
+    ├── src/                   - Python flask application
+    │   └── met_api/           - Models, Resources and Services
+    └── migrations             - Database migration scripts
+    └── tests/                 - API application tests
+        └── unit/              - Python unit tests
+    condition-loader/          - Module for loading extracted conditions into the database
+    ├── condition_jsons/       - Collection of extracted condition JSON files
+    └── loadConditions         - Script for importing the extracted conditions into the database
+    condition-parser/          - Module for extracting conditions and related details from PDF documents.
+    openshift/                 - OpenShift templates and documentation
+    LICENSE                    - License
 
 ## Demo
 [![Condition extractor demo](https://github.com/user-attachments/assets/a25b0093-b04b-4ddb-89cd-153ddaa582cd)](https://bcgov.sharepoint.com/:b:/t/04612/EYzyqtlP82BJt8ocy2AISNwBwiS-2BgJ23NqRZts-Nn6jw?e=CM1Nt3)
@@ -57,3 +66,19 @@ For verifying the output of a batch, see [manual verification README](./batch_ap
 - [OpenAI function calling documentation](https://platform.openai.com/docs/guides/function-calling)
 - [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat)[.](https://github.com/user-attachments/assets/cac337de-097d-4bfb-b946-56b98a2f1e1d)
 
+
+## License
+
+    Copyright © 2024 Province of British Columbia
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
