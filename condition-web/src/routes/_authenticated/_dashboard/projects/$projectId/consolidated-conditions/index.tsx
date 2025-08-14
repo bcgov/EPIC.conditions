@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useConsolidatedConditionsByCategory } from "@/hooks/api/useConsolidatedConditions";
+import { useGetConsolidatedConditions } from "@/hooks/api/useConsolidatedConditions";
 import { ConsolidatedConditions, ConsolidatedConditionsSkeleton } from "@/components/ConsolidatedConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -29,7 +29,7 @@ function ConditionPage() {
     data: consolidatedConditions,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useConsolidatedConditionsByCategory(projectId, '', true);
+  } = useGetConsolidatedConditions(projectId, '', true);
 
   useEffect(() => {
     if (isConditionsError) {

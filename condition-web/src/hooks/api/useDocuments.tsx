@@ -9,8 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { Options } from "./types";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
+import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 
-const loadDocuments = (projectId?: string, categoryId?: number) => {
+const fetchDocuments = (projectId?: string, categoryId?: number) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -22,12 +23,12 @@ const loadDocuments = (projectId?: string, categoryId?: number) => {
   });
 };
 
-export const useLoadDocuments = (projectId?: string, categoryId?: number) => {
+export const useGetDocuments = (projectId?: string, categoryId?: number) => {
   return useQuery({
-    queryKey: ["projects", projectId, "documents", categoryId],
-    queryFn: () => loadDocuments(projectId, categoryId),
+    queryKey: [QUERY_KEY.DOCUMENT, projectId, categoryId],
+    queryFn: () => fetchDocuments(projectId, categoryId),
     enabled: Boolean(projectId && categoryId),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 
@@ -35,11 +36,11 @@ const fetchDocumentType = () => {
   return submitRequest({url: '/documents/type'});
 };
 
-export const useLoadDocumentType = () => {
+export const useGetDocumentType = () => {
   return useQuery({
-    queryKey: ["document-type"],
+    queryKey: [QUERY_KEY.DOCUMENTTYPE],
     queryFn: () => fetchDocumentType(),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 
@@ -69,7 +70,7 @@ export const useCreateDocument = (
   });
 };
 
-const loadDocumentsByProject = (projectId?: string) => {
+const fetchDocumentsByProject = (projectId?: string) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -78,16 +79,16 @@ const loadDocumentsByProject = (projectId?: string) => {
   });
 };
 
-export const useLoadDocumentsByProject = (shouldLoad: boolean, projectId?: string) => {
+export const useGetDocumentsByProject = (shouldLoad: boolean, projectId?: string) => {
   return useQuery({
-    queryKey: ["projects", projectId],
-    queryFn: () => loadDocumentsByProject(projectId),
+    queryKey: [QUERY_KEY.PROJECTDOCUMENT, projectId],
+    queryFn: () => fetchDocumentsByProject(projectId),
     enabled: Boolean(projectId && shouldLoad),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 
-const loadDocumentDetails = (documentId?: string) => {
+const fetchDocumentDetails = (documentId?: string) => {
   if (!documentId) {
     return Promise.reject(new Error("Document ID is required"));
   }
@@ -96,12 +97,12 @@ const loadDocumentDetails = (documentId?: string) => {
   });
 };
 
-export const useLoadDocumentDetails = (documentId?: string) => {
+export const useGetDocumentDetails = (documentId?: string) => {
   return useQuery({
-    queryKey: ["document", documentId],
-    queryFn: () => loadDocumentDetails(documentId),
+    queryKey: [QUERY_KEY.DOCUMENTDETAIL, documentId],
+    queryFn: () => fetchDocumentDetails(documentId),
     enabled: Boolean(documentId),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 

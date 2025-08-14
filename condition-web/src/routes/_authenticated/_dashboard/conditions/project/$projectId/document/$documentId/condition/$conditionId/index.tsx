@@ -3,7 +3,7 @@ import { Else, If, Then } from "react-if";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useLoadConditionDetails } from "@/hooks/api/useConditions";
+import { useGetConditionDetails } from "@/hooks/api/useConditions";
 import { ConditionDetails, ConditionDetailsSkeleton } from "@/components/ConditionDetails";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -34,7 +34,7 @@ function ConditionPage() {
     data: conditionDetails,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useLoadConditionDetails(projectId, documentId, conditionId);
+  } = useGetConditionDetails(projectId, documentId, conditionId);
 
   useEffect(() => {
     if (isConditionsError) {

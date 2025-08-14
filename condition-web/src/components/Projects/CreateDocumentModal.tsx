@@ -22,7 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DocumentType, DocumentTypeModel } from "@/models/Document";
 import { ProjectModel } from "@/models/Project";
 import { DocumentTypes } from "@/utils/enums"
-import { useCreateDocument, useLoadDocumentsByProject } from "@/hooks/api/useDocuments";
+import { useCreateDocument, useGetDocumentsByProject } from "@/hooks/api/useDocuments";
 import { useCreateAmendment } from "@/hooks/api/useAmendments";
 import { CreateAmendmentModel } from "@/models/Amendment";
 import { CreateDocumentModel, DocumentModel } from "@/models/Document";
@@ -112,7 +112,7 @@ export const CreateDocumentModal = ({
     const {
         data: documentData,
         isPending: isDocumentsLoading
-    } = useLoadDocumentsByProject(
+    } = useGetDocumentsByProject(
         formState.selectedDocumentType === DocumentTypes.Amendment,
         formState.selectedProject?.project_id
     );

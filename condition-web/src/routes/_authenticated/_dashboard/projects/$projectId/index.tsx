@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
-import { useLoadDocumentType } from "@/hooks/api/useDocuments";
+import { useGetDocumentType } from "@/hooks/api/useDocuments";
 import { useGetProjects } from "@/hooks/api/useProjects";
 import { Else, If, Then } from "react-if";
 import { Projects, ProjectsSkeleton } from "@/components/Projects";
@@ -30,7 +30,7 @@ export function ProjectsPage() {
     error,
   } = useGetProjects();
 
-  const { data: documentTypeData } = useLoadDocumentType();
+  const { data: documentTypeData } = useGetDocumentType();
 
   // Check if the error is a 404 Not Found error
   const axiosError = error as AxiosError;
