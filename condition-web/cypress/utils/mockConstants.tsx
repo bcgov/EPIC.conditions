@@ -33,7 +33,7 @@ export const mockAuthentication = {
     client_id: "test-client-id",
     redirect_uri: "http://localhost/callback",
   },
-  events: {} as any,
+  events: {} as Record<string, (...args: unknown[]) => void>, 
   clearStaleState: () => Promise.resolve(),
   removeUser: () => Promise.resolve(),
   signoutSilent: () => Promise.resolve(),
@@ -44,7 +44,12 @@ export const mockAuthentication = {
       expired: false,
       scopes: ["openid", "profile"],
       toStorageString: () => "",
-    } as any),
+    } as {
+      profile: { name: string; identity_provider: string };
+      expired: boolean;
+      scopes: string[];
+      toStorageString: () => string;
+    }),
   signoutPopup: () => Promise.resolve(),
   startSilentRenew: () => Promise.resolve(),
   stopSilentRenew: () => Promise.resolve(),
@@ -56,7 +61,12 @@ export const mockAuthentication = {
       expired: false,
       scopes: ["openid", "profile"],
       toStorageString: () => "",
-    } as any),
+    } as {
+      profile: { name: string; identity_provider: string };
+      expired: boolean;
+      scopes: string[];
+      toStorageString: () => string;
+    }),
   querySessionStatus: () => Promise.resolve(null),
   revokeTokens: () => Promise.resolve(),
 };
