@@ -3,7 +3,7 @@ import { Else, If, Then } from "react-if";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useLoadDocuments } from "@/hooks/api/useDocuments";
+import { useGetDocuments } from "@/hooks/api/useDocuments";
 import { Documents, DocumentsSkeleton } from "@/components/Documents";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -30,7 +30,7 @@ function DocumentPage() {
     data: allDocuments,
     isPending: isDocumentsLoading,
     isError: isAmendmentsError
-  } = useLoadDocuments(projectId, categoryId);
+  } = useGetDocuments(projectId, categoryId);
 
   useEffect(() => {
     if (isAmendmentsError) {

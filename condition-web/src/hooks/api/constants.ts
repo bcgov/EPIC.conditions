@@ -1,12 +1,23 @@
 export const defaultUseQueryOptions = {
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    staleTime: 0,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
 };
 
 export const QUERY_KEY = Object.freeze({
+    ATTRIBUTEKEYS: "attribute-keys",
+    PROJECTS: "projects",
+    DOCUMENT: "documents",
+    DOCUMENTDETAIL: "document-details",
+    PROJECTDOCUMENT: "project-documents",
+    DOCUMENTTYPE: "document-type",
     SUBCONDITIONS: "subconditions",
     CONDITIONS: "conditions",
+    CONDITION: "condition",
+    CONDITIONSDETAIL: "condition-details",
+    CONSOLIDATEDCONDITIONS: "consolidated-conditions",
+    USERS: "users"
   });
 
 export const HTTP_STATUS_CODES = {

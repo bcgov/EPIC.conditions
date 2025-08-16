@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { submitRequest } from "@/utils/axiosUtils";
 import { useQuery } from "@tanstack/react-query";
-import { defaultUseQueryOptions } from "./constants";
+import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 
 const fetchProjects = async () => {
   try {
@@ -17,9 +17,8 @@ const fetchProjects = async () => {
 
 export const useGetProjects = () => {
   return useQuery({
-    queryKey: ["projects"],
+    queryKey: [QUERY_KEY.PROJECTS],
     queryFn: fetchProjects,
-    retry: false,
     ...defaultUseQueryOptions,
   });
 };

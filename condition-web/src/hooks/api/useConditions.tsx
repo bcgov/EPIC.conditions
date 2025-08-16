@@ -5,11 +5,12 @@ import {
   updateTopicTagsModel
 } from "@/models/Condition";
 import { submitRequest } from "@/utils/axiosUtils";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Options } from "./types";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
+import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 
-const loadConditions = (includeSubconditions: boolean, projectId?: string, documentId?: string) => {
+const fetchConditions = (includeSubconditions: boolean, projectId?: string, documentId?: string) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -21,20 +22,20 @@ const loadConditions = (includeSubconditions: boolean, projectId?: string, docum
   });
 };
 
-export const useLoadConditions = (
+export const useGetConditions = (
   shouldLoad: boolean,
   includeSubconditions: boolean,
   projectId?: string,
   documentId?: string) => {
   return useQuery({
-    queryKey: ["projects", projectId, "documents", documentId],
-    queryFn: () => loadConditions(includeSubconditions, projectId, documentId),
+    queryKey: [QUERY_KEY.CONDITIONS, projectId, documentId],
+    queryFn: () => fetchConditions(includeSubconditions, projectId, documentId),
     enabled: Boolean(projectId && documentId && shouldLoad),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 
-const loadConditionDetails = (projectId?: string, documentId?: string, conditionId?: number) => {
+const fetchConditionDetails = (projectId?: string, documentId?: string, conditionId?: number) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -49,12 +50,12 @@ const loadConditionDetails = (projectId?: string, documentId?: string, condition
   });
 };
 
-export const useLoadConditionDetails = (projectId?: string, documentId?: string, conditionId?: number) => {
+export const useGetConditionDetails = (projectId?: string, documentId?: string, conditionId?: number) => {
   return useQuery({
-    queryKey: ["projects", projectId, "documents", documentId, "conditions", conditionId],
-    queryFn: () => loadConditionDetails(projectId, documentId, conditionId),
+    queryKey: [QUERY_KEY.CONDITIONSDETAIL, projectId, documentId, conditionId],
+    queryFn: () => fetchConditionDetails(projectId, documentId, conditionId),
     enabled: Boolean(projectId && documentId && conditionId),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 
@@ -109,6 +110,7 @@ export const useCreateCondition = (
   allowDuplicateCondition: boolean = false,
   options? : Options
 ) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (conditionDetails?: ConditionModel) => {
       if (!projectId) {
@@ -119,11 +121,18 @@ export const useCreateCondition = (
       }
       return createCondition(projectId, documentId, allowDuplicateCondition, conditionDetails);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEY.CONDITIONS, projectId, documentId],
+      });
+      notify.success("Condition created successfully")
+    },
+    onError: () => notify.error("Failed to create condition"),
     ...options,
   });
 };
 
-const loadConditionByID = (conditionId?: string) => {
+const fetchConditionByID = (conditionId?: string) => {
   if (!conditionId) {
     return Promise.reject(new Error("Condition ID is required"));
   }
@@ -132,12 +141,12 @@ const loadConditionByID = (conditionId?: string) => {
   });
 };
 
-export const useLoadConditionByID = (conditionId?: string) => {
+export const useGetConditionByID = (conditionId?: string) => {
   return useQuery({
-    queryKey: ["condition", conditionId],
-    queryFn: () => loadConditionByID(conditionId),
+    queryKey: [QUERY_KEY.CONDITION, conditionId],
+    queryFn: () => fetchConditionByID(conditionId),
     enabled: Boolean(conditionId),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 

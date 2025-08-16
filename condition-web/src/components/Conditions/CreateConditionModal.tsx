@@ -16,8 +16,8 @@ import {
 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useCreateCondition } from "@/hooks/api/useConditions";
-import { useLoadDocumentsByProject } from "@/hooks/api/useDocuments";
-import { useLoadConditions } from "@/hooks/api/useConditions";
+import { useGetDocumentsByProject } from "@/hooks/api/useDocuments";
+import { useGetConditions } from "@/hooks/api/useConditions";
 import { DocumentModel } from "@/models/Document";
 import { ConditionModel } from "@/models/Condition";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -42,13 +42,10 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
   const [conditionName, setConditionName] = useState("");
   const [conditionConflictError, setConditionConflictError] = useState(false);
 
-  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, selectedMode === "add", {
-    onSuccess: () => notify.success("Condition created successfully"),
-    onError: () => notify.error("Failed to create condition"),
-  });
+  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, selectedMode === "add");
 
-  const { data: documentData, isPending: isDocumentsLoading } = useLoadDocumentsByProject(true, projectId);
-  const { data: documentConditions, isPending: isConditionsLoading } = useLoadConditions(loadCondition, true, projectId, selectedDocumentId);
+  const { data: documentData, isPending: isDocumentsLoading } = useGetDocumentsByProject(true, projectId);
+  const { data: documentConditions, isPending: isConditionsLoading } = useGetConditions(loadCondition, true, projectId, selectedDocumentId);
 
   const handleCreateNewCondition = async (conditionDetails?: ConditionModel) => {
     try {

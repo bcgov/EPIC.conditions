@@ -3,7 +3,7 @@ import { Else, If, Then } from "react-if";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useLoadConditionByID } from "@/hooks/api/useConditions";
+import { useGetConditionByID } from "@/hooks/api/useConditions";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 import { ConditionsSkeleton } from "@/components/Conditions";
 import { CreateConditionPage } from "@/components/ConditionDetails/CreateCondition";
@@ -29,7 +29,7 @@ function ConditionPage() {
     data: conditionDetails,
     isPending: isConditionDetailsLoading,
     isError: isConditionDetailsError
-  } = useLoadConditionByID(conditionId);
+  } = useGetConditionByID(conditionId);
 
   const META_PROJECT_TITLE = `Project Name`;
   const META_DOCUMENT_CATEGORY = `Document Category`;

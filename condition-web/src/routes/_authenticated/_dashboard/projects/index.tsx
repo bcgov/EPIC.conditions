@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
-import { useLoadDocumentType } from "@/hooks/api/useDocuments";
+import { useGetDocumentType } from "@/hooks/api/useDocuments";
 import { useGetProjects } from "@/hooks/api/useProjects";
 import { Else, If, Then } from "react-if";
 import { Projects, ProjectsSkeleton } from "@/components/Projects";
@@ -27,7 +27,7 @@ export function ProjectsPage() {
 
   const {
     data: documentTypeData,
-  } = useLoadDocumentType();
+  } = useGetDocumentType();
 
   useEffect(() => {
     if (isProjectsError) {
