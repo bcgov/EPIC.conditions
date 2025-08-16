@@ -4,10 +4,17 @@ import { AuthContext } from "react-oidc-context";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "../../../../src/routeTree.gen";
 import { setupTokenStorage } from "../../../utils/testUtils";
-import { mockAuthentication, mockProjects, mockDocumentTypes } from "../../../utils/mockConstants";
+import {
+    mockAuthentication,
+    mockCategoryData,
+    mockProjects,
+    mockDocumentTypes,
+    mockDocument,
+    mockConditions
+} from "../../../utils/mockConstants";
 import { Projects } from "../../../../src/components/Projects";
 
-describe("projects page", () => {
+describe("conditions page", () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -48,9 +55,47 @@ describe("projects page", () => {
       "getDocumentTypes"
     );
 
+    cy.intercept("GET", `/api/document-category/project/c668a5210cdd8a970fb42722/category/1`, { body: mockCategoryData }).as(
+      "getDocumentCategory"
+    );
+
+    cy.intercept(
+        "GET",
+        `/api/documents/c668a5210cdd8a970fb42722`,
+        { body: mockDocument }
+    ).as("getDocument");
+
+    cy.intercept(
+        "GET",
+        `/api/conditions/project/c668a5210cdd8a970fb42722/document/c668a5210cdd8a970fb42722?include_subconditions=false`,
+        { body: mockConditions }
+    ).as("getConditions");
+
     mountDefaultPage();
 
-    cy.contains(mockProjects[0].project_name).should("exist");
-    cy.contains(mockProjects[0].documents[0].document_category).should("exist");
+    // Click the "Certificate and Amendments" item
+    cy.contains("Certificate and Amendments").click();
+
+    // Wait for API response
+    cy.wait("@getDocumentCategory");
+
+    // Assert URL contains expected project/category path
+    cy.url().should(
+      "include",
+      "/documents/project/c668a5210cdd8a970fb42722/document-category/1"
+    );
+
+    // Assert that the mock documents are displayed
+    cy.contains("Schedule B - Table of Conditions").click();
+
+    // Wait for API response
+    cy.wait("@getDocument");
+    cy.wait("@getConditions");
+
+    // Assert URL contains expected project/category path
+    cy.url().should(
+      "include",
+      "/conditions/project/c668a5210cdd8a970fb42722/document/c668a5210cdd8a970fb42722"
+    );
   });
 });

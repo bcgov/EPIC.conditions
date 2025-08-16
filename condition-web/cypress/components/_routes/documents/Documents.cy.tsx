@@ -4,10 +4,15 @@ import { AuthContext } from "react-oidc-context";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "../../../../src/routeTree.gen";
 import { setupTokenStorage } from "../../../utils/testUtils";
-import { mockAuthentication, mockProjects, mockDocumentTypes } from "../../../utils/mockConstants";
+import {
+    mockAuthentication,
+    mockCategoryData,
+    mockProjects,
+    mockDocumentTypes
+} from "../../../utils/mockConstants";
 import { Projects } from "../../../../src/components/Projects";
 
-describe("projects page", () => {
+describe("documents page", () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -48,9 +53,27 @@ describe("projects page", () => {
       "getDocumentTypes"
     );
 
+    cy.intercept("GET", `/api/document-category/project/c668a5210cdd8a970fb42722/category/1`, { body: mockCategoryData }).as(
+      "getDocumentCategory"
+    );
+
     mountDefaultPage();
 
-    cy.contains(mockProjects[0].project_name).should("exist");
-    cy.contains(mockProjects[0].documents[0].document_category).should("exist");
+    // Click the "Certificate and Amendments" item
+    cy.contains("Certificate and Amendments").click();
+
+    // Wait for API response
+    cy.wait("@getDocumentCategory");
+
+    // Assert URL contains expected project/category path
+    cy.url().should(
+      "include",
+      "/documents/project/c668a5210cdd8a970fb42722/document-category/1"
+    );
+
+    // Assert that the mock documents are displayed
+    cy.contains("Schedule B - Table of Conditions").should("exist");
+    cy.contains("Amendment 1").should("exist");
+    cy.contains("Amendment #2").should("exist");
   });
 });
