@@ -1,4 +1,5 @@
 import { EPIC_CONDITION_ROLE } from "../../src/models/Role";
+import { OidcConfig } from "../../src/utils/config";
 
 const base64Url = (obj: Record<string, unknown>) => {
   const json = JSON.stringify(obj);
@@ -6,16 +7,21 @@ const base64Url = (obj: Record<string, unknown>) => {
   return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 
-// Minimal dummy JWT
-const dummyJWT = `${base64Url({ alg: "none", typ: "JWT" })}.${base64Url({
-  sub: "test-sub",
-  name: "Test User",
+// Create dummy JWT
+const payload = {
   exp: Math.floor(Date.now() / 1000) + 3600,
+  iat: Math.floor(Date.now() / 1000),
+  sub: "test-sub",
   resource_access: {
-    "epic-condition": { roles: ["view_conditions"] },
+    [OidcConfig.client_id]: {
+      roles: ["view_conditions"], // required role
+    },
   },
-})}.`; // note trailing dot, empty signature
+};
 
+const mockAccessToken = `${base64Url({ alg: "RS256", typ: "JWT" })}.${base64Url(
+  payload
+)}.signature`;
 
 export const mockAuthentication = {
   isAuthenticated: true,
@@ -24,60 +30,23 @@ export const mockAuthentication = {
       name: "Test User",
       identity_provider: "idir",
       sub: "test-sub",
-      iss: "https://test-issuer",
-      aud: "test-audience",
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      iat: Math.floor(Date.now() / 1000),
     },
-    access_token: dummyJWT,
+    access_token: mockAccessToken,
+    id_token: "mock_id_token",
     session_state: "mock_session_state",
     token_type: "Bearer",
-    state: {},
     expires_in: 3600,
-    scope: "openid profile",
-    id_token: dummyJWT,
-    refresh_token: "mock_refresh_token",
-    expired: false,
-    scopes: ["openid", "profile"],
     toStorageString: () => "",
   },
   signoutRedirect: () => Promise.resolve(),
   signinRedirect: () => Promise.resolve(),
   isLoading: false,
-  // Mock required AuthContextProps properties
   settings: {
     authority: "https://test-issuer",
-    client_id: "test-client-id",
+    client_id: OidcConfig.client_id,
     redirect_uri: "http://localhost/callback",
   },
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  events: {} as any,
-  clearStaleState: () => Promise.resolve(),
-  removeUser: () => Promise.resolve(),
-  signoutSilent: () => Promise.resolve(),
-  signinSilent: () => Promise.resolve(null),
-  signinPopup: () =>
-    Promise.resolve({
-      profile: { name: "Test User", identity_provider: "idir" },
-      expired: false,
-      scopes: ["openid", "profile"],
-      toStorageString: () => "",
-    } as any),
-  signoutPopup: () => Promise.resolve(),
-  startSilentRenew: () => Promise.resolve(),
-  stopSilentRenew: () => Promise.resolve(),
-  error: undefined,
-  // Add missing AuthContextProps properties
-  signinResourceOwnerCredentials: () =>
-    Promise.resolve({
-      profile: { name: "Test User", identity_provider: "idir" },
-      expired: false,
-      scopes: ["openid", "profile"],
-      toStorageString: () => "",
-    } as any),
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-  querySessionStatus: () => Promise.resolve(null),
-  revokeTokens: () => Promise.resolve(),
+  events: {} as Record<string, (...args: unknown[]) => void>, 
 };
 
 export const mockStaffAccount = {
