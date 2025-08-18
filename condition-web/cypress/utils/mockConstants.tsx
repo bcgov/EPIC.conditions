@@ -34,6 +34,7 @@ export const mockAuthentication = {
     client_id: "test-client-id",
     redirect_uri: "http://localhost/callback",
   },
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   events: {} as any,
   clearStaleState: () => Promise.resolve(),
   removeUser: () => Promise.resolve(),
@@ -58,6 +59,7 @@ export const mockAuthentication = {
       scopes: ["openid", "profile"],
       toStorageString: () => "",
     } as any),
+  /* eslint-enable @typescript-eslint/no-explicit-any */
   querySessionStatus: () => Promise.resolve(null),
   revokeTokens: () => Promise.resolve(),
 };
