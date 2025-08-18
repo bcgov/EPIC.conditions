@@ -25,9 +25,7 @@ describe("projects page", () => {
     mount(
       <QueryClientProvider client={queryClient}>
         <AuthContext.Provider value={mockAuthentication}>
-          <RouterProvider router={router} context={{ authentication: mockAuthentication }}>
-            <Projects projects={mockProjects} documentType={mockDocumentTypes} />
-          </RouterProvider>
+          <Projects projects={mockProjects} documentType={mockDocumentTypes} />
         </AuthContext.Provider>
       </QueryClientProvider>
     );

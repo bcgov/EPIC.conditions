@@ -1,23 +1,11 @@
 import { EPIC_CONDITION_ROLE } from "../../src/models/Role";
 import { OidcConfig } from "../../src/utils/config";
-import { Buffer } from "buffer";
 
-function base64UrlEncode(obj: Record<string, unknown>): string {
+const base64Url = (obj: Record<string, unknown>) => {
   const json = JSON.stringify(obj);
-  return Buffer.from(json)
-    .toString("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
-}
-
-export function createMockJwt(payload: Record<string, unknown>): string {
-  const header = { alg: "RS256", typ: "JWT" };
-  const encodedHeader = base64UrlEncode(header);
-  const encodedPayload = base64UrlEncode(payload);
-  const signature = "testsignature"; // doesn't matter for tests
-  return `${encodedHeader}.${encodedPayload}.${signature}`;
-}
+  const base64 = btoa(json); // browser btoa
+  return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+};
 
 // Create dummy JWT
 const payload = {
@@ -26,12 +14,14 @@ const payload = {
   sub: "test-sub",
   resource_access: {
     [OidcConfig.client_id]: {
-      roles: ["view_conditions"],
+      roles: ["view_conditions"], // required role
     },
   },
 };
 
-const mockAccessToken = createMockJwt(payload);
+const mockAccessToken = `${base64Url({ alg: "RS256", typ: "JWT" })}.${base64Url(
+  payload
+)}.signature`;
 
 export const mockAuthentication = {
   isAuthenticated: true,
@@ -42,7 +32,7 @@ export const mockAuthentication = {
       sub: "test-sub",
     },
     access_token: mockAccessToken,
-    id_token: mockAccessToken,
+    id_token: "mock_id_token",
     session_state: "mock_session_state",
     token_type: "Bearer",
     expires_in: 3600,
