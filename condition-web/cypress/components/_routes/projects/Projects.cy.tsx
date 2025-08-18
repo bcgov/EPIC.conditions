@@ -57,7 +57,7 @@ describe("projects page", () => {
 
     cy.intercept(
       "GET",
-      `/api/users/guid/${mockStaffUser.auth_guid}`,
+      `${AppConfig.apiUrl}/users/guid/${mockStaffUser.auth_guid}`,
       { body: mockStaffUser }
     ).as("getStaffUser");
 
@@ -75,9 +75,11 @@ describe("projects page", () => {
       body: mockDocumentTypes,
     }).as("getDocumentTypes");
 
-    queryClient.setQueryData([QUERY_KEY.PROJECTS], mockProjects);
-    queryClient.setQueryData([QUERY_KEY.DOCUMENTTYPE], mockDocumentTypes);
     mountDefaultPage();
+
+    cy.wait("@getStaffUser");
+    cy.wait("@getProjects");
+    cy.wait("@getDocumentTypes");
 
     cy.contains(mockProjects[0].project_name).should("exist");
     cy.contains(mockProjects[0].documents[0].document_category).should("exist");
