@@ -9,8 +9,9 @@ import {
   mockDocumentTypes
 } from "../../../utils/mockConstants";
 import { setupTokenStorage } from "../../utils";
-import { OidcConfig } from "../../../../src/utils/config";
+import { AppConfig, OidcConfig } from "../../../../src/utils/config";
 import { AuthProvider } from "react-oidc-context";
+import { QUERY_KEY } from "../../../../src/hooks/api/constants";
 
 describe("projects page", () => {
   const queryClient = new QueryClient({
@@ -64,14 +65,16 @@ describe("projects page", () => {
   });
 
   it("renders projects from API", () => {
-    cy.intercept("GET", `/api/projects`, { body: mockProjects }).as(
-      "getProjects"
-    );
+    cy.intercept("GET", `${AppConfig.apiUrl}/projects`, {
+      body: mockProjects,
+    }).as("getProjects");
 
-    cy.intercept("GET", `/api/documents/type`, { body: mockDocumentTypes }).as(
-      "getDocumentTypes"
-    );
+    cy.intercept("GET", `${AppConfig.apiUrl}/documents/type`, {
+      body: mockDocumentTypes,
+    }).as("getDocumentTypes");
 
+    queryClient.setQueryData([QUERY_KEY.PROJECTS], mockProjects);
+    queryClient.setQueryData([QUERY_KEY.DOCUMENTTYPE], mockDocumentTypes);
     mountDefaultPage();
 
     cy.contains(mockProjects[0].project_name).should("exist");
