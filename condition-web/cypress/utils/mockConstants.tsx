@@ -1,27 +1,5 @@
 import { EPIC_CONDITION_ROLE } from "../../src/models/Role";
-import { OidcConfig } from "../../src/utils/config";
 
-const base64Url = (obj: Record<string, unknown>) => {
-  const json = JSON.stringify(obj);
-  const base64 = btoa(json); // browser btoa
-  return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-};
-
-// Create dummy JWT
-const payload = {
-  exp: Math.floor(Date.now() / 1000) + 3600,
-  iat: Math.floor(Date.now() / 1000),
-  sub: "test-sub",
-  resource_access: {
-    [OidcConfig.client_id]: {
-      roles: ["view_conditions"], // required role
-    },
-  },
-};
-
-const mockAccessToken = `${base64Url({ alg: "RS256", typ: "JWT" })}.${base64Url(
-  payload
-)}.signature`;
 
 export const mockAuthentication = {
   isAuthenticated: true,
@@ -30,23 +8,58 @@ export const mockAuthentication = {
       name: "Test User",
       identity_provider: "idir",
       sub: "test-sub",
+      iss: "https://test-issuer",
+      aud: "test-audience",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      iat: Math.floor(Date.now() / 1000),
     },
-    access_token: mockAccessToken,
-    id_token: "mock_id_token",
+    access_token: "test_access_token",
     session_state: "mock_session_state",
     token_type: "Bearer",
+    state: {},
     expires_in: 3600,
+    scope: "openid profile",
+    id_token: "mock_id_token",
+    refresh_token: "mock_refresh_token",
+    expired: false,
+    scopes: ["openid", "profile"],
     toStorageString: () => "",
   },
   signoutRedirect: () => Promise.resolve(),
   signinRedirect: () => Promise.resolve(),
   isLoading: false,
+  // Mock required AuthContextProps properties
   settings: {
     authority: "https://test-issuer",
-    client_id: OidcConfig.client_id,
+    client_id: "test-client-id",
     redirect_uri: "http://localhost/callback",
   },
-  events: {} as Record<string, (...args: unknown[]) => void>, 
+  events: {} as any,
+  clearStaleState: () => Promise.resolve(),
+  removeUser: () => Promise.resolve(),
+  signoutSilent: () => Promise.resolve(),
+  signinSilent: () => Promise.resolve(null),
+  signinPopup: () =>
+    Promise.resolve({
+      profile: { name: "Test User", identity_provider: "idir" },
+      expired: false,
+      scopes: ["openid", "profile"],
+      toStorageString: () => "",
+    } as any),
+  signoutPopup: () => Promise.resolve(),
+  startSilentRenew: () => Promise.resolve(),
+  stopSilentRenew: () => Promise.resolve(),
+  error: undefined,
+  // Add missing AuthContextProps properties
+  signinResourceOwnerCredentials: () =>
+    Promise.resolve({
+      profile: { name: "Test User", identity_provider: "idir" },
+      expired: false,
+      scopes: ["openid", "profile"],
+      toStorageString: () => "",
+    } as any),
+  querySessionStatus: () => Promise.resolve(null),
+  revokeTokens: () => Promise.resolve(),
 };
 
 export const mockStaffAccount = {
@@ -54,6 +67,17 @@ export const mockStaffAccount = {
   roles: [
     EPIC_CONDITION_ROLE.view_conditions,
   ],
+};
+
+export const mockStaffUser = {
+  auth_guid: "test-sub",
+  first_name: "EAO",
+  full_name: "EAO TEST2",
+  id: 1,
+  last_name: "TEST2",
+  position: "",
+  work_contact_number: "",
+  work_email_address: "eao.test2@gov.bc.ca",
 };
 
 export const mockProjects = [

@@ -1,39 +1,65 @@
 import { mount } from "cypress/react18";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthContext } from "react-oidc-context";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "../../../../src/routeTree.gen";
-import { setupTokenStorage } from "../../../utils/testUtils";
-import { mockAuthentication, mockProjects, mockDocumentTypes } from "../../../utils/mockConstants";
-import { Projects } from "../../../../src/components/Projects";
+import {
+  mockAuthentication,
+  mockStaffUser,
+  mockProjects,
+  mockDocumentTypes
+} from "../../../utils/mockConstants";
+import { setupTokenStorage } from "../../utils";
+import { OidcConfig } from "../../../../src/utils/config";
+import { AuthProvider } from "react-oidc-context";
 
 describe("projects page", () => {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: false },
+      queries: {
+        retry: false,
+      },
     },
   });
 
   const mountDefaultPage = () => {
     const router = createRouter({
-      routeTree,
-      context: { authentication: mockAuthentication },
+      routeTree: routeTree,
+      context: {
+        authentication: mockAuthentication,
+        queryClient: queryClient,
+      },
     });
 
-    router.navigate({ to: `/projects` });
+    router.navigate({
+      to: `/projects`,
+    });
 
     mount(
       <QueryClientProvider client={queryClient}>
-        <AuthContext.Provider value={mockAuthentication}>
-          <Projects projects={mockProjects} documentType={mockDocumentTypes} />
-        </AuthContext.Provider>
-      </QueryClientProvider>
+        <AuthProvider {...OidcConfig}>
+          <RouterProvider
+            router={router}
+            context={{
+              authentication: mockAuthentication,
+            }}
+          />
+          ;
+        </AuthProvider>
+      </QueryClientProvider>,
     );
   };
 
   beforeEach(() => {
     cy.viewport(1280, 800);
+
     setupTokenStorage();
+
+    cy.intercept(
+      "GET",
+      `/api/users/guid/${mockStaffUser.auth_guid}`,
+      { body: mockStaffUser }
+    ).as("getStaffUser");
+
     queryClient.clear();
   });
 
