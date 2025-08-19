@@ -45,7 +45,7 @@ describe("conditions page", () => {
             />
           </AuthContext.Provider>
         </QueryClientProvider>
-		  </ThemeProvider>
+      </ThemeProvider>
     );
   };
 
