@@ -57,18 +57,7 @@ export const Conditions = ({
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const onCreateFailure = () => {
-    notify.error("Failed to create condition");
-  };
-
-  const onCreateSuccess = () => {
-    notify.success("Condition created successfully");
-  };
-
-  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, false, {
-    onSuccess: onCreateSuccess,
-    onError: onCreateFailure,
-  });
+  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, false);
 
   useEffect(() => {
     // Check if all conditions have status as true

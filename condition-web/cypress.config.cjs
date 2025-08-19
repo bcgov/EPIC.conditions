@@ -9,6 +9,7 @@ module.exports = defineConfig({
       framework: "react",
       bundler: "vite",
     },
+    specPattern: "cypress/components/**/*.cy.{js,ts,jsx,tsx}",
     setupNodeEvents(on, config) {
       require('@cypress/code-coverage/task')(on, config)
       // include any other plugin code...

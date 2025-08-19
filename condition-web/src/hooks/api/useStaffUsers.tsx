@@ -1,9 +1,10 @@
 import { OnErrorType, OnSuccessType, submitRequest } from "@/utils/axiosUtils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { StaffUserModel } from "@/models/StaffUser";
+import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 
 
-type GetUserResponse = {
+type FetchUserResponse = {
   id: number;
   first_name: string;
   last_name: string;
@@ -14,16 +15,16 @@ type GetUserResponse = {
   created_date: string;
   updated_date: string;
 };
-const getUserByGuid = (guid?: string) => {
-  return submitRequest<GetUserResponse>({ url: `/users/guid/${guid}` });
+const fetchUserByGuid = (guid?: string) => {
+  return submitRequest<FetchUserResponse>({ url: `/users/guid/${guid}` });
 };
 
 export const useGetUserByGuid = ({ guid }: { guid?: string }) => {
   return useQuery({
-    queryKey: ["user", guid],
-    queryFn: () => getUserByGuid(guid),
+    queryKey: [QUERY_KEY.USERS, guid],
+    queryFn: () => fetchUserByGuid(guid),
     enabled: Boolean(guid),
-    retry: false,
+    ...defaultUseQueryOptions,
   });
 };
 

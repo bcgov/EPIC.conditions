@@ -1,6 +1,6 @@
 import { submitRequest } from "@/utils/axiosUtils";
 import { useQuery } from "@tanstack/react-query";
-import { defaultUseQueryOptions } from "./constants";
+import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 import { AttributeKeyModel } from "@/models/AttributeKey";
 
 const fetchAttributes = (conditionId?: number, managementPlanId?: number) => {
@@ -20,10 +20,9 @@ export const useGetAttributes = (
   managementPlanId?: number
 ) => {
   return useQuery({
-    queryKey: ["conditions", conditionId, managementPlanId],
+    queryKey: [QUERY_KEY.ATTRIBUTEKEYS, conditionId, managementPlanId],
     queryFn: () => fetchAttributes(conditionId, managementPlanId),
     enabled: Boolean(conditionId),
-    retry: false,
     ...defaultUseQueryOptions,
   });
 };
