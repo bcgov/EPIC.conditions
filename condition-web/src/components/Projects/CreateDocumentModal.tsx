@@ -269,6 +269,7 @@ export const CreateDocumentModal = ({
                         </Typography>
                         <Autocomplete
                             id="project-selector"
+                            data-testid="project-selector"
                             options={projectArray || []}
                             value={formState.selectedProject}
                             renderInput={(params) => (
@@ -279,6 +280,10 @@ export const CreateDocumentModal = ({
                                     fullWidth
                                     error={errors.selectedProject}
                                     helperText={errors.selectedProject ? "Please select a project" : ""}
+                                    inputProps={{
+                                        ...params.inputProps,
+                                        "data-testid": "project-selector-input",
+                                    }}
                                 />
                             )}
                             size="small"

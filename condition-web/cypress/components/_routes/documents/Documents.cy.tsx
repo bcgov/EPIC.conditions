@@ -55,7 +55,7 @@ describe("documents page", () => {
     queryClient.clear();
   });
 
-  it("renders projects from API", () => {
+  it("renders documents from API", () => {
     cy.intercept("GET", `${AppConfig.apiUrl}/projects`, {
       body: mockProjects,
     }).as("getProjects");

@@ -180,3 +180,98 @@ export const mockConditions = {
     },
   ],
 };
+
+export const mockSingleCondition = {
+  condition: {
+    condition_attributes: {
+      independent_attributes: [],
+      management_plans: [
+        {
+          id: "206",
+          name: "Plan A",
+          is_approved: false,
+          is_condition_attributes_approved: false,
+          is_topic_tags_approved: false,
+          attributes: [
+            { id: "1892", key: "Requires consultation", value: "true" },
+            { id: "2746", key: "Management plan name(s)", value: "{aaa}" },
+            { id: "1888", key: "Management plan acronym(s)", value: null },
+            { id: "1893", key: "Parties required to be consulted", value: "{BC Ministry of Environment, BC Ministry of Forests}" },
+            { id: "1887", key: "Submitted to EAO for", value: "Satisfaction" },
+            { id: "1891", key: "Time associated with submission milestone", value: "90" },
+            { id: "1889", key: "Milestone(s) related to plan submission", value: "Construction" },
+            { id: "1890", key: "Project phases(s) related to plan implementation", value: "Pre-Construction" },
+          ]
+        }
+      ]
+    },
+    condition_id: "999",
+    condition_name: "Test Condition",
+    condition_number: 1,
+    condition_text: "This is a dummy condition for testing purposes.",
+    is_approved: true,
+    requires_management_plan: true,
+    subconditions: [
+      {
+        sort_order: 1,
+        subcondition_identifier: "",
+        subcondition_text: "This is a dummy condition for testing purposes.",
+        subconditions: [],
+      },
+      {
+        sort_order: 2,
+        subcondition_identifier: "",
+        subcondition_text: "Dummy subcondition B",
+        subconditions: [
+          {
+            sort_order: 3,
+            subcondition_identifier: "",
+            subcondition_text: "Nested dummy subcondition B.1",
+            subconditions: [],
+          },
+        ],
+      },
+    ],
+    subtopic_tags: ["Testing"],
+    topic_tags: ["QA"],
+    year_issued: 2025
+  },
+  document_category: "Certificate and Amendments",
+  document_category_id: "1",
+  document_label: "Amendment X",
+  project_name: "Project Name"
+};
+
+export const approveManagementPlanRequest = {
+  is_approved: true,
+};
+
+export const approveManagementPlanResponse = {
+  condition_id: "999",
+  id: "206",
+  is_approved: true,
+  name: "",
+};
+
+// cypress/fixtures/conditions.ts
+export const mockCreatedCondition = {
+  condition: {
+    condition_attributes: {},
+    condition_id: "522",
+    condition_name: null,
+    condition_number: null,
+    condition_text: null,
+    is_approved: false,
+    is_standard_condition: null,
+    subconditions: [],
+    subtopic_tags: null,
+    topic_tags: null,
+    year_issued: 2014,
+  },
+  document_category: "Certificate and Amendments",
+  document_category_id: "1",
+  document_id: "c668a5210cdd8a970fb42722",
+  document_label: "Schedule B - Table of Conditions",
+  project_id: "c668a5210cdd8a970fb42722",
+  project_name: "Project Name",
+};
