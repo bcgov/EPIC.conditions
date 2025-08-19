@@ -34,19 +34,19 @@ describe("conditions page", () => {
     router.navigate({ to: `/projects` });
 
     mount(
-        <ThemeProvider theme={theme}>
-			<QueryClientProvider client={queryClient}>
-			  <AuthContext.Provider value={mockAuth}>
-				<RouterProvider
-				  router={router}
-				  context={{
-					authentication: mockAuthentication,
-				  }}
-				/>
-			  </AuthContext.Provider>
-			</QueryClientProvider>
-		</ThemeProvider>
-      );
+      <ThemeProvider theme={theme}>
+        <QueryClientProvider client={queryClient}>
+          <AuthContext.Provider value={mockAuth}>
+            <RouterProvider
+              router={router}
+              context={{
+                authentication: mockAuthentication,
+              }}
+            />
+          </AuthContext.Provider>
+        </QueryClientProvider>
+		  </ThemeProvider>
+    );
   };
 
   beforeEach(() => {
