@@ -18,6 +18,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { DocumentTypes } from "@/utils/enums"
 import { ConditionModal } from "./CreateConditionModal";
 import LoadingButton from "../Shared/Buttons/LoadingButton";
+import ConditionFilters from "@/components/Filters/ConditionFilters";
+import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
+import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -56,6 +59,33 @@ export const Conditions = ({
   const [noConditions, setNoConditions] = useState(conditions?.length === 0);
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  
+  const { filters } = useConditionFilters();
+
+  const filteredConditions = conditions?.filter((condition) => {
+    const matchesSearch = filters.search_text
+      ? condition.condition_name?.toLowerCase().includes(filters.search_text.toLowerCase()) ?? false
+      : true;  
+
+    const matchesSource = filters.source_document 
+      ? condition.source_document?.toLowerCase().includes(filters.source_document.toLowerCase()) ?? false
+      : true;
+
+    const matchesAmendment = filters.amendment_names 
+      ? condition.amendment_names?.toLowerCase().includes(filters.amendment_names.toLowerCase()) ?? false
+      : true;
+
+    const conditionStatus: ConditionStatus = condition.is_approved
+      ? CONDITION_STATUS.true.value
+      : CONDITION_STATUS.false.value;
+
+    const matchesStatus = filters.status && filters.status.length > 0
+      ? filters.status.includes(conditionStatus)
+      : true;
+
+    return matchesSearch && matchesSource && matchesAmendment && matchesStatus;
+  });
 
   const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, false);
 
@@ -289,9 +319,10 @@ export const Conditions = ({
                 </Box>
               </Grid>
             </Grid>
+            <ConditionFilters conditions={conditions}/>
             <Grid container direction="row" p={1} px={2} pb={3}>
               <ConditionTable
-                conditions={conditions || []}
+                conditions={filteredConditions || []}
                 projectId={projectId}
                 documentId={documentId}
                 noConditions={noConditions}

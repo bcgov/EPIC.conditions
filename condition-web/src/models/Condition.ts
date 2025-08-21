@@ -73,3 +73,18 @@ export interface ProjectDocumentConditionDetailModel {
   document_label: string;
   condition: ConditionModel;
 }
+
+export type ConditionStatus = "true" | "false";
+export const CONDITION_STATUS: Record<
+  ConditionStatus,
+  { value: ConditionStatus; label: string }
+> = {
+  true: {
+    value: "true",
+    label: "Approved",
+  },
+  false: {
+    value: "false",
+    label: "Awaiting Approval",
+  }
+};
