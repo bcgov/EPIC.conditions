@@ -24,12 +24,10 @@ function ConsolidatedConditionFilters({ conditions }: FilterProps) {
       sx={{
         justifyContent: "space-between",
         gap: 1,
-        paddingLeft: 2,
-        paddingRight: 2,
         overflowX: "auto",
       }}
     >
-      <Grid item xs={3}>
+      <Grid item xs={4}>
         <SearchFilter
           searchType="condition"
           value={filters.search_text}
@@ -39,7 +37,7 @@ function ConsolidatedConditionFilters({ conditions }: FilterProps) {
       <Grid item xs={3}>
         <SourceDocumentFilter conditions={conditions}/>
       </Grid>
-      <Grid item xs={1.5}>
+      <Grid item xs={2}>
         <AmendedInFilter conditions={conditions}/>
       </Grid>
       <Grid item xs={1.5}>

@@ -23,8 +23,6 @@ function ConditionFilters({ conditions }: FilterProps) {
       sx={{
         justifyContent: "space-between",
         gap: 1,
-        paddingLeft: 2,
-        paddingRight: 2,
         overflowX: "auto",
       }}
     >
