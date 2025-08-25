@@ -183,6 +183,7 @@ export const Conditions = ({
         }
         label={""}
       >
+          <ConditionFilters conditions={conditions}/>
           <Box
             sx={{
               borderRadius: "3px",
@@ -319,7 +320,6 @@ export const Conditions = ({
                 </Box>
               </Grid>
             </Grid>
-            <ConditionFilters conditions={conditions}/>
             <Grid container direction="row" p={1} px={2} pb={3}>
               <ConditionTable
                 conditions={filteredConditions || []}

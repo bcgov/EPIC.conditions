@@ -119,6 +119,7 @@ export const ConsolidatedConditions = ({
         }
         label={""}
       >
+        <ConsolidatedConditionFilters conditions={conditions}/>
         <Box
           sx={{
             borderRadius: "3px",
@@ -166,7 +167,6 @@ export const ConsolidatedConditions = ({
                 />
               </Grid>}
             </Grid>
-            <ConsolidatedConditionFilters conditions={conditions}/>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
               <CardInnerBox
                   sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
