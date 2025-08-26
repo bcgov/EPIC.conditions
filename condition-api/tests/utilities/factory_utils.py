@@ -17,18 +17,19 @@ Test Utility for creating model factory.
 """
 import uuid
 from datetime import datetime
+from faker import Faker
+from flask import g
 
 from condition_api.config import get_named_config
 from condition_api.models import (
-    Amendment, Condition, Document, DocumentCategory, DocumentType, Project, db
+    Amendment, Condition, Document, DocumentCategory, DocumentType, Project, StaffUser, db
 )
 
 from sqlalchemy import func
 
 
 CONFIG = get_named_config("testing")
-
-CONFIG = get_named_config("testing")
+fake = Faker()
 
 JWT_HEADER = {
     "alg": CONFIG.JWT_OIDC_TEST_ALGORITHMS,
@@ -143,3 +144,18 @@ def get_seeded_document_type(type_name="Certificate"):
         .filter(func.lower(DocumentType.document_type) == type_name.lower())
         .first()
     )
+
+def factory_user_model(auth_guid=None, session=None):
+    """Factory user model."""
+    user = StaffUser(
+        auth_guid=auth_guid or fake.uuid4(),
+        first_name=fake.name(),
+        last_name=fake.name(),
+        status_id=1
+    )
+    if session:
+        session.add(user)
+        session.flush()
+    else:
+        user.save()
+    return user
