@@ -79,7 +79,7 @@ def test_get_projects_validation_error(client, session, jwt, monkeypatch):
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert "Bad data" in response.get_json()["message"]
 
- 
+
 def test_get_projects_with_approved_conditions(client, session, jwt):
     """Test fetching projects with approved conditions."""
     auth_guid = TestJwtClaims.staff_admin_role['sub']
@@ -141,7 +141,11 @@ def test_get_projects_with_approved_conditions_validation_error(client, session,
     def mock_get_projects_with_approved_conditions():
         raise ValidationError("Something wrong")
 
-    monkeypatch.setattr(project_service.ProjectService, "get_projects_with_approved_conditions", mock_get_projects_with_approved_conditions)
+    monkeypatch.setattr(
+        project_service.ProjectService,
+        "get_projects_with_approved_conditions",
+        mock_get_projects_with_approved_conditions
+    )
 
     response = client.get("/api/projects/with-approved-conditions", headers=headers)
 
