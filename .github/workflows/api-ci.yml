@@ -102,20 +102,20 @@ jobs:
          run: |
            make test
 
-       - name: Sets Codecov branch name
-         run: |
-           echo "CODECOV_BRANCH=PR_${{github.head_ref}}" >> $GITHUB_ENV
-         if: github.event_name == 'pull_request'
+      # - name: Sets Codecov branch name
+      #   run: |
+      #     echo "CODECOV_BRANCH=PR_${{github.head_ref}}" >> $GITHUB_ENV
+      #   if: github.event_name == 'pull_request'
 
-       - name: Upload coverage to Codecov
-         uses: codecov/codecov-action@v3
-         with:
-           flags: condition-api
-           name: codecov-condition-api
-           fail_ci_if_error: true
-           verbose: true
-           token: ${{ secrets.CODECOV_TOKEN }}
-           override_branch: ${{ env.CODECOV_BRANCH }}
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     flags: condition-api
+      #     name: codecov-condition-api
+      #     fail_ci_if_error: true
+      #     verbose: true
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     override_branch: ${{ env.CODECOV_BRANCH }}
 
   build:
     # needs: PyTest
