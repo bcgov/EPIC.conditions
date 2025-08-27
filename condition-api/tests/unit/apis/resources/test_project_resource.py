@@ -10,6 +10,8 @@ from tests.utilities.factory_utils import (
     factory_project_model, factory_condition_model, factory_auth_header, factory_user_model,
     factory_document_model, get_seeded_document_type
 )
+from marshmallow import ValidationError
+from condition_api.services import project_service
 
 CONFIG = get_named_config("testing")
 
@@ -57,6 +59,27 @@ def test_get_projects_not_found(client, session, jwt):
     assert response.get_json()["message"] == "No projects found"
 
 
+def test_get_projects_validation_error(client, session, jwt, monkeypatch):
+    """Simulate validation error in get_all_projects."""
+    auth_guid = TestJwtClaims.staff_admin_role['sub']
+    factory_user_model(auth_guid=auth_guid)
+
+    session.flush()
+
+    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+
+    # Monkeypatch service to raise ValidationError
+    def mock_get_all_projects():
+        raise ValidationError("Bad data")
+
+    monkeypatch.setattr(project_service.ProjectService, "get_all_projects", mock_get_all_projects)
+
+    response = client.get("/api/projects", headers=headers)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Bad data" in response.get_json()["message"]
+
+ 
 def test_get_projects_with_approved_conditions(client, session, jwt):
     """Test fetching projects with approved conditions."""
     auth_guid = TestJwtClaims.staff_admin_role['sub']
@@ -89,3 +112,38 @@ def test_get_projects_with_approved_conditions(client, session, jwt):
 
     # Assert that our seeded project is in the response
     assert project.project_id in project_ids, f"{project.project_id} not found in {project_ids}"
+
+
+def test_get_projects_with_approved_conditions_not_found(client, session, jwt):
+    """Test 404 when no projects with approved conditions are found."""
+    auth_guid = TestJwtClaims.staff_admin_role['sub']
+    factory_user_model(auth_guid=auth_guid)
+
+    session.flush()
+
+    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+
+    response = client.get("/api/projects/with-approved-conditions", headers=headers)
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.get_json()["message"] == "No projects found"
+
+
+def test_get_projects_with_approved_conditions_validation_error(client, session, jwt, monkeypatch):
+    """Simulate validation error in approved projects endpoint."""
+    auth_guid = TestJwtClaims.staff_admin_role['sub']
+    factory_user_model(auth_guid=auth_guid)
+
+    session.flush()
+
+    headers = factory_auth_header(jwt=jwt, claims=TestJwtClaims.staff_admin_role)
+
+    def mock_get_projects_with_approved_conditions():
+        raise ValidationError("Something wrong")
+
+    monkeypatch.setattr(project_service.ProjectService, "get_projects_with_approved_conditions", mock_get_projects_with_approved_conditions)
+
+    response = client.get("/api/projects/with-approved-conditions", headers=headers)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Something wrong" in response.get_json()["message"]
