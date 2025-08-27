@@ -18,7 +18,6 @@ Test Utility for creating model factory.
 import uuid
 from datetime import datetime
 from faker import Faker
-from flask import g
 
 from condition_api.config import get_named_config
 from condition_api.models import (
@@ -61,7 +60,7 @@ def factory_project_model(
     return project
 
 
-def factory_document_category_model(name="Environmental Reports"):
+def factory_document_category_model(name="Exemption Order and Amendments"):
     """Document Category"""
     existing = DocumentCategory.query.filter_by(category_name=name).first()
     if existing:
@@ -73,7 +72,7 @@ def factory_document_category_model(name="Environmental Reports"):
     return category
 
 
-def factory_document_type_model(category, name="Impact Report"):
+def factory_document_type_model(category, name="Certificate"):
     """Document Type"""
     doc_type = DocumentType(document_type=name, document_category_id=category.id)
     db.session.add(doc_type)
@@ -81,12 +80,12 @@ def factory_document_type_model(category, name="Impact Report"):
     return doc_type
 
 
-def factory_document_model(project, doc_type, is_latest=True):
+def factory_document_model(project_id, document_type_id, is_latest=True):
     """Document"""
     document = Document(
         document_id=str(uuid.uuid4()),
-        project_id=project.project_id,
-        document_type_id=doc_type.id,
+        project_id=project_id,
+        document_type_id=document_type_id,
         document_label="Label A",
         document_file_name="test.pdf",
         is_latest_amendment_added=is_latest,
@@ -144,6 +143,7 @@ def get_seeded_document_type(type_name="Certificate"):
         .filter(func.lower(DocumentType.document_type) == type_name.lower())
         .first()
     )
+
 
 def factory_user_model(auth_guid=None, session=None):
     """Factory user model."""
