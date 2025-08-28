@@ -35,7 +35,7 @@ def test_get_all_projects_endpoint(client, session, auth_header):
     project = factory_project_model(project_id="58851056aaecd9001b80ebf8")
     category = get_seeded_document_category("Certificate and Amendments")
     doc_type = get_seeded_document_type("Certificate")
-    document = factory_document_model(project, doc_type)
+    document = factory_document_model(project.project_id, doc_type.id)
 
     # Pass both document_id and project_id to avoid IntegrityError
     factory_condition_model(document.document_id, project.project_id)
