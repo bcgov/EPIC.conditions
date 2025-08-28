@@ -362,6 +362,7 @@ def test_delete_condition_by_id_not_found(client, auth_user):
 
 
 def test_get_consolidated_conditions_success(client, auth_user, setup_condition):
+    """Test consolidated conditions."""
     condition = setup_condition
     project_id = condition.project_id
 
@@ -369,7 +370,7 @@ def test_get_consolidated_conditions_success(client, auth_user, setup_condition)
         f"/api/conditions/project/{project_id}?all_conditions=true&include_attributes=true",
         headers=auth_user
     )
-    
+
     assert response.status_code == HTTPStatus.OK
     data = response.get_json()
     assert isinstance(data, dict)
@@ -379,7 +380,8 @@ def test_get_consolidated_conditions_success(client, auth_user, setup_condition)
     assert data["conditions"][0]["condition_name"] == condition.condition_name
 
 
-def test_get_consolidated_conditions_not_found(client, auth_user, setup_condition):
+def test_get_consolidated_conditions_not_found(client, auth_user):
+    """Test consolidated conditions not found."""
     project_id = 999
 
     response = client.get(

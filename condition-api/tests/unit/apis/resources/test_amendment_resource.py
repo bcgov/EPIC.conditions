@@ -68,7 +68,6 @@ def test_post_amendment_success(client, auth_header, monkeypatch):
 
 def test_post_amendment_document_not_found(client, auth_header):
     """Test amendment creation when document does not exist."""
-
     payload = {
         "amendment_name": "Test Amendment",
         "date_issued": "2025-08-08",
@@ -76,7 +75,7 @@ def test_post_amendment_document_not_found(client, auth_header):
     }
 
     response = client.post(
-        f"/api/amendments/document/999",
+        "/api/amendments/document/999",
         data=json.dumps(payload),
         content_type="application/json",
         headers=auth_header,
@@ -104,7 +103,7 @@ def test_post_amendment_validation_error(client, auth_header, monkeypatch):
     monkeypatch.setattr(AmendmentSchema, "load", raise_validation)
 
     response = client.post(
-        f"/api/amendments/document/999",
+        "/api/amendments/document/999",
         data=json.dumps(payload),
         content_type="application/json",
         headers=auth_header,
