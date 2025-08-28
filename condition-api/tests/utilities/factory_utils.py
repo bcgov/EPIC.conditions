@@ -21,7 +21,16 @@ from faker import Faker
 
 from condition_api.config import get_named_config
 from condition_api.models import (
-    Amendment, Condition, Document, DocumentCategory, DocumentType, Project, StaffUser, db
+    Amendment,
+    Condition,
+    ConditionAttribute,
+    Document,
+    DocumentCategory,
+    DocumentType,
+    ManagementPlan,
+    Project,
+    StaffUser,
+    db
 )
 
 from sqlalchemy import func
@@ -118,12 +127,37 @@ def factory_amendment_model(document):
     amendment = Amendment(
         document_id=document.id,
         amended_document_id=str(uuid.uuid4()),
+        amendment_name="Amendment A",
         document_type_id=document.document_type_id,
         date_issued=datetime.utcnow()
     )
     db.session.add(amendment)
     db.session.commit()
     return amendment
+
+
+def factory_management_plan_model(condition_id, is_approved=False):
+    """Management Plan"""
+    management_plan = ManagementPlan(
+        condition_id=condition_id,
+        name="Plan A",
+        is_approved=is_approved
+    )
+    db.session.add(management_plan)
+    db.session.commit()
+    return management_plan
+
+
+def factory_condition_attribute_model(condition_id, attribute_key_id=7):
+    """Condition Attribute"""
+    condition_attribute = ConditionAttribute(
+        condition_id=condition_id,
+        attribute_key_id=attribute_key_id,
+        attribute_value='Satisfaction'
+    )
+    db.session.add(condition_attribute)
+    db.session.commit()
+    return condition_attribute
 
 
 def get_seeded_document_category(name="Certificate and Amendments"):

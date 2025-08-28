@@ -36,3 +36,5 @@ class ManagementPlan(BaseModel):
         if plan:
             db.session.delete(plan)
             db.session.commit()
+            return True
+        return True
