@@ -525,15 +525,14 @@ class ConditionService:
                 .first()
             )
 
-            if allow_duplicate_condition:
-                ConditionService._check_duplicate_condition_number(
-                    condition=Condition(
-                        document_id=final_document_id,
-                        amended_document_id=amended_document_id
-                    ),
-                    condition_id=None,  # None since we are creating a new one
-                    condition_number=conditions_data.get("condition_number")
-                )
+            ConditionService._check_duplicate_condition_number(
+                condition=Condition(
+                    document_id=final_document_id,
+                    amended_document_id=amended_document_id
+                ),
+                condition_id=None,  # None since we are creating a new one
+                condition_number=conditions_data.get("condition_number")
+            )
 
             # If it exists, update is_active to False
             if existing_condition and not allow_duplicate_condition:
@@ -554,6 +553,7 @@ class ConditionService:
             is_standard_condition=conditions_data.get("is_standard_condition"),
             topic_tags=conditions_data.get("topic_tags"),
             subtopic_tags=conditions_data.get("subtopic_tags"),
+            condition_type=conditions_data.get("condition_type"),
             effective_from=datetime.utcnow()
         )
         db.session.add(new_condition)

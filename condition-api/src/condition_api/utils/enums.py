@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enum definitions."""
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import List
 
 
@@ -79,3 +79,9 @@ class ManagementPlanConfig:
             AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
             AttributeKeys.REQUIRES_CONSULTATION,
         ]
+
+class ConditionType(Enum):
+    """Condition Type — whether a condition is newly added or an amendment."""
+
+    ADD = "add"
+    AMEND = "amend"

@@ -2,11 +2,12 @@
 
 Manages the condition
 """
-
 from condition_api.schemas.condition_attribute import ConditionAttributesSchema
 from condition_api.schemas.subcondition import SubconditionSchema
+from condition_api.utils.enums import ConditionType
 
 from marshmallow import Schema, fields
+from marshmallow_enum import EnumField
 
 
 class ConditionSchema(Schema):
@@ -32,7 +33,7 @@ class ConditionSchema(Schema):
     source_document = fields.Str(data_key="source_document", allow_none=True)
     # Condition can also have its own subconditions (recursive nesting)
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
-
+    condition_type = EnumField(ConditionType)
 
 class ProjectDocumentConditionSchema(Schema):
     """Top-level schema to include project and document names."""

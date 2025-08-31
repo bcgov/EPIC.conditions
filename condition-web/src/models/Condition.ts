@@ -1,6 +1,11 @@
 import { SubconditionModel } from "./Subcondition";
 import { ConditionAttributeModel } from "./ConditionAttribute";
 
+export enum ConditionType {
+  ADD = "ADD",
+  AMEND = "AMEND",
+}
+
 export interface ConditionModel {
   condition_id?: number;
   condition_name?: string;
@@ -19,6 +24,7 @@ export interface ConditionModel {
   subtopic_tags?: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
   condition_attributes?: ConditionAttributeModel;
+  condition_type?: ConditionType;
 }
 
 export const createDefaultCondition = (): ConditionModel => {
@@ -41,6 +47,7 @@ export const createDefaultCondition = (): ConditionModel => {
         independent_attributes: [],
         management_plans: [],
       },
+      condition_type: ConditionType.ADD,
   };
 };
 
@@ -51,7 +58,8 @@ export interface updateTopicTagsModel {
   is_approved?: boolean;
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
-  subconditions?: SubconditionModel[],
+  subconditions?: SubconditionModel[];
+  condition_type?: ConditionType;
 }
 
 export type PartialUpdateTopicTagsModel = Partial<updateTopicTagsModel>;

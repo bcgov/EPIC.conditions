@@ -2,7 +2,8 @@
 
 Manages the Condition
 """
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from condition_api.utils.enums import ConditionType
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from .base_model import BaseModel
@@ -32,6 +33,11 @@ class Condition(BaseModel):
     is_active = Column(Boolean, nullable=False, default=True)
     is_standard_condition = Column(Boolean, nullable=True)
     requires_management_plan = Column(Boolean, nullable=True)
+    condition_type = Column(
+        Enum(ConditionType, name="condition_type_enum"),
+        nullable=False,
+        default=ConditionType.ADD,
+    )
 
     # Establish a one-to-many relationship with subcondition
     subconditions = relationship('Subcondition', back_populates='condition', cascade='all, delete-orphan')
