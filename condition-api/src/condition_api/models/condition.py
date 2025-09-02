@@ -2,11 +2,11 @@
 
 Manages the Condition
 """
-from condition_api.utils.enums import ConditionType
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from .base_model import BaseModel
+from condition_api.utils.enums import ConditionType
 
 
 class Condition(BaseModel):
