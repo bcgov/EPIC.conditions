@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
     Box,
     Button,
@@ -81,6 +81,12 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
     // call parent-provided close
     onClose();
   };
+
+  useEffect(() => {
+    if (conditionConflictError) {
+      setConditionConflictError(false);
+    }
+  }, [conditionNumber, conditionName, selectedDocumentId, selectedConditionId, conditionConflictError]);
 
   return (
     <Modal open={open} onClose={handleClose}>

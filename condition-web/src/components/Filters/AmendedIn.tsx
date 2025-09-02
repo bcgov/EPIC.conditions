@@ -32,10 +32,22 @@ export function AmendedInFilter({ conditions }: AmendedInFilterProps) {
                 id="source-document-select"
                 value={filters.amendment_names || ""}
                 onChange={handleChange}
-                displayEmpty // important to show the empty item
+                displayEmpty
+                MenuProps={{
+                    disablePortal: true,
+                    PaperProps: {
+                        sx: {
+                            maxHeight: 300,
+                            overflow: "auto",
+                        },
+                    },
+                }}
                 sx={{
                     "& .MuiInputBase-input": {
                         p: BCDesignTokens.layoutPaddingSmall,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                     },
                     "& .MuiOutlinedInput-notchedOutline": {
                         border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault} !important`,
@@ -48,7 +60,8 @@ export function AmendedInFilter({ conditions }: AmendedInFilterProps) {
                                 variant="body2"
                                 color={BCDesignTokens.typographyColorDisabled}
                                 sx={{
-                                    lineHeight: BCDesignTokens.typographyLineHeightsXxdense,
+                                    lineHeight:
+                                        BCDesignTokens.typographyLineHeightsXxdense,
                                 }}
                             >
                                 Amended In
@@ -56,13 +69,15 @@ export function AmendedInFilter({ conditions }: AmendedInFilterProps) {
                         );
                     }
                     return (
-                        <Box>
+                        <Box sx={{ overflow: "hidden" }}>
                             <Typography
                                 variant="body2"
+                                noWrap
                                 sx={{
                                     px: 1,
                                     py: 0.25,
-                                    borderRadius: 1
+                                    borderRadius: 1,
+                                    maxWidth: "100%",
                                 }}
                             >
                                 {selected}
@@ -82,8 +97,23 @@ export function AmendedInFilter({ conditions }: AmendedInFilterProps) {
                 </MenuItem>
 
                 {sourceDocs.map((doc) => (
-                    <MenuItem key={doc} value={doc}>
-                        <Typography variant="body2">{doc}</Typography>
+                    <MenuItem
+                        key={doc}
+                        value={doc}
+                        sx={{
+                            maxWidth: "100%",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        <Typography
+                            variant="body2"
+                            noWrap
+                            sx={{ maxWidth: "100%" }}
+                        >
+                            {doc}
+                        </Typography>
                     </MenuItem>
                 ))}
             </Select>
