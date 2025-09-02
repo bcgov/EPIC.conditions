@@ -86,7 +86,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
     if (conditionConflictError) {
       setConditionConflictError(false);
     }
-  }, [conditionNumber, conditionName, selectedDocumentId, selectedConditionId]);
+  }, [conditionNumber, conditionName, selectedDocumentId, selectedConditionId, conditionConflictError]);
 
   return (
     <Modal open={open} onClose={handleClose}>
