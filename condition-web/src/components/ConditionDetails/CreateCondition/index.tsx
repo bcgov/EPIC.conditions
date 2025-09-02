@@ -23,6 +23,8 @@ import ChipInput from "../../Shared/Chips/ChipInput";
 import { useNavigate } from "@tanstack/react-router";
 import CloseIcon from '@mui/icons-material/Close';
 import LoadingButton from "../../Shared/Buttons/LoadingButton";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/hooks/api/constants";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -40,7 +42,7 @@ type ConditionsParam = {
 export const CreateConditionPage = ({
   conditionData
 }: ConditionsParam) => {
-
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [condition, setCondition] = useState<ConditionModel>(
@@ -129,6 +131,11 @@ export const CreateConditionPage = ({
       };
       const response = await updateCondition(data);
       if (response) {
+        await queryClient.refetchQueries({
+          queryKey: [QUERY_KEY.CONDITIONS, conditionData?.project_id, conditionData?.document_id],
+          exact: true,
+        });
+
         navigate({
           to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
         });

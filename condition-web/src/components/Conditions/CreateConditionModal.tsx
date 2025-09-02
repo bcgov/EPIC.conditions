@@ -19,7 +19,7 @@ import { useCreateCondition } from "@/hooks/api/useConditions";
 import { useGetDocumentsByProject } from "@/hooks/api/useDocuments";
 import { useGetConditions } from "@/hooks/api/useConditions";
 import { DocumentModel } from "@/models/Document";
-import { ConditionModel } from "@/models/Condition";
+import { ConditionModel, ConditionType } from "@/models/Condition";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
 import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
@@ -68,8 +68,22 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
     }
   }
 
+  const handleClose = () => {
+    // reset fields
+    setSelectedMode("amend");
+    setConditionNumber("");
+    setConditionName("");
+    setConditionConflictError(false);
+    setSelectedDocumentId("");
+    setSelectedConditionId(null);
+    setLoadCondition(false);
+  
+    // call parent-provided close
+    onClose();
+  };
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <Paper sx={{
         position: "absolute",
         top: "50%",
@@ -82,7 +96,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
       }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" padding={"14px 5px 14px 14px"}>
           <Typography variant="h6">Manual Condition Entry</Typography>
-          <IconButton onClick={onClose}>
+          <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -161,6 +175,19 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
                     rows={4}
                     variant="outlined"
                   />
+              {conditionConflictError && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    marginBottom: "15px",
+                    color: "#CE3E39",
+                    marginTop: "-20px",
+                  }}
+                >
+                  This condition number already exists within this amendment.
+                </Box>
+              ) }
                 </Box>
               )}
             </Stack>
@@ -272,7 +299,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
 
         <Divider />
         <Box sx={{ display: "flex", justifyContent: "right", padding: "14px" }}>
-          <Button variant="outlined" sx={{ minWidth: "100px" }} onClick={onClose}>Cancel</Button>
+          <Button variant="outlined" sx={{ minWidth: "100px" }} onClick={handleClose}>Cancel</Button>
           <Button
             variant="contained"
             sx={{ marginLeft: "8px", minWidth: "100px" }}
@@ -281,12 +308,18 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
                 handleCreateNewCondition({
                   condition_number: Number(conditionNumber) || undefined,
                   condition_name: conditionName,
+                  condition_type: ConditionType.ADD
                 });
               } else {
                 const selectedCondition = documentConditions?.conditions?.find(
                   (condition) => condition.condition_id === selectedConditionId
                 );
-                handleCreateNewCondition(selectedCondition);
+                if (selectedCondition) {
+                  handleCreateNewCondition({
+                    ...selectedCondition,
+                    condition_type: ConditionType.AMEND,
+                  });
+                }
               }
             }}
           >
