@@ -80,6 +80,7 @@ class ManagementPlanConfig:
             AttributeKeys.REQUIRES_CONSULTATION,
         ]
 
+
 class ConditionType(Enum):
     """Condition Type — whether a condition is newly added or an amendment."""
 

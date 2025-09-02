@@ -35,6 +35,7 @@ class ConditionSchema(Schema):
     subconditions = fields.List(fields.Nested(SubconditionSchema), data_key="subconditions")
     condition_type = EnumField(ConditionType)
 
+
 class ProjectDocumentConditionSchema(Schema):
     """Top-level schema to include project and document names."""
 
