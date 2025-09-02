@@ -185,7 +185,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
                     marginTop: "-20px",
                   }}
                 >
-                  This condition number already exists within this amendment.
+                  This condition has already been added/amended within this document.
                 </Box>
               ) }
                 </Box>
