@@ -36,7 +36,7 @@ from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
-from condition_api.utils.enums import AttributeKeys, IEMTermsConfig
+from condition_api.utils.enums import AttributeKeys, ConditionType, IEMTermsConfig
 
 
 class ConditionService:
@@ -769,6 +769,7 @@ class ConditionService:
                 .join(Amendment, Amendment.document_id == Document.id)
                 .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
                 .filter(filter_condition)
+                .filter(Condition.condition_type == ConditionType.AMEND)
                 .group_by(DocumentCategory.id, Condition.condition_number)
                 .subquery()
             )

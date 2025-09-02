@@ -91,6 +91,18 @@ export default function ConditionTable({
                         }}
                     >
                     <TableRow>
+                        {documentTypeId !== DocumentTypes.Amendment && (
+                            <StyledTableHeadCell colSpan={2} align="left">
+                                <TableSortLabel
+                                    active={orderBy === "amendment_names"}
+                                    direction={orderBy === "amendment_names" ? order : "asc"}
+                                    onClick={() => handleSort("amendment_names")}
+                                >
+                                    Amended In
+                                </TableSortLabel>
+                            </StyledTableHeadCell>
+                        )}
+
                         <StyledTableHeadCell colSpan={2}>
                             <TableSortLabel
                                 active={orderBy === "condition_number"}
@@ -110,18 +122,6 @@ export default function ConditionTable({
                                 Condition Name
                             </TableSortLabel>
                         </StyledTableHeadCell>
-
-                        {documentTypeId !== DocumentTypes.Amendment && (
-                            <StyledTableHeadCell colSpan={2} align="right">
-                                <TableSortLabel
-                                    active={orderBy === "amendment_names"}
-                                    direction={orderBy === "amendment_names" ? order : "asc"}
-                                    onClick={() => handleSort("amendment_names")}
-                                >
-                                    Amendment In
-                                </TableSortLabel>
-                            </StyledTableHeadCell>
-                        )}
 
                         <StyledTableHeadCell colSpan={2} align="right">
                             <TableSortLabel
