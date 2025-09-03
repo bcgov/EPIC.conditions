@@ -149,7 +149,10 @@ class ConditionService:
             )
             .outerjoin(
                 amendment_subquery,
-                conditions.condition_number == amendment_subquery.c.condition_number
+                and_(
+                    conditions.condition_number == amendment_subquery.c.condition_number,
+                    conditions.document_id == amendment_subquery.c.document_id
+                )
             )
             .filter(
                 (
@@ -249,15 +252,17 @@ class ConditionService:
         return (
             db.session.query(
                 conditions.condition_number,
+                conditions.document_id.label("document_id"),
                 func.string_agg(amendments.amendment_name.distinct(), ', ').label('amendment_names')
             )
             .join(conditions, conditions.amended_document_id == amendments.amended_document_id)
             .join(documents, conditions.document_id == documents.document_id)
             .join(projects, projects.project_id == documents.project_id)
             .filter(
-                (projects.project_id == project_id) & (documents.document_id == document_id)
+                (projects.project_id == project_id) & (documents.document_id == document_id) &
+                (conditions.condition_type == ConditionType.AMEND)
             )
-            .group_by(conditions.condition_number)
+            .group_by(conditions.condition_number, conditions.document_id)
             .subquery()
         )
 
@@ -791,6 +796,7 @@ class ConditionService:
                 Condition.is_topic_tags_approved,
                 Condition.is_standard_condition,
                 Condition.requires_management_plan,
+                Condition.condition_type,
                 case(
                     (Condition.amended_document_id.isnot(None), Condition.amended_document_id),
                     else_=Condition.document_id,
@@ -857,7 +863,8 @@ class ConditionService:
                 "amendment_names": row.amendment_names,
                 "year_issued": row.year_issued,
                 "effective_document_id": row.effective_document_id,
-                "source_document": row.amendment_name if row.amendment_name else row.document_label
+                "source_document": row.amendment_name if row.amendment_name
+                and row.condition_type == ConditionType.ADD else row.document_label
             }
 
         return ProjectDocumentConditionSchema().dump(
