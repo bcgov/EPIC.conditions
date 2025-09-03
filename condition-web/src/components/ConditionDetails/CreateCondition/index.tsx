@@ -196,7 +196,7 @@ export const CreateConditionPage = ({
           <Box sx={{ display: 'flex', flexDirection: 'column', width: '50%', height: '100%', paddingRight: '5em'}}>
             <Grid container direction="row">
               <Grid item xs={8}>
-                <Stack direction="row" alignItems="flex-start" spacing={-2}>
+                <Stack direction="row" alignItems="flex-start" spacing={1}>
                   <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                       Project:
                   </StyledTableHeadCell>
@@ -225,7 +225,7 @@ export const CreateConditionPage = ({
                   <Grid item xs={8} sx={{ height: "60px" }}>
                       <Stack direction="row" alignItems="flex-start" spacing={-2}>
                           <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                              Source:
+                              Document:
                           </StyledTableHeadCell>
                           <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                               <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>

@@ -416,7 +416,7 @@ const ConditionHeader = ({
                   <Stack 
                       direction="row" 
                       alignItems="center" // Aligns items in a visually consistent way
-                      gap={1.5} // Controls spacing dynamically
+                      gap={4.5} // Controls spacing dynamically
                   >
                       <StyledLabel sx={{ whiteSpace: "nowrap" }}>
                           Project:
@@ -449,7 +449,7 @@ const ConditionHeader = ({
                       gap={1.5} // Controls spacing dynamically
                   >
                       <StyledLabel sx={{ whiteSpace: "nowrap" }}>
-                        Source:
+                        Document:
                       </StyledLabel>
                       <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
                           {documentLabel}
