@@ -4,6 +4,7 @@ import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
 import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
+import { OidcConfig } from "@/utils/config";
 
 export const Route = createFileRoute("/_authenticated")({
   component: Auth,
@@ -27,7 +28,7 @@ function Auth() {
 
   useEffect(() => {
     if (!isAuthenticated && !isUserAuthLoading) {
-      signinRedirect();
+      signinRedirect({redirect_uri: `${OidcConfig.redirect_uri}?path=${window.location.pathname}`});
     }
   }, [
     isAuthenticated,
