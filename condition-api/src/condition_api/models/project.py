@@ -23,7 +23,7 @@ class Project(BaseModel):
     project_type = Column(Text)
 
     # Establish a one-to-many relationship with the Document table
-    documents = relationship('Document', back_populates='project', cascade='all, delete-orphan')
+    documents = relationship('Document', back_populates='project')
 
     __table_args__ = (
         UniqueConstraint('project_id', name='uq_project'),

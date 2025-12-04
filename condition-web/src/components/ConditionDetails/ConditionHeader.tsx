@@ -13,8 +13,6 @@ import ChipInput from "../Shared/Chips/ChipInput";
 import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
 
 type ConditionHeaderProps = {
-    projectId: string;
-    documentId: string;
     conditionId: number;
     projectName: string;
     documentLabel: string;
@@ -23,8 +21,6 @@ type ConditionHeaderProps = {
 };
 
 const ConditionHeader = ({
-    projectId,
-    documentId,
     conditionId,
     projectName,
     documentLabel,
@@ -77,6 +73,18 @@ const ConditionHeader = ({
 
     const handleSave = async () => {
         setCheckConditionExists(true);
+
+        if (!conditionNumber) {
+          notify.error("Condition number is required.");
+          setCheckConditionExists(false);
+          return;
+        }
+
+        if (!conditionName?.trim()) {
+          notify.error("Condition name is required.");
+          setCheckConditionExists(false);
+          return;
+        }
 
         const data: PartialUpdateTopicTagsModel = {};
 
@@ -164,6 +172,7 @@ const ConditionHeader = ({
                   sx={{
                     display: "flex",
                     flexDirection: "row",
+                    marginBottom: "-22px"
                   }}
                 >
                   <TextField 
@@ -171,7 +180,7 @@ const ConditionHeader = ({
                     value={conditionNumber}
                     onChange={(e) => setConditionNumber(e.target.value)}
                     sx={{
-                      width: '100px',
+                      width: calculateWidth(String(conditionNumber)),
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "4px 0 0 4px",
                       },
@@ -226,52 +235,121 @@ const ConditionHeader = ({
                   </Button>
                 </Box>
               ) : (
-                <Stack direction="row">
-                  <Box
-                    sx={{
-                      border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                      borderRadius: "4px 0 0 4px",
-                      borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      padding: '1px 10px 0 10px',
-                      backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
-                    }}
-                  >
-                    <Typography variant="h6">
-                      {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
-                    </Typography>
-                  </Box>
-                  {!condition.is_topic_tags_approved && (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={handleEditToggle}
+                <>
+                  <Stack direction="row">
+                    <Box
                       sx={{
-                        alignSelf: "stretch",
-                        borderRadius: "0 4px 4px 0",
                         border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                        backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
-                        height: '100%',
-                        padding: '2.25px 0',
+                        borderRadius: "4px 0 0 4px",
+                        borderRight: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
                         display: 'flex',
-                        alignItems: 'center',
-                        color: "black",
-                        '&:hover': {
-                          backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
-                        },
+                        flexDirection: 'column',
+                        height: '100%',
+                        padding: '1px 10px 0 10px',
+                        backgroundColor: condition.is_topic_tags_approved ? '#F7F9FC' : 'inherit',
                       }}
                     >
-                      <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
-                        <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
-                          Edit
+                      {condition.condition_name ? (
+                        <Typography variant="h6">
+                          {conditionNumber ? `${conditionNumber}.` : conditionNumber} {conditionName}
+                        </Typography>
+                      ) : (
+                        <Box display="flex" alignItems="center" width="100%" height="37px">
+                          <Typography variant="h6" sx={{ paddingRight: '15px' }}>
+                            {conditionNumber ? `${conditionNumber}.` : conditionNumber}
+                          </Typography>
+                          <TextField
+                            variant="outlined"
+                            fullWidth
+                            value={conditionName}
+                            onChange={(e) => setConditionName(e.target.value)}
+                            placeholder="Enter condition name"
+                            size="small"
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                height: "45px",
+                                marginTop: "22px",
+                                borderRadius: 0,
+                                borderLeft: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                                borderTop: "none",
+                                borderRight: "none",
+                                borderBottom: "none",
+                                "&:hover": {
+                                  borderLeft: `1px solid`,
+                                },
+                                "&.Mui-focused": {
+                                  borderLeft: `1px solid`,
+                                },
+                              },
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                border: "none", // remove default MUI border
+                              },
+                            }}
+                          />
                         </Box>
-                      </Typography>
-                    </Button>
-                  )}
-                </Stack>
+                      )}
+                    </Box>
+                    {!condition.is_topic_tags_approved && !condition.condition_name && (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => {
+                          setCheckConditionExistsForProject(true);
+                          handleSave();
+                        }}
+                        sx={{
+                          alignSelf: "stretch",
+                          borderRadius: "0 4px 4px 0",
+                          border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                          backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                          height: '100%',
+                          padding: '5px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: "black",
+                          '&:hover': {
+                            backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                          },
+                        }}
+                      >
+                        <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <SaveAltIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                          <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                            Save
+                          </Box>
+                        </Typography>
+                      </Button>
+                    )}
+                    {!condition.is_topic_tags_approved && condition.condition_name && (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleEditToggle}
+                        sx={{
+                          alignSelf: "stretch",
+                          borderRadius: "0 4px 4px 0",
+                          border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                          backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                          height: '100%',
+                          padding: '2.25px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: "black",
+                          '&:hover': {
+                            backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                          },
+                        }}
+                      >
+                        <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                          <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                            Edit
+                          </Box>
+                        </Typography>
+                      </Button>
+                    )}
+                  </Stack>
+                </>
               )}
               {conditionConflictError && (
                 <Box
@@ -286,7 +364,7 @@ const ConditionHeader = ({
                   This condition number already exists. Please enter a new one.
                 </Box>
               )}
-              {approvalError && (
+              {(!conditionName || approvalError) && (
                 <Box
                   sx={{
                     display: "flex",
@@ -294,10 +372,10 @@ const ConditionHeader = ({
                     marginBottom: "15px",
                     color: "#CE3E39",
                     marginTop: 1,
-                    fontSize: '14px',
+                    fontSize: "14px",
                   }}
                 >
-                  {approvalErrorMessage} 
+                  {approvalError ? approvalErrorMessage : "Please enter a Condition Name."}
                 </Box>
               )}
             </Stack>
@@ -338,7 +416,7 @@ const ConditionHeader = ({
                   <Stack 
                       direction="row" 
                       alignItems="center" // Aligns items in a visually consistent way
-                      gap={1.5} // Controls spacing dynamically
+                      gap={4.5} // Controls spacing dynamically
                   >
                       <StyledLabel sx={{ whiteSpace: "nowrap" }}>
                           Project:
@@ -371,7 +449,7 @@ const ConditionHeader = ({
                       gap={1.5} // Controls spacing dynamically
                   >
                       <StyledLabel sx={{ whiteSpace: "nowrap" }}>
-                        Source:
+                        Document:
                       </StyledLabel>
                       <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
                           {documentLabel}

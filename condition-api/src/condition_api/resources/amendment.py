@@ -15,7 +15,8 @@
 
 from http import HTTPStatus
 
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
@@ -23,7 +24,7 @@ from condition_api.models.document import Document
 from condition_api.schemas.amendment import AmendmentSchema
 from condition_api.services.amendment_service import AmendmentService
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -47,7 +48,7 @@ class AmendmentsResource(Resource):
     @API.response(code=HTTPStatus.OK, model=amendment_model, description="Create amendments")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def post(document_id):
         """Create a new amendment."""
         try:

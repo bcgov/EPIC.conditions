@@ -36,9 +36,25 @@ class ConditionAttributeSchema(BaseSchema):
     requires_iem_terms_of_engagement = fields.Bool(data_key="requires_iem_terms_of_engagement")
 
 
-class ConditionAttributeUpdateSchema(BaseSchema):
-    """Condition Attribute schema."""
+class ConditionAttributeDetailsSchema(Schema):
+    """Independent Condition Attribute schema."""
 
     id = fields.Str(data_key="id", allow_none=True)
     key = fields.Str(data_key="key", allow_none=True)
     value = fields.Str(data_key="value", allow_none=True)
+
+
+class ManagementPlanWithAttributesSchema(Schema):
+    """Management Plan Condition Attribute schema."""
+
+    id = fields.Str(data_key="id", required=True)
+    name = fields.Str(data_key="name", required=True)
+    is_approved = fields.Bool(data_key="is_approved", required=False, allow_none=True)
+    attributes = fields.List(fields.Nested(ConditionAttributeDetailsSchema))
+
+
+class ConditionAttributesSchema(Schema):
+    """Condition Attribute schema."""
+
+    independent_attributes = fields.List(fields.Nested(ConditionAttributeDetailsSchema))
+    management_plans = fields.List(fields.Nested(ManagementPlanWithAttributesSchema))

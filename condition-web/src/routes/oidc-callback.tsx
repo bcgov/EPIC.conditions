@@ -11,6 +11,8 @@ export const Route = createFileRoute("/oidc-callback")({
 function OidcCallback() {
   const { error: getAuthError, user: kcUser } = useAuth();
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const params = new URLSearchParams(window.location.search);
+  const path = params.get("path");
 
   useEffect(() => {
     if (kcUser) {
@@ -22,8 +24,9 @@ function OidcCallback() {
     guid: kcUser?.profile.sub,
   });
 
-  if (userData?.auth_guid) {
-    return <Navigate to="/projects" />;
+  if (userData?.auth_guid ) {
+    const navPath = path ?? '/projects'
+    return <Navigate to={navPath} />;
   }
 
   if (getAuthError) {

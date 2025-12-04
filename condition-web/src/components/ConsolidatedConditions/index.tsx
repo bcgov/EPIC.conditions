@@ -9,6 +9,9 @@ import ConditionTable from "../Conditions/ConditionsTable";
 import { DocumentStatus } from "@/models/Document";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
+import ConsolidatedConditionFilters from "@/components/Filters/ConsolidatedConditionFilters";
+import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
+import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -42,6 +45,32 @@ export const ConsolidatedConditions = ({
   const [hasAmendments, setHasAmendments] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggled, setIsToggled] = useState(true);
+
+  const { filters } = useConditionFilters();
+
+  const filteredConditions = conditions?.filter((condition) => {
+    const matchesSearch = filters.search_text
+      ? condition.condition_name?.toLowerCase().includes(filters.search_text.toLowerCase()) ?? false
+      : true;  
+
+    const matchesSource = filters.source_document 
+      ? condition.source_document?.toLowerCase().includes(filters.source_document.toLowerCase()) ?? false
+      : true;
+
+    const matchesAmendment = filters.amendment_names 
+      ? condition.amendment_names?.toLowerCase().includes(filters.amendment_names.toLowerCase()) ?? false
+      : true;
+
+    const conditionStatus: ConditionStatus = condition.is_approved
+      ? CONDITION_STATUS.true.value
+      : CONDITION_STATUS.false.value;
+
+    const matchesStatus = filters.status && filters.status.length > 0
+      ? filters.status.includes(conditionStatus)
+      : true;
+
+    return matchesSearch && matchesSource && matchesAmendment && matchesStatus;
+  });
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -90,6 +119,7 @@ export const ConsolidatedConditions = ({
         }
         label={""}
       >
+        <ConsolidatedConditionFilters conditions={conditions}/>
         <Box
           sx={{
             borderRadius: "3px",
@@ -142,7 +172,7 @@ export const ConsolidatedConditions = ({
                   sx={{ height: "100%", py: BCDesignTokens.layoutPaddingSmall }}
               >
                   <ConditionTable
-                    conditions={conditions || []}
+                    conditions={filteredConditions || []}
                     projectId={projectId}
                     documentId={""}
                     noConditions={noConditions}

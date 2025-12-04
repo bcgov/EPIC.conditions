@@ -2,65 +2,44 @@ import React, { memo, useEffect, useState } from "react";
 import {
   Box,
   Button,
-  CircularProgress,
-  Divider,
-  IconButton,
-  Modal,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-  Select,
-  Stack,
-  MenuItem,
-  Paper
+  Stack
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { BCDesignTokens } from "epic.theme";
 import { theme } from "@/styles/theme";
 import { useUpdateConditionAttributeDetails } from "@/hooks/api/useConditionAttribute";
 import { ConditionModel } from "@/models/Condition";
-import { ConditionAttributeModel } from "@/models/ConditionAttribute";
+import { IndependentAttributeModel } from "@/models/ConditionAttribute";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { updateTopicTagsModel } from "@/models/Condition";
-import { useGetAttributes } from "@/hooks/api/useAttributeKey";
 import ConditionAttributeRow from "./ConditionAttributeRow";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  CONDITION_KEYS,
-  SELECT_OPTIONS,
-  managementRequiredKeys,
-  consultationRequiredKeys,
-  iemRequiredKeys
-} from "./Constants";
-import CloseIcon from '@mui/icons-material/Close';
-import DynamicFieldRenderer from "./DynamicFieldRenderer";
+import {  CONDITION_KEYS, SELECT_OPTIONS } from "../Constants";
+import DynamicFieldRenderer from "../DynamicFieldRenderer";
+import AttributeModal from "../AttributeModal";
+import { useGetAttributes } from "@/hooks/api/useAttributeKey";
+import ErrorMessage from "../ErrorMessage";
+import { ApproveButton } from "../ApproveButton";
+import { validateRequiredAttributes } from "@/utils/attributeValidation";
 
 type ConditionAttributeTableProps = {
-    projectId: string;
-    documentId: string;
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
     origin?: string;
 };
 
-interface Attribute {
-  id: string;
-  key_name: string;
-}
-
 const ConditionAttributeTable = memo(({
-    projectId,
-    documentId,
     condition,
     setCondition,
     origin
   }: ConditionAttributeTableProps) => {
-
     const queryClient = useQueryClient();
     const [conditionAttributeError, setConditionAttributeError] = useState(false);
     const [isAnyRowEditing, setIsAnyRowEditing] = useState(false);
@@ -68,7 +47,6 @@ const ConditionAttributeTable = memo(({
 
     /* State variables to track the requirement status of mandatory attributes.
       These flags determine if management, consultation, or IEM attributes are still required. */
-    const [isManagementRequired, setIsManagementRequired] = useState(false);
     const [isConsultationRequired, setIsConsultationRequired] = useState(false);
     const [isIEMRequired, setIsIEMRequired] = useState(false);
 
@@ -121,37 +99,34 @@ const ConditionAttributeTable = memo(({
     }, [conditionDetails, setCondition]);
 
     useEffect(() => {
-      if (conditionAttributeDetails) {
-        setCondition((prevCondition) => {
-          return {
-            ...prevCondition,
-            condition_attributes: conditionAttributeDetails,
-          };
-        });
+      if (conditionAttributeDetails?.independent_attributes) {
+        setCondition((prevCondition) => ({
+          ...prevCondition,
+          condition_attributes: {
+            independent_attributes: conditionAttributeDetails.independent_attributes,
+            management_plans: prevCondition.condition_attributes?.management_plans ?? [],
+          },
+        }));
       }
 
-      if (conditionAttributeDetails) {
-      /* Check if requires management plan is true */
-      const managementRequired = conditionAttributeDetails.some((attr: ConditionAttributeModel) => 
-        attr.key === CONDITION_KEYS.REQUIRES_MANAGEMENT_PLAN && 
-        (attr.value === "true")
-      );
-      setIsManagementRequired(!!managementRequired);
+      if (conditionAttributeDetails?.independent_attributes) {
       /* Check if requires consultation is true */
-      const consultationRequired = conditionAttributeDetails.some((attr: ConditionAttributeModel) => 
+      const consultationRequired = conditionAttributeDetails?.independent_attributes.some((
+        attr: IndependentAttributeModel) => 
         attr.key === CONDITION_KEYS.REQUIRES_CONSULTATION && 
         (attr.value === "true")
       );
       setIsConsultationRequired(!!consultationRequired);
       /* Check if requires IEM terms of engagement is true */
-      const IEMRequired = conditionAttributeDetails.some((attr: ConditionAttributeModel) => 
+      const IEMRequired = conditionAttributeDetails?.independent_attributes.some((
+        attr: IndependentAttributeModel) => 
         attr.key === CONDITION_KEYS.REQUIRES_IEM_TERMS_OF_ENGAGEMENT && 
         (attr.value === "true")
       );
       setIsIEMRequired(!!IEMRequired);
     }
 
-    }, [conditionAttributeDetails]);
+    }, [conditionAttributeDetails?.independent_attributes, setCondition, setIsConsultationRequired, setIsIEMRequired]);
 
     const approveConditionAttributes = () => {
       if (isAnyRowEditing) {
@@ -169,25 +144,15 @@ const ConditionAttributeTable = memo(({
           and IEM are filled in based on the respective required keys.
         - `hasInvalidAttributes` combines these checks to determine if any mandatory attributes
           are missing or invalid. */
-      const getAttrValue = (key: string) =>
-        condition?.condition_attributes?.find(attr => attr.key === key)?.value;
-
-      const isEmpty = (value: any) => value === null || value === '{}' || value === '';
-
-      const managementInvalid = isManagementRequired
-      ? managementRequiredKeys.some(key => isEmpty(getAttrValue(key)))
-      : false;
-      const consultationInvalid = isConsultationRequired
-        ? consultationRequiredKeys.some(key => isEmpty(getAttrValue(key)))
-        : false;
-      const iemInvalid = isIEMRequired
-        ? iemRequiredKeys.some(key => isEmpty(getAttrValue(key)))
-        : false;
-      const hasInvalidAttributes =
-        managementInvalid || consultationInvalid || iemInvalid;
-
-      if (hasInvalidAttributes) {
-        // Trigger a notification for invalid attributes
+      const allAttributes = condition?.condition_attributes?.independent_attributes || [];
+      const isValid = validateRequiredAttributes({
+        attributes: allAttributes,
+        isManagementRequired: false,
+        isConsultationRequired,
+        isIEMRequired,
+      });
+      
+      if (!isValid) {
         setConditionAttributeError(true);
         return;
       }
@@ -197,18 +162,28 @@ const ConditionAttributeTable = memo(({
       updateConditionDetails(data);
     };
 
-    const handleSave = async (updatedAttribute: ConditionAttributeModel) => {
+    const handleSave = async (updatedAttribute: IndependentAttributeModel) => {
       setConditionAttributeError(false);
-      const updatedAttributes = condition.condition_attributes?.map((attr) =>
-        attr.id === updatedAttribute.id ? updatedAttribute : attr
-      ) || [];
-
+      const updatedIndependentAttributes = (condition.condition_attributes?.independent_attributes || []).map(
+        (attr: IndependentAttributeModel) =>
+          attr.id === updatedAttribute.id ? updatedAttribute : attr
+      );
+    
+      const updatedConditionAttributes = {
+        independent_attributes: updatedIndependentAttributes,
+        management_plans: condition.condition_attributes?.management_plans || [],
+      };
+    
       setCondition((prevCondition) => ({
         ...prevCondition,
-        condition_attributes: updatedAttributes,
+        condition_attributes: updatedConditionAttributes,
         ...conditionDetails,
       }));
-      updateAttributes(updatedAttributes);
+
+      await updateAttributes({
+        requires_management_plan: false,
+        condition_attribute: updatedConditionAttributes,
+      });
     };
   
     const handleAddConditionAttribute = () => {
@@ -224,11 +199,12 @@ const ConditionAttributeTable = memo(({
   
       setModalOpen(true);
     };
-  
+
     const {
       data: attributesData,
       isPending: isAttributesLoading,
       isError: isAttributesError,
+      refetch: refetchAttributes,
     } = useGetAttributes(condition.condition_id);
 
     const [isModalOpen, setModalOpen] = useState(false);
@@ -288,21 +264,28 @@ const ConditionAttributeTable = memo(({
       const formatArray = (arr: string[]) =>
         `{${arr.filter((item) => item.trim() !== "").map((item) => `"${item.replace(/"/g, '\\"')}"`).join(",")}}`;
 
-      updateAttributes([
-        {
-          id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
-          key: selectedAttribute,
-          value: selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
-            ? formatArray(chips)
-            : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
-            ? formatArray(planNames)
-            : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
-            ? submissionMilestones.map((submissionMilestone) => `${submissionMilestone}`).join(",")
-            : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
-            ? milestones.map((milestone) => `${milestone}`).join(",")
-            : otherValue !== "" ? otherValue : attributeValue,
-        }
-      ]);
+      updateAttributes({
+        requires_management_plan: false,
+        condition_attribute: {
+          independent_attributes: [
+            {
+              id: `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
+              key: selectedAttribute,
+              value:
+                selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
+                  ? formatArray(chips)
+                  : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
+                  ? submissionMilestones.map((submissionMilestone) => `${submissionMilestone}`).join(",")
+                  : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
+                  ? milestones.map((milestone) => `${milestone}`).join(",")
+                  : otherValue !== ""
+                  ? otherValue
+                  : attributeValue,
+            },
+          ],
+          management_plans: [],
+        },
+      });
 
       // Close the modal and reset the selection
       setModalOpen(false);
@@ -332,6 +315,12 @@ const ConditionAttributeTable = memo(({
         />
       );
     };
+
+    useEffect(() => {
+      if (isModalOpen) {
+        refetchAttributes();
+      }
+    }, [isModalOpen, refetchAttributes]);
 
     return (
       <Box>
@@ -364,7 +353,8 @@ const ConditionAttributeTable = memo(({
                 },
               }}
             >
-              {(condition.condition_attributes || []).map((attribute) => (
+              {(condition.condition_attributes?.independent_attributes || []).map(
+                (attribute: IndependentAttributeModel) => (
                 <ConditionAttributeRow
                   key={attribute.id}
                   conditionAttributeItem={attribute}
@@ -373,7 +363,6 @@ const ConditionAttributeTable = memo(({
                   onEditModeChange={(isEditing) => {
                     setIsAnyRowEditing(isEditing);
                   }}
-                  isManagementRequired={isManagementRequired}
                   isConsultationRequired={isConsultationRequired}
                   isIEMRequired={isIEMRequired}
                 />
@@ -382,23 +371,17 @@ const ConditionAttributeTable = memo(({
           </Table>
         </TableContainer>
 
-        {conditionAttributeError && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              marginBottom: "15px",
-              color: "#CE3E39",
-              marginTop: 1,
-              fontSize: '14px',
-            }}
-          >
-            Please complete all the required attribute fields before approving the Condition Attributes.
-          </Box>
-        )}
+        <Box sx={{ marginTop: 1, marginBottom: 2 }}>
+          <ErrorMessage
+            visible={conditionAttributeError}
+            message="Please complete all the required attribute fields before approving the Condition Attributes."
+          />
+        </Box>
+
         <Stack sx={{ mt: 5 }} direction={"row"}>
           <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-            {!condition.is_condition_attributes_approved  && attributesData?.length > 0 && (
+            {!condition.is_condition_attributes_approved 
+             && attributesData && attributesData?.length > 0 && (
               <Button
                 variant="contained"
                 color="secondary"
@@ -415,148 +398,33 @@ const ConditionAttributeTable = memo(({
               </Button>
             )}
           </Box>
-  
-          <Modal
-            open={isModalOpen}
-            onClose={handleCloseModal}
-            aria-labelledby="modal-title"
-            aria-describedby="modal-description"
-          >
-            <Paper
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: "90%",
-                maxWidth: "500px",
-                borderRadius: "4px",
-                outline: "none",
-              }}
-            >
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                padding={"14px 5px 14px 14px"}
-              >
-                <Typography variant="h6">Add Condition Attribute</Typography>
-                <IconButton onClick={handleCloseModal}>
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-              <Divider />
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                padding={"14px"}
-              >
-                <Stack direction={"column"} sx={{ width: "100%" }}>
-                  <Typography variant="body1" marginBottom={"2px"}>
-                    Select an Attribute
-                  </Typography>
-                  {isAttributesLoading ? (
-                    <CircularProgress size={24} sx={{ display: "block", margin: "16px auto" }} />
-                  ) : (
-                    <Select
-                      value={selectedAttribute}
-                      onChange={(e) => setSelectedAttribute(e.target.value)}
-                      fullWidth
-                      displayEmpty
-                      sx={{
-                        fontSize: "inherit",
-                        lineHeight: "inherit",
-                        width: "100%",
-                        "& .MuiSelect-select": {
-                          padding: "8px",
-                        },
-                        mb: 2
-                      }}
-                    >
-                      {attributesData?.map((attribute: Attribute) => (
-                        <MenuItem key={attribute.id} value={attribute.key_name}>
-                          {attribute.key_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                  {selectedAttribute && (
-                    <>
-                      <Typography variant="body1">
-                        {selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
-                          ? 'Select Value(s)'
-                          : selectedAttribute === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
-                          ? 'Select Value(s)'
-                          : selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED
-                          ? 'Add Parties to the List'
-                          : selectedAttribute === CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM
-                          ? 'Enter Acronym'
-                          : 'Select a Value'}
-                      </Typography>
-                      {renderEditableField()}
-                    </>
-                  )}
-                  <Box sx={{ display: "flex", justifyContent: "right", mt: 2 }}>
-                    <Button
-                      variant="outlined"
-                      sx={{ minWidth: "100px" }}
-                      onClick={handleCloseModal}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      sx={{ marginLeft: "8px", minWidth: "100px" }}
-                      onClick={handleAttributeSelection}
-                      disabled={
-                        !attributeValue &&
-                        chips.length === 0 &&
-                        milestones.length === 0 &&
-                        submissionMilestones.length == 0 &&
-                        planNames.length === 0
-                      }
-                    >
-                      Confirm
-                    </Button>
-                  </Box>
-                </Stack>
-              </Box>
-            </Paper>
-          </Modal>
+          {!isAttributesLoading &&
+            <AttributeModal
+                open={isModalOpen}
+                onClose={handleCloseModal}
+                attributes={attributesData || []}
+                selectedAttribute={selectedAttribute}
+                onSelectAttribute={setSelectedAttribute}
+                isLoading={isAttributesLoading}
+                renderEditableField={renderEditableField}
+                confirmDisabled={
+                  !attributeValue &&
+                  chips.length === 0 &&
+                  milestones.length === 0 &&
+                  submissionMilestones.length == 0
+                }
+                onConfirm={handleAttributeSelection}
+            />
+          }
 
           {origin !== 'create' && (
             <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  sx={{
-                    width: "250px",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                  }}
-                  onClick={approveConditionAttributes}
-                >
-                  {condition.is_condition_attributes_approved
-                    ? "Un-approve Condition Attributes"
-                    : "Approve Condition Attributes"}
-                </Button>
-                {showEditingError && isAnyRowEditing && (
-                  <Box
-                    sx={{
-                      color: "#CE3E39",
-                      fontSize: "14px",
-                      marginTop: 1,
-                      marginBottom: "15px",
-                      textAlign: 'right',
-                    }}
-                  >
-                    Please save your changes before approving the Condition Attributes.
-                  </Box>
-                )}
-              </Box>
+              <ApproveButton
+                isApproved={condition.is_condition_attributes_approved || false}
+                isAnyRowEditing={isAnyRowEditing}
+                showEditingError={showEditingError}
+                onApprove={approveConditionAttributes}
+              />
             </Box>
           )}
         </Stack>

@@ -1,7 +1,8 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, Stack } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { ConditionModel } from "@/models/Condition";
+import { SubconditionModel } from "@/models/Subcondition";
 import { theme } from "@/styles/theme";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -31,8 +32,6 @@ type ConditionDescriptionProps = {
 // Main component to render the condition and its subconditions
 const ConditionDescription = memo(({
   editMode,
-  projectId,
-  documentId,
   conditionId,
   condition,
   setCondition,
@@ -70,6 +69,13 @@ const ConditionDescription = memo(({
     }
   );
 
+  const saveChanges = useCallback(() => {
+    const data: updateTopicTagsModel = {
+      subconditions: subconditions
+    };
+    updateConditionDetails(data);
+  }, [subconditions, updateConditionDetails]);
+
   useEffect(() => {
     setSubconditions(condition.subconditions || []);
   }, [condition.subconditions, setSubconditions]);
@@ -80,7 +86,7 @@ const ConditionDescription = memo(({
       // On save, submit changedValues to the backend
       saveChanges();
     }
-  }, [editMode, isEditing]);
+  }, [editMode, isEditing, saveChanges]);
 
   useEffect(() => {
     if (conditionDetails) {
@@ -92,7 +98,7 @@ const ConditionDescription = memo(({
       }));
       setIsLoading(false);
     }
-  }, [conditionDetails]);
+  }, [conditionDetails, setCondition, setIsConditionApproved, setIsLoading]);
   
   const approveConditionDescription = () => {
     if (isEditing) {
@@ -107,15 +113,8 @@ const ConditionDescription = memo(({
     updateConditionDetails(data);
   };
 
-  const saveChanges = () => {
-    const data: updateTopicTagsModel = {
-      subconditions: subconditions
-    };
-    updateConditionDetails(data);
-  };
-
   const buildSortOrderMap = (
-    items: any[],
+    items: SubconditionModel[],
     parentId: string = "null",
     map: Record<string, number> = {}
   ): Record<string, number> => {
@@ -129,11 +128,11 @@ const ConditionDescription = memo(({
   };
 
   const applySortOrder = (
-    nodes: any[],
+    nodes: SubconditionModel[],
     sortOrderMap: Record<string, number>,
     parentId: string | null = null
-  ): any[] => {
-    const apply = (items: any[], parentId: string): any[] => {
+  ): SubconditionModel[] => {
+    const apply = (items: SubconditionModel[], parentId: string): SubconditionModel[] => {
       return items
         .map((item) => ({
           ...item,
@@ -152,11 +151,11 @@ const ConditionDescription = memo(({
   };
 
   const reorderNested = (
-    items: any[],
+    items: SubconditionModel[],
     parentId: string | null,
     sourceIndex: number,
     destinationIndex: number
-  ): any[] => {
+  ): SubconditionModel[] => {
     if (parentId === "subconditions-droppable") {
       const newItems = [...items];
       const [moved] = newItems.splice(sourceIndex, 1);

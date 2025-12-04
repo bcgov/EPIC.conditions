@@ -15,14 +15,15 @@
 
 from http import HTTPStatus
 
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
 from condition_api.schemas.project import ProjectSchema
 from condition_api.services.project_service import ProjectService
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -46,7 +47,7 @@ class ProjectsResource(Resource):
     @API.response(code=HTTPStatus.OK, model=projects_model, description="Get projects")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get():
         """Fetch projects and related documents."""
         try:
@@ -58,5 +59,30 @@ class ProjectsResource(Resource):
 
             # Call dump on the schema instance
             return projects_schema.dump(project_data), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
+@API.route("/with-approved-conditions", methods=["GET", "OPTIONS"])
+class ApprovedProjectsResource(Resource):
+    """Resource for fetching all projects with approved conditions."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get all projects with approved conditions")
+    @API.response(code=HTTPStatus.OK, model=projects_model, description="Get projects with approved conditions")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.require
+    @cross_origin(origins=allowedorigins())
+    def get():
+        """Fetch projects with approved conditions."""
+        try:
+            project_data = ProjectService.get_projects_with_approved_conditions()
+            if not project_data:
+                return {"message": "No projects found"}, HTTPStatus.NOT_FOUND
+
+            results = [{"epic_guid": pid[0]} for pid in project_data]
+
+            return results, HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

@@ -18,6 +18,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { DocumentTypes } from "@/utils/enums"
 import { ConditionModal } from "./CreateConditionModal";
 import LoadingButton from "../Shared/Buttons/LoadingButton";
+import ConditionFilters from "@/components/Filters/ConditionFilters";
+import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
+import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -57,18 +60,34 @@ export const Conditions = ({
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const onCreateFailure = () => {
-    notify.error("Failed to create condition");
-  };
+  
+  const { filters } = useConditionFilters();
 
-  const onCreateSuccess = () => {
-    notify.success("Condition created successfully");
-  };
+  const filteredConditions = conditions?.filter((condition) => {
+    const matchesSearch = filters.search_text
+      ? condition.condition_name?.toLowerCase().includes(filters.search_text.toLowerCase()) ?? false
+      : true;  
 
-  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, {
-    onSuccess: onCreateSuccess,
-    onError: onCreateFailure,
+    const matchesSource = filters.source_document 
+      ? condition.source_document?.toLowerCase().includes(filters.source_document.toLowerCase()) ?? false
+      : true;
+
+    const matchesAmendment = filters.amendment_names 
+      ? condition.amendment_names?.toLowerCase().includes(filters.amendment_names.toLowerCase()) ?? false
+      : true;
+
+    const conditionStatus: ConditionStatus = condition.is_approved
+      ? CONDITION_STATUS.true.value
+      : CONDITION_STATUS.false.value;
+
+    const matchesStatus = filters.status && filters.status.length > 0
+      ? filters.status.includes(conditionStatus)
+      : true;
+
+    return matchesSearch && matchesSource && matchesAmendment && matchesStatus;
   });
+
+  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, false);
 
   useEffect(() => {
     // Check if all conditions have status as true
@@ -92,7 +111,7 @@ export const Conditions = ({
   }, [conditions]);
 
   const handleOpenCreateNewCondition = async (conditionDetails?: ConditionModel) => {
-    setLoading(true)
+    setLoading(true);
     // Directly navigate to the 'Create Condition' page if the condition is not being added to an amendment.
     if (documentTypeId !== DocumentTypes.Amendment) {
       try {
@@ -105,7 +124,7 @@ export const Conditions = ({
       } catch (error) {
         notify.error("Failed to create condition");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     } else {
       setOpenModal(true);
@@ -114,6 +133,7 @@ export const Conditions = ({
 
   const handleCloseCreateNewCondition = () => {
     setOpenModal(false);
+    setLoading(false);
   };
 
   const { mutateAsync: updateDocument } = useUpdateDocument(documentId);
@@ -130,7 +150,6 @@ export const Conditions = ({
         onDocumentLabelChange(tempLabel);
         notify.success("Document label updated successfully");
       } catch (error) {
-        console.log(error);
         notify.error("Failed to update document label");
       }
     }
@@ -164,6 +183,7 @@ export const Conditions = ({
         }
         label={""}
       >
+          <ConditionFilters conditions={conditions}/>
           <Box
             sx={{
               borderRadius: "3px",
@@ -302,7 +322,7 @@ export const Conditions = ({
             </Grid>
             <Grid container direction="row" p={1} px={2} pb={3}>
               <ConditionTable
-                conditions={conditions || []}
+                conditions={filteredConditions || []}
                 projectId={projectId}
                 documentId={documentId}
                 noConditions={noConditions}

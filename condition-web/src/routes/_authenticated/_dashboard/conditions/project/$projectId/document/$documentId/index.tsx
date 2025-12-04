@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useLoadDocumentDetails } from "@/hooks/api/useDocuments";
-import { useLoadConditions } from "@/hooks/api/useConditions";
+import { useGetDocumentDetails } from "@/hooks/api/useDocuments";
+import { useGetConditions } from "@/hooks/api/useConditions";
 import { Conditions, ConditionsSkeleton } from "@/components/Conditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -32,13 +32,13 @@ function ConditionPage() {
     data: documentDetails,
     isPending: isDocumentDetailsLoading,
     isError: isDocumentDetailsError
-  } = useLoadDocumentDetails(documentId);
+  } = useGetDocumentDetails(documentId);
 
   const {
     data: documentConditions,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useLoadConditions(true, false, projectId, documentId);
+  } = useGetConditions(true, false, projectId, documentId);
 
   useEffect(() => {
     if (isDocumentDetailsError) {

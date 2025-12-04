@@ -31,7 +31,7 @@ class Document(BaseModel):
     is_latest_amendment_added = Column(Boolean)
 
     # Foreign key to link to the project
-    project_id = Column(String(255), ForeignKey('condition.projects.project_id', ondelete='CASCADE'))
+    project_id = Column(String(255), ForeignKey('condition.projects.project_id', ondelete='RESTRICT'))
 
     # Establish the relationship back to the Project table
     project = relationship('Project', back_populates='documents')

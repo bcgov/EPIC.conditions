@@ -1,3 +1,20 @@
+# CONDITION-WEB
+
+## Getting Started
+
+### 1. Navigate to Front End Directory
+Change to the front-end directory:
+cd condition-web
+
+### 2. Install Dependencies
+Install necessary npm packages:
+npm install
+
+### 3. Run Development Server
+Launch the development server:
+npm run dev
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

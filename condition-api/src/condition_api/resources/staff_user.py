@@ -15,11 +15,12 @@
 
 from http import HTTPStatus
 
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from condition_api.exceptions import BadRequestError, ResourceNotFoundError
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -47,7 +48,7 @@ class Users(Resource):
     @API.response(code=HTTPStatus.CREATED, model=user_model, description="Staff user Created")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def post():
         """Create a staff user."""
         created_account = StaffUserService.create_or_update_staff_user(API.payload)
@@ -67,7 +68,7 @@ class User(Resource):
     @API.response(code=200, model=user_model, description="Success")
     @API.response(404, "Not Found")
     @auth.require
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(guid):
         """Fetch a staff user by id."""
         user = StaffUserService.get_by_auth_guid(guid)

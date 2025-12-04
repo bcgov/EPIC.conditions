@@ -1,4 +1,10 @@
 import { SubconditionModel } from "./Subcondition";
+import { ConditionAttributeModel } from "./ConditionAttribute";
+
+export enum ConditionType {
+  ADD = "ADD",
+  AMEND = "AMEND",
+}
 
 export interface ConditionModel {
   condition_id?: number;
@@ -13,14 +19,12 @@ export interface ConditionModel {
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
   is_standard_condition?: boolean;
+  requires_management_plan?: boolean;
   source_document?: string;
   subtopic_tags?: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
-  condition_attributes?: Array<{
-    id: string;
-    key: string;
-    value: string;
-  }>; 
+  condition_attributes?: ConditionAttributeModel;
+  condition_type?: ConditionType;
 }
 
 export const createDefaultCondition = (): ConditionModel => {
@@ -36,9 +40,14 @@ export const createDefaultCondition = (): ConditionModel => {
       topic_tags: [],
       is_topic_tags_approved: false,
       is_condition_attributes_approved: false,
+      requires_management_plan: false,
       subtopic_tags: [],
       subconditions: [],
-      condition_attributes: [],
+      condition_attributes: {
+        independent_attributes: [],
+        management_plans: [],
+      },
+      condition_type: ConditionType.ADD,
   };
 };
 
@@ -49,7 +58,8 @@ export interface updateTopicTagsModel {
   is_approved?: boolean;
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
-  subconditions?: SubconditionModel[],
+  subconditions?: SubconditionModel[];
+  condition_type?: ConditionType;
 }
 
 export type PartialUpdateTopicTagsModel = Partial<updateTopicTagsModel>;
@@ -71,3 +81,18 @@ export interface ProjectDocumentConditionDetailModel {
   document_label: string;
   condition: ConditionModel;
 }
+
+export type ConditionStatus = "true" | "false";
+export const CONDITION_STATUS: Record<
+  ConditionStatus,
+  { value: ConditionStatus; label: string }
+> = {
+  true: {
+    value: "true",
+    label: "Approved",
+  },
+  false: {
+    value: "false",
+    label: "Awaiting Approval",
+  }
+};

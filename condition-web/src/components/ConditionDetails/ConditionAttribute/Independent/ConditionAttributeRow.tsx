@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Button, IconButton, TableCell, TableRow, TableRowProps } from "@mui/material";
-import { CustomTooltip } from '../../Shared/Common';
+import { CustomTooltip } from '../../../Shared/Common';
 import { styled } from "@mui/system";
 import EditIcon from "@mui/icons-material/Edit";
 import { Save } from "@mui/icons-material";
 import RemoveIcon from '@mui/icons-material/Remove';
 import { BCDesignTokens } from "epic.theme";
-import { ConditionAttributeModel } from "@/models/ConditionAttribute";
+import { IndependentAttributeModel } from "@/models/ConditionAttribute";
 import {
   CONDITION_KEYS,
   SELECT_OPTIONS,
-  managementRequiredKeys,
   consultationRequiredKeys,
-  iemRequiredKeys
-} from "./Constants";
-import DynamicFieldRenderer from "./DynamicFieldRenderer";
+  iemRequiredKeys,
+  managementRequiredKeys
+} from "../Constants";
+import DynamicFieldRenderer from "../DynamicFieldRenderer";
 
 const StyledTableRow = styled(TableRow)(() => ({}));
 
@@ -44,11 +44,11 @@ export const ConditionAttributeHeadTableCell = styled(TableCell)(() => ({
 }));
 
 type ConditionAttributeRowProps = {
-  conditionAttributeItem: ConditionAttributeModel;
-  onSave: (updatedAttribute: ConditionAttributeModel) => void;
+  conditionAttributeItem: IndependentAttributeModel;
+  onSave: (updatedAttribute: IndependentAttributeModel) => void;
   is_approved?: boolean;
   onEditModeChange?: (isEditing: boolean) => void;
-  isManagementRequired: boolean;
+  isManagementRequired?: boolean;
   isConsultationRequired: boolean;
   isIEMRequired: boolean;
 };
@@ -64,12 +64,12 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
 }) => {
   const { key: conditionKey, value: attributeValue } = conditionAttributeItem;
   const [isEditable, setIsEditable] = useState(false);
-  const [editableValue, setEditableValue] = useState(attributeValue);
+  const [editableValue, setEditableValue] = useState(attributeValue ?? "");
   const [otherValue, setOtherValue] = useState("");
 
   useEffect(() => {
     onEditModeChange?.(isEditable);
-  }, [isEditable]);
+  }, [isEditable, onEditModeChange]);
 
   const [chips, setChips] = useState<string[]>(
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
@@ -87,19 +87,30 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   const [submissionMilestones, setSubmissionMilestones] = useState<string[]>(
     conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION
       ? attributeValue
-          ?.replace(/[{}]/g, "")
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""))
-      : []
+        ?.replace(/[{}]/g, "") // Remove curly braces
+        .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+        ?.map((item) =>
+          item
+            .trim()
+            .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+            .replace(/\\"/g, '"') // Fix escaped quotes
+        ) || []
+    : []
   );
   const [milestones, setMilestones] = useState<string[]>(
     conditionKey === CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION
       ? attributeValue
-          ?.replace(/[{}]/g, "")
-          .split(",")
-          .map((item) => item.trim().replace(/^"|"$/g, ""))
-      : []
+        ?.replace(/[{}]/g, "") // Remove curly braces
+        .match(/"(?:\\.|[^"\\])*"|[^,]+/g) // Match quoted strings or standalone words
+        ?.map((item) =>
+          item
+            .trim()
+            .replace(/^"(.*)"$/, "$1") // Remove surrounding quotes
+            .replace(/\\"/g, '"') // Fix escaped quotes
+        ) || []
+    : []
   );
+
   const [planNames, setPlanNames] = useState<string[]>(
     conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME
       ? attributeValue
@@ -115,7 +126,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   );
 
   useEffect(() => {
-    setEditableValue(conditionAttributeItem.value);
+    setEditableValue(conditionAttributeItem.value ?? "");
     if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED) {
       setChips(
         conditionAttributeItem.value
@@ -129,6 +140,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           ) || []
       );
     }
+
     if (conditionKey === CONDITION_KEYS.MANAGEMENT_PLAN_NAME) {
       setPlanNames(
         conditionAttributeItem.value

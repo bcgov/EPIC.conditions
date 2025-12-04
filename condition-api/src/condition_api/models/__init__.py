@@ -23,6 +23,7 @@ from .db import db, ma, migrate
 from .document import Document
 from .document_category import DocumentCategory
 from .document_type import DocumentType
+from .management_plan import ManagementPlan
 from .project import Project
 from .staff_user import StaffUser
 from .subcondition import Subcondition

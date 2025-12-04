@@ -16,8 +16,8 @@
 from http import HTTPStatus
 
 from flask import request
-
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
@@ -28,7 +28,7 @@ from condition_api.schemas.condition import ConditionSchema,\
     ProjectDocumentConditionDetailSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_service import ConditionService
 from condition_api.utils.roles import EpicConditionRole
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -53,7 +53,7 @@ class ConditionDetailsResource(Resource):
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(project_id, document_id, condition_id):
         """Fetch conditions and condition attributes by project ID."""
         try:
@@ -82,7 +82,7 @@ class ConditionDetailsPatchResource(Resource):
         code=HTTPStatus.OK, model=condition_model, description="Edit conditions"
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition data."""
@@ -117,7 +117,7 @@ class ConditionDetailResource(Resource):
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(project_id, document_id):
         """Fetch conditions and condition attributes by project ID."""
         try:
@@ -140,7 +140,7 @@ class ConditionDetailResource(Resource):
     @API.response(code=HTTPStatus.OK, model=condition_model, description="Create condition")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def post(project_id, document_id):
         """Create a new condition."""
         try:
@@ -149,10 +149,18 @@ class ConditionDetailResource(Resource):
                 conditions_data = ConditionSchema().load(API.payload)
             else:
                 conditions_data = {}
-            created_condition = ConditionService.create_condition(project_id, document_id, conditions_data)
+            query_params = request.args
+            allow_duplicate_condition = query_params.get(
+                'allow_duplicate_condition', 'true').lower() == 'true'
+            created_condition = ConditionService.create_condition(project_id,
+                                                                  document_id,
+                                                                  conditions_data,
+                                                                  allow_duplicate_condition)
             return created_condition, HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+        except ConditionNumberExistsError as err:
+            return {"message": str(err)}, HTTPStatus.CONFLICT
 
 
 @cors_preflight("GET, OPTIONS, PATCH, DELETE")
@@ -165,7 +173,7 @@ class ConditionResource(Resource):
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(condition_id):
         """Fetch conditions and condition attributes by condition ID."""
         try:
@@ -187,18 +195,29 @@ class ConditionResource(Resource):
         code=HTTPStatus.OK, model=condition_model, description="Edit conditions"
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition data."""
         try:
             conditions_data = ConditionSchema().load(API.payload)
             query_params = request.args
-            check_condition_over_project = query_params.get(
-                'check_condition_over_project', 'true').lower() == 'true'
+
+            allow_duplicate_condition = query_params.get(
+                'allow_duplicate_condition', 'true').lower() == 'true'
+            if allow_duplicate_condition:
+                check_condition_exists = True
+                check_condition_over_project = False
+            else:
+                check_condition_exists = True
+                check_condition_over_project = query_params.get(
+                    'check_condition_over_project', 'true'
+                ).lower() == 'true'
+
             updated_condition = ConditionService.update_condition(conditions_data,
-                                                                  condition_id, True,
-                                                                  check_condition_over_project)
+                                                                  condition_id, check_condition_exists,
+                                                                  check_condition_over_project,
+                                                                  allow_duplicate_condition)
             return ConditionSchema().dump(updated_condition), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
@@ -219,7 +238,7 @@ class ConditionResource(Resource):
         code=HTTPStatus.OK, model=condition_model, description="Delete conditions"
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
     def delete(condition_id):
         """Remove condition data."""

@@ -1,0 +1,48 @@
+{
+    "conditions": [
+      {
+        "condition_name": "Condition 1",
+        "condition_number": 1,
+        "condition_text": "1.1 Sample Condition",
+        "topic_tags": [],
+        "subtopic_tags": [],
+        "deliverables": [
+          {
+            "deliverable_name": "Management Plan",
+            "is_plan": true,
+            "is_draft": true,
+            "approval_type": "Type",
+            "stakeholders_to_consult": [
+                "Stake Holder"
+            ],
+            "stakeholders_to_submit_to": [
+              "Stake Holder"
+            ],
+            "fn_consultation_required": false,
+            "related_phase": "",
+            "days_prior_to_commencement": 0
+          }
+        ],
+        "clauses": [
+          {
+            "clause_identifier": "1.1",
+            "clause_text": "Sample Condition",
+            "subconditions": []
+          }
+        ]
+      }
+    ],
+    "project_id": "c668a5210cdd8a970fb42722",
+    "project_name": "Project Name",
+    "project_type": "Project Type",
+    "document_id": "c1a4e89f7d635000b3de4f91",
+    "display_name": "Document Name",
+    "document_file_name": "Document Name.pdf",
+    "document_type": "Document Type",
+    "date_issued": "2025-06-11T07:00:00",
+    "act": 2018,
+    "first_nations": [
+      "Stake Holder"
+    ],
+    "consultation_records_required": true
+  }

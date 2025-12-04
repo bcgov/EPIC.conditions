@@ -23,6 +23,8 @@ import ChipInput from "../../Shared/Chips/ChipInput";
 import { useNavigate } from "@tanstack/react-router";
 import CloseIcon from '@mui/icons-material/Close';
 import LoadingButton from "../../Shared/Buttons/LoadingButton";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/hooks/api/constants";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -40,7 +42,7 @@ type ConditionsParam = {
 export const CreateConditionPage = ({
   conditionData
 }: ConditionsParam) => {
-
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [condition, setCondition] = useState<ConditionModel>(
@@ -55,7 +57,7 @@ export const CreateConditionPage = ({
   const [modalTitle, setModalTitle] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(true);
+  const [allowDuplicateCondition, setAllowDuplicateCondition] = useState(false);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = event.target.value;
@@ -77,7 +79,7 @@ export const CreateConditionPage = ({
   }, [tags, setTags]);
 
   const { mutateAsync: updateCondition } = useUpdateCondition(
-    checkConditionExistsForProject,
+    allowDuplicateCondition,
     condition?.condition_id,
   );
 
@@ -98,6 +100,7 @@ export const CreateConditionPage = ({
   );
 
   const handleSaveAndClose = async () => {
+    setAllowDuplicateCondition(true);
     setLoading(true);
     let errorFlag = false;
 
@@ -118,6 +121,7 @@ export const CreateConditionPage = ({
 
     if (errorFlag) {
       notify.error("Failed to save condition.");
+      setAllowDuplicateCondition(false);
       return;
     }
 
@@ -127,6 +131,11 @@ export const CreateConditionPage = ({
       };
       const response = await updateCondition(data);
       if (response) {
+        await queryClient.refetchQueries({
+          queryKey: [QUERY_KEY.CONDITIONS, conditionData?.project_id, conditionData?.document_id],
+          exact: true,
+        });
+
         navigate({
           to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
         });
@@ -158,6 +167,8 @@ export const CreateConditionPage = ({
     } finally {
       setLoading(false); // Stop loading once the request is complete
     }
+
+    setAllowDuplicateCondition(false)
   }
 
   const handleRemove = async () => {
@@ -185,7 +196,7 @@ export const CreateConditionPage = ({
           <Box sx={{ display: 'flex', flexDirection: 'column', width: '50%', height: '100%', paddingRight: '5em'}}>
             <Grid container direction="row">
               <Grid item xs={8}>
-                <Stack direction="row" alignItems="flex-start" spacing={-2}>
+                <Stack direction="row" alignItems="flex-start" spacing={1}>
                   <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                       Project:
                   </StyledTableHeadCell>
@@ -214,7 +225,7 @@ export const CreateConditionPage = ({
                   <Grid item xs={8} sx={{ height: "60px" }}>
                       <Stack direction="row" alignItems="flex-start" spacing={-2}>
                           <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
-                              Source:
+                              Document:
                           </StyledTableHeadCell>
                           <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                               <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
@@ -309,8 +320,6 @@ export const CreateConditionPage = ({
         >
           {conditionData ? (
             <CreateConditionInfoTabs
-              projectId={conditionData.project_id}
-              documentId={conditionData.document_id}
               condition={condition}
               setCondition={setCondition}
             />
@@ -365,7 +374,6 @@ export const CreateConditionPage = ({
             </Button>
             <LoadingButton
               onClick={() => {
-                setCheckConditionExistsForProject(false); // Set the constant to true
                 handleSaveAndClose(); // Call the save function
               }}
               color="primary"

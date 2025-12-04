@@ -1,4 +1,4 @@
-# Copyright © 2019 Province of British Columbia
+# Copyright © 2024 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enum definitions."""
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import List
 
 
@@ -33,7 +33,6 @@ class AttributeKeys(IntEnum):
     """Attribute Keys."""
 
     # The numbers are same as the id for each attribute key within the table attribute_keys
-    REQUIRES_MANAGEMENT_PLAN = 1
     REQUIRES_CONSULTATION = 2
     MANAGEMENT_PLAN_NAME = 3
     MANAGEMENT_PLAN_ACRONYM = 4
@@ -80,3 +79,10 @@ class ManagementPlanConfig:
             AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
             AttributeKeys.REQUIRES_CONSULTATION,
         ]
+
+
+class ConditionType(Enum):
+    """Condition Type — whether a condition is newly added or an amendment."""
+
+    ADD = "add"
+    AMEND = "amend"

@@ -7,7 +7,8 @@ import { theme } from "@/styles/theme";
 import SubconditionComponent from "../SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
 import { ConditionModel } from "@/models/Condition";
-import ConditionAttributeTable from '../ConditionAttribute/ConditionAttributeTable';
+import { SubconditionModel } from "@/models/Subcondition";
+import ConditionAttribute from '../ConditionAttribute';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 
 const StyledTabs = styled(Tabs)({
@@ -42,11 +43,9 @@ const StyledTab = styled(Tab)(({ theme }) => ({
 }));
 
 const CreateConditionInfoTabs: React.FC<{
-    projectId: string;
-    documentId: string;
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
-}> = ({ projectId, documentId, condition, setCondition }) => {
+}> = ({ condition, setCondition }) => {
     const [selectedTab, setSelectedTab] = useState('requirements');
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
@@ -63,7 +62,7 @@ const CreateConditionInfoTabs: React.FC<{
       } = useSubconditionHandler(condition.subconditions || []);
 
     const buildSortOrderMap = (
-        items: any[],
+        items: SubconditionModel[],
         parentId: string = "null",
         map: Record<string, number> = {}
     ): Record<string, number> => {
@@ -77,11 +76,11 @@ const CreateConditionInfoTabs: React.FC<{
     };
       
     const applySortOrder = (
-        nodes: any[],
+        nodes: SubconditionModel[],
         sortOrderMap: Record<string, number>,
         parentId: string | null = null
-    ): any[] => {
-        const apply = (items: any[], parentId: string): any[] => {
+    ): SubconditionModel[] => {
+        const apply = (items: SubconditionModel[], parentId: string): SubconditionModel[] => {
           return items
             .map((item) => ({
               ...item,
@@ -100,11 +99,11 @@ const CreateConditionInfoTabs: React.FC<{
     };
     
     const reorderNested = (
-        items: any[],
+        items: SubconditionModel[],
         parentId: string | null,
         sourceIndex: number,
         destinationIndex: number
-    ): any[] => {
+    ): SubconditionModel[] => {
         if (parentId === "subconditions-droppable") {
           const newItems = [...items];
           const [moved] = newItems.splice(sourceIndex, 1);
@@ -208,12 +207,9 @@ const CreateConditionInfoTabs: React.FC<{
                     </Stack>
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
-                    <ConditionAttributeTable
-                        projectId={projectId}
-                        documentId={documentId}
+                    <ConditionAttribute
                         condition={condition}
                         setCondition={setCondition}
-                        origin={'create'}
                     />
                 </Box>
             </Box>
