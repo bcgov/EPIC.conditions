@@ -46,7 +46,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build . --file Dockerfile --tag image
+          docker build --build-arg VITE_APP_BASE_PATH=/condition -f Dockerfile --tag image
 
       - name: Push image
         run: |
