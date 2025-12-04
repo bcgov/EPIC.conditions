@@ -3,6 +3,11 @@ app:
   url: condition-web-{{ .Release.Namespace }}.apps.gold.devops.gov.bc.ca
   api: https://condition-api-{{ .Release.Namespace }}.apps.gold.devops.gov.bc.ca
   env: dev
+  version: 1.0.0
+  title: "Condition Repository"
+  oidcAuthority: https://dev.loginproxy.gov.bc.ca/auth/realms/eao-epic
+  clientId: epic-condition
+  supportEmail: EAO.ManagementPlanSupport@gov.bc.ca
 resources:
   cpu:
     limit: 200m

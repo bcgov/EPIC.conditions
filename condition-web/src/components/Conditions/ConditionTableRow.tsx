@@ -42,6 +42,19 @@ export default function ConditionTableRow({
           },
         }}
       >
+        {documentTypeId !== DocumentTypes.Amendment && (
+          <TableCell
+            colSpan={2}
+            align="left"
+            sx={{
+              borderTop: border,
+              borderBottom: border,
+              py: BCDesignTokens.layoutPaddingXsmall,
+            }}
+          >
+            {condition.amendment_names ?? "--"}
+          </TableCell>
+        )}
         <TableCell
           colSpan={2}
           align="left"
@@ -88,19 +101,6 @@ export default function ConditionTableRow({
             <ArrowForwardIos fontSize="small" />
           </Link>
         </TableCell>
-        {documentTypeId !== DocumentTypes.Amendment && (
-          <TableCell
-            colSpan={2}
-            align="right"
-            sx={{
-              borderTop: border,
-              borderBottom: border,
-              py: BCDesignTokens.layoutPaddingXsmall,
-            }}
-          >
-            {condition.amendment_names ?? "--"}
-          </TableCell>
-        )}
         <TableCell
           colSpan={2}
           align="right"

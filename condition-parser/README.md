@@ -1,17 +1,21 @@
-## Installation
+# CONDITION-PARSER
 
-1. Clone the repository:
+Gradio application for extracting conditions and related details from PDF documents.
+
+## Getting Started
+
+## Step 1. Clone the repository:
    
-   `git clone https://github.com/bcgov/EPIC.conditions`
+    - `git clone https://github.com/bcgov/EPIC.conditions`
 
-   `cd condition-parser`
+    - `cd condition-parser`
    
 
-2. Set up a virtual environment:
+## Step 2. Set up a virtual environment:
    
-    `python -m venv venv`
+    - `python -m venv venv`
 
-3. Activate the virtual environment:
+## Step 3. Activate the virtual environment:
    - On Windows:
    
         `venv\Scripts\activate`
@@ -19,19 +23,15 @@
    
         `source venv/bin/activate`
 
-4. Install the required packages:
+## Step 4. Install the required packages:
    
-    `pip install -r requirements.txt`
+    - `pip install -r requirements.txt`
 
-5. Create a file named `.env` in the root directory of the project and add your OpenAI API key:
+## Step 5. Create a file named `.env` in the root directory of the project and add your OpenAI API key:
    ```text
    OPENAI_API_KEY=openai_api_key_here
    ```
 
-## Usage
+## Step 6. Run the gradio UI by executing the following command in the root of the directory (/condition-parser):
 
-### Individual PDFs:
-
-Run the gradio UI by executing the following command in the root of the directory (/condition-parser):
-
-`python gradio_ui.py`
+    - `python gradio_ui.py`

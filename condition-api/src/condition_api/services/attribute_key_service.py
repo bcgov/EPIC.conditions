@@ -1,4 +1,4 @@
-# Copyright © 2019 Province of British Columbia
+# Copyright © 2024 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -26,16 +26,23 @@ class AttributeKeyService:
     """Attribute Key management service."""
 
     @staticmethod
-    def get_all_attributes(condition_id):
+    def get_all_attributes(condition_id, management_plan_id=None):
         """Fetch all attributes."""
         condition_attributes = aliased(ConditionAttribute)
         attribute_keys = aliased(AttributeKey)
 
-        subquery = (
-            db.session.query(condition_attributes.attribute_key_id)
-            .filter(condition_attributes.condition_id == condition_id)
-            .subquery()
-        )
+        if management_plan_id:
+            subquery = (
+                db.session.query(condition_attributes.attribute_key_id)
+                .filter(condition_attributes.management_plan_id == management_plan_id)
+                .subquery()
+            )
+        else:
+            subquery = (
+                db.session.query(condition_attributes.attribute_key_id)
+                .filter(condition_attributes.condition_id == condition_id)
+                .subquery()
+            )
 
         attributes_data = (
             db.session.query(
@@ -46,7 +53,9 @@ class AttributeKeyService:
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
                 ~attribute_keys.id.in_([AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED,
                                         # exlucding Parties required to be submitted from attribute_keys
-                                        AttributeKeys.DELIVERABLE_NAME]),
+                                        AttributeKeys.DELIVERABLE_NAME,
+                                        AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
+                                        AttributeKeys.MANAGEMENT_PLAN_NAME]),
             )
             .order_by(attribute_keys.sort_order)
             .all()

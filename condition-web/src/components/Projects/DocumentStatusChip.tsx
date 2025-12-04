@@ -43,6 +43,8 @@ export default function DocumentStatusChip({
   return (
     <Chip
       sx={{
+        width: "160px",
+        justifyContent: "center",
         ...style.sx,
       }}
       label={style.label}

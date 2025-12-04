@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useConsolidatedConditionsByCategory } from "@/hooks/api/useConsolidatedConditions";
+import { useGetConsolidatedConditions } from "@/hooks/api/useConsolidatedConditions";
 import { ConsolidatedConditions, ConsolidatedConditionsSkeleton } from "@/components/ConsolidatedConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -31,7 +31,7 @@ function ConditionPage() {
     data: consolidatedConditions,
     isPending: isConditionsLoading,
     isError: isConditionsError
-  } = useConsolidatedConditionsByCategory(projectId, categoryId, false);
+  } = useGetConsolidatedConditions(projectId, categoryId, false);
 
   useEffect(() => {
     if (isConditionsError) {
@@ -61,7 +61,7 @@ function ConditionPage() {
         true
       );
     }
-  }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY]);
+  }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, categoryId, projectId]);
 
   if (isConditionsError) return <Navigate to="/error" />;
 

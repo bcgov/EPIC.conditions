@@ -5,12 +5,15 @@ import { Options } from "./types";
 
 const updateConditionAttributeDetails = (
   conditionId: number,
-  conditionAttributeDetails: ConditionAttributeModel[]
+  payload: {
+    requires_management_plan: boolean;
+    condition_attribute: ConditionAttributeModel;
+  }
 ) => {
   return submitRequest({
     url: `/attributes/condition/${conditionId}`,
     method: "patch",
-    data: conditionAttributeDetails,
+    data: payload,
   });
 };
 
@@ -19,11 +22,41 @@ export const useUpdateConditionAttributeDetails = (
   options? : Options
 ) => {
   return useMutation({
-    mutationFn: (conditionAttributeDetails: ConditionAttributeModel[]) => {
+    mutationFn: (payload: {
+      requires_management_plan: boolean;
+      condition_attribute: ConditionAttributeModel;
+    }) => {
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }
-      return updateConditionAttributeDetails(conditionId, conditionAttributeDetails);
+      return updateConditionAttributeDetails(conditionId, payload);
+    },
+    ...options,
+  });
+};
+
+const removeConditionAttributes = (
+  conditionId: number,
+  requiresManagementPlan: boolean
+) => {
+  const param = `requires_management_plan=${requiresManagementPlan}`;
+  return submitRequest({
+    url: `/attributes/condition/${conditionId}?${param}`,
+    method: "delete",
+    data: { requires_management_plan: requiresManagementPlan },
+  });
+};
+
+export const useRemoveConditionAttributes = (
+  conditionId?: number,
+  options? : Options
+) => {
+  return useMutation({
+    mutationFn: (requiresPlan: boolean) => {
+      if (!conditionId) {
+        return Promise.reject(new Error("Condition ID is required"));
+      }
+      return removeConditionAttributes(conditionId, requiresPlan);
     },
     ...options,
   });

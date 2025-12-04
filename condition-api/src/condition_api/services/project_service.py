@@ -1,4 +1,4 @@
-# Copyright © 2019 Province of British Columbia
+# Copyright © 2024 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -191,3 +191,20 @@ class ProjectService:
             return None
 
         return all_approved[0]
+
+    @staticmethod
+    def get_projects_with_approved_conditions():
+        """Fetch all projects that have at least one approved condition."""
+        projects = (
+            db.session.query(Project.project_id)
+            .join(Condition, Project.project_id == Condition.project_id)
+            .filter(
+                Condition.is_approved.is_(True),
+                Condition.is_topic_tags_approved.is_(True),
+                Condition.is_condition_attributes_approved.is_(True)
+            )
+            .distinct()
+            .all()
+        )
+
+        return projects

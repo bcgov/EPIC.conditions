@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
-import { useLoadDocumentType } from "@/hooks/api/useDocuments";
+import { useGetDocumentType } from "@/hooks/api/useDocuments";
 import { useGetProjects } from "@/hooks/api/useProjects";
 import { Else, If, Then } from "react-if";
 import { Projects, ProjectsSkeleton } from "@/components/Projects";
@@ -30,7 +30,16 @@ export function ProjectsPage() {
     error,
   } = useGetProjects();
 
-  const { data: documentTypeData } = useLoadDocumentType();
+  const { data: documentTypeData } = useGetDocumentType();
+
+  // Check if the error is a 404 Not Found error
+  const axiosError = error as AxiosError;
+
+  const filteredProjects = projectId
+  ? projectsData?.filter((project: ProjectModel) => project.project_id === projectId)
+  : projectsData;
+
+  const META_PROJECT_TITLE = `${filteredProjects?.[0]?.project_id}`;
 
   useEffect(() => {
     if (isProjectsError) {
@@ -38,18 +47,6 @@ export function ProjectsPage() {
     }
   }, [isProjectsError]);
 
-  // Check if the error is a 404 Not Found error
-  const axiosError = error as AxiosError;
-  if (isProjectsError && axiosError?.response?.status === HTTP_STATUS_CODES.NOT_FOUND) {
-    const errorMessage = (axiosError.response?.data as { message?: string })?.message || "Page not found";
-    return <Navigate to={`/not-found?message=${encodeURIComponent(errorMessage)}`} />;
-  }
-
-  const filteredProjects = projectId
-  ? projectsData?.filter((project: ProjectModel) => project.project_id === projectId)
-  : projectsData;
-
-  const META_PROJECT_TITLE = `${filteredProjects?.[0]?.project_id}`;
   useEffect(() => {
     if (filteredProjects && filteredProjects.length > 0) {
       const selectedProject = filteredProjects[0];
@@ -71,6 +68,11 @@ export function ProjectsPage() {
       }
     }
   }, [filteredProjects, projectId, META_PROJECT_TITLE, replaceBreadcrumb, breadcrumbs]);
+
+  if (isProjectsError && axiosError?.response?.status === HTTP_STATUS_CODES.NOT_FOUND) {
+    const errorMessage = (axiosError.response?.data as { message?: string })?.message || "Page not found";
+    return <Navigate to={`/not-found?message=${encodeURIComponent(errorMessage)}`} />;
+  }
 
   if (isProjectsError) {
     return <Navigate to={"/error"} />;

@@ -7,19 +7,17 @@ import {
   Pagination,
   Typography,
   Box,
-  InputAdornment,
-  IconButton,
-  TextField,
+  IconButton
 } from "@mui/material";
 import { Project } from "./Project";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { Navigate } from "@tanstack/react-router";
 import TuneIcon from '@mui/icons-material/Tune';
-import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { usePagination } from "@/hooks/api/usePagination";
 import { CreateDocumentModal } from "./CreateDocumentModal";
 import LoadingButton from "../Shared/Buttons/LoadingButton";
+import { SearchFilter } from "../Filters/SearchFilter";
 
 type ProjectsParams = {
   projects?: ProjectModel[];
@@ -77,23 +75,10 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
           </Box>
 
           {/* Search Field */}
-          <TextField
-            variant="outlined"
-            placeholder="Search Projects"
-            size="small"
-            sx={{
-              flex: { xs: "auto", sm: "0 0 50%" }, // 40% width on large screens
-              width: "100%",
-            }}
+          <SearchFilter
+            searchType="project"
             value={projectSearch}
-            onChange={(e) => setProjectSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
+            onChange={setProjectSearch}
           />
 
           {/* Spacer to push the button to the right */}

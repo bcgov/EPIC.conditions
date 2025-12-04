@@ -16,14 +16,14 @@
 from http import HTTPStatus
 
 from flask import request
-
-from flask_restx import Namespace, Resource, cors
+from flask_cors import cross_origin
+from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
 from condition_api.services import authorization
 from condition_api.services.condition_service import ConditionService
-from condition_api.utils.util import cors_preflight
+from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
@@ -42,7 +42,7 @@ class ConditionResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get consolidated conditions by project id")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @auth.optional
-    @cors.crossdomain(origin="*")
+    @cross_origin(origins=allowedorigins())
     def get(project_id):
         """Fetch consolidated conditions and condition attributes by project ID."""
         try:
