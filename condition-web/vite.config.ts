@@ -6,6 +6,7 @@ import istanbul from "vite-plugin-istanbul";
 // https://vitejs.dev/config/
 
 export default defineConfig({
+  base: process.env.VITE_APP_BASE_PATH || "/",
   plugins: [
     TanStackRouterVite(),
     react(),
