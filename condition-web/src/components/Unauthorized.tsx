@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Link } from "@mui/material";
 import { BCDesignTokens } from "epic.theme";
+import { AppConfig } from "@/utils/config";
 
 const Unauthorized: React.FC = React.memo(() => {
   return (
@@ -51,10 +52,10 @@ const Unauthorized: React.FC = React.memo(() => {
         If you believe you should have access to Condition Repository, please
         contact the Environmental Assessment Office at
         <Link
-          href="mailto:EAO.ManagementPlanSupport@gov.bc.ca"
+          href={`mailto:${AppConfig.supportEmail}`}
           sx={{ ml: BCDesignTokens.layoutMarginXsmall }}
         >
-          EAO.ManagementPlanSupport@gov.bc.ca.
+          {AppConfig.supportEmail}
         </Link>
       </Typography>
     </Box>

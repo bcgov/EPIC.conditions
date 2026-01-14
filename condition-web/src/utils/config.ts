@@ -8,6 +8,7 @@ declare global {
       VITE_VERSION: string;
       VITE_APP_TITLE: string;
       VITE_APP_URL: string;
+      VITE_APP_BASE_PATH: string;
       VITE_OIDC_AUTHORITY: string;
       VITE_CLIENT_ID: string;
       VITE_SUPPORT_EMAIL: string;
@@ -23,6 +24,7 @@ const APP_VERSION =
 const APP_TITLE =
   window._env_?.VITE_APP_TITLE || import.meta.env.VITE_APP_TITLE || "";
 const APP_URL = window._env_?.VITE_APP_URL || import.meta.env.VITE_APP_URL;
+const APP_BASE_PATH = window._env_?.VITE_APP_BASE_PATH || import.meta.env.VITE_APP_BASE_PATH;
 const OIDC_AUTHORITY =
   window._env_?.VITE_OIDC_AUTHORITY || import.meta.env.VITE_OIDC_AUTHORITY;
 const CLIENT_ID =
@@ -36,6 +38,7 @@ export const AppConfig = {
   version: APP_VERSION,
   appTitle: APP_TITLE,
   appUrl: APP_URL,
+  appBasePath: APP_BASE_PATH,
   clientId: CLIENT_ID,
   supportEmail: SUPPORT_EMAIL,
 };
@@ -44,8 +47,8 @@ export const OidcConfig = {
   authority: OIDC_AUTHORITY,
   kc_idp_hint: "idir",
   client_id: CLIENT_ID,
-  redirect_uri: `${APP_URL}/oidc-callback`,
-  post_logout_redirect_uri: `${APP_URL}/`,
+  redirect_uri: `${APP_URL}${APP_BASE_PATH || ''}/oidc-callback`,
+  post_logout_redirect_uri: `${APP_URL}${APP_BASE_PATH || ''}/`,
   scope: "openid profile email",
   revokeTokensOnSignout: true,
   userStore: new WebStorageStateStore({ store: window.sessionStorage }),

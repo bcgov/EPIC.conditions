@@ -30,6 +30,9 @@ jobs:
         shell: bash
         run: |
           oc project ${{ secrets.OPENSHIFT_REPOSITORY }}-tools
+          CURRENT_DATE=$(date +"%d_%m_%Y")
+          oc tag condition-api:${{ github.event.inputs.environment }} condition-api:${{ github.event.inputs.environment }}_bkp_${CURRENT_DATE}
+          oc tag condition-web:${{ github.event.inputs.environment }} condition-web:${{ github.event.inputs.environment }}_bkp_${CURRENT_DATE}
           oc tag condition-api:latest condition-api:${{ github.event.inputs.environment }}
           oc tag condition-web:latest condition-web:${{ github.event.inputs.environment }}
           
