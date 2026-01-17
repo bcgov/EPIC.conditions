@@ -6,7 +6,7 @@ FROM node:16-alpine as build-stage
 WORKDIR /app
 
 # Build argument for base path
-ARG VITE_APP_BASE_PATH=/conditions
+ARG VITE_APP_BASE_PATH=/condition
 ENV VITE_APP_BASE_PATH=$VITE_APP_BASE_PATH
 
 # add `/app/node_modules/.bin` to $PATH
