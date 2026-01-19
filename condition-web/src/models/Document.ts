@@ -15,6 +15,7 @@ export interface DocumentModel {
   amendment_count: number;
   is_latest_amendment_added: boolean;
   conditions?: ConditionModel[];  // Multiple conditions per document
+  type: string;
 }
 
 export type DocumentStatus = "true" | "false" | "nodata";

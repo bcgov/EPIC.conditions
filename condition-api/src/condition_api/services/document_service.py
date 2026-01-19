@@ -231,7 +231,8 @@ class DocumentService:
         documents = db.session.query(
             Document.id.label('document_record_id'),
             Document.document_id.label('document_id'),
-            Document.document_label
+            Document.document_label,
+            Document.created_date
         ).outerjoin(
             Project,
             Project.project_id == Document.project_id
@@ -247,10 +248,29 @@ class DocumentService:
 
         for document in documents:
             result.append({
+                "type": "document",
                 'document_record_id': document.document_record_id,
                 'document_id': document.document_id,
                 'document_label': document.document_label
             })
+
+            amendments = (
+                db.session.query(Amendment)
+                .filter(
+                    Amendment.document_id == document.document_record_id,
+                    Amendment.created_date <= document.created_date
+                )
+                .order_by(Amendment.date_issued)
+                .all()
+            )
+
+            for amendment in amendments:
+                result.append({
+                    "type": "amendment",
+                    'document_record_id': amendment.id,
+                    'document_id': amendment.amended_document_id,
+                    'document_label': amendment.amendment_name
+                })
 
         return result
 

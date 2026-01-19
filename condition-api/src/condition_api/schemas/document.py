@@ -38,6 +38,7 @@ class DocumentSchema(Schema):
     amendment_count = fields.Int(data_key="amendment_count")
     is_latest_amendment_added = fields.Bool(data_key="is_latest_amendment_added")
     project_name = fields.Str(data_key="project_name")
+    type = fields.Str(data_key="type")
 
     # Each document can have multiple conditions
     conditions = fields.List(fields.Nested(ConditionSchema), data_key="conditions")

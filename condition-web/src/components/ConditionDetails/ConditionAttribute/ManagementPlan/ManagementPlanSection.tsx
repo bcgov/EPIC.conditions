@@ -4,7 +4,7 @@ import {
   Button,
   CircularProgress
 } from "@mui/material";
-import { managementRequiredKeys } from "../../ConditionAttribute/Constants";
+import { managementRequiredKeys, managementOptionalDefaultKeys } from "../../ConditionAttribute/Constants";
 import { createDefaultManagementPlan } from "./helpers";
 import ManagementPlanAccordion from "./ManagementPlanAccordion";
 import { ManagementPlanModel } from "@/models/ConditionAttribute";
@@ -53,7 +53,8 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
     const handleAddPlan = async () => {
       const newPlan: ManagementPlanModel = createDefaultManagementPlan(
         `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
-        managementRequiredKeys
+        managementRequiredKeys,
+        managementOptionalDefaultKeys
       );
   
       try { 
