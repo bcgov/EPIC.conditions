@@ -75,7 +75,9 @@ class DocumentsResource(Resource):
     def get(project_id):
         """Get all documents."""
         try:
-            documents = DocumentService.get_all_documents_by_project_id(project_id)
+            document_id = request.args.get("documentId")
+            document_type = request.args.get("documentType")
+            documents = DocumentService.get_all_documents_by_project_id(project_id, document_id, document_type)
             if not documents:
                 return {}
 

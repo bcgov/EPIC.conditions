@@ -23,6 +23,7 @@ import { ConditionModel, ConditionType } from "@/models/Condition";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
 import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
+import { DocumentTypes } from "@/utils/enums"
 
 type ConditionModalProps = {
   open: boolean;
@@ -44,7 +45,9 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
 
   const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, selectedMode === "add");
 
-  const { data: documentData, isPending: isDocumentsLoading } = useGetDocumentsByProject(true, projectId);
+  const { data: documentData, isPending: isDocumentsLoading } = useGetDocumentsByProject(
+    true, projectId, documentId, DocumentTypes.Amendment.toString());
+
   const { data: documentConditions, isPending: isConditionsLoading } = useGetConditions(loadCondition, true, projectId, selectedDocumentId);
 
   const handleCreateNewCondition = async (conditionDetails?: ConditionModel) => {

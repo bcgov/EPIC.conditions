@@ -70,19 +70,35 @@ export const useCreateDocument = (
   });
 };
 
-const fetchDocumentsByProject = (projectId?: string) => {
+const fetchDocumentsByProject = (projectId?: string, documentId?: string, documentType?: string) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
+
   return submitRequest<DocumentModel>({
     url: `/documents/project/${projectId}`,
+    params: {
+      documentId,
+      documentType,
+    },
   });
+
 };
 
-export const useGetDocumentsByProject = (shouldLoad: boolean, projectId?: string) => {
+export const useGetDocumentsByProject = (
+  shouldLoad: boolean,
+  projectId?: string,
+  documentId?: string,
+  documentType?: string
+) => {
   return useQuery({
-    queryKey: [QUERY_KEY.PROJECTDOCUMENT, projectId],
-    queryFn: () => fetchDocumentsByProject(projectId),
+    queryKey: [
+      QUERY_KEY.PROJECTDOCUMENT,
+      projectId,
+      documentId,
+      documentType,
+    ],
+    queryFn: () => fetchDocumentsByProject(projectId, documentId, documentType),
     enabled: Boolean(projectId && shouldLoad),
     ...defaultUseQueryOptions,
   });
