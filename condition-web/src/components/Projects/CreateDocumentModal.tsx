@@ -114,7 +114,9 @@ export const CreateDocumentModal = ({
         isPending: isDocumentsLoading
     } = useGetDocumentsByProject(
         formState.selectedDocumentType === DocumentTypes.Amendment,
-        formState.selectedProject?.project_id
+        formState.selectedProject?.project_id,
+        undefined,
+        DocumentTypes.Certificate.toString()
     );
 
     // Function to get the document name

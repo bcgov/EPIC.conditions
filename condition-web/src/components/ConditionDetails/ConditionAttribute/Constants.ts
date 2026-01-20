@@ -98,6 +98,10 @@ export const managementRequiredKeys = [
   CONDITION_KEYS.REQUIRES_CONSULTATION,
 ];
 
+export const managementOptionalDefaultKeys = [
+  CONDITION_KEYS.MANAGEMENT_PLAN_ACRONYM,
+];
+
 export const consultationRequiredKeys = [
   CONDITION_KEYS.PARTIES_REQUIRED,
 ];

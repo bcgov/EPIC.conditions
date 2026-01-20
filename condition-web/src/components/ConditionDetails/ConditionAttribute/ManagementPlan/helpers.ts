@@ -7,11 +7,16 @@ export const createDefaultAttributeRow = (key: string): IndependentAttributeMode
 });
 
 export const createDefaultManagementPlan = (
-    id: string,
-    attributeKeys: string[]
-): ManagementPlanModel => ({
+  id: string,
+  requiredAttributeKeys: string[],
+  optionalAttributeKeys: string[] = []
+): ManagementPlanModel => {
+  const allKeys = [...requiredAttributeKeys, ...optionalAttributeKeys];
+
+  return {
     id,
     name: "",
     is_approved: false,
-    attributes: attributeKeys.map(createDefaultAttributeRow),
-});
+    attributes: allKeys.map(createDefaultAttributeRow),
+  };
+};

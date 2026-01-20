@@ -23,8 +23,9 @@ from condition_api.models.condition import Condition
 from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
-from condition_api.models.document_type import DocumentType
+from condition_api.models.document_type import DocumentType as DocumentTypeModel
 from condition_api.models.project import Project
+from condition_api.utils.enums import DocumentType
 
 
 class DocumentService:
@@ -90,11 +91,11 @@ class DocumentService:
             Project,
             Project.project_id == Document.project_id
         ).outerjoin(
-            DocumentType,
-            DocumentType.id == Document.document_type_id
+            DocumentTypeModel,
+            DocumentTypeModel.id == Document.document_type_id
         ).outerjoin(
             DocumentCategory,
-            DocumentCategory.id == DocumentType.document_category_id
+            DocumentCategory.id == DocumentTypeModel.document_category_id
         ).outerjoin(
             Condition,
             and_(
@@ -226,12 +227,13 @@ class DocumentService:
         return new_document
 
     @staticmethod
-    def get_all_documents_by_project_id(project_id):
+    def get_all_documents_by_project_id(project_id, document_id=None, document_type=None):
         """Fetch all documents and its amendments for the given project_id."""
-        documents = db.session.query(
+        documents_query = db.session.query(
             Document.id.label('document_record_id'),
             Document.document_id.label('document_id'),
-            Document.document_label
+            Document.document_label,
+            Document.created_date
         ).outerjoin(
             Project,
             Project.project_id == Document.project_id
@@ -239,20 +241,70 @@ class DocumentService:
             Project.project_id == project_id
         )
 
+        documents = documents_query.all()
+
         if not documents:
             # If no original document is found, return an empty list
             return []
 
         result = []
 
+        ref_created_date = DocumentService.get_reference_created_date(document_id) if document_id else None
         for document in documents:
             result.append({
+                "type": "document",
                 'document_record_id': document.document_record_id,
                 'document_id': document.document_id,
                 'document_label': document.document_label
             })
 
+            if document_type is not None and int(document_type) == DocumentType.Amendment.value:
+                amendments = (
+                    db.session.query(Amendment)
+                    .filter(
+                        Amendment.document_id == document.document_record_id,
+                        Amendment.created_date < ref_created_date
+                    )
+                    .order_by(Amendment.date_issued)
+                    .all()
+                )
+
+                for amendment in amendments:
+                    result.append({
+                        "type": "amendment",
+                        'document_record_id': amendment.id,
+                        'document_id': amendment.amended_document_id,
+                        'document_label': amendment.amendment_name
+                    })
+
         return result
+
+    @staticmethod
+    def get_reference_created_date(doc_id):
+        """
+        Returns the created_date for a document or amendment identified by doc_id.
+
+        The method first attempts to find a matching Document using document_id.
+        If not found, it then attempts to find a matching Amendment using
+        amended_document_id.
+
+        Args:
+            doc_id (str): The document or amendment identifier.
+
+        Returns:
+            datetime | None: The created_date if found, otherwise None.
+        """
+        # Try document first
+        doc = db.session.query(Document).filter(Document.document_id == doc_id).first()
+        if doc:
+            return doc.created_date
+
+        # If not found, try amendment
+        amendment = db.session.query(Amendment).filter(Amendment.amended_document_id == doc_id).first()
+        if amendment:
+            return amendment.created_date
+
+        return None
 
     @staticmethod
     def get_document_details(document_id):
@@ -277,8 +329,8 @@ class DocumentService:
                     DocumentCategory.category_name.label('document_category')
                 )
                 .outerjoin(Document, Document.project_id == Project.project_id)
-                .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
-                .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                .outerjoin(DocumentTypeModel, DocumentTypeModel.id == Document.document_type_id)
+                .outerjoin(DocumentCategory, DocumentCategory.id == DocumentTypeModel.document_category_id)
                 .filter(Document.id == is_amendment_document.document_id)
                 .first()
             )
@@ -291,11 +343,11 @@ class DocumentService:
                     DocumentCategory.category_name.label('document_category'),
                     Document.document_id.label('document_id'),
                     Document.document_label.label('document_label'),
-                    DocumentType.id.label('document_type_id')
+                    DocumentTypeModel.id.label('document_type_id')
                 )
                 .outerjoin(Project, Project.project_id == Document.project_id)
-                .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
-                .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                .outerjoin(DocumentTypeModel, DocumentTypeModel.id == Document.document_type_id)
+                .outerjoin(DocumentCategory, DocumentCategory.id == DocumentTypeModel.document_category_id)
                 .filter(Document.document_id == document_id)
                 .first()
             )
