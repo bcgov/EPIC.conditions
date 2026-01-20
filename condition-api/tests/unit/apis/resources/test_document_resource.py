@@ -58,7 +58,11 @@ def test_get_documents_empty(client, monkeypatch, auth_user):
     project = factory_project_model(project_id=str(uuid.uuid4()))
 
     # Mock the service
-    monkeypatch.setattr(DocumentService, "get_all_documents_by_project_id", lambda pid: [])
+    monkeypatch.setattr(
+        DocumentService,
+        "get_all_documents_by_project_id",
+        lambda *args, **kwargs: []
+    )
 
     response = client.get(f"/api/documents/project/{project.project_id}", headers=auth_user)
     assert response.status_code == HTTPStatus.OK
@@ -91,7 +95,7 @@ def test_get_documents_validation_error(client, auth_user, monkeypatch):
     factory_document_model(project_id=project.project_id, document_type_id=doc_type.id)
 
     # Monkeypatch service to raise ValidationError
-    def mock_get_all_documents_by_project_id(project_id):
+    def mock_get_all_documents_by_project_id(*args, **kwargs):
         raise ValidationError("Bad data")
 
     monkeypatch.setattr(

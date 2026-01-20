@@ -281,6 +281,19 @@ class DocumentService:
 
     @staticmethod
     def get_reference_created_date(doc_id):
+        """
+        Returns the created_date for a document or amendment identified by doc_id.
+
+        The method first attempts to find a matching Document using document_id.
+        If not found, it then attempts to find a matching Amendment using
+        amended_document_id.
+
+        Args:
+            doc_id (str): The document or amendment identifier.
+
+        Returns:
+            datetime | None: The created_date if found, otherwise None.
+        """
         # Try document first
         doc = db.session.query(Document).filter(Document.document_id == doc_id).first()
         if doc:
