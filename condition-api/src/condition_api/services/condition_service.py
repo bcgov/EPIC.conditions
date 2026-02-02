@@ -526,7 +526,7 @@ class ConditionService:
                 .filter(
                     Condition.document_id == final_document_id,
                     Condition.condition_number == conditions_data.get("condition_number"),
-                    Condition.is_active is True
+                    Condition.is_active.is_(True)
                 )
                 .all()
             )
