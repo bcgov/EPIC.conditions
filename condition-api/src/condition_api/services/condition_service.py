@@ -521,13 +521,14 @@ class ConditionService:
             )
             final_document_id = document[0]
             # Check if a condition exists with the given document_id and condition_number
-            existing_condition = (
+            existing_conditions = (
                 db.session.query(Condition)
                 .filter(
                     Condition.document_id == final_document_id,
                     Condition.condition_number == conditions_data.get("condition_number"),
+                    Condition.is_active is True
                 )
-                .first()
+                .all()
             )
 
             ConditionService._check_duplicate_condition_number(
@@ -540,10 +541,11 @@ class ConditionService:
             )
 
             # If it exists, update is_active to False
-            if existing_condition and not allow_duplicate_condition:
-                existing_condition.is_active = False
-                existing_condition.effective_to = datetime.utcnow()
-                db.session.add(existing_condition)
+            if existing_conditions and not allow_duplicate_condition:
+                for condition in existing_conditions:
+                    condition.is_active = False
+                    condition.effective_to = datetime.utcnow()
+                    db.session.add(condition)
         else:
             final_document_id = document_id
 

@@ -32,6 +32,11 @@ type ConditionModalProps = {
   documentId: string;
 };
 
+type Subcondition = {
+  subcondition_text: string;
+  subconditions?: Subcondition[];
+};
+
 export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, projectId, documentId }) => {
   const navigate = useNavigate();
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | "">("");
@@ -49,6 +54,16 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
     true, projectId, documentId, DocumentTypes.Amendment.toString());
 
   const { data: documentConditions, isPending: isConditionsLoading } = useGetConditions(loadCondition, true, projectId, selectedDocumentId);
+
+  const flattenSubconditions = (
+    subconditions: Subcondition[] = [],
+    level = 0
+  ): string[] => {
+    return subconditions.flatMap(sub => [
+      `${'  '.repeat(level)}• ${sub.subcondition_text}`,
+      ...flattenSubconditions(sub.subconditions ?? [], level + 1),
+    ]);
+  };
 
   const handleCreateNewCondition = async (conditionDetails?: ConditionModel) => {
     try {
@@ -175,9 +190,13 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
                 <Box sx={{ marginTop: 0 }}>
                   <Typography variant="body1" marginBottom={"2px"}>Condition Preview</Typography>
                   <TextField
-                    value={documentConditions.conditions
-                      .find(condition => condition.condition_id === selectedConditionId)
-                      ?.subconditions?.map(subcondition => subcondition.subcondition_text).join(' ') || ""}
+                    value={
+                      flattenSubconditions(
+                        documentConditions.conditions
+                          .find(c => c.condition_id === selectedConditionId)
+                          ?.subconditions
+                      ).join('\n')
+                    }
                     InputProps={{ readOnly: true }}
                     fullWidth
                     multiline
