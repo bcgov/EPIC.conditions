@@ -1,0 +1,135 @@
+{
+  "type": "function",
+  "function": {
+    "name": "enrich_condition",
+    "description": "Extract all structured details from a single condition: subconditions/clauses, deliverables (management plans), and report submission requirements.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "clauses": {
+          "type": "array",
+          "description": "The main, outermost clause(s)/paragraph(s) of the condition. Empty array if the condition has no sub-structure.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "clause_identifier": {
+                "type": "string",
+                "description": "The number, letter, or other identifier of the clause (e.g., '1)', '1 a)', 'i'). Write it exactly as it appears in the text including brackets. If none, leave blank. Typically blank for the outermost clause."
+              },
+              "clause_text": {
+                "type": "string",
+                "description": "The text of the clause before any subconditions."
+              },
+              "subconditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "subcondition_identifier": {
+                      "type": "string",
+                      "description": "The identifier (e.g., '1)', 'a)', 'i.'). Write exactly as in text."
+                    },
+                    "subcondition_text": {
+                      "type": "string",
+                      "description": "The text of the subcondition. Word for word, including trailing punctuation (and, or, ;, etc.)."
+                    },
+                    "subconditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "subcondition_identifier": {
+                            "type": "string",
+                            "description": "The identifier of the nested subcondition."
+                          },
+                          "subcondition_text": {
+                            "type": "string",
+                            "description": "The text of the nested subcondition. Word for word."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": ["clause_identifier", "clause_text", "subconditions"]
+          }
+        },
+        "deliverables": {
+          "type": "array",
+          "description": "Management plans, reports, proposals, or other documents that the condition explicitly requires to be written/submitted. Empty array if no deliverables are required.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "deliverable_name": {
+                "type": "string",
+                "description": "The name of the plan/report/proposal (e.g., 'Air Quality Mitigation and Monitoring Plan'). Title case."
+              },
+              "is_plan": {
+                "type": "boolean",
+                "description": "Whether the deliverable is a 'Plan' document (Management Plan, Monitoring Plan, Mitigation Plan, etc.). False if not a plan."
+              },
+              "approval_type": {
+                "type": "string",
+                "enum": ["Acceptance", "Satisfaction"],
+                "description": "Whether the document must be to the 'acceptance' or 'satisfaction' of the EAO. Null if not specified."
+              },
+              "stakeholders_to_consult": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Names of stakeholders the plan must be developed in consultation with (e.g., MOE, MOH, First Nations)."
+              },
+              "stakeholders_to_submit_to": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Names of stakeholders that should receive the plan (e.g., EAO, MOE)."
+              },
+              "fn_consultation_required": {
+                "type": "boolean",
+                "description": "Whether consultation with indigenous nations/First Nations is required. False if not explicitly specified."
+              },
+              "related_phase": {
+                "type": "string",
+                "description": "The project phase the deliverable's due date relates to (e.g., 'Construction', 'Operation', 'Decommissioning'). Title case. Null if not specified."
+              },
+              "days_prior_to_commencement": {
+                "type": "integer",
+                "description": "Days prior to planned commencement the document must be provided. Negative if due after commencement. 0 if simply 'before commencement' without specific days. Null if not specified."
+              }
+            },
+            "required": ["deliverable_name", "is_plan", "approval_type", "stakeholders_to_consult", "stakeholders_to_submit_to", "fn_consultation_required", "related_phase", "days_prior_to_commencement"]
+          }
+        },
+        "report_submissions": {
+          "type": "array",
+          "description": "Periodic or one-time reports that the condition requires to be submitted (separate from management plans/deliverables). Empty array if no report submissions are required.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requires_report_submission": {
+                "type": "boolean",
+                "description": "Whether this condition requires a report to be submitted."
+              },
+              "report_name": {
+                "type": "string",
+                "description": "The name or description of the report (e.g., 'Annual Compliance Report', 'Water Quality Monitoring Report'). Title case."
+              },
+              "report_frequency": {
+                "type": "string",
+                "description": "How often the report must be submitted (e.g., 'Annual', 'Quarterly', 'Monthly', 'Semi-annual', 'Upon request', 'One-time', 'As needed'). Null if not specified."
+              },
+              "report_recipients": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Names of parties/agencies the report must be submitted to."
+              }
+            },
+            "required": ["requires_report_submission", "report_name", "report_frequency", "report_recipients"]
+          }
+        }
+      },
+      "required": ["clauses", "deliverables", "report_submissions"]
+    }
+  }
+}

@@ -1,242 +1,154 @@
 import gradio as gr
-from gpt import count_conditions, extract_all_conditions, extract_all_subconditions
-from extract_management_plans import extract_management_plan_info_from_json
+from gpt import classify_and_count, extract_and_enrich_all
 from extract_first_nations import process_single_pdf
-import psycopg2
-from psycopg2 import sql
 
 import json
 import os
 
-def save_json_locally(json_data, input_filename):
-    base_name = os.path.splitext(os.path.basename(input_filename))[0]
-    output_filename = f"{base_name}.json"
-    
-    # Create the gradio_jsons directory if it doesn't exist
-    os.makedirs("./gradio_jsons", exist_ok=True)
-    
-    output_path = os.path.join("./gradio_jsons", output_filename)
-    with open(output_path, 'w') as f:
-        json.dump(json_data, f, indent=4)
-    return {"message": f"File saved as {output_path}"}, json.dumps(json_data, indent=4), json_data
+
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "condition-loader", "condition_jsons")
+
+
+def format_classification(classification):
+    """Format classification dict into a human-readable string for the UI."""
+    if not classification:
+        return "Classification failed"
+    doc_type = classification.get("document_type", "unknown")
+    has_numbered = classification.get("has_numbered_conditions", False)
+    headers = classification.get("section_headers", [])
+    count = classification.get("estimated_item_count", 0)
+
+    lines = [
+        f"Document type: {doc_type}",
+        f"Has numbered conditions: {has_numbered}",
+        f"Estimated item count: {count}",
+    ]
+    if headers:
+        lines.append(f"Section headers: {', '.join(headers)}")
+    return "\n".join(lines)
+
+
+def classify_document_ui(file_input):
+    """Classify the document and return both the classification dict and a display string."""
+    classification = classify_and_count(file_input)
+    display_text = format_classification(classification)
+    return classification, display_text
+
+
+def extract_and_enrich_ui(file_input, classification):
+    """Run the full extraction + enrichment pipeline."""
+    if not classification:
+        return {"error": "Please classify the document first."}
+    result = extract_and_enrich_all(file_input, classification)
+    return result
+
+
+def add_first_nations_ui(file_input, enriched_json):
+    """Add first nations info to the enriched JSON."""
+    if not enriched_json or "conditions" not in enriched_json:
+        return enriched_json
+    file_path = file_input.name if hasattr(file_input, "name") else file_input
+    if file_path.endswith(".pdf"):
+        result = process_single_pdf(file_path, enriched_json)
+        return result
+    return enriched_json
+
 
 def send_to_json_editor(json_data):
+    if isinstance(json_data, str):
+        json_data = json.loads(json_data)
     return json.dumps(json_data, indent=4), json_data
 
-def convert_to_pg_array(json_array):
-    """Convert a JSON array to PostgreSQL array format."""
-    return '{' + ','.join(json.dumps(item) for item in json_array) + '}'
 
-def display_json(input_filename):
-    base_name = os.path.splitext(os.path.basename(input_filename))[0]
-    json_filename = f"{base_name}.json"
-    json_path = os.path.join("./gradio_jsons", json_filename)
+def save_json(content, project_id, document_id, project_name, project_type,
+              display_name, document_type, date_issued, act):
+    """Save the JSON with metadata to condition-loader/condition_jsons/."""
     try:
-        with open(json_path, "r") as file:
-            content = file.read()
-        return content, json.loads(content)
-    except FileNotFoundError:
-        return "", {}
-
-def insert_or_update_project_in_db(project_id, first_nations, consultation_records_required):
-    try:
-        conn = psycopg2.connect(
-            host=os.getenv("DB_HOST"),
-            database=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            port=os.getenv("DB_PORT")
-        )
-        schema = os.getenv("DB_SCHEMA")
-        cursor = conn.cursor()
-        # Check if the project exists
-        cursor.execute(
-            sql.SQL(f"SELECT EXISTS(SELECT 1 FROM {schema}.projects WHERE project_id = %s)"),
-            [project_id]
-        )
-        exists = cursor.fetchone()[0]
-
-        if exists:
-            # Update the project details
-            query = sql.SQL(f"""
-                UPDATE {schema}.projects 
-                SET first_nations = %s, consultation_records_required = %s 
-                WHERE project_id = %s
-            """)
-            params = [first_nations, consultation_records_required, project_id]
-            cursor.execute(query, params)
-            conn.commit()
-            status = "Project updated successfully in the database."
+        if isinstance(content, str):
+            content_dict = json.loads(content)
         else:
-            # Insert a new record into the table
-            query = sql.SQL(f"""
-                INSERT INTO {schema}.projects (project_id, project_name, document_id, first_nations, consultation_records_required)
-                VALUES (%s, %s, %s, %s, %s)
-            """)
-            
-            # Assuming you have project_name available as a variable
-            params = [project_id, project_id, project_id, first_nations, consultation_records_required]
-            cursor.execute(query, params)
-            conn.commit()
-            status = "Project successfully inserted in to the database."
+            content_dict = content
 
-        cursor.close()
-        conn.close()
+        # Add metadata fields
+        content_dict["project_id"] = project_id or ""
+        content_dict["project_name"] = project_name or ""
+        content_dict["project_type"] = project_type or ""
+        content_dict["document_id"] = document_id or ""
+        content_dict["display_name"] = display_name or ""
+        content_dict["document_type"] = document_type or ""
+        content_dict["date_issued"] = date_issued or ""
+        content_dict["act"] = int(act) if act else None
 
-    except Exception as e:
-        status = f"Database operation failed: {str(e)}"
-
-    return status
-
-def insert_or_update_condition_in_db(project_id, condition_number, condition_text,
-                                     deliverable_names_str, condition_name,
-                                     topic_tags, subtopic_tags, deliverables):
-    try:
-        conn = psycopg2.connect(
-            host=os.getenv("DB_HOST"),
-            database=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            port=os.getenv("DB_PORT")
-        )
-        schema = os.getenv("DB_SCHEMA")
-        cursor = conn.cursor()
-
-        # Check if the condition exists
-        cursor.execute(
-            sql.SQL(f"SELECT id FROM {schema}.conditions WHERE project_id = %s AND condition_number = %s"),
-            [project_id, condition_number]
-        )
-        condition_id = cursor.fetchone()
-
-        if condition_id:
-            condition_id = condition_id[0]
-            # Update the condition text
-            query = sql.SQL(f"""
-                UPDATE {schema}.conditions 
-                SET condition_text = %s, deliverable_name = %s, condition_name = %s
-                WHERE id = %s
-            """)
-            params = [condition_text, deliverable_names_str, condition_name, condition_id]
-            cursor.execute(query, params)
-            conn.commit()
-            status = "Condition updated successfully in the database."
-
-            # Delete existing deliverables associated with this condition (optional)
-            cursor.execute(
-                sql.SQL(f"DELETE FROM {schema}.deliverables WHERE condition_id = %s"),
-                [condition_id]
-            )
-            conn.commit()
-
+        # Build filename from project_id and document_id
+        if project_id and document_id:
+            filename = f"{project_id}_{document_id}.json"
+        elif project_id:
+            filename = f"{project_id}.json"
         else:
-            # Insert a new condition record into the table
-            query = sql.SQL(f"""
-                INSERT INTO {schema}.conditions (project_id, document_id, condition_name, condition_number, condition_text, topic_tags, subtopic_tags, deliverable_name)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
-            """)
-            params = [project_id, project_id, condition_name, condition_number, condition_text,
-                      topic_tags, subtopic_tags, deliverable_names_str]
-            cursor.execute(query, params)
-            condition_id = cursor.fetchone()[0]
-            conn.commit()
-            status = "Condition successfully inserted into the database."
+            filename = "output.json"
 
-        # Insert the deliverables for this condition
-        for deliverable in deliverables:
-            stakeholders_to_consult_pg = convert_to_pg_array(deliverable.get('stakeholders_to_consult', []))
-            stakeholders_to_submit_to_pg = convert_to_pg_array(deliverable.get('stakeholders_to_submit_to', []))
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        output_path = os.path.join(OUTPUT_DIR, filename)
 
-            cursor.execute(sql.SQL(f"""
-                INSERT INTO {schema}.deliverables (
-                    condition_id, deliverable_name, is_plan, approval_type, 
-                    stakeholders_to_consult, stakeholders_to_submit_to,
-                    fn_consultation_required, related_phase, days_prior_to_commencement
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """), (
-                condition_id,
-                deliverable.get('deliverable_name'), 
-                deliverable.get('is_plan'), 
-                deliverable.get('approval_type'),
-                stakeholders_to_consult_pg, 
-                stakeholders_to_submit_to_pg,
-                deliverable.get('fn_consultation_required'), 
-                deliverable.get('related_phase'),
-                deliverable.get('days_prior_to_commencement')
-            ))
+        with open(output_path, "w") as f:
+            json.dump(content_dict, f, indent=4)
 
-        conn.commit()
-
-        cursor.close()
-        conn.close()
-
+        return f"Saved to {output_path}", json.dumps(content_dict, indent=4), content_dict
     except Exception as e:
-        status = f"Database operation failed: {str(e)}"
+        return f"Save failed: {str(e)}", content, None
 
-    return status
 
-def handle_insert_or_update_db(content, input_filename, user_project_id):
-    base_name = os.path.splitext(os.path.basename(input_filename))[0]
-
-    try:
-        content_dict = json.loads(content)
-        project_id = user_project_id if user_project_id else base_name.split("_")[0]
-
-        first_nations = content_dict.get("first_nations", [])
-        consultation_records_required = content_dict.get("consultation_records_required")
-        status = insert_or_update_project_in_db(project_id, first_nations, consultation_records_required)
-
-        status_list = []
-        for condition in content_dict.get("conditions", []):
-            condition_number = condition.get("condition_number")
-            condition_text = condition.get("condition_text")
-            condition_name = condition.get("condition_name")
-            topic_tags = condition.get("topic_tags")
-            subtopic_tags = condition.get("subtopic_tags")
-            deliverables = condition.get("deliverables", [])
-            deliverable_names = [d.get("deliverable_name", "") for d in deliverables]
-            deliverable_names_str = ", ".join(deliverable_names)
-            if condition_number is not None and condition_text is not None:
-                status = insert_or_update_condition_in_db(project_id, condition_number, condition_text,
-                                                          deliverable_names_str, condition_name,
-                                                          topic_tags, subtopic_tags, deliverables)
-                status_list.append(f"Condition {condition_number}: {status}")
-        
-        status = " | ".join(status_list)
-    except Exception as e:
-        status = f"Save and update operation failed: {str(e)}"
-        content_dict = None
-    return status, content_dict
+# ---------------------------------------------------------------------------
+# Gradio UI
+# ---------------------------------------------------------------------------
 
 with gr.Blocks(theme=gr.themes.Soft()) as app:
     print("Starting the application")
     file_input = gr.File(label="File Input")
 
-    with gr.Tab("Condition Extractor"):
+    # Hidden state to store the classification result
+    classification_state = gr.State(value=None)
 
+    with gr.Tab("Condition Extractor"):
+        # --- Classification section ---
         with gr.Row():
-            count_conditions_button = gr.Button("Count Conditions")
-            number_of_conditions = gr.Number(label="Number of Conditions", precision=0, value=0)
-            count_conditions_button.click(
-                fn=count_conditions,
-                inputs=file_input,
-                outputs=number_of_conditions
+            classify_button = gr.Button("Classify Document", variant="primary")
+            classification_display = gr.Textbox(
+                label="Document Classification",
+                lines=4,
+                interactive=False,
+                placeholder="Click 'Classify Document' to analyze the document structure..."
             )
 
+        classify_button.click(
+            fn=classify_document_ui,
+            inputs=file_input,
+            outputs=[classification_state, classification_display]
+        )
+
+        # --- Extraction section ---
         with gr.Column():
-            submit_button = gr.Button("Submit")
-            merged_chunks = gr.JSON(label="Conditions")
-            deliverables = gr.JSON(label="Conditions with Extracted Deliverables")
-            first_nations = gr.JSON(label="Conditions with Extracted First Nations")
-            subconditions = gr.JSON(label="Conditions with Extracted Subconditions")
-                
+            submit_button = gr.Button("Extract & Enrich Conditions", variant="primary")
+            extracted_conditions = gr.JSON(label="Extracted & Enriched Conditions")
+            first_nations_result = gr.JSON(label="With First Nations")
+
     with gr.Tab("JSON Editor"):
-        project_input = gr.Textbox(label="Project", placeholder="Enter project ID (optional)")
-        
+        # --- Metadata inputs ---
         with gr.Row():
-            save_button = gr.Button("Save Changes 💾")
-            upload_button = gr.Button("Upload to Conditions Database 📤", variant="secondary")
+            project_id_input = gr.Textbox(label="Project ID", placeholder="e.g. 60f078d3332ebd0022a39224")
+            document_id_input = gr.Textbox(label="Document ID", placeholder="e.g. 6977bca0ee48aedc8fe2f234")
+        with gr.Row():
+            project_name_input = gr.Textbox(label="Project Name", placeholder="e.g. Eskay Creek Revitalization")
+            project_type_input = gr.Textbox(label="Project Type", placeholder="e.g. Mines")
+        with gr.Row():
+            display_name_input = gr.Textbox(label="Display Name", placeholder="e.g. Eskay Creek - EAC M26-01 - Schedule B")
+            document_type_input = gr.Textbox(label="Document Type", placeholder="e.g. Schedule B/Certificate")
+        with gr.Row():
+            date_issued_input = gr.Textbox(label="Date Issued", placeholder="e.g. 2026-01-26T07:00:00")
+            act_input = gr.Textbox(label="Act", placeholder="e.g. 2018")
+
+        with gr.Row():
+            save_button = gr.Button("Save JSON", variant="primary")
 
         status_output = gr.Textbox(label="Status", lines=1, interactive=False)
 
@@ -244,48 +156,28 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
             json_viewer = gr.JSON(label="JSON Viewer")
             json_editor = gr.Textbox(label="JSON Content Editor", lines=500)
 
-    # Set up the submit button click event
+    # --- Pipeline: Classify -> Extract & Enrich -> First Nations -> Editor ---
     submit_button.click(
-        fn=extract_all_conditions,
-        inputs=[file_input, number_of_conditions],
-        outputs=[merged_chunks]
+        fn=extract_and_enrich_ui,
+        inputs=[file_input, classification_state],
+        outputs=[extracted_conditions]
     ).then(
-        fn=extract_management_plan_info_from_json,
-        inputs=[merged_chunks],
-        outputs=[deliverables]
-    ).then(
-        fn=process_single_pdf,
-        inputs=[file_input, deliverables],
-        outputs=[first_nations]
-    ).then(
-        fn=extract_all_subconditions,
-        inputs=[first_nations],
-        outputs=[subconditions]
+        fn=add_first_nations_ui,
+        inputs=[file_input, extracted_conditions],
+        outputs=[first_nations_result]
     ).then(
         fn=send_to_json_editor,
-        inputs=[subconditions],
+        inputs=[first_nations_result],
         outputs=[json_editor, json_viewer]
     )
 
-    # Set up the save button click event
+    # Save JSON with metadata to condition-loader/condition_jsons/
     save_button.click(
-        fn=lambda x: x,  # Directly pass the edited JSON to the viewer
-        inputs=json_editor,
-        outputs=json_viewer
-    )
-
-    # Load and display the JSON content when a file is uploaded
-    file_input.change(
-        fn=display_json,
-        inputs=[file_input],
-        outputs=[json_editor, json_viewer]
-    )
-
-    # Set up the save button click event
-    upload_button.click(
-        fn=handle_insert_or_update_db,
-        inputs=[json_editor, file_input, project_input],
-        outputs=[status_output, json_viewer]
+        fn=save_json,
+        inputs=[json_editor, project_id_input, document_id_input, project_name_input,
+                project_type_input, display_name_input, document_type_input,
+                date_issued_input, act_input],
+        outputs=[status_output, json_editor, json_viewer]
     )
 
 app.launch(server_name="0.0.0.0", server_port=7860)
