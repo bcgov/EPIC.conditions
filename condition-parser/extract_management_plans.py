@@ -1,7 +1,15 @@
+"""
+LEGACY MODULE: Management plan extraction.
+
+The Gradio UI pipeline now uses gpt.enrich_condition() / gpt.enrich_all_conditions()
+which extracts deliverables in a single combined pass along with clauses and report
+submissions. This module is kept for backward compatibility and standalone CLI usage.
+"""
+
 import sys
 sys.path.append('..')
 import os
-import argparse 
+import argparse
 from colorama import Fore, Style
 from openai import OpenAI
 import json
@@ -142,13 +150,15 @@ def extract_management_plan_info(condition_text):
 def extract_management_plan_info_from_json(input_json):
     for condition in input_json["conditions"]:
         print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires deliverable(s):" + Fore.RESET)
-        
+
         condition_name = condition["condition_name"] + "\n\n" if condition["condition_name"] else ""
         condition_text = condition_name + condition["condition_text"]
         management_plan_info = extract_management_plan_info(condition_text)
-        
+
         if management_plan_info is not None:
             condition["deliverables"] = json.loads(management_plan_info)["deliverables"]
+        else:
+            condition["deliverables"] = []
 
     return input_json
 
