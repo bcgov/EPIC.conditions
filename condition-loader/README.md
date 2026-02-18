@@ -1,37 +1,79 @@
-# CONDITION-LOADER
+# Condition Loader
 
-Module for loading extracted conditions into the database.
+Batch loader that reads extracted condition JSON files and inserts them into the PostgreSQL database.
 
-## Getting Started
+## Prerequisites
 
-## Step 1. Install Python 3.12.4
-Ensure Python 3.12.4 is installed in your WSL environment. Download it from the [official Python website](https://www.python.org/downloads/release/python-3124/).
+- Python 3.12+
+- PostgreSQL database with the `condition` schema set up
+- `make` (optional, for using the Makefile)
 
-## Step 2. Set Up PYTHONPATH
-Add the following line to your `.bashrc` or `.zshrc` file to set the `PYTHONPATH` environment variable:
-export PYTHONPATH="/path/to/condition-api:${PYTHONPATH}"
+## Setup
 
-## Step 3. Configure Environment Variables
-Create a `.env` file in your condition-api with the necessary configurations. Reference sample.env to see what variables you need to configure
-Update PostgreSQL credentials for your environment
+### Using Make
 
-## Step 4. Set Up `condition-loader`
-1. Open a separate terminal.
+```bash
+cd condition-loader
+make setup
+```
 
-2. Navigate to the directory:
-    - cd condition-loader
+This creates a Python virtual environment and installs all dependencies from `requirements.txt`.
 
-3. Create a virtual environment. Refer to the official Python documentation on how to create a virtual environment: [Python venv](https://docs.python.org/3/library/venv.html).
-    - python -m venv venv
+### Manual Setup
 
-4. Activate the virtual environment:
-    - source venv/bin/activate  # Mac/Linux
-    - venv\Scripts\activate     # Windows
+```bash
+cd condition-loader
+python -m venv venv
 
-5. Install the required Python packages:
-    - pip install psycopg2 python-dotenv
+# Activate the virtual environment
+source venv/bin/activate      # Mac/Linux
+venv\Scripts\activate          # Windows
 
-6. Place the extracted JSON files in the condition_jsons folder, following the structure shown in sample.json
+pip install -r requirements.txt
+```
 
-7. Run script for importing the extracted conditions into the database:
-    - python loadConditions.py
+## Configuration
+
+1. Copy `sample.env` to `.env`:
+   ```bash
+   cp sample.env .env
+   ```
+
+2. Update the database credentials in `.env`:
+   ```
+   DB_NAME=app
+   DB_USER=condition
+   DB_PASSWORD=condition
+   DB_HOST=localhost
+   DB_PORT=5432
+   ```
+
+## Usage
+
+1. Place your extracted condition JSON files in the `condition_jsons/` folder.
+Open the file in your editor (e.g., VS Code).
+
+Press Ctrl + H (Find & Replace).
+
+Replace:
+“ → '
+” → '
+‘ → '
+’ → '
+
+Save the file.
+
+2. Run the loader:
+   ```bash
+   # Using Make
+   make run
+
+   # Or directly
+   python main.py
+   ```
+
+The loader will process all `.json` files in the `condition_jsons/` directory, inserting projects, documents, conditions, clauses, and deliverable attributes into the database.
+
+## Input File Format
+
+JSON files should be placed in the `condition_jsons/` folder. The filename convention is `{project_id}_{document_id}.json`.

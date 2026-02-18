@@ -8,12 +8,12 @@ DEFAULT_DELIVERABLE_KEYS = [
     'related_phase',                        # milestone_related_to_plan_submission
     'deliverable_name',
     'management_plan_acronym',
+    'fn_consultation_required',
     'implementation_phase'                  # milestones_related_to_plan_implementation
 ]
 
 # Additional attributes inserted if fn_consultation_required is True
 CONSULTATION_KEYS = [
-    'fn_consultation_required',             # requires_consultation
     'stakeholders_to_consult'               # parties_required_to_be_consulted
 ]
 

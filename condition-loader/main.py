@@ -35,11 +35,7 @@ def load_data(folder_path):
             condition_id = insert_condition(cur, condition, project_id, document_id)
             insert_condition_attributes(cur, condition_id, condition, key_to_label_map)
             
-            for clause in condition.get('clauses', []):
-                insert_subconditions(cur, condition_id, None, [clause])
-            
-            # Call attributes insertion
-            # insert_condition_attributes(cur, condition_id, condition, key_to_label_map)
+            insert_subconditions(cur, condition_id, None, condition.get('clauses', []))
 
     conn.commit()
     cur.close()
