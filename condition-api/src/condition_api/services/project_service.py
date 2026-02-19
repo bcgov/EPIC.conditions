@@ -44,10 +44,11 @@ class ProjectService:
                 func.count(Amendment.document_id).label("amendment_count"),  # pylint: disable=not-callable
                 func.bool_or(Document.is_latest_amendment_added).label("is_latest_amendment_added")
             )
-            .outerjoin(Document, Document.project_id == Project.project_id)
+            .outerjoin(Document, and_(Document.project_id == Project.project_id, Document.is_active.is_(True)))
             .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
             .outerjoin(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
             .outerjoin(Amendment, Amendment.document_id == Document.id)
+            .filter(Project.is_active.is_(True))
             .group_by(
                 Project.project_id,
                 Project.project_name,
@@ -98,7 +99,7 @@ class ProjectService:
             db.session.query(Document.id, Document.document_id)
             .join(DocumentType, DocumentType.id == Document.document_type_id)
             .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
-            .filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id))
+            .filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id, Document.is_active.is_(True)))
             .all()
         )
 
@@ -199,6 +200,7 @@ class ProjectService:
             db.session.query(Project.project_id)
             .join(Condition, Project.project_id == Condition.project_id)
             .filter(
+                Project.is_active.is_(True),
                 Condition.is_approved.is_(True),
                 Condition.is_topic_tags_approved.is_(True),
                 Condition.is_condition_attributes_approved.is_(True)
@@ -208,3 +210,37 @@ class ProjectService:
         )
 
         return projects
+
+    @staticmethod
+    def get_available_projects():
+        """Fetch all inactive projects (synced but not yet added to condition repo)."""
+        projects = (
+            db.session.query(
+                Project.project_id,
+                Project.project_name,
+            )
+            .filter(Project.is_active.is_(False))
+            .order_by(Project.project_name)
+            .all()
+        )
+
+        if not projects:
+            return []
+
+        return [
+            {
+                "project_id": row.project_id,
+                "project_name": row.project_name,
+            }
+            for row in projects
+        ]
+
+    @staticmethod
+    def activate_project(project_id):
+        """Activate a project to make it visible in the condition repo."""
+        project = Project.get_by_id(project_id)
+        if not project:
+            return None
+        project.is_active = True
+        db.session.commit()
+        return project

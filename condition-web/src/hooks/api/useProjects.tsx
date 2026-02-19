@@ -1,6 +1,8 @@
 import { AxiosError } from "axios";
 import { submitRequest } from "@/utils/axiosUtils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { AvailableProjectModel } from "@/models/Project";
+import { Options } from "./types";
 import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 
 const fetchProjects = async () => {
@@ -20,5 +22,33 @@ export const useGetProjects = () => {
     queryKey: [QUERY_KEY.PROJECTS],
     queryFn: fetchProjects,
     ...defaultUseQueryOptions,
+  });
+};
+
+const fetchAvailableProjects = async () => {
+  return await submitRequest<AvailableProjectModel[]>({
+    url: "/projects/available",
+  });
+};
+
+export const useGetAvailableProjects = () => {
+  return useQuery({
+    queryKey: [QUERY_KEY.AVAILABLE_PROJECTS],
+    queryFn: fetchAvailableProjects,
+    ...defaultUseQueryOptions,
+  });
+};
+
+const activateProject = (projectId: string) => {
+  return submitRequest({
+    url: `/projects/${projectId}/activate`,
+    method: "PATCH",
+  });
+};
+
+export const useActivateProject = (options?: Options) => {
+  return useMutation({
+    mutationFn: (projectId: string) => activateProject(projectId),
+    ...options,
   });
 };
