@@ -103,8 +103,7 @@ class ProjectService:
                 Document.project_id == project_id,
                 DocumentCategory.id == document_category_id,
                 Document.is_active.is_(True)
-                )
-            )
+            ))
             .all()
         )
 

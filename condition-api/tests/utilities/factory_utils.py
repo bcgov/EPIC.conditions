@@ -56,13 +56,15 @@ def factory_auth_header(jwt, claims):
 def factory_project_model(
     project_id="58851056aaecd9001b80ebf8",
     project_name="Tulsequah Chief Mine",
-    project_type="Mines"
+    project_type="Mines",
+    is_active=True
 ):
     """Factory for Project model."""
     project = Project(
         project_id=project_id,
         project_name=project_name,
-        project_type=project_type
+        project_type=project_type,
+        is_active=is_active
     )
     db.session.add(project)
     db.session.commit()
@@ -89,7 +91,7 @@ def factory_document_type_model(category, name="Certificate"):
     return doc_type
 
 
-def factory_document_model(project_id, document_type_id, is_latest=True):
+def factory_document_model(project_id, document_type_id, is_latest=True, is_active=True):
     """Document"""
     document = Document(
         document_id=str(uuid.uuid4()),
@@ -99,7 +101,8 @@ def factory_document_model(project_id, document_type_id, is_latest=True):
         document_file_name="test.pdf",
         is_latest_amendment_added=is_latest,
         date_issued=datetime.utcnow(),
-        consultation_records_required=True
+        consultation_records_required=True,
+        is_active=is_active
     )
     db.session.add(document)
     db.session.commit()
