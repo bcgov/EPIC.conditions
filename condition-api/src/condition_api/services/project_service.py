@@ -99,7 +99,12 @@ class ProjectService:
             db.session.query(Document.id, Document.document_id)
             .join(DocumentType, DocumentType.id == Document.document_type_id)
             .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
-            .filter(and_(Document.project_id == project_id, DocumentCategory.id == document_category_id, Document.is_active.is_(True)))
+            .filter(and_(
+                Document.project_id == project_id,
+                DocumentCategory.id == document_category_id,
+                Document.is_active.is_(True)
+                )
+            )
             .all()
         )
 
