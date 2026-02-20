@@ -37,6 +37,7 @@ class DocumentSchema(Schema):
     status = fields.Bool(data_key="status")
     amendment_count = fields.Int(data_key="amendment_count")
     is_latest_amendment_added = fields.Bool(data_key="is_latest_amendment_added")
+    is_active = fields.Bool(data_key="is_active")
     project_name = fields.Str(data_key="project_name")
     type = fields.Str(data_key="type")
 

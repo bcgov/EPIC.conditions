@@ -8,7 +8,9 @@ export const defaultUseQueryOptions = {
 export const QUERY_KEY = Object.freeze({
     ATTRIBUTEKEYS: "attribute-keys",
     PROJECTS: "projects",
+    AVAILABLE_PROJECTS: "available-projects",
     DOCUMENT: "documents",
+    AVAILABLE_DOCUMENTS: "available-documents",
     DOCUMENTDETAIL: "document-details",
     PROJECTDOCUMENT: "project-documents",
     DOCUMENTTYPE: "document-type",

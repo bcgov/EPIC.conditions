@@ -105,6 +105,7 @@ class DocumentService:
         ).filter(
             (Project.project_id == project_id)
             & (DocumentCategory.id == category_id)
+            & (Document.is_active.is_(True))
         ).group_by(
             Project.project_name,
             DocumentCategory.category_name,
@@ -238,7 +239,8 @@ class DocumentService:
             Project,
             Project.project_id == Document.project_id
         ).filter(
-            Project.project_id == project_id
+            Project.project_id == project_id,
+            Document.is_active.is_(True)
         )
 
         documents = documents_query.all()
@@ -404,3 +406,45 @@ class DocumentService:
 
         # Return updated document details
         return DocumentService.get_document_details(document_id)
+
+    @staticmethod
+    def get_available_documents(project_id):
+        """Fetch all inactive documents for a project (synced but not yet added)."""
+        documents = (
+            db.session.query(
+                Document.document_id,
+                Document.document_label,
+                Document.date_issued,
+                DocumentTypeModel.document_type.label('document_type'),
+            )
+            .outerjoin(DocumentTypeModel, DocumentTypeModel.id == Document.document_type_id)
+            .filter(
+                Document.project_id == project_id,
+                Document.is_active.is_(False)
+            )
+            .order_by(Document.date_issued.desc())
+            .all()
+        )
+
+        if not documents:
+            return []
+
+        return [
+            {
+                "document_id": row.document_id,
+                "document_label": row.document_label,
+                "date_issued": str(row.date_issued) if row.date_issued else None,
+                "document_type": row.document_type,
+            }
+            for row in documents
+        ]
+
+    @staticmethod
+    def activate_document(document_id):
+        """Activate a document to make it visible in the condition repo."""
+        document = db.session.query(Document).filter_by(document_id=document_id).first()
+        if not document:
+            return None
+        document.is_active = True
+        db.session.commit()
+        return document

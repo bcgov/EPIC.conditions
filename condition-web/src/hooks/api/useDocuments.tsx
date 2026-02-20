@@ -1,4 +1,5 @@
 import {
+  AvailableDocumentModel,
   CreateDocumentModel,
   DocumentModel,
   DocumentDetailsModel,
@@ -158,6 +159,35 @@ export const useUpdateDocument = (
         options.onError();
       }
     },
+    ...options,
+  });
+};
+
+const fetchAvailableDocuments = (projectId: string) => {
+  return submitRequest<AvailableDocumentModel[]>({
+    url: `/documents/project/${projectId}/available`,
+  });
+};
+
+export const useGetAvailableDocuments = (projectId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEY.AVAILABLE_DOCUMENTS, projectId],
+    queryFn: () => fetchAvailableDocuments(projectId!),
+    enabled: Boolean(projectId),
+    ...defaultUseQueryOptions,
+  });
+};
+
+const activateDocument = (documentId: string) => {
+  return submitRequest({
+    url: `/documents/${documentId}/activate`,
+    method: "PATCH",
+  });
+};
+
+export const useActivateDocument = (options?: Options) => {
+  return useMutation({
+    mutationFn: (documentId: string) => activateDocument(documentId),
     ...options,
   });
 };

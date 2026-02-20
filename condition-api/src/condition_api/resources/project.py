@@ -64,6 +64,53 @@ class ProjectsResource(Resource):
 
 
 @cors_preflight("GET, OPTIONS")
+@API.route("/available", methods=["GET", "OPTIONS"])
+class AvailableProjectsResource(Resource):
+    """Resource for fetching inactive (available to add) projects."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get available projects")
+    @API.response(code=HTTPStatus.OK, model=projects_model, description="Get available projects")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def get():
+        """Fetch inactive projects that can be added to the condition repo."""
+        try:
+            project_data = ProjectService.get_available_projects()
+            projects_schema = ProjectSchema(many=True)
+            return projects_schema.dump(project_data), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("PATCH, OPTIONS")
+@API.route("/<string:project_id>/activate", methods=["PATCH", "OPTIONS"])
+class ActivateProjectResource(Resource):
+    """Resource for activating a project."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Activate a project")
+    @API.response(code=HTTPStatus.OK, model=projects_model, description="Activate project")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(project_id):
+        """Activate a project to make it visible."""
+        try:
+            project = ProjectService.activate_project(project_id)
+            if not project:
+                return {"message": "Project not found"}, HTTPStatus.NOT_FOUND
+            return ProjectSchema().dump({
+                "project_id": project.project_id,
+                "project_name": project.project_name,
+                "is_active": project.is_active,
+            }), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
 @API.route("/with-approved-conditions", methods=["GET", "OPTIONS"])
 class ApprovedProjectsResource(Resource):
     """Resource for fetching all projects with approved conditions."""

@@ -87,6 +87,52 @@ class DocumentsResource(Resource):
 
 
 @cors_preflight("GET, OPTIONS")
+@API.route("/project/<string:project_id>/available", methods=["GET", "OPTIONS"])
+class AvailableDocumentsResource(Resource):
+    """Resource for fetching inactive (available to add) documents for a project."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get available documents for a project")
+    @API.response(code=HTTPStatus.OK, model=document_model, description="Get available documents")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def get(project_id):
+        """Fetch inactive documents for a project that can be added."""
+        try:
+            documents = DocumentService.get_available_documents(project_id)
+            return DocumentSchema(many=True).dump(documents), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("PATCH, OPTIONS")
+@API.route("/<string:document_id>/activate", methods=["PATCH", "OPTIONS"])
+class ActivateDocumentResource(Resource):
+    """Resource for activating a document."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Activate a document")
+    @API.response(code=HTTPStatus.OK, model=document_model, description="Activate document")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(document_id):
+        """Activate a document to make it visible."""
+        try:
+            document = DocumentService.activate_document(document_id)
+            if not document:
+                return {"message": "Document not found"}, HTTPStatus.NOT_FOUND
+            return DocumentSchema().dump({
+                "document_id": document.document_id,
+                "document_label": document.document_label,
+                "is_active": document.is_active,
+            }), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
 @API.route("/type", methods=["GET", "OPTIONS"])
 class DocumentTypeResource(Resource):
     """Resource for Document Type Management"""

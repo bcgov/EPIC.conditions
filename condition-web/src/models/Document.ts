@@ -79,3 +79,10 @@ export interface DocumentDetailsModel {
   document_label: string;
   document_type_id: number;
 }
+
+export interface AvailableDocumentModel {
+  document_id: string;
+  document_label: string;
+  date_issued: string | null;
+  document_type: string | null;
+}
