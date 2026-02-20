@@ -20,13 +20,13 @@ def upgrade():
     # Add is_active column to projects table with default True
     with op.batch_alter_table('projects', schema='condition') as batch_op:
         batch_op.add_column(
-            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true'))
+            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('false'))
         )
 
     # Add is_active column to documents table with default True
     with op.batch_alter_table('documents', schema='condition') as batch_op:
         batch_op.add_column(
-            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true'))
+            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('false'))
         )
 
     # Set is_active = False for any records created by the cronjob

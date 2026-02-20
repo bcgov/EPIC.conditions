@@ -21,7 +21,7 @@ class Project(BaseModel):
     project_id = Column(String(255), nullable=False, unique=True)
     project_name = Column(Text)
     project_type = Column(Text)
-    is_active = Column(Boolean, default=True, nullable=False, server_default='true')
+    is_active = Column(Boolean, default=False, nullable=False, server_default='false')
 
     # Establish a one-to-many relationship with the Document table
     documents = relationship('Document', back_populates='project')
