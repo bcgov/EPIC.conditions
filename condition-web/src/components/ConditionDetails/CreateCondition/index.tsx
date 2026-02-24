@@ -65,7 +65,6 @@ export const CreateConditionPage = ({
   const [modalTitle, setModalTitle] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [allowDuplicateCondition, setAllowDuplicateCondition] = useState(false);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = event.target.value;
@@ -89,11 +88,9 @@ export const CreateConditionPage = ({
   const { mutateAsync: saveCondition } = useSaveNewCondition(
     projectId,
     documentId,
-    allowDuplicateCondition,
   );
 
-  const handleSaveAndClose = async () => {
-    setAllowDuplicateCondition(true);
+  const handleSaveAndClose = async (allowDuplicateCondition = false) => {
     setLoading(true);
     let errorFlag = false;
 
@@ -114,14 +111,13 @@ export const CreateConditionPage = ({
 
     if (errorFlag) {
       notify.error("Failed to save condition.");
-      setAllowDuplicateCondition(false);
       setLoading(false);
       return;
     }
 
     try {
       const { condition_id, condition_attributes, ...data } = condition;
-      const response = await saveCondition(data);
+      const response = await saveCondition({ conditionDetails: data, allowDuplicateCondition });
       if (response) {
         notify.success("Condition created successfully");
         await queryClient.refetchQueries({
@@ -160,8 +156,6 @@ export const CreateConditionPage = ({
     } finally {
       setLoading(false); // Stop loading once the request is complete
     }
-
-    setAllowDuplicateCondition(false)
   }
 
   const handleCancel = () => {
@@ -357,7 +351,7 @@ export const CreateConditionPage = ({
             </Button>
             <LoadingButton
               onClick={() => {
-                handleSaveAndClose(); // Call the save function
+                handleSaveAndClose(true); // Retry with duplicate allowed
               }}
               color="primary"
               loading={loading}
@@ -396,7 +390,7 @@ export const CreateConditionPage = ({
           borderRadius: "4px",
           marginTop: "25px",
         }}
-        onClick={handleSaveAndClose}
+        onClick={() => handleSaveAndClose()}
       >
         Save and Close
       </LoadingButton>

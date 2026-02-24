@@ -549,6 +549,17 @@ class ConditionService:
                     db.session.add(condition)
         else:
             final_document_id = document_id
+            # Check for duplicate condition number within the same document
+            condition_number = conditions_data.get("condition_number")
+            if condition_number:
+                ConditionService._check_duplicate_condition_number(
+                    condition=Condition(
+                        document_id=final_document_id,
+                        amended_document_id=None
+                    ),
+                    condition_id=None,
+                    condition_number=condition_number
+                )
 
         # Check for condition number conflict across the project
         condition_number = conditions_data.get("condition_number")

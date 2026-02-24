@@ -234,10 +234,10 @@ const saveNewCondition = (
 export const useSaveNewCondition = (
   projectId?: string,
   documentId?: string,
-  allowDuplicateCondition: boolean = false,
 ) => {
   return useMutation({
-    mutationFn: (conditionDetails: ConditionModel) => {
+    mutationFn: (params: { conditionDetails: ConditionModel; allowDuplicateCondition?: boolean }) => {
+      const { conditionDetails, allowDuplicateCondition = false } = params;
       if (!projectId) {
         return Promise.reject(new Error("Project ID is required"));
       }

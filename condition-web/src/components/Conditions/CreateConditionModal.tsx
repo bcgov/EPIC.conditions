@@ -70,14 +70,15 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
       const response = await createCondition(conditionDetails);
       if (response) {
         navigate({
-          to: `/conditions/create/${response.condition_id}`,
+          to: `/conditions/project/${projectId}/document/${documentId}/condition/${response.condition_id}`,
         });
+        onClose();
       }
     }  catch (error) {
       const err = error as {
         response?: { data?: { message?: string }; status?: number };
       };
-  
+
       if (err.response?.status === HTTP_STATUS_CODES.CONFLICT) {
         setConditionConflictError(true);
       } else {
@@ -95,7 +96,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
     setSelectedDocumentId("");
     setSelectedConditionId(null);
     setLoadCondition(false);
-  
+
     // call parent-provided close
     onClose();
   };
