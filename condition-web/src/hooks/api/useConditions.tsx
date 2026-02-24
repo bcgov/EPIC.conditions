@@ -215,3 +215,36 @@ export const useRemoveCondition = (
     ...options,
   });
 };
+
+const saveNewCondition = (
+  projectId: string,
+  documentId: string,
+  allowDuplicateCondition: boolean,
+  conditionDetails: ConditionModel
+) => {
+  return submitRequest({
+    url: `/conditions/project/${projectId}/document/${documentId}` +
+         `?allow_duplicate_condition=${allowDuplicateCondition}` +
+         `&check_condition_over_project=${!allowDuplicateCondition}`,
+    method: "post",
+    data: conditionDetails,
+  });
+};
+
+export const useSaveNewCondition = (
+  projectId?: string,
+  documentId?: string,
+  allowDuplicateCondition: boolean = false,
+) => {
+  return useMutation({
+    mutationFn: (conditionDetails: ConditionModel) => {
+      if (!projectId) {
+        return Promise.reject(new Error("Project ID is required"));
+      }
+      if (!documentId) {
+        return Promise.reject(new Error("Document ID is required"));
+      }
+      return saveNewCondition(projectId, documentId, allowDuplicateCondition, conditionDetails);
+    },
+  });
+};

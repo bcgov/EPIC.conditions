@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useCallback } from 'react';
+import { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { Box, Typography, Button, Stack } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { ConditionModel } from "@/models/Condition";
@@ -7,6 +7,8 @@ import { theme } from "@/styles/theme";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { updateTopicTagsModel } from "@/models/Condition";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/hooks/api/constants";
 import { BCDesignTokens } from "epic.theme";
 import SubconditionComponent from "./SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
@@ -32,6 +34,8 @@ type ConditionDescriptionProps = {
 // Main component to render the condition and its subconditions
 const ConditionDescription = memo(({
   editMode,
+  projectId,
+  documentId,
   conditionId,
   condition,
   setCondition,
@@ -39,6 +43,7 @@ const ConditionDescription = memo(({
   setIsConditionApproved,
   setIsLoading
 }: ConditionDescriptionProps) => {
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(editMode);
   const [showEditingError, setShowEditingError] = useState(false);
 
@@ -57,6 +62,9 @@ const ConditionDescription = memo(({
 
   const onCreateSuccess = () => {
     notify.success("Condition saved successfully");
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEY.CONDITIONSDETAIL, projectId, documentId, conditionId],
+    });
   };
 
   const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
@@ -76,17 +84,37 @@ const ConditionDescription = memo(({
     updateConditionDetails(data);
   }, [subconditions, updateConditionDetails]);
 
+  // Track editing state in a ref so the sync effect doesn't add it as a dependency
+  const isEditingRef = useRef(isEditing);
   useEffect(() => {
-    setSubconditions(condition.subconditions || []);
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
+
+  // Sync subconditions from parent condition, but NOT while editing (to preserve local edits)
+  useEffect(() => {
+    if (!isEditingRef.current) {
+      setSubconditions(condition.subconditions || []);
+    }
   }, [condition.subconditions, setSubconditions]);
 
+  // Track saveChanges in a ref so it doesn't trigger the effect on every subcondition change
+  const saveChangesRef = useRef(saveChanges);
   useEffect(() => {
+    saveChangesRef.current = saveChanges;
+  }, [saveChanges]);
+
+  // Only save when editMode transitions from true → false (user clicks "Save Condition Requirements")
+  const prevEditModeRef = useRef(editMode);
+  useEffect(() => {
+    const prevEditMode = prevEditModeRef.current;
+    prevEditModeRef.current = editMode;
+
     setIsEditing(editMode);
-    if (isEditing) {
-      // On save, submit changedValues to the backend
-      saveChanges();
+
+    if (prevEditMode && !editMode) {
+      saveChangesRef.current();
     }
-  }, [editMode, isEditing, saveChanges]);
+  }, [editMode]);
 
   useEffect(() => {
     if (conditionDetails) {

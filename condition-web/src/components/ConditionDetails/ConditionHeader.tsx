@@ -10,7 +10,8 @@ import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PartialUpdateTopicTagsModel } from "@/models/Condition";
 import ChipInput from "../Shared/Chips/ChipInput";
-import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
+import { HTTP_STATUS_CODES, QUERY_KEY } from "../../hooks/api/constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ConditionHeaderProps = {
     conditionId: number;
@@ -27,6 +28,7 @@ const ConditionHeader = ({
     condition,
     setCondition
 }: ConditionHeaderProps) => {
+    const queryClient = useQueryClient();
     const [editConditionMode, setEditConditionMode] = useState(false);
     const [conditionNumber, setConditionNumber] = useState(condition?.condition_number || "");
     const [conditionName, setConditionName] = useState(condition?.condition_name || "");
@@ -45,6 +47,9 @@ const ConditionHeader = ({
 
     const onCreateSuccess = () => {
         notify.success("Condition saved successfully");
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEY.CONDITIONSDETAIL],
+        });
     };
 
     const { data: conditionDetails, mutateAsync: updateConditionDetails } = useUpdateConditionDetails(

@@ -22,6 +22,7 @@ import { updateTopicTagsModel } from "@/models/Condition";
 import ConditionAttributeRow from "./ConditionAttributeRow";
 import { useQueryClient } from "@tanstack/react-query";
 import {  CONDITION_KEYS, SELECT_OPTIONS } from "../Constants";
+import { QUERY_KEY } from "@/hooks/api/constants";
 import DynamicFieldRenderer from "../DynamicFieldRenderer";
 import AttributeModal from "../AttributeModal";
 import { useGetAttributes } from "@/hooks/api/useAttributeKey";
@@ -59,6 +60,9 @@ const ConditionAttributeTable = memo(({
 
       queryClient.invalidateQueries({
         queryKey: ["conditions", condition.condition_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEY.CONDITIONSDETAIL],
       });
     };
   
@@ -253,8 +257,11 @@ const ConditionAttributeTable = memo(({
       queryClient.invalidateQueries({
         queryKey: ["conditions", condition.condition_id],
       });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEY.CONDITIONSDETAIL],
+      });
     };
-  
+
     const handleAttributeSelection = () => {
       if (!selectedAttribute) {
         notify.error("Please select an attribute before proceeding");

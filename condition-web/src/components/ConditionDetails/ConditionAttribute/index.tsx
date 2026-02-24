@@ -22,6 +22,7 @@ import LoadingButton from "../../Shared/Buttons/LoadingButton";
 import { useRemoveConditionAttributes } from "@/hooks/api/useConditionAttribute";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/hooks/api/constants";
 
 type ConditionAttributeProps = {
     condition: ConditionModel;
@@ -166,6 +167,9 @@ const ConditionAttribute = memo(({
                                 queryClient.invalidateQueries({
                                     queryKey: ["conditions", condition?.condition_id],
                                     exact: false,
+                                });
+                                queryClient.invalidateQueries({
+                                    queryKey: [QUERY_KEY.CONDITIONSDETAIL],
                                 });
                             }
                         }}

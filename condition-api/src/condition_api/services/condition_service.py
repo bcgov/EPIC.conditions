@@ -503,7 +503,8 @@ class ConditionService:
                     condition_id, subcond_data["subconditions"], parent_id=subcondition_id)
 
     @staticmethod
-    def create_condition(project_id, document_id, conditions_data, allow_duplicate_condition=None):
+    def create_condition(project_id, document_id, conditions_data,
+                         allow_duplicate_condition=None, check_condition_over_project=None):
         """Create a new condition."""
         amendment = (
             db.session.query(Amendment.document_id)
@@ -548,6 +549,17 @@ class ConditionService:
                     db.session.add(condition)
         else:
             final_document_id = document_id
+
+        # Check for condition number conflict across the project
+        condition_number = conditions_data.get("condition_number")
+        if check_condition_over_project and condition_number:
+            temp_condition = Condition(
+                document_id=final_document_id,
+                amended_document_id=amended_document_id,
+                project_id=project_id
+            )
+            ConditionService._check_condition_conflict_in_project(
+                temp_condition, condition_number)
 
         new_condition = Condition(
             document_id=final_document_id,
@@ -999,23 +1011,23 @@ class ConditionService:
         if not include_condition_attributes:
             return []
 
-        excluded_keys = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
-        formatted_keys = {
-            AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
-            AttributeKeys.MANAGEMENT_PLAN_NAME,
+        excluded_key_names = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value}
+        formatted_key_names = {
+            AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED.value,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION.value,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION.value,
+            AttributeKeys.MANAGEMENT_PLAN_NAME.value,
         }
 
         query = db.session.query(
-            AttributeKey.id,
+            AttributeKey.key_name,
             AttributeKey.external_key,
             ConditionAttribute.attribute_value,
         ).outerjoin(
             AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id
         ).filter(
             ConditionAttribute.condition_id == condition_id,
-            ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
+            ~AttributeKey.key_name.in_(excluded_key_names),
         )
 
         if management_plan_id:
@@ -1029,31 +1041,29 @@ class ConditionService:
         requires_iem = False
         deliverables = []
 
-        for attr_id, external_key, raw_value in attributes_data:
+        for key_name, external_key, raw_value in attributes_data:
             if not external_key:
                 continue
 
-            key_enum = AttributeKeys(attr_id)
-
             # Handle requires_iem_terms_of_engagement
-            if key_enum == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT:
+            if key_name == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT.value:
                 requires_iem = raw_value
                 result[external_key] = requires_iem
                 continue
 
             # Handle deliverable_name separately
-            if key_enum == AttributeKeys.DELIVERABLE_NAME:
-                deliverables.append((raw_value or "", attr_id))
+            if key_name == AttributeKeys.DELIVERABLE_NAME.value:
+                deliverables.append((raw_value or "", key_name))
                 continue
 
             # Format value
-            value = ConditionService._format_attribute_value(key_enum, raw_value, formatted_keys)
+            value = ConditionService._format_attribute_value(key_name, raw_value, formatted_key_names)
             result[external_key] = value
 
         # Handle deliverables
         if deliverables:
             result.update(
-                ConditionService._process_deliverables(deliverables, requires_iem, formatted_keys)
+                ConditionService._process_deliverables(deliverables, requires_iem, formatted_key_names)
             )
 
         if management_plan_id:
@@ -1063,9 +1073,9 @@ class ConditionService:
         return result
 
     @staticmethod
-    def _format_attribute_value(key_enum, raw_value, formatted_keys):
+    def _format_attribute_value(key_name, raw_value, formatted_key_names):
         """Format value"""
-        if key_enum in formatted_keys:
+        if key_name in formatted_key_names:
             return ConditionService.format_attribute_value(raw_value)
         return (
             raw_value.replace("{", "").replace("}", "").replace('"', "")
@@ -1074,7 +1084,7 @@ class ConditionService:
         )
 
     @staticmethod
-    def _process_deliverables(deliverables, requires_iem, formatted_keys):
+    def _process_deliverables(deliverables, requires_iem, formatted_key_names):
         deliverable_phrase = IEMTermsConfig.DELIVERABLE_VALUE
         selected_value = None
 
@@ -1089,7 +1099,7 @@ class ConditionService:
         if not selected_value:
             return {}
 
-        if AttributeKeys.DELIVERABLE_NAME in formatted_keys:
+        if AttributeKeys.DELIVERABLE_NAME.value in formatted_key_names:
             return {"deliverable_name": [ConditionService.format_attribute_value(selected_value)]}
 
         return {
@@ -1275,7 +1285,7 @@ class ConditionService:
                 .outerjoin(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
                 .filter(
                     ManagementPlan.condition_id == condition_id,
-                    ~ConditionAttribute.attribute_key_id.in_([5])
+                    AttributeKey.key_name != AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value
                 )
                 .order_by(ManagementPlan.id, AttributeKey.sort_order)
                 .all()

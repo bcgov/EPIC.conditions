@@ -13,6 +13,7 @@ import { useUpdateConditionAttributeDetails } from "@/hooks/api/useConditionAttr
 import { useRemoveManagementPlan } from "@/hooks/api/useManagementPlan";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/hooks/api/constants";
 
 type ManagementPlanSectionProps = {
     condition: ConditionModel;
@@ -27,6 +28,7 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
     const onCreateSuccess = () => {
       notify.success("Management Plan added successfully");
       queryClient.invalidateQueries({ queryKey: ["conditions", condition.condition_id] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CONDITIONSDETAIL] });
     };
   
     const onCreateFailure = () => {

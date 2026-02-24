@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Stack, Tab, Tabs } from '@mui/material';
+import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
 import AddIcon from '@mui/icons-material/Add';
@@ -45,7 +45,8 @@ const StyledTab = styled(Tab)(({ theme }) => ({
 const CreateConditionInfoTabs: React.FC<{
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
-}> = ({ condition, setCondition }) => {
+    isCreateMode?: boolean;
+}> = ({ condition, setCondition, isCreateMode = false }) => {
     const [selectedTab, setSelectedTab] = useState('requirements');
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
@@ -207,10 +208,16 @@ const CreateConditionInfoTabs: React.FC<{
                     </Stack>
                 </Box>
                 <Box sx={{ display: selectedTab === 'attributes' ? 'block' : 'none' }}>
-                    <ConditionAttribute
-                        condition={condition}
-                        setCondition={setCondition}
-                    />
+                    {isCreateMode ? (
+                        <Typography variant="body2" sx={{ color: 'text.secondary', py: 2 }}>
+                            Save the condition first to manage attributes.
+                        </Typography>
+                    ) : (
+                        <ConditionAttribute
+                            condition={condition}
+                            setCondition={setCondition}
+                        />
+                    )}
                 </Box>
             </Box>
         </>
