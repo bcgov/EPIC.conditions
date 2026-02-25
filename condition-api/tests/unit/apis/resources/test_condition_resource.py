@@ -236,7 +236,7 @@ def test_post_condition(client, auth_header, monkeypatch):
     monkeypatch.setattr(
         ConditionService,
         "create_condition",
-        lambda pid, did, data, allow_dup: {"condition_id": created_condition.id}
+        lambda pid, did, data, allow_dup, check_proj: {"condition_id": created_condition.id}
     )
 
     response = client.post(

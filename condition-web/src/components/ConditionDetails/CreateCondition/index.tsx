@@ -116,7 +116,7 @@ export const CreateConditionPage = ({
     }
 
     try {
-      const { condition_id, condition_attributes, ...data } = condition;
+      const { condition_id: _id, condition_attributes: _attrs, ...data } = condition;
       const response = await saveCondition({ conditionDetails: data, allowDuplicateCondition });
       if (response) {
         notify.success("Condition created successfully");

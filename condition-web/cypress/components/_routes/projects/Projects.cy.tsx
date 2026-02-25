@@ -12,6 +12,8 @@ import {
   mockDocumentTypes,
   mockConditions
 } from "../../../utils/mockConstants";
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from "../../../../src/styles/theme";
 
 describe("projects page", () => {
   const queryClient = new QueryClient({
@@ -29,8 +31,9 @@ describe("projects page", () => {
     router.navigate({ to: `/projects` });
 
     mount(
+      <ThemeProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
-          <AuthContext.Provider value={mockAuth}>
+          <AuthContext.Provider value={mockAuthentication}>
             <RouterProvider
               router={router}
               context={{
@@ -39,6 +42,7 @@ describe("projects page", () => {
             />
           </AuthContext.Provider>
         </QueryClientProvider>
+      </ThemeProvider>
       );
   };
 
