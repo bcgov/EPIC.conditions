@@ -1,4 +1,5 @@
 import { EPIC_CONDITION_ROLE } from "../../src/models/Role";
+import { mockAccessToken } from "./testUtils";
 
 
 export const mockAuthentication = {
@@ -13,7 +14,7 @@ export const mockAuthentication = {
       exp: Math.floor(Date.now() / 1000) + 3600,
       iat: Math.floor(Date.now() / 1000),
     },
-    access_token: "test_access_token",
+    access_token: mockAccessToken,
     session_state: "mock_session_state",
     token_type: "Bearer",
     state: {},
