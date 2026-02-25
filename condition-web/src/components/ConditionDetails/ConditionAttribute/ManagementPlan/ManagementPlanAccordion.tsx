@@ -26,6 +26,7 @@ import { IndependentAttributeModel, ManagementPlanModel } from "@/models/Conditi
 import { BCDesignTokens } from "epic.theme";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { CONDITION_KEYS } from "../../ConditionAttribute/Constants";
+import { QUERY_KEY } from "@/hooks/api/constants";
 import ConditionAttributeRow from "../../ConditionAttribute/Independent/ConditionAttributeRow";
 import { ConditionModel } from "@/models/Condition";
 import { usePatchManagementPlan } from "@/hooks/api/useManagementPlan";
@@ -131,6 +132,9 @@ const ManagementPlanAccordion: React.FC<Props> = ({
 
             queryClient.invalidateQueries({
               queryKey: ["conditions", condition.condition_id],
+            });
+            queryClient.invalidateQueries({
+              queryKey: [QUERY_KEY.CONDITIONSDETAIL],
             });
           },
           onError: () => {

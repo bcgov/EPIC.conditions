@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Options } from "./types";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
+import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
 
 const fetchConditions = (includeSubconditions: boolean, projectId?: string, documentId?: string) => {
   if (!projectId) {
@@ -127,7 +128,14 @@ export const useCreateCondition = (
       });
       notify.success("Condition created successfully")
     },
-    onError: () => notify.error("Failed to create condition"),
+    onError: (error: { response?: { data?: { message?: string }; status?: number } }) => {
+      if (error.response?.status === HTTP_STATUS_CODES.CONFLICT) {
+        notify.error(error.response?.data?.message || "Failed to create condition");
+      }
+      else {
+        notify.error("Failed to create condition")
+      }
+    },
     ...options,
   });
 };
@@ -213,5 +221,38 @@ export const useRemoveCondition = (
       return removeCondition(conditionId);
     },
     ...options,
+  });
+};
+
+const saveNewCondition = (
+  projectId: string,
+  documentId: string,
+  allowDuplicateCondition: boolean,
+  conditionDetails: ConditionModel
+) => {
+  return submitRequest({
+    url: `/conditions/project/${projectId}/document/${documentId}` +
+         `?allow_duplicate_condition=${allowDuplicateCondition}` +
+         `&check_condition_over_project=${!allowDuplicateCondition}`,
+    method: "post",
+    data: conditionDetails,
+  });
+};
+
+export const useSaveNewCondition = (
+  projectId?: string,
+  documentId?: string,
+) => {
+  return useMutation({
+    mutationFn: (params: { conditionDetails: ConditionModel; allowDuplicateCondition?: boolean }) => {
+      const { conditionDetails, allowDuplicateCondition = false } = params;
+      if (!projectId) {
+        return Promise.reject(new Error("Project ID is required"));
+      }
+      if (!documentId) {
+        return Promise.reject(new Error("Document ID is required"));
+      }
+      return saveNewCondition(projectId, documentId, allowDuplicateCondition, conditionDetails);
+    },
   });
 };

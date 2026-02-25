@@ -22,10 +22,10 @@ import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/_
 import { Route as AuthenticatedDashboardProjectsIndexImport } from './routes/_authenticated/_dashboard/projects/index'
 import { Route as AuthenticatedDashboardProjectsProjectIdIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/index'
 import { Route as AuthenticatedDashboardProjectsProjectIdConsolidatedConditionsIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/index'
-import { Route as AuthenticatedDashboardConditionsCreateConditionIdIndexImport } from './routes/_authenticated/_dashboard/conditions/create/$conditionId/index'
 import { Route as AuthenticatedDashboardProjectsProjectIdDocumentCategoryCategoryIdConsolidatedConditionsIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/document-category/$categoryId/consolidated-conditions/index'
 import { Route as AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexImport } from './routes/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/index'
 import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/index'
+import { Route as AuthenticatedDashboardConditionsCreateProjectProjectIdDocumentDocumentIdIndexImport } from './routes/_authenticated/_dashboard/conditions/create/project/$projectId/document/$documentId/index'
 import { Route as AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexImport } from './routes/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/index'
 
 // Create/Update Routes
@@ -90,12 +90,6 @@ const AuthenticatedDashboardProjectsProjectIdConsolidatedConditionsIndexRoute =
     } as any,
   )
 
-const AuthenticatedDashboardConditionsCreateConditionIdIndexRoute =
-  AuthenticatedDashboardConditionsCreateConditionIdIndexImport.update({
-    path: '/conditions/create/$conditionId/',
-    getParentRoute: () => AuthenticatedDashboardRoute,
-  } as any)
-
 const AuthenticatedDashboardProjectsProjectIdDocumentCategoryCategoryIdConsolidatedConditionsIndexRoute =
   AuthenticatedDashboardProjectsProjectIdDocumentCategoryCategoryIdConsolidatedConditionsIndexImport.update(
     {
@@ -116,6 +110,14 @@ const AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRou
   AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexImport.update(
     {
       path: '/conditions/project/$projectId/document/$documentId/',
+      getParentRoute: () => AuthenticatedDashboardRoute,
+    } as any,
+  )
+
+const AuthenticatedDashboardConditionsCreateProjectProjectIdDocumentDocumentIdIndexRoute =
+  AuthenticatedDashboardConditionsCreateProjectProjectIdDocumentDocumentIdIndexImport.update(
+    {
+      path: '/conditions/create/project/$projectId/document/$documentId/',
       getParentRoute: () => AuthenticatedDashboardRoute,
     } as any,
   )
@@ -202,13 +204,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardProjectsProjectIdIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
-    '/_authenticated/_dashboard/conditions/create/$conditionId/': {
-      id: '/_authenticated/_dashboard/conditions/create/$conditionId/'
-      path: '/conditions/create/$conditionId'
-      fullPath: '/conditions/create/$conditionId'
-      preLoaderRoute: typeof AuthenticatedDashboardConditionsCreateConditionIdIndexImport
-      parentRoute: typeof AuthenticatedDashboardImport
-    }
     '/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/': {
       id: '/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/'
       path: '/projects/$projectId/consolidated-conditions'
@@ -237,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardProjectsProjectIdDocumentCategoryCategoryIdConsolidatedConditionsIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
+    '/_authenticated/_dashboard/conditions/create/project/$projectId/document/$documentId/': {
+      id: '/_authenticated/_dashboard/conditions/create/project/$projectId/document/$documentId/'
+      path: '/conditions/create/project/$projectId/document/$documentId'
+      fullPath: '/conditions/create/project/$projectId/document/$documentId'
+      preLoaderRoute: typeof AuthenticatedDashboardConditionsCreateProjectProjectIdDocumentDocumentIdIndexImport
+      parentRoute: typeof AuthenticatedDashboardImport
+    }
     '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/': {
       id: '/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/'
       path: '/conditions/project/$projectId/document/$documentId/condition/$conditionId'
@@ -255,11 +257,11 @@ export const routeTree = rootRoute.addChildren({
     AuthenticatedDashboardRoute: AuthenticatedDashboardRoute.addChildren({
       AuthenticatedDashboardProjectsIndexRoute,
       AuthenticatedDashboardProjectsProjectIdIndexRoute,
-      AuthenticatedDashboardConditionsCreateConditionIdIndexRoute,
       AuthenticatedDashboardProjectsProjectIdConsolidatedConditionsIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRoute,
       AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexRoute,
       AuthenticatedDashboardProjectsProjectIdDocumentCategoryCategoryIdConsolidatedConditionsIndexRoute,
+      AuthenticatedDashboardConditionsCreateProjectProjectIdDocumentDocumentIdIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexRoute,
     }),
   }),
@@ -317,11 +319,11 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/_authenticated/_dashboard/projects/",
         "/_authenticated/_dashboard/projects/$projectId/",
-        "/_authenticated/_dashboard/conditions/create/$conditionId/",
         "/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/",
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/",
         "/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/",
         "/_authenticated/_dashboard/projects/$projectId/document-category/$categoryId/consolidated-conditions/",
+        "/_authenticated/_dashboard/conditions/create/project/$projectId/document/$documentId/",
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/"
       ]
     },
@@ -331,10 +333,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/_authenticated/_dashboard/projects/$projectId/": {
       "filePath": "_authenticated/_dashboard/projects/$projectId/index.tsx",
-      "parent": "/_authenticated/_dashboard"
-    },
-    "/_authenticated/_dashboard/conditions/create/$conditionId/": {
-      "filePath": "_authenticated/_dashboard/conditions/create/$conditionId/index.tsx",
       "parent": "/_authenticated/_dashboard"
     },
     "/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/": {
@@ -351,6 +349,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/_authenticated/_dashboard/projects/$projectId/document-category/$categoryId/consolidated-conditions/": {
       "filePath": "_authenticated/_dashboard/projects/$projectId/document-category/$categoryId/consolidated-conditions/index.tsx",
+      "parent": "/_authenticated/_dashboard"
+    },
+    "/_authenticated/_dashboard/conditions/create/project/$projectId/document/$documentId/": {
+      "filePath": "_authenticated/_dashboard/conditions/create/project/$projectId/document/$documentId/index.tsx",
       "parent": "/_authenticated/_dashboard"
     },
     "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/": {

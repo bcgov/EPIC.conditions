@@ -29,21 +29,20 @@ class DocumentType(IntEnum):
     Amendment = 3
 
 
-class AttributeKeys(IntEnum):
-    """Attribute Keys."""
+class AttributeKeys(str, Enum):
+    """Attribute Keys — values match key_name in the attribute_keys table."""
 
-    # The numbers are same as the id for each attribute key within the table attribute_keys
-    REQUIRES_CONSULTATION = 2
-    MANAGEMENT_PLAN_NAME = 3
-    MANAGEMENT_PLAN_ACRONYM = 4
-    PARTIES_REQUIRED_TO_BE_SUBMITTED = 5
-    PARTIES_REQUIRED_TO_BE_CONSULTED = 6
-    SUBMITTED_TO_EAO_FOR = 7
-    TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE = 8
-    MILESTONES_RELATED_TO_PLAN_SUBMISSION = 9
-    MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION = 10
-    REQUIRES_IEM_TERMS_OF_ENGAGEMENT = 11
-    DELIVERABLE_NAME = 12
+    REQUIRES_CONSULTATION = "Requires consultation"
+    MANAGEMENT_PLAN_NAME = "Management plan name(s)"
+    MANAGEMENT_PLAN_ACRONYM = "Management plan acronym(s)"
+    PARTIES_REQUIRED_TO_BE_SUBMITTED = "Parties required to be submitted"
+    PARTIES_REQUIRED_TO_BE_CONSULTED = "Parties required to be consulted"
+    SUBMITTED_TO_EAO_FOR = "Submitted to EAO for"
+    TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE = "Time associated with submission milestone"
+    MILESTONES_RELATED_TO_PLAN_SUBMISSION = "Milestone(s) related to plan submission"
+    MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION = "Project phases(s) related to plan implementation"
+    REQUIRES_IEM_TERMS_OF_ENGAGEMENT = "Requires IEM Terms of Engagement"
+    DELIVERABLE_NAME = "Deliverable name"
 
 
 class IEMTermsConfig:
@@ -52,15 +51,15 @@ class IEMTermsConfig:
     DELIVERABLE_VALUE = "Independent Environmental Monitor Terms of Engagement"
 
     @staticmethod
-    def required_attribute_keys() -> List[int]:
-        """Required attribute Keys for IEM"""
+    def required_attribute_keys() -> List[str]:
+        """Required attribute key_names for IEM"""
         return [
-            AttributeKeys.SUBMITTED_TO_EAO_FOR,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
-            AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
-            AttributeKeys.REQUIRES_CONSULTATION,
-            AttributeKeys.DELIVERABLE_NAME,
+            AttributeKeys.SUBMITTED_TO_EAO_FOR.value,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION.value,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION.value,
+            AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE.value,
+            AttributeKeys.REQUIRES_CONSULTATION.value,
+            AttributeKeys.DELIVERABLE_NAME.value,
         ]
 
 
@@ -68,16 +67,16 @@ class ManagementPlanConfig:
     """Management Plan"""
 
     @staticmethod
-    def required_attribute_keys() -> List[int]:
-        """Required attribute Keys for Management Plan"""
+    def required_attribute_keys() -> List[str]:
+        """Required attribute key_names for Management Plan"""
         return [
-            AttributeKeys.SUBMITTED_TO_EAO_FOR,
-            AttributeKeys.MANAGEMENT_PLAN_NAME,
-            AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION,
-            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION,
-            AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE,
-            AttributeKeys.REQUIRES_CONSULTATION,
+            AttributeKeys.SUBMITTED_TO_EAO_FOR.value,
+            AttributeKeys.MANAGEMENT_PLAN_NAME.value,
+            AttributeKeys.MANAGEMENT_PLAN_ACRONYM.value,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION.value,
+            AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION.value,
+            AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE.value,
+            AttributeKeys.REQUIRES_CONSULTATION.value,
         ]
 
 

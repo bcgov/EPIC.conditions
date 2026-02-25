@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
 import { createDefaultCondition, ProjectDocumentConditionDetailModel } from "@/models/Condition";
 import { Box, Stack } from "@mui/material";
@@ -32,9 +32,15 @@ export const ConditionDetails = ({
 
   const [condition, setCondition] = useState(() => initialCondition?.condition || createDefaultCondition());
 
+  // Only reset condition state when loading a DIFFERENT condition (not on refetches of the same one).
+  // This prevents query refetches from wiping out local edits (e.g. unsaved subconditions).
+  const loadedConditionIdRef = useRef(initialCondition?.condition?.condition_id);
   useEffect(() => {
     if (initialCondition?.condition) {
-      setCondition(initialCondition.condition);
+      if (loadedConditionIdRef.current !== initialCondition.condition.condition_id) {
+        setCondition(initialCondition.condition);
+      }
+      loadedConditionIdRef.current = initialCondition.condition.condition_id;
     }
   }, [initialCondition]);
 

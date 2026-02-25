@@ -51,11 +51,12 @@ class AttributeKeyService:
             )
             .filter(
                 ~attribute_keys.id.in_(db.session.query(subquery.c.attribute_key_id)),
-                ~attribute_keys.id.in_([AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED,
-                                        # exlucding Parties required to be submitted from attribute_keys
-                                        AttributeKeys.DELIVERABLE_NAME,
-                                        AttributeKeys.MANAGEMENT_PLAN_ACRONYM,
-                                        AttributeKeys.MANAGEMENT_PLAN_NAME]),
+                ~attribute_keys.key_name.in_([
+                    AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value,
+                    AttributeKeys.DELIVERABLE_NAME.value,
+                    AttributeKeys.MANAGEMENT_PLAN_ACRONYM.value,
+                    AttributeKeys.MANAGEMENT_PLAN_NAME.value,
+                ]),
             )
             .order_by(attribute_keys.sort_order)
             .all()

@@ -69,7 +69,10 @@ const ConditionInfoTabs: React.FC<{
     };
 
     const handleEditClick = () => {
-        setIsLoading(true);
+        if (editMode) {
+            // Only show loading when saving (edit → view transition)
+            setIsLoading(true);
+        }
         setEditMode((prev) => !prev);
     };
 

@@ -152,15 +152,24 @@ class ConditionDetailResource(Resource):
             query_params = request.args
             allow_duplicate_condition = query_params.get(
                 'allow_duplicate_condition', 'true').lower() == 'true'
+            check_condition_over_project = query_params.get(
+                'check_condition_over_project', 'false').lower() == 'true'
             created_condition = ConditionService.create_condition(project_id,
                                                                   document_id,
                                                                   conditions_data,
-                                                                  allow_duplicate_condition)
+                                                                  allow_duplicate_condition,
+                                                                  check_condition_over_project)
             return created_condition, HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
         except ConditionNumberExistsError as err:
             return {"message": str(err)}, HTTPStatus.CONFLICT
+        except ConditionNumberExistsInProjectError as err:
+            response = {
+                "message": str(err),
+                "is_amendment": err.is_amendment
+            }
+            return response, HTTPStatus.PRECONDITION_FAILED
 
 
 @cors_preflight("GET, OPTIONS, PATCH, DELETE")

@@ -13,7 +13,6 @@ import {
     mockDocument,
     mockConditions,
     mockStaffUser,
-    mockCreatedCondition,
 } from "../../../utils/mockConstants";
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from "../../../../src/styles/theme";
@@ -135,39 +134,20 @@ describe("conditions page", () => {
         body: mockConditions,
     }).as("getConditions");
 
-    // Intercept the POST request for adding a condition
-    cy.intercept(
-      "POST",
-      `${AppConfig.apiUrl}/conditions/project/c668a5210cdd8a970fb42722/document/c668a5210cdd8a970fb42722?allow_duplicate_condition=false`,
-      {
-        statusCode: 200,
-        body: { condition_id: 522 },
-      }
-    ).as("addCondition");
-
-    cy.intercept("GET", `${AppConfig.apiUrl}/conditions/522`, {
-        statusCode: 200,
-        body: mockCreatedCondition,
-    }).as("getCreatedCondition");
-
     mountDefaultPage();
-  
+
     // Navigate to the conditions page as before
     cy.contains("Certificate and Amendments").click();
     cy.wait("@getDocumentCategory");
     cy.contains("Schedule B - Table of Conditions").click();
     cy.wait("@getDocument");
     cy.wait("@getConditions");
-  
-    // Click the "Add Condition" button
+
+    // Click the "Add Condition" button — navigates directly to the create page (no POST)
     cy.contains("Add Condition").click();
-  
-    // Wait for the POST request to be called
-    cy.wait("@addCondition");
-    cy.wait("@getCreatedCondition");
-  
+
     // Assert that the page navigated to the create condition route
-    cy.url().should("include", "/conditions/create/522");
+    cy.url().should("include", "/conditions/create/project/c668a5210cdd8a970fb42722/document/c668a5210cdd8a970fb42722");
 
     // Assert that the resulting page contains expected fields
     cy.contains("Condition Number").should("exist");

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BCDesignTokens } from "epic.theme";
-import { ConditionModel, createDefaultCondition, ProjectDocumentConditionDetailModel } from "@/models/Condition";
+import { ConditionModel, createDefaultCondition } from "@/models/Condition";
 import {
   Box,
   Button,
@@ -17,7 +17,7 @@ import {
 import { styled } from "@mui/system";
 import { StyledTableHeadCell } from "../../Shared/Table/common";
 import CreateConditionInfoTabs from "./CreateConditionInfoTabs";
-import { useRemoveCondition, useUpdateCondition } from "@/hooks/api/useConditions";
+import { useSaveNewCondition } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import ChipInput from "../../Shared/Chips/ChipInput";
 import { useNavigate } from "@tanstack/react-router";
@@ -35,18 +35,26 @@ export const CardInnerBox = styled(Box)({
   padding: "0 12px",
 });
 
-type ConditionsParam = {
-  conditionData?: ProjectDocumentConditionDetailModel;
+type CreateConditionProps = {
+  projectId: string;
+  documentId: string;
+  projectName: string;
+  documentLabel: string;
+  initialCondition?: ConditionModel;
 };
 
 export const CreateConditionPage = ({
-  conditionData
-}: ConditionsParam) => {
+  projectId,
+  documentId,
+  projectName,
+  documentLabel,
+  initialCondition,
+}: CreateConditionProps) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [condition, setCondition] = useState<ConditionModel>(
-    conditionData?.condition || createDefaultCondition);
+    initialCondition || createDefaultCondition());
 
   const [tags, setTags] = useState<string[]>(condition?.topic_tags ?? []);
   const [conditionNumberError, setConditionNumberError] = useState(false);
@@ -57,7 +65,6 @@ export const CreateConditionPage = ({
   const [modalTitle, setModalTitle] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [allowDuplicateCondition, setAllowDuplicateCondition] = useState(false);
 
   const handleInputChange = (key: keyof ConditionModel) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = event.target.value;
@@ -70,7 +77,7 @@ export const CreateConditionPage = ({
       [key]: updatedValue,
       }));
     };
-  
+
   useEffect(() => {
     setCondition((prevCondition) => ({
         ...prevCondition,
@@ -78,29 +85,12 @@ export const CreateConditionPage = ({
       }));
   }, [tags, setTags]);
 
-  const { mutateAsync: updateCondition } = useUpdateCondition(
-    allowDuplicateCondition,
-    condition?.condition_id,
+  const { mutateAsync: saveCondition } = useSaveNewCondition(
+    projectId,
+    documentId,
   );
 
-  const onRemoveFailure = () => {
-    notify.error("Failed to remove condition");
-  };
-
-  const onRemoveSuccess = () => {
-    notify.success("Condition removed successfully");
-  };
-
-  const { mutateAsync: removeCondition } = useRemoveCondition(
-    condition?.condition_id,
-    {
-      onSuccess: onRemoveSuccess,
-      onError: onRemoveFailure,
-    }
-  );
-
-  const handleSaveAndClose = async () => {
-    setAllowDuplicateCondition(true);
+  const handleSaveAndClose = async (allowDuplicateCondition = false) => {
     setLoading(true);
     let errorFlag = false;
 
@@ -121,23 +111,22 @@ export const CreateConditionPage = ({
 
     if (errorFlag) {
       notify.error("Failed to save condition.");
-      setAllowDuplicateCondition(false);
+      setLoading(false);
       return;
     }
 
     try {
-      const data: ConditionModel = {
-        ...condition,
-      };
-      const response = await updateCondition(data);
+      const { condition_id, condition_attributes, ...data } = condition;
+      const response = await saveCondition({ conditionDetails: data, allowDuplicateCondition });
       if (response) {
+        notify.success("Condition created successfully");
         await queryClient.refetchQueries({
-          queryKey: [QUERY_KEY.CONDITIONS, conditionData?.project_id, conditionData?.document_id],
+          queryKey: [QUERY_KEY.CONDITIONS, projectId, documentId],
           exact: true,
         });
 
         navigate({
-          to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
+          to: `/conditions/project/${projectId}/document/${documentId}`,
         });
       }
     } catch (error) {
@@ -167,21 +156,12 @@ export const CreateConditionPage = ({
     } finally {
       setLoading(false); // Stop loading once the request is complete
     }
-
-    setAllowDuplicateCondition(false)
   }
 
-  const handleRemove = async () => {
-    try {
-      const response = await removeCondition();
-      if (response) {
-        navigate({
-          to: `/conditions/project/${conditionData?.project_id}/document/${conditionData?.document_id}`,
-        });
-      }
-    } catch (error) {
-      notify.error("Failed to remove condition.");
-    }
+  const handleCancel = () => {
+    navigate({
+      to: `/conditions/project/${projectId}/document/${documentId}`,
+    });
   }
 
   const handleModalClose = () => {
@@ -202,7 +182,7 @@ export const CreateConditionPage = ({
                   </StyledTableHeadCell>
                   <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                       <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                          {conditionData?.project_name}
+                          {projectName}
                       </Typography>
                   </StyledTableHeadCell>
                 </Stack>
@@ -229,7 +209,7 @@ export const CreateConditionPage = ({
                           </StyledTableHeadCell>
                           <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
                               <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                  {conditionData?.document_label}
+                                  {documentLabel}
                               </Typography>
                           </StyledTableHeadCell>
                       </Stack>
@@ -318,14 +298,11 @@ export const CreateConditionPage = ({
             width: "100%"
           }}
         >
-          {conditionData ? (
-            <CreateConditionInfoTabs
-              condition={condition}
-              setCondition={setCondition}
-            />
-          ) : (
-            <p>No condition details available.</p>
-          )}
+          <CreateConditionInfoTabs
+            condition={condition}
+            setCondition={setCondition}
+            isCreateMode={true}
+          />
         </Box>
       </Grid>
 
@@ -374,7 +351,7 @@ export const CreateConditionPage = ({
             </Button>
             <LoadingButton
               onClick={() => {
-                handleSaveAndClose(); // Call the save function
+                handleSaveAndClose(true); // Retry with duplicate allowed
               }}
               color="primary"
               loading={loading}
@@ -397,9 +374,9 @@ export const CreateConditionPage = ({
           marginTop: "25px",
           marginRight: "5px",
         }}
-        onClick={handleRemove}
+        onClick={handleCancel}
       >
-        Cancel Condition
+        Cancel
       </Button>
 
       <LoadingButton
@@ -413,7 +390,7 @@ export const CreateConditionPage = ({
           borderRadius: "4px",
           marginTop: "25px",
         }}
-        onClick={handleSaveAndClose}
+        onClick={() => handleSaveAndClose()}
       >
         Save and Close
       </LoadingButton>

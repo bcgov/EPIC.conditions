@@ -11,7 +11,6 @@ import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { useCreateCondition } from "@/hooks/api/useConditions";
 import { useUpdateDocument } from "@/hooks/api/useDocuments";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
@@ -87,8 +86,6 @@ export const Conditions = ({
     return matchesSearch && matchesSource && matchesAmendment && matchesStatus;
   });
 
-  const { mutateAsync: createCondition } = useCreateCondition(projectId, documentId, false);
-
   useEffect(() => {
     // Check if all conditions have status as true
     if (conditions && conditions.length > 0) {
@@ -110,22 +107,13 @@ export const Conditions = ({
     setIsLoading(false);
   }, [conditions]);
 
-  const handleOpenCreateNewCondition = async (conditionDetails?: ConditionModel) => {
+  const handleOpenCreateNewCondition = async () => {
     setLoading(true);
     // Directly navigate to the 'Create Condition' page if the condition is not being added to an amendment.
     if (documentTypeId !== DocumentTypes.Amendment) {
-      try {
-        const response = await createCondition(conditionDetails);
-        if (response) {
-          navigate({
-            to: `/conditions/create/${response.condition_id}`,
-          });
-        }
-      } catch (error) {
-        notify.error("Failed to create condition");
-      } finally {
-        setLoading(false);
-      }
+      navigate({
+        to: `/conditions/create/project/${projectId}/document/${documentId}`,
+      });
     } else {
       setOpenModal(true);
     }
@@ -211,7 +199,7 @@ export const Conditions = ({
                     borderRadius: "4px",
                     paddingLeft: "2px"
                   }}
-                  onClick={() => handleOpenCreateNewCondition({})}
+                  onClick={() => handleOpenCreateNewCondition()}
                   loading={loading}
                 >
                   <AddIcon fontSize="small" /> Add Condition

@@ -123,7 +123,7 @@ class ConditionAttributeService:
         if existing_attribute:
             existing_attribute.attribute_value = value
         else:
-            if key.id == AttributeKeys.DELIVERABLE_NAME:
+            if key.key_name == AttributeKeys.DELIVERABLE_NAME.value:
                 return
 
             attribute = ConditionAttribute(
@@ -135,12 +135,12 @@ class ConditionAttributeService:
             db.session.add(attribute)
             db.session.flush()
 
-        if key.id == AttributeKeys.REQUIRES_CONSULTATION and value == 'true':
+        if key.key_name == AttributeKeys.REQUIRES_CONSULTATION.value and value == 'true':
             ConditionAttributeService._handle_requires_consultation(
                 condition_id, management_plan_id
             )
 
-        if key.id == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT and value == 'true':
+        if key.key_name == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT.value and value == 'true':
             ConditionAttributeService._handle_requires_iem_terms_of_engagement(
                 condition_id, value, management_plan_id
             )
@@ -156,7 +156,7 @@ class ConditionAttributeService:
         :param management_plan_id: If the attribute is for a management plan.
         """
         consultation_key = db.session.query(AttributeKey).filter(
-            AttributeKey.id == AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED
+            AttributeKey.key_name == AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED.value
         ).first()
 
         existing_attribute = db.session.query(ConditionAttribute).filter_by(
@@ -184,20 +184,24 @@ class ConditionAttributeService:
         :param attribute_value: Value of the current attribute.
         :param management_plan_id: If the attribute is for a management plan.
         """
-        deliverable_key_id = AttributeKeys.DELIVERABLE_NAME
+        deliverable_key_name = AttributeKeys.DELIVERABLE_NAME.value
         deliverable_value = IEMTermsConfig.DELIVERABLE_VALUE
         required_keys = IEMTermsConfig.required_attribute_keys()
 
         if attribute_value != 'true':
             # Remove deliverable attribute if present
-            db.session.query(ConditionAttribute).filter_by(
-                condition_id=condition_id,
-                attribute_key_id=deliverable_key_id
-            ).delete()
+            deliverable_key = db.session.query(AttributeKey).filter(
+                AttributeKey.key_name == deliverable_key_name
+            ).first()
+            if deliverable_key:
+                db.session.query(ConditionAttribute).filter_by(
+                    condition_id=condition_id,
+                    attribute_key_id=deliverable_key.id
+                ).delete()
             db.session.commit()
             return
 
-        keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(required_keys)).all()
+        keys = db.session.query(AttributeKey).filter(AttributeKey.key_name.in_(required_keys)).all()
         for key in keys:
             existing = db.session.query(ConditionAttribute).filter_by(
                 condition_id=condition_id, attribute_key_id=key.id
@@ -205,7 +209,7 @@ class ConditionAttributeService:
 
             if not existing:
                 # Check if the current key is DELIVERABLE_NAME
-                attribute_value = deliverable_value if key.id == deliverable_key_id else None
+                attribute_value = deliverable_value if key.key_name == deliverable_key_name else None
                 new_attribute = ConditionAttribute(
                     condition_id=condition_id,
                     attribute_key_id=key.id,
@@ -216,7 +220,7 @@ class ConditionAttributeService:
                 db.session.flush()
             else:
                 # Update DELIVERABLE_NAME if it already exists
-                if key.id == deliverable_key_id:
+                if key.key_name == deliverable_key_name:
                     current_value = existing.attribute_value or ""
                     values = current_value.strip('{}').split(',') if current_value else []
                     values = [v.strip() for v in values if v.strip()]
@@ -239,7 +243,7 @@ class ConditionAttributeService:
         """
         required_keys = ManagementPlanConfig.required_attribute_keys()
 
-        all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.id.in_(required_keys)).all()
+        all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.key_name.in_(required_keys)).all()
         for key in all_attribute_keys:
             existing_attribute = db.session.query(ConditionAttribute).filter_by(
                 condition_id=condition_id, attribute_key_id=key.id
@@ -247,7 +251,7 @@ class ConditionAttributeService:
 
             if not existing_attribute:
                 # Check if the current key is MANAGEMENT_PLAN_NAME
-                attribute_value = '{}' if key.id == AttributeKeys.MANAGEMENT_PLAN_NAME else None
+                attribute_value = '{}' if key.key_name == AttributeKeys.MANAGEMENT_PLAN_NAME.value else None
                 new_attribute = ConditionAttribute(
                     condition_id=condition_id,
                     attribute_key_id=key.id,
@@ -260,7 +264,7 @@ class ConditionAttributeService:
     @staticmethod
     def _fetch_all_attributes(requires_management_plan, condition_id):
         """Fetch and format all independent and management plan attributes."""
-        excluded_keys = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED}
+        excluded_key_names = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value}
 
         # Fetch all attributes for this condition, joined with keys, and sort using sort_key
         if requires_management_plan:
@@ -274,7 +278,7 @@ class ConditionAttributeService:
                     .filter(
                         ConditionAttribute.condition_id == condition_id,
                         ConditionAttribute.management_plan_id == plan.id,
-                        ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys])
+                        ~AttributeKey.key_name.in_(excluded_key_names)
                     )
                     .order_by(AttributeKey.sort_order)
                     .all()
@@ -307,7 +311,7 @@ class ConditionAttributeService:
             .filter(
                 ConditionAttribute.condition_id == condition_id,
                 ConditionAttribute.management_plan_id.is_(None),
-                ~ConditionAttribute.attribute_key_id.in_([key.value for key in excluded_keys]),
+                ~AttributeKey.key_name.in_(excluded_key_names),
             )
             .order_by(AttributeKey.sort_order)
             .all()
