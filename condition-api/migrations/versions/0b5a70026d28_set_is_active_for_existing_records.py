@@ -16,26 +16,17 @@ depends_on = None
 
 
 def upgrade():
-    # Set is_active = true for documents that belong to a project
-    # which has at least one document in the documents table
-    op.execute("""
-        UPDATE condition.documents
-        SET is_active = true
-        WHERE project_id IN (
-            SELECT DISTINCT project_id
-            FROM condition.documents
-        )
-    """)
-
-    # Set is_active = true for projects that have at least one
-    # related document in the documents table
+    # Set is_active = true for all existing records not created by cronjob
     op.execute("""
         UPDATE condition.projects
         SET is_active = true
-        WHERE project_id IN (
-            SELECT DISTINCT project_id
-            FROM condition.documents
-        )
+        WHERE created_by != 'cronjob'
+    """)
+
+    op.execute("""
+        UPDATE condition.documents
+        SET is_active = true
+        WHERE created_by != 'cronjob'
     """)
 
 
