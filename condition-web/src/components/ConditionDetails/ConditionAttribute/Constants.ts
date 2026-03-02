@@ -66,6 +66,7 @@ export const SELECT_OPTIONS = {
     { value: "Acceptance", label: "Acceptance" },
     { value: "Review", label: "Review" },
     { value: "Satisfaction", label: "Satisfaction" },
+    { value: "N/A", label: "N/A" },
   ],
   [CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION]: [
     { value: "Pre-Construction", label: "Pre-Construction" },
