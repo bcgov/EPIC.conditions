@@ -134,11 +134,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             return;
         }
 
-        const isOverMax = (v: string) => {
-            const n = Number(v);
-            return !Number.isNaN(n) && n > 120;
-        };
-
         const match = new RegExp(/^(.+?) (Days|Month\(s\)|Year\(s\)) (After|Before|Prior to)$/).exec(value);
         if (match) {
             const [, parsedValue, parsedUnit, parsedDirection] = match;
@@ -146,7 +141,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             setTimeDirection(parsedDirection);
 
             const predefinedValues = TIME_VALUES[parsedUnit as keyof typeof TIME_VALUES]?.map((opt) => opt.value) || [];
-            if (!isOverMax(parsedValue) && predefinedValues.includes(parsedValue)) {
+            if (predefinedValues.includes(parsedValue)) {
                 setTimeValue(parsedValue);
             } else {
                 setTimeValue("Other");
@@ -154,7 +149,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
             }
         } else {
             const allUnits = Object.keys(TIME_VALUES) as (keyof typeof TIME_VALUES)[];
-            const isPredefined = !isOverMax(value) && allUnits.some((unit) =>
+            const isPredefined = allUnits.some((unit) =>
                 TIME_VALUES[unit].some((opt) => opt.value === value)
             );
             if (isPredefined) {
