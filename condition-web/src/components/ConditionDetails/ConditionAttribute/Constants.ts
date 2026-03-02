@@ -85,6 +85,7 @@ export const SELECT_OPTIONS = {
     { value: "Care and Maintenance", label: "Care and Maintenance" },
     { value: "Decommissioning", label: "Decommissioning" },
     { value: "Closure", label: "Closure" },
+    { value: "All Phases", label: "All Phases" },
     { value: "N/A", label: "N/A" },
   ],
 };
