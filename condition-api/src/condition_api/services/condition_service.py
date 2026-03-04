@@ -1090,7 +1090,7 @@ class ConditionService:
             return ConditionService.format_attribute_value(raw_value)
         return (
             raw_value.replace("{", "").replace("}", "").replace('"', "")
-            if raw_value and raw_value != "N/A"
+            if raw_value
             else None
         )
 
