@@ -124,6 +124,44 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     });
 
     useEffect(() => {
+        if (attributeData.key !== CONDITION_KEYS.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE) return;
+        const value = attributeData.value?.trim();
+        if (!value) return;
+
+        if (value === "N/A") {
+            setTimeUnit("N/A");
+            setTimeValue("na");
+            return;
+        }
+
+        const match = new RegExp(/^(.+?) (Days|Month\(s\)|Year\(s\)) (After|Before|Prior to)$/).exec(value);
+        if (match) {
+            const [, parsedValue, parsedUnit, parsedDirection] = match;
+            setTimeUnit(parsedUnit);
+            setTimeDirection(parsedDirection);
+
+            const predefinedValues = TIME_VALUES[parsedUnit as keyof typeof TIME_VALUES]?.map((opt) => opt.value) || [];
+            if (predefinedValues.includes(parsedValue)) {
+                setTimeValue(parsedValue);
+            } else {
+                setTimeValue("Other");
+                setCustomTimeValue(parsedValue);
+            }
+        } else {
+            const allUnits = Object.keys(TIME_VALUES) as (keyof typeof TIME_VALUES)[];
+            const isPredefined = allUnits.some((unit) =>
+                TIME_VALUES[unit].some((opt) => opt.value === value)
+            );
+            if (isPredefined) {
+                setTimeValue(value);
+            } else {
+                setTimeValue("Other");
+                setCustomTimeValue(value);
+            }
+        }
+    }, [attributeData.key, attributeData.value]);
+
+    useEffect(() => {
         if (timeUnit) {
             if (timeUnit === "N/A") {
                 attributeData.setValue(timeUnit); // Only set the time unit
@@ -134,7 +172,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 }
             }
         }
-    }, [timeValue, timeUnit, timeDirection, customTimeValue, attributeData]);    
+    }, [timeValue, timeUnit, timeDirection, customTimeValue, attributeData]);
 
     const handleTimeUnitChange = (e: SelectChangeEvent<string>) => {
         const selectedUnit = e.target.value;
@@ -143,8 +181,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         // If 'N/A' is selected, set timeValue to 'na', otherwise reset it
         if (selectedUnit === "N/A") {
             setTimeValue("na");
-        } else {
-            setTimeValue("");
         }
     };
 
@@ -200,6 +236,9 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                         <MenuItem value="" disabled sx={{ fontFamily: 'BC Sans' }}>
                             Select Time Value
                         </MenuItem>
+                        {timeValue && !timeUnit && (
+                            <MenuItem key="partial" value={timeValue}>{timeValue}</MenuItem>
+                        )}
                         {timeUnit === "N/A" ? (
                             <MenuItem key="na" value="na">
                                 N/A
