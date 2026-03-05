@@ -55,7 +55,6 @@ class AttributeKeyService:
                     AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value,
                     AttributeKeys.DELIVERABLE_NAME.value,
                     AttributeKeys.MANAGEMENT_PLAN_ACRONYM.value,
-                    AttributeKeys.MANAGEMENT_PLAN_NAME.value,
                 ]),
             )
             .order_by(attribute_keys.sort_order)
