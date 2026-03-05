@@ -159,7 +159,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 setCustomTimeValue(value);
             }
         }
-    }, []);
+    }, [attributeData.key, attributeData.value]);
 
     useEffect(() => {
         if (timeUnit) {
@@ -172,7 +172,7 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 }
             }
         }
-    }, [timeValue, timeUnit, timeDirection, customTimeValue]);
+    }, [timeValue, timeUnit, timeDirection, customTimeValue, attributeData]);
 
     const handleTimeUnitChange = (e: SelectChangeEvent<string>) => {
         const selectedUnit = e.target.value;
