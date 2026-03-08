@@ -432,11 +432,17 @@ class ConditionService:
 
     @staticmethod
     def _update_subconditions(condition_id, subconditions):
-        existing_ids = [
-            sub["subcondition_id"]
-            for sub in subconditions
-            if isinstance(sub.get("subcondition_id"), str) and "-" not in sub["subcondition_id"]
-        ]
+        def _get_all_existing_ids(subconds):
+            ids = []
+            for sub in subconds:
+                sub_id = sub.get("subcondition_id")
+                if isinstance(sub_id, str) and "-" not in sub_id:
+                    ids.append(sub_id)
+                if "subconditions" in sub and sub["subconditions"]:
+                    ids.extend(_get_all_existing_ids(sub["subconditions"]))
+            return ids
+
+        existing_ids = _get_all_existing_ids(subconditions)
 
         db.session.query(Subcondition).filter(
             Subcondition.condition_id == condition_id,

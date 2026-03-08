@@ -4,12 +4,11 @@ import { styled } from '@mui/system';
 import { BCDesignTokens } from 'epic.theme';
 import AddIcon from '@mui/icons-material/Add';
 import { theme } from "@/styles/theme";
-import SubconditionComponent from "../SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
 import { ConditionModel } from "@/models/Condition";
 import { SubconditionModel } from "@/models/Subcondition";
 import ConditionAttribute from '../ConditionAttribute';
-import { DragDropContext, DropResult } from '@hello-pangea/dnd';
+import { SortableTree } from '../SortableTree/SortableTree';
 
 const StyledTabs = styled(Tabs)({
     transition: 'none',
@@ -60,95 +59,17 @@ const CreateConditionInfoTabs: React.FC<{
         handleDelete,
         handleAddParentCondition,
         setSubconditions,
-      } = useSubconditionHandler(condition.subconditions || []);
+    } = useSubconditionHandler(condition.subconditions || []);
 
-    const buildSortOrderMap = (
-        items: SubconditionModel[],
-        parentId: string = "null",
-        map: Record<string, number> = {}
-    ): Record<string, number> => {
-        return items.reduce((acc, item, index) => {
-          const key = `${parentId}-${item.subcondition_id}`;
-          acc[key] = index;
-          return item.subconditions?.length
-            ? buildSortOrderMap(item.subconditions, item.subcondition_id, acc)
-            : acc;
-        }, map);
-    };
-      
-    const applySortOrder = (
-        nodes: SubconditionModel[],
-        sortOrderMap: Record<string, number>,
-        parentId: string | null = null
-    ): SubconditionModel[] => {
-        const apply = (items: SubconditionModel[], parentId: string): SubconditionModel[] => {
-          return items
-            .map((item) => ({
-              ...item,
-              subconditions: item.subconditions
-                ? apply(item.subconditions, item.subcondition_id)
-                : [],
-            }))
-            .sort((a, b) => {
-              const keyA = `${parentId}-${a.subcondition_id}`;
-              const keyB = `${parentId}-${b.subcondition_id}`;
-              return (sortOrderMap[keyA] ?? 0) - (sortOrderMap[keyB] ?? 0);
-            });
-        };
-      
-        return apply(nodes, parentId ?? "null");
-    };
-    
-    const reorderNested = (
-        items: SubconditionModel[],
-        parentId: string | null,
-        sourceIndex: number,
-        destinationIndex: number
-    ): SubconditionModel[] => {
-        if (parentId === "subconditions-droppable") {
-          const newItems = [...items];
-          const [moved] = newItems.splice(sourceIndex, 1);
-          newItems.splice(destinationIndex, 0, moved);
-          return newItems;
-        }
-      
-        return items.map((item) => {
-          if (item.subcondition_id === parentId && item.subconditions) {
-            const newSub = [...item.subconditions];
-            const [moved] = newSub.splice(sourceIndex, 1);
-            newSub.splice(destinationIndex, 0, moved);
-            return {
-              ...item,
-              subconditions: newSub,
-            };
-          }
-          return {
-            ...item,
-            subconditions: item.subconditions
-              ? reorderNested(item.subconditions, parentId, sourceIndex, destinationIndex)
-              : [],
-          };
-        });
-    }; 
-    
-    const handleDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-    
-        const sourceId = result.source.droppableId;
-        const sourceIndex = result.source.index;
-        const destinationIndex = result.destination.index;
-    
-        const reordered = reorderNested(subconditions, sourceId, sourceIndex, destinationIndex);
-        const sortOrderMap = buildSortOrderMap(reordered);
-        const sorted = applySortOrder(reordered, sortOrderMap);
-        setSubconditions(sorted);
+    const handleItemsChange = (newSubconditions: SubconditionModel[]) => {
+        setSubconditions(newSubconditions);
     };
 
     useEffect(() => {
         setCondition((prevCondition) => ({
             ...prevCondition,
             subconditions: subconditions,
-          }));
+        }));
     }, [subconditions, setCondition]);
 
     useEffect(() => {
@@ -172,22 +93,15 @@ const CreateConditionInfoTabs: React.FC<{
             </Stack>
             <Box sx={{ p: 2 }}>
                 <Box sx={{ display: selectedTab === 'requirements' ? 'block' : 'none' }}>
-                    <DragDropContext onDragEnd={handleDragEnd}>
-                        {subconditions.map((sub, index) => (
-                            <SubconditionComponent
-                                key={index}
-                                subcondition={sub}
-                                indentLevel={1}
-                                isEditing={true}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onAdd={handleAdd}
-                                identifierValue={sub.subcondition_identifier || ""}
-                                textValue={sub.subcondition_text || ""}
-                                is_approved={false}
-                            />
-                        ))}
-                    </DragDropContext>
+                    <SortableTree
+                        items={subconditions}
+                        onItemsChange={handleItemsChange}
+                        isEditing={true}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onAdd={(subId: string) => handleAdd(subId)}
+                        isApproved={false}
+                    />
                     <Stack sx={{ mt: 5 }} direction={"row"}>
                         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                             <Button
