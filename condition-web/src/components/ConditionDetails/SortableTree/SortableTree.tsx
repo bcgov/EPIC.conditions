@@ -26,6 +26,16 @@ import SubconditionComponent from '../SubCondition';
 
 const indentationWidth = 20;
 
+const dropAnimationConfig = {
+    sideEffects: defaultDropAnimationSideEffects({
+        styles: {
+            active: {
+                opacity: '0.4',
+            },
+        },
+    }),
+};
+
 interface SortableTreeProps {
     items: SubconditionModel[];
     onItemsChange: (items: SubconditionModel[]) => void;
@@ -154,15 +164,7 @@ export const SortableTree: React.FC<SortableTreeProps> = ({
         document.body.style.setProperty('cursor', '');
     };
 
-    const dropAnimationConfig = {
-        sideEffects: defaultDropAnimationSideEffects({
-            styles: {
-                active: {
-                    opacity: '0.4',
-                },
-            },
-        }),
-    };
+
 
     const activeItem = activeId ? flattenedItems.find((item) => item.subcondition_id === activeId) : null;
 

@@ -4,6 +4,23 @@ import { CSS } from '@dnd-kit/utilities';
 import SubconditionComponent from '../SubCondition';
 import { TreeItem } from './utilities';
 
+const DropIndicator = () => (
+    <div
+        style={{
+            height: '4px',
+            backgroundColor: '#2563eb', // Blue-600
+            borderRadius: '4px',
+            width: '100%',
+            position: 'relative',
+        }}
+    >
+        <div style={{
+            position: 'absolute', top: '-4px', left: '-6px', width: '12px', height: '12px',
+            backgroundColor: '#2563eb', borderRadius: '50%', border: '2px solid white'
+        }} />
+    </div>
+);
+
 interface SortableTreeItemProps {
     id: string;
     item: TreeItem;
@@ -76,23 +93,6 @@ export const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
         />
     ));
 
-    // A drop indicator placeholder that appears when this item is the active dragged item
-    const DropIndicator = () => (
-        <div
-            style={{
-                height: '4px',
-                backgroundColor: '#2563eb', // Blue-600
-                borderRadius: '4px',
-                width: '100%',
-                position: 'relative' as const,
-            }}
-        >
-            <div style={{
-                position: 'absolute', top: '-4px', left: '-6px', width: '12px', height: '12px',
-                backgroundColor: '#2563eb', borderRadius: '50%', border: '2px solid white'
-            }} />
-        </div>
-    );
 
     return (
         <div ref={setDroppableNodeRef} style={style}>

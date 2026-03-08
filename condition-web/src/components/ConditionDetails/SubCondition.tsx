@@ -63,22 +63,23 @@ const SubconditionComponent: React.FC<{
           }}
         >
           {isEditing && (
-            <div
+            <Box
               ref={dragHandleRef}
               {...dragHandleProps}
-              style={{
+              sx={{
                 cursor: 'grab',
-                paddingRight: 4,
+                paddingRight: '4px',
                 display: 'flex',
                 alignItems: 'center',
                 borderRadius: '4px',
                 transition: 'background-color 0.2s',
+                '&:hover': {
+                  backgroundColor: '#e2e8f0'
+                }
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e2e8f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
             >
               <DragIndicatorIcon fontSize="small" color="disabled" />
-            </div>
+            </Box>
           )}
           {hasChildren && (
             <IconButton size="small" onClick={onCollapse} sx={{ ml: -1, mr: 0.5 }}>
