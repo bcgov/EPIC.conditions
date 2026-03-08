@@ -5,6 +5,8 @@ import AddIcon from '@mui/icons-material/Add';
 import Delete from "@mui/icons-material/Delete";
 import { BCDesignTokens } from "epic.theme";
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const SubconditionComponent: React.FC<{
   subcondition: SubconditionModel;
@@ -18,6 +20,9 @@ const SubconditionComponent: React.FC<{
   is_approved: boolean;
   dragHandleRef?: (element: HTMLElement | null) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
+  hasChildren?: boolean;
+  collapsed?: boolean;
+  onCollapse?: () => void;
 }> = ({
   subcondition,
   indentLevel,
@@ -30,6 +35,9 @@ const SubconditionComponent: React.FC<{
   is_approved,
   dragHandleRef,
   dragHandleProps,
+  hasChildren,
+  collapsed,
+  onCollapse,
 }) => {
 
     const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,9 +63,27 @@ const SubconditionComponent: React.FC<{
           }}
         >
           {isEditing && (
-            <div ref={dragHandleRef} {...dragHandleProps} style={{ cursor: 'grab', paddingRight: 4, display: 'flex', alignItems: 'center' }}>
-              <DragIndicatorIcon fontSize="small" />
+            <div
+              ref={dragHandleRef}
+              {...dragHandleProps}
+              style={{
+                cursor: 'grab',
+                paddingRight: 4,
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: '4px',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e2e8f0')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            >
+              <DragIndicatorIcon fontSize="small" color="disabled" />
             </div>
+          )}
+          {hasChildren && (
+            <IconButton size="small" onClick={onCollapse} sx={{ ml: -1, mr: 0.5 }}>
+              {collapsed ? <ChevronRightIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+            </IconButton>
           )}
           {isEditing ? (
             <>
