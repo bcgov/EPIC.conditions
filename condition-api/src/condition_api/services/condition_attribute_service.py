@@ -250,12 +250,10 @@ class ConditionAttributeService:
             ).first()
 
             if not existing_attribute:
-                # Check if the current key is MANAGEMENT_PLAN_NAME
-                attribute_value = '{}' if key.key_name == AttributeKeys.MANAGEMENT_PLAN_NAME.value else None
                 new_attribute = ConditionAttribute(
                     condition_id=condition_id,
                     attribute_key_id=key.id,
-                    attribute_value=attribute_value,
+                    attribute_value=None,
                     management_plan_id=management_plan_id
                 )
                 db.session.add(new_attribute)
