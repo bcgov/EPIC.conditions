@@ -15,12 +15,7 @@ export const Route = createFileRoute(
   notFoundComponent: () => {
     return <p>Condition not found!</p>;
   },
-  meta: ({ params }) => [
-    { title: "Home", path: "/projects" },
-    { title: `${params.projectId}`, path: `/projects` },
-    { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category` },
-    { title: `Document Label`, path: undefined }
-  ],
+  meta: () => [],
 });
 
 function ConditionPage() {
@@ -49,55 +44,29 @@ function ConditionPage() {
     }
   }, [isConditionsError, isDocumentDetailsError]);
 
-  const META_PROJECT_TITLE = `${projectId}`;
-  const META_DOCUMENT_CATEGORY = `Document Category`;
-  const META_DOCUMENT_LABEL = `Document Label`;
-  const { replaceBreadcrumb } = useBreadCrumb();
+  const { setBreadcrumbs, setIsFromConsolidated } = useBreadCrumb();
 
   const [documentLabel, setDocumentLabel] = useState<string>("");
 
   useEffect(() => {
+    setIsFromConsolidated(false);
+  }, [setIsFromConsolidated]);
+
+  useEffect(() => {
     if (documentDetails) {
-      setDocumentLabel(documentDetails.document_label || "Document Label"); 
+      setDocumentLabel(documentDetails.document_label || "Document Label");
 
-      replaceBreadcrumb("Home", "Home", "/projects", true);
-
-      replaceBreadcrumb(
-        META_PROJECT_TITLE,
-        documentDetails?.project_name || META_PROJECT_TITLE,
-        `/projects/${projectId}`,
-        true
-      );
-
-      replaceBreadcrumb(
-        META_DOCUMENT_CATEGORY,
-        documentDetails?.document_category || META_DOCUMENT_CATEGORY,
-        `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`,
-        true
-      );
-
-      replaceBreadcrumb(
-        META_DOCUMENT_LABEL,
-        documentDetails?.document_label || META_DOCUMENT_LABEL,
-        undefined,
-        false
-      );
+      setBreadcrumbs([
+        { title: "Home", path: "/projects", clickable: true },
+        { title: documentDetails?.project_name || "", path: `/projects/${projectId}`, clickable: true },
+        { title: documentDetails?.document_category || "", path: `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`, clickable: true },
+        { title: documentDetails?.document_label || "", path: undefined, clickable: false }
+      ]);
     }
-  }, [
-    documentDetails,
-    documentConditions,
-    projectId,
-    replaceBreadcrumb,
-    META_PROJECT_TITLE,
-    META_DOCUMENT_CATEGORY,
-    META_DOCUMENT_LABEL
-  ]);
+  }, [documentDetails, projectId, setBreadcrumbs]);
 
   const handleDocumentLabelChange = (newLabel: string) => {
     setDocumentLabel(newLabel);
-    
-    // Update breadcrumb immediately when label changes
-    replaceBreadcrumb(META_DOCUMENT_LABEL, newLabel, undefined, false);
   };
 
   if (isConditionsError || isDocumentDetailsError) return <Navigate to="/error" />;
@@ -116,11 +85,11 @@ function ConditionPage() {
     <PageGrid>
       <Grid item xs={12}>
         <Conditions
-          projectName = {documentDetails?.project_name || ""}
-          projectId = {projectId}
-          documentCategory = {documentDetails?.document_category || ""}
-          documentLabel = {documentLabel || ""}
-          documentId = {documentId}
+          projectName={documentDetails?.project_name || ""}
+          projectId={projectId}
+          documentCategory={documentDetails?.document_category || ""}
+          documentLabel={documentLabel || ""}
+          documentId={documentId}
           conditions={documentConditions?.conditions}
           documentTypeId={documentDetails?.document_type_id}
           onDocumentLabelChange={handleDocumentLabelChange}

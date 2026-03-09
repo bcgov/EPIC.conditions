@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect, useEffect } from "react";
 import { Else, If, Then } from "react-if";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
@@ -15,13 +15,7 @@ export const Route = createFileRoute(
   notFoundComponent: () => {
     return <p>Condition not found!</p>;
   },
-  meta: ({ params }) => [
-    { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` },
-    { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category/` },
-    { title: `${params.documentId}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}` }, // Path to the specific document
-    { title: `${params.conditionId}`, path: `/conditions/project/${params.projectId}/document/${params.documentId}/condition/${params.conditionId}` } // Path to the specific document
-  ],
+  meta: () => [],
 });
 
 function ConditionPage() {
@@ -42,46 +36,28 @@ function ConditionPage() {
     }
   }, [isConditionsError]);
 
-  const META_PROJECT_TITLE = `${projectId}`;
-  const META_DOCUMENT_CATEGORY = `Document Category`;
-  const META_DOCUMENT_TITLE = `${documentId}`;
-  const META_CONDITION_TITLE = `${conditionDetails?.condition.condition_id}`;
-  const { replaceBreadcrumb } = useBreadCrumb();
-  useEffect(() => {
+  const { setBreadcrumbs, isFromConsolidated } = useBreadCrumb();
+
+  useLayoutEffect(() => {
     if (conditionDetails) {
-      replaceBreadcrumb("Home", "Home", "/projects", true);
-      replaceBreadcrumb(
-        META_PROJECT_TITLE,
-        conditionDetails?.project_name || "",
-        `/projects/${projectId}`,
-        true
-      );
-      replaceBreadcrumb(
-        META_DOCUMENT_CATEGORY,
-        conditionDetails?.document_category || META_DOCUMENT_CATEGORY,
-        `/documents/project/${projectId}/document-category/${conditionDetails.document_category_id}/`,
-        true
-      );
-      replaceBreadcrumb(
-        META_DOCUMENT_TITLE,
-        conditionDetails?.document_label || ""
-      );
-      replaceBreadcrumb(
-        META_CONDITION_TITLE,
-        conditionDetails?.condition.condition_name || "",
-        undefined,
-        false
-      );
+      if (isFromConsolidated) {
+        setBreadcrumbs([
+          { title: "Home", path: "/projects", clickable: true },
+          { title: conditionDetails?.project_name || "", path: `/projects/${projectId}`, clickable: true },
+          { title: "Consolidated Conditions", path: `/projects/${projectId}/consolidated-conditions`, clickable: true },
+          { title: conditionDetails?.condition.condition_name || "", path: undefined, clickable: false }
+        ]);
+      } else {
+        setBreadcrumbs([
+          { title: "Home", path: "/projects", clickable: true },
+          { title: conditionDetails?.project_name || "", path: `/projects/${projectId}`, clickable: true },
+          { title: conditionDetails?.document_category || "", path: `/documents/project/${projectId}/document-category/${conditionDetails.document_category_id}/`, clickable: true },
+          { title: conditionDetails?.document_label || "", path: undefined, clickable: false },
+          { title: conditionDetails?.condition.condition_name || "", path: undefined, clickable: false }
+        ]);
+      }
     }
-  }, [
-    projectId,
-    conditionDetails,
-    replaceBreadcrumb,
-    META_PROJECT_TITLE,
-    META_DOCUMENT_CATEGORY,
-    META_DOCUMENT_TITLE,
-    META_CONDITION_TITLE
-  ]);
+  }, [projectId, conditionDetails, setBreadcrumbs, isFromConsolidated]);
 
   if (isConditionsError) return <Navigate to="/error" />;
 
@@ -94,10 +70,10 @@ function ConditionPage() {
           </Then>
           <Else>
             <ConditionDetails
-              initialCondition = {conditionDetails}
-              projectId = {projectId || ""}
-              documentId = {documentId || ""}
-              conditionId = {conditionId || 0}
+              initialCondition={conditionDetails}
+              projectId={projectId || ""}
+              documentId={documentId || ""}
+              conditionId={conditionId || 0}
             />
           </Else>
         </If>
