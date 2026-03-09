@@ -6,6 +6,7 @@ import { DocumentStatus } from "@/models/Document";
 import { ConditionModel } from "@/models/Condition";
 import { useNavigate } from "@tanstack/react-router";
 import { DocumentTypes } from "@/utils/enums"
+import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 
 interface ConditionRowProps {
   condition: ConditionModel;
@@ -25,7 +26,14 @@ export default function ConditionTableRow({
 }: ConditionRowProps) {
 
   const navigate = useNavigate();
+  const { setIsFromConsolidated } = useBreadCrumb();
+
   const handleOnDocumentClick = (projectId: string, documentId?: string, conditionId?: number) => {
+    if (tableType === "consolidated") {
+      setIsFromConsolidated(true);
+    } else {
+      setIsFromConsolidated(false);
+    }
     navigate({
       to: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}`,
     });
