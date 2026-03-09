@@ -7,7 +7,10 @@ from read_pdf import read_pdf
 import json
 
 from openai import OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(
+    api_key=os.getenv("EXTRACTOR_API_KEY") or os.getenv("OPENAI_API_KEY") or "not-set",
+    base_url=f"{os.getenv('EXTRACTOR_API_URL', '').rstrip('/')}/v1" if os.getenv("EXTRACTOR_API_URL") else None,
+)
 
 def extract_first_nation_from_pdf(pdf_file_path):
     with open(pdf_file_path, "rb") as f:

@@ -1,15 +1,16 @@
 import os
 import json
 
-from colorama import Fore, Style
+from colorama import Fore
 from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-MODEL = "gpt-4o-2024-05-13"
+client = OpenAI(
+    api_key=os.getenv("EXTRACTOR_API_KEY") or os.getenv("OPENAI_API_KEY") or "not-set",
+    base_url=f"{os.getenv('EXTRACTOR_API_URL', '').rstrip('/')}/v1" if os.getenv("EXTRACTOR_API_URL") else None,
+)
 
 
 def classify_document(file_text):
@@ -50,9 +51,11 @@ def classify_document(file_text):
                             "type": "array",
                             "items": {"type": "string"},
                             "description": (
-                                "The main section or topic headers found in the document that group conditions/commitments. "
-                                "E.g., ['Environmental Management', 'Acid Rock Drainage Prevention', 'Monitoring', 'Fish and Aquatic Resources']. "
-                                "Empty array if conditions are not grouped by sections."
+                                "The main topic or subject-matter headers that group conditions/commitments — NOT preamble or structural headings. "
+                                "EXCLUDE generic document sections such as 'Definitions', 'Acronyms', 'Conditions', 'Introduction', 'Background', 'Purpose', 'Scope', 'General', 'Schedule'. "
+                                "INCLUDE only substantive environmental or project topic headings that categorise the actual conditions, "
+                                "e.g., ['Environmental Management', 'Acid Rock Drainage Prevention', 'Fish and Aquatic Resources', 'Air Quality', 'Wildlife']. "
+                                "Empty array if conditions are not grouped by topic sections."
                             ),
                         },
                         "estimated_item_count": {
@@ -91,7 +94,7 @@ def classify_document(file_text):
 
     try:
         completion = client.chat.completions.create(
-            model=MODEL,
+            model="gpt-4o-mini",
             messages=messages,
             tools=tools,
             temperature=0.0,
