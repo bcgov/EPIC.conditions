@@ -136,6 +136,7 @@ class ConditionService:
                     ),
                     else_=False  # At least one condition is not met
                 ).label('is_approved'),  # Derived column for the calculated approval status
+                conditions.is_active,
                 conditions.is_standard_condition,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
@@ -169,6 +170,7 @@ class ConditionService:
                     )
                 )
             )
+            .filter(conditions.is_active.is_(True))
             .group_by(
                 conditions.id,
                 conditions.condition_name,
@@ -177,6 +179,7 @@ class ConditionService:
                 conditions.is_approved,
                 conditions.is_condition_attributes_approved,
                 conditions.is_topic_tags_approved,
+                conditions.is_active,
                 conditions.is_standard_condition,
                 conditions.topic_tags,
                 conditions.subtopic_tags,
@@ -201,6 +204,7 @@ class ConditionService:
                 "condition_number": row.condition_number,
                 "condition_text": row.condition_text,
                 "is_approved": row.is_approved,
+                "is_active": row.is_active,
                 "is_standard_condition": row.is_standard_condition,
                 "topic_tags": row.topic_tags,
                 "subtopic_tags": row.subtopic_tags,

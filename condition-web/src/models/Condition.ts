@@ -15,6 +15,7 @@ export interface ConditionModel {
   effective_document_id?: string;
   year_issued?: number;
   is_approved?: boolean;
+  is_active?: boolean;
   topic_tags?: string[];
   is_topic_tags_approved?: boolean;
   is_condition_attributes_approved?: boolean;
