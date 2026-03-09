@@ -1,10 +1,7 @@
 import os
 import json
-import aiohttp
-import asyncio
 
-import colorama
-from colorama import Fore, Back, Style
+from colorama import Fore
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -13,8 +10,10 @@ from read_pdf import read_pdf_page_range, get_page_count
 from document_classifier import classify_document
 from openai import OpenAI
 
-# Get OPENAI_API_KEY from environment variables
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(
+    api_key=os.getenv("EXTRACTOR_API_KEY") or os.getenv("OPENAI_API_KEY") or "not-set",
+    base_url=f"{os.getenv('EXTRACTOR_API_URL', '').rstrip('/')}/v1" if os.getenv("EXTRACTOR_API_URL") else None,
+)
 
 MODEL = "gpt-4o-2024-05-13"
 SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schemas")

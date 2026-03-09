@@ -1,7 +1,6 @@
 import gradio as gr
 from gpt import classify_and_count, extract_and_enrich_all
 from extract_first_nations import process_single_pdf
-
 import json
 import os
 
@@ -36,28 +35,24 @@ def classify_document_ui(file_input):
 
 
 def extract_and_enrich_ui(file_input, classification):
-    """Run the full extraction + enrichment pipeline."""
+    """Run extraction + enrichment + first nations."""
     if not classification:
-        return {"error": "Please classify the document first."}
+        return json.dumps({"error": "Please classify the document first."}, indent=4)
     result = extract_and_enrich_all(file_input, classification)
-    return result
+    if result and "conditions" in result:
+        file_path = file_input.name if hasattr(file_input, "name") else file_input
+        if isinstance(file_path, str) and file_path.endswith(".pdf"):
+            result = process_single_pdf(file_path, result)
+    return json.dumps(result, indent=4)
 
 
-def add_first_nations_ui(file_input, enriched_json):
-    """Add first nations info to the enriched JSON."""
-    if not enriched_json or "conditions" not in enriched_json:
-        return enriched_json
-    file_path = file_input.name if hasattr(file_input, "name") else file_input
-    if file_path.endswith(".pdf"):
-        result = process_single_pdf(file_path, enriched_json)
-        return result
-    return enriched_json
-
-
-def send_to_json_editor(json_data):
-    if isinstance(json_data, str):
-        json_data = json.loads(json_data)
-    return json.dumps(json_data, indent=4), json_data
+def send_to_json_editor(json_str):
+    if isinstance(json_str, dict):
+        json_data = json_str
+    else:
+        json_data = json.loads(json_str) if json_str else {}
+    formatted = json.dumps(json_data, indent=4)
+    return formatted, formatted
 
 
 def save_json(content, project_id, document_id, project_name, project_type,
@@ -93,9 +88,9 @@ def save_json(content, project_id, document_id, project_name, project_type,
         with open(output_path, "w") as f:
             json.dump(content_dict, f, indent=4)
 
-        return f"Saved to {output_path}", json.dumps(content_dict, indent=4), content_dict
+        return f"Saved to {output_path}", json.dumps(content_dict, indent=4), json.dumps(content_dict, indent=4)
     except Exception as e:
-        return f"Save failed: {str(e)}", content, None
+        return f"Save failed: {str(e)}", content, content if isinstance(content, str) else json.dumps(content, indent=4)
 
 
 # ---------------------------------------------------------------------------
@@ -129,8 +124,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         # --- Extraction section ---
         with gr.Column():
             submit_button = gr.Button("Extract & Enrich Conditions", variant="primary")
-            extracted_conditions = gr.JSON(label="Extracted & Enriched Conditions")
-            first_nations_result = gr.JSON(label="With First Nations")
+            final_result = gr.Code(language="json", label="Extracted Conditions", interactive=False)
 
     with gr.Tab("JSON Editor"):
         # --- Metadata inputs ---
@@ -153,21 +147,17 @@ with gr.Blocks(theme=gr.themes.Soft()) as app:
         status_output = gr.Textbox(label="Status", lines=1, interactive=False)
 
         with gr.Row():
-            json_viewer = gr.JSON(label="JSON Viewer")
+            json_viewer = gr.Code(language="json", label="JSON Viewer", interactive=False)
             json_editor = gr.Textbox(label="JSON Content Editor", lines=500)
 
-    # --- Pipeline: Classify -> Extract & Enrich -> First Nations -> Editor ---
+    # --- Pipeline: Extract & Enrich (+ First Nations) -> Editor ---
     submit_button.click(
         fn=extract_and_enrich_ui,
         inputs=[file_input, classification_state],
-        outputs=[extracted_conditions]
-    ).then(
-        fn=add_first_nations_ui,
-        inputs=[file_input, extracted_conditions],
-        outputs=[first_nations_result]
+        outputs=[final_result]
     ).then(
         fn=send_to_json_editor,
-        inputs=[first_nations_result],
+        inputs=[final_result],
         outputs=[json_editor, json_viewer]
     )
 
