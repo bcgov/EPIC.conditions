@@ -44,7 +44,7 @@ export default function ConditionTableRow({
       >
         {documentTypeId !== DocumentTypes.Amendment && (
           <TableCell
-            colSpan={2}
+            colSpan={1}
             align="left"
             sx={{
               borderTop: border,
@@ -67,7 +67,7 @@ export default function ConditionTableRow({
           {condition.condition_number ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={6}
+          colSpan={4}
           align="left"
           sx={{
             borderTop: border,
@@ -124,8 +124,8 @@ export default function ConditionTableRow({
           {condition.year_issued ?? "--"}
         </TableCell>
         {tableType == "consolidated" && <TableCell
-          colSpan={2}
-          align="right"
+          colSpan={4}
+          align="center"
           sx={{
             borderTop: border,
             borderBottom: border,
@@ -146,7 +146,7 @@ export default function ConditionTableRow({
           {condition.is_standard_condition ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={2}
+          colSpan={3}
           align="center"
           sx={{
             borderTop: border,
