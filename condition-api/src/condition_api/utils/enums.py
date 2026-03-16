@@ -33,7 +33,6 @@ class AttributeKeys(str, Enum):
     """Attribute Keys — values match key_name in the attribute_keys table."""
 
     REQUIRES_CONSULTATION = "Requires consultation"
-    MANAGEMENT_PLAN_NAME = "Management plan name(s)"
     MANAGEMENT_PLAN_ACRONYM = "Management plan acronym(s)"
     PARTIES_REQUIRED_TO_BE_SUBMITTED = "Parties required to be submitted"
     PARTIES_REQUIRED_TO_BE_CONSULTED = "Parties required to be consulted"
@@ -71,7 +70,6 @@ class ManagementPlanConfig:
         """Required attribute key_names for Management Plan"""
         return [
             AttributeKeys.SUBMITTED_TO_EAO_FOR.value,
-            AttributeKeys.MANAGEMENT_PLAN_NAME.value,
             AttributeKeys.MANAGEMENT_PLAN_ACRONYM.value,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION.value,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION.value,

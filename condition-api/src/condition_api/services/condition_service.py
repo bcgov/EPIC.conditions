@@ -1027,7 +1027,6 @@ class ConditionService:
             AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED.value,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_SUBMISSION.value,
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION.value,
-            AttributeKeys.MANAGEMENT_PLAN_NAME.value,
         }
 
         query = db.session.query(
