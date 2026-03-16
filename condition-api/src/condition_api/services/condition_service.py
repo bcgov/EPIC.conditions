@@ -588,6 +588,7 @@ class ConditionService:
             topic_tags=conditions_data.get("topic_tags"),
             subtopic_tags=conditions_data.get("subtopic_tags"),
             condition_type=conditions_data.get("condition_type"),
+            requires_management_plan=conditions_data.get("requires_management_plan"),
             effective_from=datetime.utcnow()
         )
         db.session.add(new_condition)
@@ -598,6 +599,15 @@ class ConditionService:
                 new_condition.id, conditions_data.get("subconditions"), None)
 
         db.session.commit()
+
+        source_condition_id = conditions_data.get("condition_id")
+        if source_condition_id:
+            try:
+                source_condition_id = int(source_condition_id)
+            except (ValueError, TypeError):
+                source_condition_id = None
+        if source_condition_id:
+            ConditionService._copy_condition_attributes(source_condition_id, new_condition.id)
 
         return {
             "condition_id": new_condition.id
@@ -623,6 +633,45 @@ class ConditionService:
             if "subconditions" in subcond_data:
                 ConditionService.upsert_subconditions(
                     condition_id, subcond_data["subconditions"], parent_id=subcondition_id)
+
+    @staticmethod
+    def _copy_condition_attributes(source_condition_id, target_condition_id):
+        """Copy requires_management_plan flag, management plans, and condition attributes from source to target."""
+        source_condition = db.session.query(Condition).filter_by(id=source_condition_id).first()
+        if source_condition and source_condition.requires_management_plan is not None:
+            target_condition = db.session.query(Condition).filter_by(id=target_condition_id).first()
+            if target_condition:
+                target_condition.requires_management_plan = source_condition.requires_management_plan
+
+        source_plans = db.session.query(ManagementPlan).filter_by(
+            condition_id=source_condition_id
+        ).all()
+
+        plan_id_map = {}
+        for plan in source_plans:
+            new_plan = ManagementPlan(condition_id=target_condition_id, name=plan.name)
+            db.session.add(new_plan)
+            db.session.flush()
+            plan_id_map[plan.id] = new_plan.id
+
+        source_attrs = db.session.query(ConditionAttribute).filter_by(
+            condition_id=source_condition_id
+        ).all()
+
+        for attr in source_attrs:
+            new_management_plan_id = (
+                plan_id_map.get(attr.management_plan_id)
+                if attr.management_plan_id else None
+            )
+            new_attr = ConditionAttribute(
+                condition_id=target_condition_id,
+                attribute_key_id=attr.attribute_key_id,
+                attribute_value=attr.attribute_value,
+                management_plan_id=new_management_plan_id
+            )
+            db.session.add(new_attr)
+
+        db.session.commit()
 
     @staticmethod
     def get_condition_details_by_id(condition_id):
