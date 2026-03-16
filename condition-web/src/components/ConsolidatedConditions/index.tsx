@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { BCDesignTokens } from "epic.theme";
 import { ConditionModel } from "@/models/Condition";
-import { Box, FormControlLabel, Grid, styled, Stack, Switch, Typography } from "@mui/material";
+import { Box, Button, FormControlLabel, Grid, styled, Stack, Switch, Typography } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { ContentBox } from "../Shared/ContentBox";
 import ConditionTable from "../Conditions/ConditionsTable";
 import { DocumentStatus } from "@/models/Document";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ConsolidatedConditionFilters from "@/components/Filters/ConsolidatedConditionFilters";
 import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
 import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
+import { generateConsolidatedConditionsPDF } from "@/utils/pdfExport";
+import eaoLogo from "@/assets/images/EAO_Logo.png";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -47,6 +50,20 @@ export const ConsolidatedConditions = ({
   const [isToggled, setIsToggled] = useState(true);
 
   const { filters } = useConditionFilters();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateConsolidatedConditionsPDF(
+        filteredConditions || [],
+        projectName,
+        eaoLogo
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const filteredConditions = conditions?.filter((condition) => {
     const matchesSearch = filters.search_text
@@ -153,19 +170,41 @@ export const ConsolidatedConditions = ({
                   </Box>
                 </Stack>
               </Grid>
-              {consolidationLevel != 'project' &&
-              <Grid item xs={6} textAlign="right">
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={isToggled}
-                      onChange={handleToggle}
-                    />
-                  }
-                  label="View Consolidated Conditions"
-                  labelPlacement="end"
-                />
-              </Grid>}
+              <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2 }}>
+                {consolidationLevel != 'project' && (
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={isToggled}
+                        onChange={handleToggle}
+                      />
+                    }
+                    label="View Consolidated Conditions"
+                    labelPlacement="end"
+                  />
+                )}
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<FileDownloadOutlinedIcon />}
+                  onClick={handleExportPDF}
+                  disabled={isExporting || !filteredConditions?.length}
+                  sx={{
+                    whiteSpace: "nowrap",
+                    backgroundColor: "#0d2b4e",
+                    color: "#ffffff",
+                    "&:hover": { backgroundColor: "#0a2240" },
+                    "&:disabled": { backgroundColor: "#0d2b4e", opacity: 0.5, color: "#ffffff" },
+                    borderRadius: "4px",
+                    textTransform: "none",
+                    fontWeight: 500,
+                    px: 2,
+                    py: 0.75,
+                  }}
+                >
+                  {isExporting ? "Exporting..." : "Export PDF"}
+                </Button>
+              </Grid>
             </Grid>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
               <CardInnerBox

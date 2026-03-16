@@ -942,8 +942,12 @@ class ConditionService:
                 "year_issued": row.year_issued,
                 "effective_document_id": row.effective_document_id,
                 "source_document": row.amendment_name if row.amendment_name
-                and row.condition_type == ConditionType.ADD else row.document_label
+                and row.condition_type == ConditionType.ADD else row.document_label,
+                "subconditions": []
             }
+
+        for cond_id in conditions_map:
+            ConditionService._populate_subconditions(conditions_map, cond_id)
 
         return ProjectDocumentConditionSchema().dump(
             {
