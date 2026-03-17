@@ -123,8 +123,9 @@ class ConditionDetailResource(Resource):
         try:
             query_params = request.args
             include_nested_conditions = query_params.get('include_subconditions', '', type=str)
+            active_only = query_params.get('active_only', 'false').lower() == 'true'
             condition_details = ConditionService.get_all_conditions(
-                project_id, document_id, include_nested_conditions)
+                project_id, document_id, include_nested_conditions, active_only)
             if not condition_details:
                 return {}
             # Instantiate the schema

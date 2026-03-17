@@ -53,7 +53,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
   const { data: documentData, isPending: isDocumentsLoading } = useGetDocumentsByProject(
     true, projectId, documentId, DocumentTypes.Amendment.toString());
 
-  const { data: documentConditions, isPending: isConditionsLoading } = useGetConditions(loadCondition, true, projectId, selectedDocumentId);
+  const { data: documentConditions, isPending: isConditionsLoading } = useGetConditions(loadCondition, true, projectId, selectedDocumentId, true);
 
   const flattenSubconditions = (
     subconditions: Subcondition[] = [],
@@ -164,6 +164,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
                 getOptionLabel={(document: DocumentModel) => document.document_label}
                 onChange={(_e, document: DocumentModel | null) => {
                   setSelectedDocumentId(document?.document_id || "");
+                  setSelectedConditionId(null);
                   setLoadCondition(true);
                 }}
                 disabled={isDocumentsLoading}
@@ -173,6 +174,7 @@ export const ConditionModal: FC<ConditionModalProps> = ({ open, onClose, project
                 <>
                   <Typography variant="body1" marginBottom={"2px"}>Condition</Typography>
                   <Autocomplete
+                    key={selectedDocumentId}
                     id="condition-selector"
                     options={documentConditions?.conditions || []}
                     renderInput={(params) => (
