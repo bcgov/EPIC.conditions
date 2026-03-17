@@ -204,7 +204,7 @@ function addHeader(
   const LOGO_W = 70;
   const LOGO_H = 13;
   if (eaoLogoData) {
-    try { _doc.addImage(eaoLogoData, "PNG", ML, _y + 2, LOGO_W, LOGO_H); } catch {}
+    try { _doc.addImage(eaoLogoData, "PNG", ML, _y + 2, LOGO_W, LOGO_H); } catch { /* ignore */ }
   }
 
   // "Consolidated Conditions" — right-aligned
@@ -522,7 +522,7 @@ export async function generateConsolidatedConditionsPDF(
 
   let eaoLogoData: string | undefined;
 
-  if (eaoLogoUrl) { try { eaoLogoData = await loadImageAsDataUrl(eaoLogoUrl); } catch {} }
+  if (eaoLogoUrl) { try { eaoLogoData = await loadImageAsDataUrl(eaoLogoUrl); } catch { /* ignore */ } }
 
   // Header (logos, title, stats, disclaimer)
   addHeader(projectName, conditions, eaoLogoData);
