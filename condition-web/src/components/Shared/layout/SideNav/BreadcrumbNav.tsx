@@ -30,7 +30,7 @@ const BreadcrumbNav: React.FC = () => {
   }, [matches, isFromConsolidated]);
 
   useEffect(() => {
-    if (!isFromConsolidated) {
+    if (!isFromConsolidated && routeMatches.length > 0) {
       setBreadcrumbs(routeMatches);
     }
   }, [routeMatches, setBreadcrumbs, isFromConsolidated]);
