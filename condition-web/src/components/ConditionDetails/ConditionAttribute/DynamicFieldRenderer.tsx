@@ -160,13 +160,12 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 attributeData.setValue(timeUnit); // Only set the time unit
             } else {
                 const value = customTimeValue || timeValue;
-                if (value) {
+                if (value && timeDirection) {
                     attributeData.setValue(`${value} ${timeUnit} ${timeDirection}`);
                 }
             }
         }
-    }, [timeValue, timeUnit, timeDirection, customTimeValue, attributeData]);
-
+    }, [timeValue, timeUnit, timeDirection, customTimeValue]); 
     const handleTimeUnitChange = (e: SelectChangeEvent<string>) => {
         const selectedUnit = e.target.value;
         setTimeUnit(selectedUnit);
