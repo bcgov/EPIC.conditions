@@ -24,7 +24,7 @@ const fetchConditions = (
     return Promise.reject(new Error("Document ID is required"));
   }
   return submitRequest<ProjectDocumentConditionModel>({
-    url: `/conditions/project/${projectId}/document/${documentId}?include_subconditions=${includeSubconditions}&active_only=${activeOnly}`,
+    url: `/conditions/project/${projectId}/document/${documentId}?include_subconditions=${includeSubconditions}${activeOnly ? "&active_only=true" : ""}`,
   });
 };
 
