@@ -154,18 +154,19 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
         }
     }, [attributeData.key, attributeData.value]);
 
+    const { setValue } = attributeData;
     useEffect(() => {
         if (timeUnit) {
             if (timeUnit === "N/A") {
-                attributeData.setValue(timeUnit); // Only set the time unit
+                setValue(timeUnit); // Only set the time unit
             } else {
                 const value = customTimeValue || timeValue;
                 if (value && timeDirection) {
-                    attributeData.setValue(`${value} ${timeUnit} ${timeDirection}`);
+                    setValue(`${value} ${timeUnit} ${timeDirection}`);
                 }
             }
         }
-    }, [timeValue, timeUnit, timeDirection, customTimeValue]); 
+    }, [timeValue, timeUnit, timeDirection, customTimeValue, setValue]);
     const handleTimeUnitChange = (e: SelectChangeEvent<string>) => {
         const selectedUnit = e.target.value;
         setTimeUnit(selectedUnit);
