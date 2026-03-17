@@ -6,10 +6,14 @@ import { useBreadCrumb } from "./breadCrumbStore";
 import { RouteMeta, RouteSegment } from './types';
 
 const BreadcrumbNav: React.FC = () => {
-  const { breadcrumbs, setBreadcrumbs } = useBreadCrumb();
+  const { breadcrumbs, setBreadcrumbs, isFromConsolidated } = useBreadCrumb();
   const matches = useRouterState({ select: (s) => s.matches });
 
   const routeMatches: RouteSegment[] = useMemo(() => {
+    if (isFromConsolidated) {
+      return [];
+    }
+
     return matches.flatMap((match) => {
       const { meta, pathname } = match;
 
@@ -23,11 +27,13 @@ const BreadcrumbNav: React.FC = () => {
       }
       return [];
     });
-  }, [matches]);
+  }, [matches, isFromConsolidated]);
 
   useEffect(() => {
-    setBreadcrumbs(routeMatches);
-  }, [routeMatches, setBreadcrumbs]);
+    if (!isFromConsolidated) {
+      setBreadcrumbs(routeMatches);
+    }
+  }, [routeMatches, setBreadcrumbs, isFromConsolidated]);
 
   return (
     <Box
