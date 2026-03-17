@@ -11,7 +11,12 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { defaultUseQueryOptions, QUERY_KEY } from "./constants";
 import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
 
-const fetchConditions = (includeSubconditions: boolean, projectId?: string, documentId?: string) => {
+const fetchConditions = (
+  includeSubconditions: boolean,
+  projectId?: string,
+  documentId?: string,
+  activeOnly: boolean = false
+) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -19,7 +24,7 @@ const fetchConditions = (includeSubconditions: boolean, projectId?: string, docu
     return Promise.reject(new Error("Document ID is required"));
   }
   return submitRequest<ProjectDocumentConditionModel>({
-    url: `/conditions/project/${projectId}/document/${documentId}?include_subconditions=${includeSubconditions}`,
+    url: `/conditions/project/${projectId}/document/${documentId}?include_subconditions=${includeSubconditions}${activeOnly ? "&active_only=true" : ""}`,
   });
 };
 
@@ -27,10 +32,11 @@ export const useGetConditions = (
   shouldLoad: boolean,
   includeSubconditions: boolean,
   projectId?: string,
-  documentId?: string) => {
+  documentId?: string,
+  activeOnly: boolean = false) => {
   return useQuery({
-    queryKey: [QUERY_KEY.CONDITIONS, projectId, documentId],
-    queryFn: () => fetchConditions(includeSubconditions, projectId, documentId),
+    queryKey: [QUERY_KEY.CONDITIONS, projectId, documentId, activeOnly],
+    queryFn: () => fetchConditions(includeSubconditions, projectId, documentId, activeOnly),
     enabled: Boolean(projectId && documentId && shouldLoad),
     ...defaultUseQueryOptions,
   });

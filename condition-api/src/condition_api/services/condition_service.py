@@ -87,7 +87,8 @@ class ConditionService:
     def get_all_conditions(
         project_id,
         document_id,
-        include_nested_conditions=False
+        include_nested_conditions=False,
+        active_only=False
     ):
         """Fetch all conditions and their related subconditions by project ID and document ID."""
         # Aliases for the tables
@@ -170,7 +171,7 @@ class ConditionService:
                     )
                 )
             )
-            .filter(conditions.is_active.is_(True))
+            .filter(conditions.is_active.is_(True) if active_only else True)
             .group_by(
                 conditions.id,
                 conditions.condition_name,

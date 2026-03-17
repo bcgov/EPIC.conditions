@@ -87,7 +87,7 @@ export const CreateDocumentModal = ({
         return !Object.values(newErrors).includes(true);
     };
 
-    const filteredDocumentTypes = documentType.filter((type) => {
+    const filteredDocumentTypes = (documentType || []).filter((type) => {
         if (!formState.selectedProject || !formState.selectedProject.documents) return true;
     
         const hasCertificate = formState.selectedProject.documents.some((document) =>
