@@ -35,6 +35,41 @@ from ..auth import auth
 API = Namespace("conditions", description="Endpoints for Consolidated Condition Management")
 
 
+def _build_render_context(consolidated: dict) -> dict:
+    """Build the template context dict from consolidated conditions data."""
+    conditions = consolidated.get("conditions", [])
+    project_name = consolidated.get("project_name", "")
+
+    amendment_set = set()
+    for cond in conditions:
+        for part in (cond.get("amendment_names") or "").split(","):
+            trimmed = part.strip()
+            if trimmed:
+                amendment_set.add(trimmed)
+
+    approved_count = sum(1 for c in conditions if c.get("is_approved"))
+    now = datetime.now()
+
+    return {
+        "project_name": project_name,
+        "generated_on": now.strftime("%A, %B ") + str(now.day) + now.strftime(", %Y"),
+        "generated_on_short": now.strftime("%B ") + str(now.day) + now.strftime(", %Y"),
+        "total_conditions": len(conditions),
+        "amendment_list": ", ".join(sorted(amendment_set)),
+        "all_approved": all(cond.get("is_approved") for cond in conditions),
+        "approved_count": approved_count,
+        "awaiting_count": len(conditions) - approved_count,
+        "logo_url": current_app.config.get("EAO_LOGO_URL", ""),
+        "conditions": conditions,
+    }
+
+
+def _safe_filename(project_name: str) -> str:
+    """Return a filesystem-safe version of the project name."""
+    name = re.sub(r"[^a-z0-9]", "_", project_name.lower())
+    return re.sub(r"_+", "_", name).strip("_")
+
+
 @cors_preflight("GET, OPTIONS")
 @API.route("/project/<string:project_id>", methods=["GET", "OPTIONS"])
 class ConditionResource(Resource):
@@ -103,50 +138,19 @@ class ConsolidatedConditionRenderResource(Resource):
             if not consolidated:
                 return {"message": "No conditions found for this project"}, HTTPStatus.NOT_FOUND
 
-            conditions = consolidated.get("conditions", [])
-            project_name = consolidated.get("project_name", "")
-
-            amendment_set = set()
-            for cond in conditions:
-                names = cond.get("amendment_names") or ""
-                for part in names.split(","):
-                    trimmed = part.strip()
-                    if trimmed:
-                        amendment_set.add(trimmed)
-
-            all_approved = all(cond.get("is_approved") for cond in conditions)
-            approved_count = sum(1 for c in conditions if c.get("is_approved"))
-
-            now = datetime.now()
-            generated_on = now.strftime("%A, %B ") + str(now.day) + now.strftime(", %Y")
-            generated_on_short = now.strftime("%B ") + str(now.day) + now.strftime(", %Y")
-
-            context = {
-                "project_name": project_name,
-                "generated_on": generated_on,
-                "generated_on_short": generated_on_short,
-                "total_conditions": len(conditions),
-                "amendment_list": ", ".join(sorted(amendment_set)),
-                "all_approved": all_approved,
-                "approved_count": approved_count,
-                "awaiting_count": len(conditions) - approved_count,
-                "logo_url": current_app.config.get("EAO_LOGO_URL", ""),
-                "conditions": conditions,
-            }
-
-            response = DocGenService.render_template(TEMPLATE_KEY, context, output_format)
+            context = _build_render_context(consolidated)
+            docgen_response = DocGenService.render_template(TEMPLATE_KEY, context, output_format)
 
             if output_format == "pdf":
-                safe_name = re.sub(r"[^a-z0-9]", "_", project_name.lower())
-                safe_name = re.sub(r"_+", "_", safe_name).strip("_")
+                safe_name = _safe_filename(consolidated.get("project_name", ""))
                 return send_file(
-                    BytesIO(response.content),
+                    BytesIO(docgen_response.content),
                     mimetype="application/pdf",
                     as_attachment=True,
                     download_name=f"Consolidated_Conditions_{safe_name}.pdf",
                 )
 
-            return response.json(), HTTPStatus.OK
+            return docgen_response.json(), HTTPStatus.OK
 
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
