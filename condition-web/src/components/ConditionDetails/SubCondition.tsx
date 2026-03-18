@@ -95,12 +95,12 @@ const SubconditionComponent: React.FC<{
                 />
                 <Box display="flex" alignItems="center" sx={{ paddingLeft: '4px', paddingBottom: 3 }}>
                   {indentLevel > 1 && (
-                    <Tooltip title="Move out one level">
+                    <Tooltip title="Outdent">
                       <span>
                         <IconButton
                           size="small"
                           onClick={() => onOutdent(subcondition.subcondition_id)}
-                          aria-label="Move out one level"
+                          aria-label="Outdent"
                           sx={{
                             borderRadius: "4px",
                             "&:hover": {
@@ -116,12 +116,12 @@ const SubconditionComponent: React.FC<{
                     </Tooltip>
                   )}
                   {index > 0 && (
-                    <Tooltip title="Make child of item above">
+                    <Tooltip title="Indent">
                       <span>
                         <IconButton
                           size="small"
                           onClick={() => onIndent(subcondition.subcondition_id)}
-                          aria-label="Make child of item above"
+                          aria-label="Indent"
                           sx={{
                             borderRadius: "4px",
                             "&:hover": {
