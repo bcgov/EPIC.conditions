@@ -92,7 +92,7 @@ export default function ConditionTable({
                     >
                     <TableRow>
                         {documentTypeId !== DocumentTypes.Amendment && (
-                            <StyledTableHeadCell colSpan={2} align="left">
+                            <StyledTableHeadCell colSpan={1} align="left">
                                 <TableSortLabel
                                     active={orderBy === "amendment_names"}
                                     direction={orderBy === "amendment_names" ? order : "asc"}
@@ -103,7 +103,7 @@ export default function ConditionTable({
                             </StyledTableHeadCell>
                         )}
 
-                        <StyledTableHeadCell colSpan={2}>
+                        <StyledTableHeadCell colSpan={2} align="left">
                             <TableSortLabel
                                 active={orderBy === "condition_number"}
                                 direction={orderBy === "condition_number" ? order : "asc"}
@@ -113,7 +113,7 @@ export default function ConditionTable({
                             </TableSortLabel>
                         </StyledTableHeadCell>
 
-                        <StyledTableHeadCell colSpan={6}>
+                        <StyledTableHeadCell colSpan={4} align="left">
                             <TableSortLabel
                                 active={orderBy === "condition_name"}
                                 direction={orderBy === "condition_name" ? order : "asc"}
@@ -144,7 +144,7 @@ export default function ConditionTable({
                         </StyledTableHeadCell>
 
                         {tableType === "consolidated" && (
-                            <StyledTableHeadCell colSpan={2} align="right">
+                            <StyledTableHeadCell colSpan={4} align="center">
                                 <TableSortLabel
                                     active={orderBy === "source_document"}
                                     direction={orderBy === "source_document" ? order : "asc"}
@@ -165,7 +165,7 @@ export default function ConditionTable({
                             </TableSortLabel>
                         </StyledTableHeadCell>
 
-                        <StyledTableHeadCell colSpan={2} align="center">
+                        <StyledTableHeadCell colSpan={3} align="center">
                             <TableSortLabel
                                 active={orderBy === "is_approved"}
                                 direction={orderBy === "is_approved" ? order : "asc"}

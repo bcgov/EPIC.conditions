@@ -14,11 +14,7 @@ export const Route = createFileRoute(
   notFoundComponent: () => {
     return <p>Conditions not found!</p>;
   },
-  meta: ({ params }) => [
-    { title: "Home", path: "/projects/" },
-    { title: `${params.projectId}`, path: `/projects/` },
-    { title: `Consolidated Conditions`, path: undefined }
-  ],
+  meta: () => [],
 });
 
 function ConditionPage() {
@@ -37,21 +33,21 @@ function ConditionPage() {
     }
   }, [isConditionsError]);
 
-  const META_PROJECT_TITLE = `${projectId}`;
-  const { replaceBreadcrumb } = useBreadCrumb();
+  const { setBreadcrumbs, setIsFromConsolidated } = useBreadCrumb();
+
+  useEffect(() => {
+    setIsFromConsolidated(false);
+  }, [setIsFromConsolidated]);
 
   useEffect(() => {
     if (consolidatedConditions) {
-      replaceBreadcrumb("Home", "Home", "/projects", true);
-
-      replaceBreadcrumb(
-        META_PROJECT_TITLE,
-        consolidatedConditions?.project_name || META_PROJECT_TITLE,
-        `/projects/${projectId}`,
-        true
-      );
+      setBreadcrumbs([
+        { title: "Home", path: "/projects", clickable: true },
+        { title: consolidatedConditions?.project_name || projectId, path: `/projects/${projectId}`, clickable: true },
+        { title: "Consolidated Conditions", path: undefined, clickable: false }
+      ]);
     }
-  }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE, projectId]);
+  }, [consolidatedConditions, projectId, setBreadcrumbs]);
 
   if (isConditionsError) return <Navigate to="/error" />;
 
@@ -69,9 +65,9 @@ function ConditionPage() {
     <PageGrid>
       <Grid item xs={12}>
         <ConsolidatedConditions
-          projectName = {consolidatedConditions?.project_name}
-          projectId = {projectId}
-          documentCategory = {consolidatedConditions?.document_category}
+          projectName={consolidatedConditions?.project_name}
+          projectId={projectId}
+          documentCategory={consolidatedConditions?.document_category}
           conditions={consolidatedConditions?.conditions}
           documentCategoryId={''}
           consolidationLevel={'project'}

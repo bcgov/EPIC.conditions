@@ -6,6 +6,7 @@ import { DocumentStatus } from "@/models/Document";
 import { ConditionModel } from "@/models/Condition";
 import { useNavigate } from "@tanstack/react-router";
 import { DocumentTypes } from "@/utils/enums"
+import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 
 interface ConditionRowProps {
   condition: ConditionModel;
@@ -25,7 +26,14 @@ export default function ConditionTableRow({
 }: ConditionRowProps) {
 
   const navigate = useNavigate();
+  const { setIsFromConsolidated } = useBreadCrumb();
+
   const handleOnDocumentClick = (projectId: string, documentId?: string, conditionId?: number) => {
+    if (tableType === "consolidated") {
+      setIsFromConsolidated(true);
+    } else {
+      setIsFromConsolidated(false);
+    }
     navigate({
       to: `/conditions/project/${projectId}/document/${documentId}/condition/${conditionId}`,
     });
@@ -44,7 +52,7 @@ export default function ConditionTableRow({
       >
         {documentTypeId !== DocumentTypes.Amendment && (
           <TableCell
-            colSpan={2}
+            colSpan={1}
             align="left"
             sx={{
               borderTop: border,
@@ -67,7 +75,7 @@ export default function ConditionTableRow({
           {condition.condition_number ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={6}
+          colSpan={4}
           align="left"
           sx={{
             borderTop: border,
@@ -124,8 +132,8 @@ export default function ConditionTableRow({
           {condition.year_issued ?? "--"}
         </TableCell>
         {tableType == "consolidated" && <TableCell
-          colSpan={2}
-          align="right"
+          colSpan={4}
+          align="center"
           sx={{
             borderTop: border,
             borderBottom: border,
@@ -146,7 +154,7 @@ export default function ConditionTableRow({
           {condition.is_standard_condition ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={2}
+          colSpan={3}
           align="center"
           sx={{
             borderTop: border,

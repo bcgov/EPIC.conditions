@@ -10,6 +10,8 @@ interface BreadCrumbStore {
   breadcrumbs: BreadCrumb[];
   setBreadcrumbs: (breadcrumbs: BreadCrumb[]) => void;
   replaceBreadcrumb: (oldTitle: string, newTitle: string, newPath?: string, clickable?: boolean) => void;
+  isFromConsolidated: boolean;
+  setIsFromConsolidated: (isFromConsolidated: boolean) => void;
 }
 
 // Create the Zustand store
@@ -27,6 +29,12 @@ export const useBreadCrumb = create<BreadCrumbStore>((set) => ({
           ? { ...breadcrumb, title: newTitle, path: newPath ?? breadcrumb.path, clickable }
           : breadcrumb,
       ),
+    }));
+  },
+  isFromConsolidated: false,
+  setIsFromConsolidated: (isFromConsolidated) => {
+    set(() => ({
+      isFromConsolidated,
     }));
   },
 }));
