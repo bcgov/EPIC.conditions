@@ -76,6 +76,10 @@ class _Config():  # pylint: disable=too-few-public-methods
     JWT_OIDC_CACHING_ENABLED = os.getenv('JWT_OIDC_CACHING_ENABLED', 'True')
     JWT_OIDC_JWKS_CACHE_TIMEOUT = 300
 
+    # DocGen service (external PDF/HTML rendering microservice)
+    DOCGEN_SERVICE_URL = os.getenv('DOCGEN_SERVICE_URL', '')
+    EAO_LOGO_URL = os.getenv('EAO_LOGO_URL', '')
+
     # Service account details
     KEYCLOAK_BASE_URL = os.getenv('KEYCLOAK_BASE_URL')
     KEYCLOAK_REALMNAME = os.getenv('KEYCLOAK_REALMNAME', 'condition')
