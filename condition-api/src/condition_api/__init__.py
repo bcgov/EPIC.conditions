@@ -73,6 +73,11 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'development')):
     @app.before_request
     def set_origin():
         g.origin_url = request.environ.get('HTTP_ORIGIN', 'localhost')
+        auth_header = request.headers.get('Authorization', None)
+        if auth_header and auth_header.startswith('Bearer '):
+            g.access_token = auth_header.split(' ')[1]
+        else:
+            g.access_token = None
 
     build_cache(app)
 

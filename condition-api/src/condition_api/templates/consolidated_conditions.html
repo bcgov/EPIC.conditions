@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Consolidated Conditions &mdash; {{ project_name }}</title>
+  <style>
+    {% raw %}
+    @page {
+      size: A4;
+      margin: 14mm 14mm 34mm 14mm;
+
+      @bottom-left {
+        content: element(page-disclaimer);
+        width: 182mm;
+        vertical-align: top;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10.5pt;
+      color: #0a0a0a;
+      line-height: 1.4;
+    }
+
+    .page-disclaimer {
+      position: running(page-disclaimer);
+      background: #fee2e2;
+      padding: 2mm 4mm;
+      font-size: 8pt;
+      color: #0a0a0a;
+      line-height: 1.3;
+    }
+
+    .page-disclaimer strong {
+      font-weight: bold;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8.5mm;
+    }
+
+    .header-logo {
+      max-height: 13mm;
+      max-width: 70mm;
+    }
+
+    .header-title-block {
+      text-align: right;
+    }
+
+    .header-title {
+      font-size: 22pt;
+      font-weight: bold;
+      color: #0a0a0a;
+      line-height: 1.2;
+    }
+
+    .header-project-name {
+      font-size: 15pt;
+      font-weight: normal;
+      color: #364153;
+      margin-top: 2mm;
+      line-height: 1.3;
+    }
+
+    .header-badge-row {
+      margin-top: 2mm;
+      text-align: right;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 1mm 3.5mm;
+      border-radius: 1mm;
+      font-size: 10.5pt;
+      font-weight: bold;
+      white-space: nowrap;
+      line-height: 1.5;
+    }
+
+    .badge-approved {
+      background: #f0fdf4;
+      border: 1px solid #00a63e;
+      color: #008236;
+    }
+
+    .badge-awaiting {
+      background: #fffbeb;
+      border: 1px solid #ffb900;
+      color: #bb4d00;
+    }
+
+    .badge-amended {
+      background: #eff6ff;
+      border: 1px solid #2e5dd7;
+      color: #2e5dd7;
+    }
+
+    .separator {
+      border: none;
+      border-top: 2px solid #d1d5dc;
+    }
+
+    .stats-section {
+      margin-top: 9mm;
+      margin-bottom: 8.5mm;
+    }
+
+    .stats-row {
+      display: flex;
+      margin-bottom: 2.1mm;
+      font-size: 10.5pt;
+    }
+
+    .stats-label {
+      font-weight: bold;
+      color: #0a0a0a;
+      min-width: 50mm;
+      flex-shrink: 0;
+    }
+
+    .stats-value {
+      color: #0a0a0a;
+    }
+
+    .info-box {
+      background: #f1f8fe;
+      border-left: 4px solid #2e5dd7;
+      padding: 4.2mm 4.23mm 4.23mm 5.29mm;
+      margin-bottom: 12.7mm;
+    }
+
+    .info-box p {
+      font-size: 10.5pt;
+      color: #364153;
+      line-height: 1.4;
+      margin-bottom: 3.17mm;
+    }
+
+    .info-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .condition-block {
+      page-break-inside: auto;
+    }
+
+    .condition-header-group {
+      page-break-inside: avoid;
+      page-break-after: avoid;
+    }
+
+    .condition-heading {
+      font-size: 18pt;
+      font-weight: normal;
+      color: #0a0a0a;
+      line-height: 1.3;
+      margin-bottom: 3mm;
+    }
+
+    .condition-amendment {
+      margin-bottom: 4.23mm;
+    }
+
+    .metadata-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 1.06mm;
+      padding: 4.5mm;
+      margin-bottom: 6.4mm;
+    }
+
+    .metadata-row1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 3mm;
+    }
+
+    .metadata-row2 {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .metadata-label {
+      font-size: 10pt;
+      color: #4a5565;
+      margin-right: 1.5mm;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .metadata-value {
+      font-size: 10.5pt;
+      color: #101828;
+    }
+
+    .condition-text {
+      font-size: 12pt;
+      color: #101828;
+      line-height: 1.5;
+      margin-bottom: 6.4mm;
+    }
+
+    .subconditions-list {
+      display: table;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6.4mm;
+      margin-top: -6.4mm;
+      page-break-inside: auto;
+    }
+
+    .subcondition-item {
+      display: table-row;
+      page-break-inside: avoid;
+    }
+
+    .subcondition-identifier {
+      display: table-cell;
+      width: 14mm;
+      font-size: 12pt;
+      font-weight: bold;
+      color: #101828;
+      line-height: 1.5;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .subcondition-body {
+      display: table-cell;
+      vertical-align: top;
+    }
+
+    .subcondition-text {
+      font-size: 12pt;
+      color: #101828;
+      line-height: 1.5;
+    }
+
+    .nested-subconditions {
+      display: table;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 2.1mm;
+      margin-top: 2.1mm;
+      margin-bottom: -2.1mm;
+      padding-left: 8.5mm;
+      page-break-inside: auto;
+    }
+
+    .nested-subcondition-item {
+      display: table-row;
+      page-break-inside: avoid;
+    }
+
+    .nested-identifier {
+      display: table-cell;
+      width: 8mm;
+      font-size: 12pt;
+      font-weight: bold;
+      color: #101828;
+      line-height: 1.5;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .nested-text {
+      display: table-cell;
+      font-size: 12pt;
+      color: #101828;
+      line-height: 1.5;
+      vertical-align: top;
+    }
+
+    .condition-separator {
+      border: none;
+      border-top: 2px solid #d1d5dc;
+      margin-top: 12.7mm;
+      margin-bottom: 12.7mm;
+    }
+
+    {% endraw %}
+  </style>
+</head>
+<body>
+
+  <div class="page-disclaimer">
+    <span class="page-disclaimer-text">
+      <strong>DISCLAIMER:</strong> This is not an official document. To view official project conditions, please refer to the original condition document(s) found on the EAO&rsquo;s EPIC website.
+    </span>
+  </div>
+
+  <div class="header">
+    <div>
+      {% if logo_url %}
+      <img src="{{ logo_url }}" alt="EAO Logo" class="header-logo">
+      {% endif %}
+    </div>
+    <div class="header-title-block">
+      <div class="header-title">Consolidated Conditions</div>
+      <div class="header-project-name">{{ project_name }}</div>
+      <div class="header-badge-row">
+        {% if all_approved %}
+        <span class="badge badge-approved">Approved</span>
+        {% else %}
+        <span class="badge badge-awaiting">Awaiting Approval</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <hr class="separator">
+
+  <div class="stats-section">
+    <div class="stats-row">
+      <span class="stats-label">Generated on:</span>
+      <span class="stats-value">{{ generated_on }}</span>
+    </div>
+    <div class="stats-row">
+      <span class="stats-label">Total Conditions:</span>
+      <span class="stats-value">{{ total_conditions }}</span>
+    </div>
+    {% if amendment_list %}
+    <div class="stats-row">
+      <span class="stats-label">Included Amendments:</span>
+      <span class="stats-value">{{ amendment_list }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="info-box">
+    <p>This Consolidated Conditions document contains the most recent condition information as entered in the Condition Repository. This is not an official or enforceable document and should be used supplementary to official documents.</p>
+    <p><strong>Note:</strong> Conditions with the status &#8216;Awaiting Approval&#8217; have not been approved by a staff member.</p>
+  </div>
+
+  {% for condition in conditions %}
+  <div class="condition-block">
+
+    <div class="condition-header-group">
+
+    <div class="condition-heading">{{ condition.condition_number }}. {{ condition.condition_name }}</div>
+
+    {% if condition.amendment_names %}
+    <div class="condition-amendment">
+      <span class="badge badge-amended"><em><strong>Amended Version:</strong></em>&nbsp;{{ condition.amendment_names }}</span>
+    </div>
+    {% endif %}
+
+    <div class="metadata-card">
+      <div class="metadata-row1">
+        <div>
+          <span class="metadata-label">Year Condition Issued:</span>
+          <span class="metadata-value">{{ condition.year_issued if condition.year_issued else '' }}</span>
+        </div>
+        <div>
+          {% if condition.is_approved %}
+          <span class="badge badge-approved">Approved</span>
+          {% else %}
+          <span class="badge badge-awaiting">Awaiting Approval</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="metadata-row2">
+        <span class="metadata-label">Source Document:</span>
+        <span class="metadata-value">{{ condition.source_document if condition.source_document else '' }}</span>
+      </div>
+    </div>
+    </div>
+
+    {% if condition.condition_text %}
+    <div class="condition-text">{{ condition.condition_text }}</div>
+    {% endif %}
+
+    {% if condition.subconditions %}
+    <div class="subconditions-list">
+      {% for sub in condition.subconditions | sort(attribute='sort_order') %}
+      <div class="subcondition-item">
+        <span class="subcondition-identifier">{{ sub.subcondition_identifier }}</span>
+        <div class="subcondition-body">
+          <span class="subcondition-text">{{ sub.subcondition_text }}</span>
+          {% if sub.subconditions %}
+          <div class="nested-subconditions">
+            {% for nested in sub.subconditions | sort(attribute='sort_order') %}
+            <div class="nested-subcondition-item">
+              <span class="nested-identifier">{{ nested.subcondition_identifier }}</span>
+              <span class="nested-text">{{ nested.subcondition_text }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not loop.last %}
+    <hr class="condition-separator">
+    {% endif %}
+
+  </div>
+  {% endfor %}
+
+
+</body>
+</html>

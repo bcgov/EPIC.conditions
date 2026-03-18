@@ -13,9 +13,12 @@
 # limitations under the License.
 """API endpoints for managing a consolidated condition resource."""
 
+import re
+from datetime import datetime
 from http import HTTPStatus
+from io import BytesIO
 
-from flask import request
+from flask import current_app, request, send_file
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
@@ -23,14 +26,13 @@ from marshmallow import ValidationError
 
 from condition_api.services import authorization
 from condition_api.services.condition_service import ConditionService
+from condition_api.services.docgen_service import TEMPLATE_KEY, DocGenService
 from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
 from ..auth import auth
 
 API = Namespace("conditions", description="Endpoints for Consolidated Condition Management")
-"""Custom exception messages
-"""
 
 
 @cors_preflight("GET, OPTIONS")
@@ -71,3 +73,82 @@ class ConditionResource(Resource):
 
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("POST, OPTIONS")
+@API.route("/project/<string:project_id>/render", methods=["POST", "OPTIONS"])
+class ConsolidatedConditionRenderResource(Resource):
+    """Resource for rendering consolidated conditions as a PDF via the DocGen service."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Render consolidated conditions as PDF")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @API.response(HTTPStatus.NOT_FOUND, "No conditions found")
+    @auth.optional
+    @cross_origin(origins=allowedorigins())
+    def post(project_id):
+        """Generate a PDF of consolidated conditions for a project."""
+        try:
+            output_format = "pdf"
+            if request.is_json:
+                output_format = request.json.get("output_format", "pdf")
+
+            consolidated = ConditionService.get_consolidated_conditions(
+                project_id,
+                all_conditions=True,
+                include_condition_attributes=False,
+                user_is_internal=True,
+            )
+
+            if not consolidated:
+                return {"message": "No conditions found for this project"}, HTTPStatus.NOT_FOUND
+
+            conditions = consolidated.get("conditions", [])
+            project_name = consolidated.get("project_name", "")
+
+            amendment_set = set()
+            for cond in conditions:
+                names = cond.get("amendment_names") or ""
+                for part in names.split(","):
+                    trimmed = part.strip()
+                    if trimmed:
+                        amendment_set.add(trimmed)
+
+            all_approved = all(cond.get("is_approved") for cond in conditions)
+            approved_count = sum(1 for c in conditions if c.get("is_approved"))
+
+            now = datetime.now()
+            generated_on = now.strftime("%A, %B ") + str(now.day) + now.strftime(", %Y")
+            generated_on_short = now.strftime("%B ") + str(now.day) + now.strftime(", %Y")
+
+            context = {
+                "project_name": project_name,
+                "generated_on": generated_on,
+                "generated_on_short": generated_on_short,
+                "total_conditions": len(conditions),
+                "amendment_list": ", ".join(sorted(amendment_set)),
+                "all_approved": all_approved,
+                "approved_count": approved_count,
+                "awaiting_count": len(conditions) - approved_count,
+                "logo_url": current_app.config.get("EAO_LOGO_URL", ""),
+                "conditions": conditions,
+            }
+
+            response = DocGenService.render_template(TEMPLATE_KEY, context, output_format)
+
+            if output_format == "pdf":
+                safe_name = re.sub(r"[^a-z0-9]", "_", project_name.lower())
+                safe_name = re.sub(r"_+", "_", safe_name).strip("_")
+                return send_file(
+                    BytesIO(response.content),
+                    mimetype="application/pdf",
+                    as_attachment=True,
+                    download_name=f"Consolidated_Conditions_{safe_name}.pdf",
+                )
+
+            return response.json(), HTTPStatus.OK
+
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+        except Exception as err:  # pylint: disable=broad-except
+            return {"message": f"Failed to generate PDF: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR

@@ -13,8 +13,7 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ConsolidatedConditionFilters from "@/components/Filters/ConsolidatedConditionFilters";
 import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
 import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
-import { generateConsolidatedConditionsPDF } from "@/utils/pdfExport";
-import eaoLogo from "@/assets/images/EAO_Logo.png";
+import { useExportConsolidatedConditionsPDF } from "@/hooks/api/useConsolidatedConditions";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -50,20 +49,9 @@ export const ConsolidatedConditions = ({
   const [isToggled, setIsToggled] = useState(true);
 
   const { filters } = useConditionFilters();
-  const [isExporting, setIsExporting] = useState(false);
+  const { mutate: exportPDF, isPending: isExporting } = useExportConsolidatedConditionsPDF(projectName);
 
-  const handleExportPDF = async () => {
-    setIsExporting(true);
-    try {
-      await generateConsolidatedConditionsPDF(
-        filteredConditions || [],
-        projectName,
-        eaoLogo
-      );
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  const handleExportPDF = () => exportPDF(projectId);
 
   const filteredConditions = conditions?.filter((condition) => {
     const matchesSearch = filters.search_text
