@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography, TextField } from "@mui/material";
+import { Box, IconButton, TextField, Tooltip, Typography } from "@mui/material";
 import { SubconditionModel } from "@/models/Subcondition";
 import { theme } from "@/styles/theme";
 import AddIcon from '@mui/icons-material/Add';
@@ -94,24 +94,48 @@ const SubconditionComponent: React.FC<{
                   InputProps={{ sx: { padding: '4px 8px', fontSize: '14px' } }}
                 />
                 <Box display="flex" alignItems="center" sx={{ paddingLeft: '4px', paddingBottom: 3 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => onOutdent(subcondition.subcondition_id)}
-                    disabled={indentLevel === 1}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1 }}>
-                      ←
-                    </Typography>
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => onIndent(subcondition.subcondition_id)}
-                    disabled={index === 0}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1 }}>
-                      →
-                    </Typography>
-                  </IconButton>
+                  {indentLevel > 1 && (
+                    <Tooltip title="Move out one level">
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={() => onOutdent(subcondition.subcondition_id)}
+                          aria-label="Move out one level"
+                          sx={{
+                            borderRadius: "4px",
+                            "&:hover": {
+                              backgroundColor: theme.palette.action.hover,
+                            },
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: "1rem", lineHeight: 1 }}>
+                            ⟵
+                          </Typography>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {index > 0 && (
+                    <Tooltip title="Make child of item above">
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={() => onIndent(subcondition.subcondition_id)}
+                          aria-label="Make child of item above"
+                          sx={{
+                            borderRadius: "4px",
+                            "&:hover": {
+                              backgroundColor: theme.palette.action.hover,
+                            },
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: "1rem", lineHeight: 1 }}>
+                            ⟶
+                          </Typography>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
                   <IconButton size="small" onClick={() => onAdd(subcondition.subcondition_id)}>
                     <AddIcon fontSize="small" />
                   </IconButton>
