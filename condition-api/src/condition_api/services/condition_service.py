@@ -360,8 +360,8 @@ class ConditionService:
             ConditionService._update_from_dict(condition, conditions_data)
 
         # Handle subconditions
-        if subconditions := conditions_data.get("subconditions"):
-            ConditionService._update_subconditions(condition_id, subconditions)
+        if "subconditions" in conditions_data:
+            ConditionService._update_subconditions(condition_id, conditions_data.get("subconditions") or [])
 
         condition.commit()
         return condition
@@ -437,18 +437,36 @@ class ConditionService:
 
     @staticmethod
     def _update_subconditions(condition_id, subconditions):
-        existing_ids = [
-            sub["subcondition_id"]
-            for sub in subconditions
-            if isinstance(sub.get("subcondition_id"), str) and "-" not in sub["subcondition_id"]
-        ]
+        existing_ids = ConditionService._collect_existing_subcondition_ids(subconditions)
 
-        db.session.query(Subcondition).filter(
-            Subcondition.condition_id == condition_id,
-            Subcondition.id.notin_(existing_ids)
-        ).delete(synchronize_session=False)
+        delete_query = db.session.query(Subcondition).filter(
+            Subcondition.condition_id == condition_id
+        )
+
+        if existing_ids:
+            delete_query = delete_query.filter(Subcondition.id.notin_(existing_ids))
+
+        delete_query.delete(synchronize_session=False)
 
         ConditionService.upsert_subconditions(condition_id, subconditions, None)
+
+    @staticmethod
+    def _collect_existing_subcondition_ids(subconditions):
+        existing_ids = []
+
+        for subcondition in subconditions:
+            subcondition_id = subcondition.get("subcondition_id")
+
+            if str(subcondition_id).isdigit():
+                existing_ids.append(int(subcondition_id))
+
+            existing_ids.extend(
+                ConditionService._collect_existing_subcondition_ids(
+                    subcondition.get("subconditions") or []
+                )
+            )
+
+        return existing_ids
 
     @staticmethod
     def _update_from_dict(condition_item: Condition, input_dict: dict):

@@ -7,9 +7,14 @@ import { theme } from "@/styles/theme";
 import SubconditionComponent from "../SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
 import { ConditionModel } from "@/models/Condition";
-import { SubconditionModel } from "@/models/Subcondition";
 import ConditionAttribute from '../ConditionAttribute';
-import { DragDropContext, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, DropResult, Droppable } from '@hello-pangea/dnd';
+import {
+    indentSubcondition,
+    reorderSubconditions,
+    outdentSubcondition,
+    ROOT_DROPPABLE_ID
+} from "../subconditionTree";
 
 const StyledTabs = styled(Tabs)({
     transition: 'none',
@@ -48,6 +53,7 @@ const CreateConditionInfoTabs: React.FC<{
     isCreateMode?: boolean;
 }> = ({ condition, setCondition, isCreateMode = false }) => {
     const [selectedTab, setSelectedTab] = useState('requirements');
+    const [activeDroppableId, setActiveDroppableId] = useState<string | null>(null);
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
@@ -62,86 +68,39 @@ const CreateConditionInfoTabs: React.FC<{
         setSubconditions,
       } = useSubconditionHandler(condition.subconditions || []);
 
-    const buildSortOrderMap = (
-        items: SubconditionModel[],
-        parentId: string = "null",
-        map: Record<string, number> = {}
-    ): Record<string, number> => {
-        return items.reduce((acc, item, index) => {
-          const key = `${parentId}-${item.subcondition_id}`;
-          acc[key] = index;
-          return item.subconditions?.length
-            ? buildSortOrderMap(item.subconditions, item.subcondition_id, acc)
-            : acc;
-        }, map);
-    };
-      
-    const applySortOrder = (
-        nodes: SubconditionModel[],
-        sortOrderMap: Record<string, number>,
-        parentId: string | null = null
-    ): SubconditionModel[] => {
-        const apply = (items: SubconditionModel[], parentId: string): SubconditionModel[] => {
-          return items
-            .map((item) => ({
-              ...item,
-              subconditions: item.subconditions
-                ? apply(item.subconditions, item.subcondition_id)
-                : [],
-            }))
-            .sort((a, b) => {
-              const keyA = `${parentId}-${a.subcondition_id}`;
-              const keyB = `${parentId}-${b.subcondition_id}`;
-              return (sortOrderMap[keyA] ?? 0) - (sortOrderMap[keyB] ?? 0);
-            });
-        };
-      
-        return apply(nodes, parentId ?? "null");
-    };
-    
-    const reorderNested = (
-        items: SubconditionModel[],
-        parentId: string | null,
-        sourceIndex: number,
-        destinationIndex: number
-    ): SubconditionModel[] => {
-        if (parentId === "subconditions-droppable") {
-          const newItems = [...items];
-          const [moved] = newItems.splice(sourceIndex, 1);
-          newItems.splice(destinationIndex, 0, moved);
-          return newItems;
-        }
-      
-        return items.map((item) => {
-          if (item.subcondition_id === parentId && item.subconditions) {
-            const newSub = [...item.subconditions];
-            const [moved] = newSub.splice(sourceIndex, 1);
-            newSub.splice(destinationIndex, 0, moved);
-            return {
-              ...item,
-              subconditions: newSub,
-            };
-          }
-          return {
-            ...item,
-            subconditions: item.subconditions
-              ? reorderNested(item.subconditions, parentId, sourceIndex, destinationIndex)
-              : [],
-          };
-        });
-    }; 
-    
     const handleDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-    
-        const sourceId = result.source.droppableId;
-        const sourceIndex = result.source.index;
-        const destinationIndex = result.destination.index;
-    
-        const reordered = reorderNested(subconditions, sourceId, sourceIndex, destinationIndex);
-        const sortOrderMap = buildSortOrderMap(reordered);
-        const sorted = applySortOrder(reordered, sortOrderMap);
-        setSubconditions(sorted);
+        setActiveDroppableId(null);
+
+        const { source, destination } = result;
+
+        if (!destination) {
+            return;
+        }
+
+        if (source.droppableId !== destination.droppableId) {
+            return;
+        }
+
+        setSubconditions(
+            reorderSubconditions(
+                subconditions,
+                source.droppableId,
+                source.index,
+                destination.index
+            )
+        );
+    };
+
+    const handleDragStart = (start: { source: { droppableId: string } }) => {
+        setActiveDroppableId(start.source.droppableId);
+    };
+
+    const handleIndent = (subconditionId: string) => {
+        setSubconditions(indentSubcondition(subconditions, subconditionId));
+    };
+
+    const handleOutdent = (subconditionId: string) => {
+        setSubconditions(outdentSubcondition(subconditions, subconditionId));
     };
 
     useEffect(() => {
@@ -172,21 +131,38 @@ const CreateConditionInfoTabs: React.FC<{
             </Stack>
             <Box sx={{ p: 2 }}>
                 <Box sx={{ display: selectedTab === 'requirements' ? 'block' : 'none' }}>
-                    <DragDropContext onDragEnd={handleDragEnd}>
-                        {subconditions.map((sub, index) => (
-                            <SubconditionComponent
-                                key={index}
-                                subcondition={sub}
-                                indentLevel={1}
-                                isEditing={true}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onAdd={handleAdd}
-                                identifierValue={sub.subcondition_identifier || ""}
-                                textValue={sub.subcondition_text || ""}
-                                is_approved={false}
-                            />
-                        ))}
+                    <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                        <Droppable
+                            droppableId={ROOT_DROPPABLE_ID}
+                            type="SUBCONDITION"
+                            isDropDisabled={
+                                activeDroppableId !== null && activeDroppableId !== ROOT_DROPPABLE_ID
+                            }
+                        >
+                            {(provided) => (
+                                <div ref={provided.innerRef} {...provided.droppableProps}>
+                                    {subconditions.map((sub, index) => (
+                                        <SubconditionComponent
+                                            key={sub.subcondition_id}
+                                            subcondition={sub}
+                                            index={index}
+                                            indentLevel={1}
+                                            isEditing={true}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                            onAdd={handleAdd}
+                                            onIndent={handleIndent}
+                                            onOutdent={handleOutdent}
+                                            activeDroppableId={activeDroppableId}
+                                            identifierValue={sub.subcondition_identifier || ""}
+                                            textValue={sub.subcondition_text || ""}
+                                            is_approved={false}
+                                        />
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
                     </DragDropContext>
                     <Stack sx={{ mt: 5 }} direction={"row"}>
                         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
