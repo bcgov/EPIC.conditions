@@ -3,8 +3,7 @@ import { Else, If, Then } from "react-if";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
-import { useGetDocuments, useGetDocumentType } from "@/hooks/api/useDocuments";
-import { useGetProjects } from "@/hooks/api/useProjects";
+import { useGetDocuments } from "@/hooks/api/useDocuments";
 import { Documents, DocumentsSkeleton } from "@/components/Documents";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
@@ -32,11 +31,6 @@ function DocumentPage() {
     isPending: isDocumentsLoading,
     isError: isAmendmentsError
   } = useGetDocuments(projectId, categoryId);
-
-  const { data: projectsData } = useGetProjects();
-  const { data: documentTypeData } = useGetDocumentType();
-
-  const project = projectsData?.find((p) => p.project_id === projectId);
 
   useEffect(() => {
     if (isAmendmentsError) {
@@ -76,13 +70,11 @@ function DocumentPage() {
           </Then>
           <Else>
             <Documents
-              projectName={allDocuments?.project_name || ""}
-              projectId={projectId}
-              categoryId={categoryId}
-              documentLabel={allDocuments?.document_category || ""}
+              projectName = {allDocuments?.project_name || ""}
+              projectId = {projectId}
+              categoryId = {categoryId}
+              documentLabel = {allDocuments?.document_category || ""}
               documents={allDocuments?.documents}
-              project={project}
-              documentType={documentTypeData}
             />
           </Else>
         </If>

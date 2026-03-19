@@ -38,8 +38,6 @@ type CreateDocumentModalProps = {
   documentType: DocumentTypeModel[];
   projectArray: ProjectModel[];
   onTransitionEnd?: () => void;
-  preselectedProject?: ProjectModel;
-  restrictToCategoryId?: number;
 };
 
 export const CreateDocumentModal = ({
@@ -48,13 +46,11 @@ export const CreateDocumentModal = ({
   documentType,
   projectArray,
   onTransitionEnd,
-  preselectedProject,
-  restrictToCategoryId,
 }: CreateDocumentModalProps) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [formState, setFormState] = useState({
-        selectedProject: preselectedProject || null as ProjectModel | null,
+        selectedProject: null as ProjectModel | null,
         selectedDocumentType: null as number | null,
         selectedDocumentId: null as string | null,
         selectedDocumentLabel: null as string | null,
@@ -92,28 +88,24 @@ export const CreateDocumentModal = ({
     };
 
     const filteredDocumentTypes = (documentType || []).filter((type) => {
-        if (restrictToCategoryId && type.document_category_id !== restrictToCategoryId) {
-            return false;
-        }
-
         if (!formState.selectedProject || !formState.selectedProject.documents) return true;
-
+    
         const hasCertificate = formState.selectedProject.documents.some((document) =>
           document.document_types.includes(DocumentType.Certificate)
         );
-
+    
         const hasExemptionOrder = formState.selectedProject.documents.some((document) =>
           document.document_types.includes(DocumentType.ExemptionOrder)
         );
-
+    
         if (type.document_type === DocumentType.Certificate) {
           return !hasExemptionOrder; // Exclude Certificate if ExemptionOrder is present
         }
-
+    
         if (type.document_type === DocumentType.ExemptionOrder) {
           return !hasCertificate; // Exclude ExemptionOrder if Certificate is present
         }
-
+    
         return true;
     });
 
@@ -219,7 +211,7 @@ export const CreateDocumentModal = ({
 
     const resetForm = () => {
         setFormState({
-            selectedProject: preselectedProject || null,
+            selectedProject: null,
             selectedDocumentType: null,
             selectedDocumentId: null,
             selectedDocumentLabel: null,
@@ -277,11 +269,6 @@ export const CreateDocumentModal = ({
                         <Typography variant="body1" marginBottom={"2px"}>
                             Which project does this document belong to?
                         </Typography>
-                        {preselectedProject ? (
-                            <Typography variant="body1" fontWeight="bold" marginBottom={"8px"}>
-                                {preselectedProject.project_name}
-                            </Typography>
-                        ) : (
                         <Autocomplete
                             id="project-selector"
                             data-testid="project-selector"
@@ -308,7 +295,6 @@ export const CreateDocumentModal = ({
                                 setErrors((prev) => ({ ...prev, selectedProject: false }));
                             }}
                         />
-                        )}
                         {/* Document Type Selector */}
                         <Typography variant="body1">
                             What type of document are you adding?
