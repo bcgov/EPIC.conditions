@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { BCDesignTokens } from "epic.theme";
 import { AllDocumentModel, DocumentStatus } from "@/models/Document";
-import { Box, styled, Stack, FormControlLabel, Typography, Switch, Grid } from "@mui/material";
+import { Box, styled, Stack, Typography, Grid } from "@mui/material";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { ContentBox } from "../Shared/ContentBox";
 import DocumentTable from "./DocumentTable";
@@ -22,28 +21,13 @@ type DocumentsParam = {
   documents?: AllDocumentModel[];
   projectName: string;
   projectId: string;
-  categoryId: number;
   documentLabel: string;
 };
 
-export const Documents = ({ projectName, projectId, categoryId, documentLabel, documents }: DocumentsParam) => {
-  const navigate = useNavigate();
-  const [isToggled, setIsToggled] = useState(false);
-  const [isToggleEnabled, setIsToggleEnabled] = useState<boolean | null>(false);
+export const Documents = ({ projectName, projectId, documentLabel, documents }: DocumentsParam) => {
   const [isAllApproved, setIsAllApproved] = useState<boolean | null>(false);
 
-  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked;
-    setIsToggled(checked);
-    if (checked) {
-      navigate({
-        to: `/projects/${projectId}/document-category/${categoryId}/consolidated-conditions`,
-      });
-    }
-  };
-
   useEffect(() => {
-    // Check if all amendments have status as true
     if (documents && documents.length > 0) {
       const hasNullStatus = documents.some((document) => document.status === null);
       if (hasNullStatus) {
@@ -52,18 +36,11 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
         const allApproved = documents.every((document) => document.status === true);
         setIsAllApproved(allApproved);
       }
-
-      // Check if any document has is_latest_amendment_added as true
-      const hasLatestAmendment = documents.some(doc => doc.is_latest_amendment_added === true);
-      const anyLatestAmendmentAdded = hasNullStatus ? false : hasLatestAmendment;
-
-      setIsToggleEnabled(anyLatestAmendmentAdded);
     }
   }, [documents]);
 
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
-      {/* Showing results message */}
       <ContentBox
         mainLabel={
           <Box component="span">
@@ -90,15 +67,14 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
             }}
           >
             <Grid container direction="row" paddingBottom={3}>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Box
                   sx={{
                     px: 2.5,
-                    display: "flex", // Align items in a row
-                    alignItems: "center", // Vertically center the elements
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
-                  {/* Document Name and Icon */}
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     {documentLabel}
                     <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
@@ -107,19 +83,6 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                     <DocumentStatusChip status={isAllApproved === null ? "nodata" : String(isAllApproved) as DocumentStatus} />
                   </Box>
                 </Box>
-              </Grid>
-              <Grid item xs={6} textAlign="right">
-                <FormControlLabel
-                  control={
-                    <Switch
-                      disabled={!isToggleEnabled} // Disable the switch based on the isToggleEnabled state
-                      checked={isToggled}
-                      onChange={handleToggle} // Add onChange handler to toggle and navigate
-                    />
-                  }
-                  label="View Consolidated Conditions"
-                  labelPlacement="end"
-                />
               </Grid>
             </Grid>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>

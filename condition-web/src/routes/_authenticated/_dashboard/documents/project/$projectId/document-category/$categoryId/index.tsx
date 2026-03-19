@@ -72,7 +72,6 @@ function DocumentPage() {
             <Documents
               projectName = {allDocuments?.project_name || ""}
               projectId = {projectId}
-              categoryId = {categoryId}
               documentLabel = {allDocuments?.document_category || ""}
               documents={allDocuments?.documents}
             />
