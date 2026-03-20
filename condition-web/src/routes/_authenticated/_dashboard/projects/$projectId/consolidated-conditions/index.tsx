@@ -1,11 +1,9 @@
 import { useEffect } from "react";
-import { PageGrid } from "@/components/Shared/PageGrid";
-import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
 import { useGetConsolidatedConditions } from "@/hooks/api/useConsolidatedConditions";
-import { ConsolidatedConditions, ConsolidatedConditionsSkeleton } from "@/components/ConsolidatedConditions";
+import { ConsolidatedConditionsPageContent } from "@/components/ConsolidatedConditions/ConsolidatedConditionsPageContent";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
-import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
+import { useProjectConsolidatedBreadcrumbs } from "@/hooks/useProjectConsolidatedBreadcrumbs";
 
 export const Route = createFileRoute(
   "/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/"
@@ -24,8 +22,8 @@ function ConditionPage() {
   const {
     data: consolidatedConditions,
     isPending: isConditionsLoading,
-    isError: isConditionsError
-  } = useGetConsolidatedConditions(projectId, '', true);
+    isError: isConditionsError,
+  } = useGetConsolidatedConditions(projectId, "", true);
 
   useEffect(() => {
     if (isConditionsError) {
@@ -33,46 +31,19 @@ function ConditionPage() {
     }
   }, [isConditionsError]);
 
-  const { setBreadcrumbs, setIsFromConsolidated } = useBreadCrumb();
-
-  useEffect(() => {
-    setIsFromConsolidated(false);
-  }, [setIsFromConsolidated]);
-
-  useEffect(() => {
-    if (consolidatedConditions) {
-      setBreadcrumbs([
-        { title: "Home", path: "/projects", clickable: true },
-        { title: consolidatedConditions?.project_name || projectId, path: `/projects/${projectId}`, clickable: true },
-        { title: "Consolidated Conditions", path: undefined, clickable: false }
-      ]);
-    }
-  }, [consolidatedConditions, projectId, setBreadcrumbs]);
+  useProjectConsolidatedBreadcrumbs(projectId, consolidatedConditions?.project_name);
 
   if (isConditionsError) return <Navigate to="/error" />;
 
-  if (isConditionsLoading) {
-    return (
-      <PageGrid>
-        <Grid item xs={12}>
-          <ConsolidatedConditionsSkeleton />
-        </Grid>
-      </PageGrid>
-    );
-  }
-
   return (
-    <PageGrid>
-      <Grid item xs={12}>
-        <ConsolidatedConditions
-          projectName={consolidatedConditions?.project_name}
-          projectId={projectId}
-          documentCategory={consolidatedConditions?.document_category}
-          conditions={consolidatedConditions?.conditions}
-          documentCategoryId={''}
-          consolidationLevel={'project'}
-        />
-      </Grid>
-    </PageGrid>
+    <ConsolidatedConditionsPageContent
+      isLoading={isConditionsLoading}
+      projectName={consolidatedConditions?.project_name}
+      projectId={projectId}
+      documentCategory={consolidatedConditions?.document_category}
+      documentCategoryId=""
+      conditions={consolidatedConditions?.conditions}
+      consolidationLevel="project"
+    />
   );
 }
