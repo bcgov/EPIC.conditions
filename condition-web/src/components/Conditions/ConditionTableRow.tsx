@@ -1,4 +1,3 @@
-import { ArrowForwardIos } from "@mui/icons-material";
 import { Link, TableCell, TableRow, Typography } from "@mui/material";
 import { BCDesignTokens } from "epic.theme";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
@@ -52,30 +51,27 @@ export default function ConditionTableRow({
       >
         {documentTypeId !== DocumentTypes.Amendment && (
           <TableCell
-            colSpan={1}
             align="left"
             sx={{
               borderTop: border,
               borderBottom: border,
-              py: BCDesignTokens.layoutPaddingXsmall,
+              p: BCDesignTokens.layoutPaddingXsmall,
             }}
           >
             {condition.amendment_names ?? "--"}
           </TableCell>
         )}
         <TableCell
-          colSpan={2}
           align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.condition_number ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={4}
           align="left"
           sx={{
             borderTop: border,
@@ -87,8 +83,9 @@ export default function ConditionTableRow({
             sx={{
               color: BCDesignTokens.themeBlue90,
               textDecoration: "none",
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
+              gap: 0.5,
             }}
             component={"button"}
             onClick={() => handleOnDocumentClick(
@@ -98,68 +95,62 @@ export default function ConditionTableRow({
             )}
           >
             <Typography
+              component="span"
               color={BCDesignTokens.themeBlue90}
               fontWeight={"bold"}
               fontSize={18}
-              sx={{ mr: 0.5 }}
-              align="left"
+              sx={{ textAlign: "left" }}
             >
               {condition.condition_name ?? "--"}
             </Typography>
-            <ArrowForwardIos fontSize="small" />
           </Link>
         </TableCell>
         <TableCell
-          colSpan={2}
-          align="right"
+          align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.topic_tags?.join(', ') ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={2}
-          align="right"
+          align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.year_issued ?? "--"}
         </TableCell>
         {tableType == "consolidated" && <TableCell
-          colSpan={4}
-          align="center"
+          align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.source_document ?? "--"}
         </TableCell>}
         <TableCell
-          colSpan={2}
-          align="center"
+          align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.is_standard_condition ?? "--"}
         </TableCell>
         <TableCell
-          colSpan={3}
-          align="center"
+          align="left"
           sx={{
             borderTop: border,
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            p: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           <DocumentStatusChip status={String(condition.is_approved) as DocumentStatus} />

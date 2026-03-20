@@ -6,6 +6,7 @@ import { BCDesignTokens } from "epic.theme";
 export const StyledTableHeadCell = styled(TableCell)(() => ({
   color: BCDesignTokens.themeGray70,
   fontSize: BCDesignTokens.typographyFontSizeSmallBody,
+  whiteSpace: "nowrap",
   "&:hover": {
     color: BCDesignTokens.surfaceColorMenusHover,
   },
