@@ -89,20 +89,17 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             variant="contained"
             color="primary"
             size="small"
+            startIcon={<AddIcon fontSize="small" />}
             sx={{
-              flex: { xs: "auto", sm: "0 0 15%" }, // Auto width, no extra space
-              width: { xs: "100%", sm: "auto" }, // Full width on mobile, auto on large screens
+              flex: { xs: "auto", sm: "0 0 15%" },
+              width: { xs: "100%", sm: "auto" },
               height: "70%",
               borderRadius: "4px",
-              paddingLeft: "2px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
             }}
             onClick={handleOpenCreateNewDocument}
             loading={isOpeningModal}
           >
-            <AddIcon fontSize="small" /> Add Document
+            Add Document
           </LoadingButton>
         </Stack>
       </Grid>
