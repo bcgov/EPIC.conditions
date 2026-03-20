@@ -1,18 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { BCDesignTokens } from "epic.theme";
-import { ConditionModel } from "@/models/Condition";
-import { Box, Button, FormControlLabel, Grid, styled, Stack, Switch, Typography } from "@mui/material";
+import { CONDITION_STATUS, ConditionModel, ConditionStatus } from "@/models/Condition";
+import { DocumentStatus } from "@/models/Document";
+import { Box, Button, FormControlLabel, Grid, Stack, Switch, Typography, styled } from "@mui/material";
+import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
 import { ContentBox } from "../Shared/ContentBox";
 import ConditionTable from "../Conditions/ConditionsTable";
-import { DocumentStatus } from "@/models/Document";
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
-import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ConsolidatedConditionFilters from "@/components/Filters/ConsolidatedConditionFilters";
 import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
-import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
 import { useExportConsolidatedConditionsPDF } from "@/hooks/api/useConsolidatedConditions";
 
 export const CardInnerBox = styled(Box)({
@@ -42,40 +41,58 @@ export const ConsolidatedConditions = ({
   consolidationLevel
 }: ConditionsParam) => {
   const navigate = useNavigate();
-  const [noConditions, setNoConditions] = useState(conditions?.length === 0);
-  const [allApproved, setAllApproved] = useState(false);
-  const [hasAmendments, setHasAmendments] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isToggled, setIsToggled] = useState(true);
+
+  const noConditions = useMemo(() => {
+    if (!conditions || conditions.length === 0) return true;
+    if (conditions.length === 1) {
+      return conditions.some(
+        (c) => !c.condition_name || !c.condition_number || c.is_approved === null
+      );
+    }
+    return false;
+  }, [conditions]);
+
+  const allApproved = useMemo(
+    () => conditions?.every((c) => c.is_approved === true) ?? false,
+    [conditions]
+  );
+
+  const hasAmendments = useMemo(
+    () => conditions?.some((c) => c.amendment_names != null) ?? false,
+    [conditions]
+  );
 
   const { filters } = useConditionFilters();
   const { mutate: exportPDF, isPending: isExporting } = useExportConsolidatedConditionsPDF(projectName);
 
   const handleExportPDF = () => exportPDF(projectId);
 
-  const filteredConditions = conditions?.filter((condition) => {
-    const matchesSearch = filters.search_text
-      ? condition.condition_name?.toLowerCase().includes(filters.search_text.toLowerCase()) ?? false
-      : true;  
+  const filteredConditions = useMemo(() =>
+    conditions?.filter((condition) => {
+      const matchesSearch = filters.search_text
+        ? condition.condition_name?.toLowerCase().includes(filters.search_text.toLowerCase()) ?? false
+        : true;
 
-    const matchesSource = filters.source_document 
-      ? condition.source_document?.toLowerCase().includes(filters.source_document.toLowerCase()) ?? false
-      : true;
+      const matchesSource = filters.source_document
+        ? condition.source_document?.toLowerCase().includes(filters.source_document.toLowerCase()) ?? false
+        : true;
 
-    const matchesAmendment = filters.amendment_names 
-      ? condition.amendment_names?.toLowerCase().includes(filters.amendment_names.toLowerCase()) ?? false
-      : true;
+      const matchesAmendment = filters.amendment_names
+        ? condition.amendment_names?.toLowerCase().includes(filters.amendment_names.toLowerCase()) ?? false
+        : true;
 
-    const conditionStatus: ConditionStatus = condition.is_approved
-      ? CONDITION_STATUS.true.value
-      : CONDITION_STATUS.false.value;
+      const conditionStatus: ConditionStatus = condition.is_approved
+        ? CONDITION_STATUS.true.value
+        : CONDITION_STATUS.false.value;
 
-    const matchesStatus = filters.status && filters.status.length > 0
-      ? filters.status.includes(conditionStatus)
-      : true;
+      const matchesStatus = filters.status?.length > 0
+        ? filters.status.includes(conditionStatus)
+        : true;
 
-    return matchesSearch && matchesSource && matchesAmendment && matchesStatus;
-  });
+      return matchesSearch && matchesSource && matchesAmendment && matchesStatus;
+    }),
+  [conditions, filters]);
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -87,31 +104,6 @@ export const ConsolidatedConditions = ({
     }
   };
   
-  useEffect(() => {
-    // Check if all conditions have status as true
-    if (conditions && conditions.length > 0) {
-      const checkIfAllApproved = conditions.every((condition) => condition.is_approved === true);
-      const conditionHasAmendments = conditions.some(condition => condition.amendment_names != null);
-
-      const invalidConditions =
-      conditions.length === 1 &&
-      conditions.some(
-        (condition) =>
-          !condition.condition_name ||
-          !condition.condition_number ||
-          condition.is_approved === null
-      );
-      setNoConditions(invalidConditions);
-      setAllApproved(checkIfAllApproved);
-      setHasAmendments(conditionHasAmendments);
-    }
-    setIsLoading(false);
-  }, [conditions]);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <Stack spacing={2} direction={"column"} sx={{ width: '100%' }}>
       <ContentBox

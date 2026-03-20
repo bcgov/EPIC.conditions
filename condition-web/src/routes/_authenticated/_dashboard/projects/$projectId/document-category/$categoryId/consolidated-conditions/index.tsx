@@ -1,9 +1,7 @@
 import { useEffect } from "react";
-import { PageGrid } from "@/components/Shared/PageGrid";
-import { Grid } from "@mui/material";
 import { createFileRoute, Navigate, useParams } from "@tanstack/react-router";
 import { useGetConsolidatedConditions } from "@/hooks/api/useConsolidatedConditions";
-import { ConsolidatedConditions, ConsolidatedConditionsSkeleton } from "@/components/ConsolidatedConditions";
+import { ConsolidatedConditionsPageContent } from "@/components/ConsolidatedConditions/ConsolidatedConditionsPageContent";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 
@@ -18,7 +16,7 @@ export const Route = createFileRoute(
     { title: "Home", path: "/projects/" },
     { title: `${params.projectId}`, path: `/projects/` },
     { title: `Document Category`, path: `/documents/projects/${params.projectId}/document-category/` },
-    { title: `Consolidated Conditions`, path: undefined }
+    { title: `Consolidated Conditions`, path: undefined },
   ],
 });
 
@@ -30,7 +28,7 @@ function ConditionPage() {
   const {
     data: consolidatedConditions,
     isPending: isConditionsLoading,
-    isError: isConditionsError
+    isError: isConditionsError,
   } = useGetConsolidatedConditions(projectId, categoryId, false);
 
   useEffect(() => {
@@ -39,54 +37,37 @@ function ConditionPage() {
     }
   }, [isConditionsError]);
 
-  const META_PROJECT_TITLE = `${projectId}`;
-  const META_DOCUMENT_CATEGORY = `Document Category`;
   const { replaceBreadcrumb } = useBreadCrumb();
 
   useEffect(() => {
     if (consolidatedConditions) {
       replaceBreadcrumb("Home", "Home", "/projects", true);
-
       replaceBreadcrumb(
-        META_PROJECT_TITLE,
-        consolidatedConditions?.project_name || META_PROJECT_TITLE,
+        projectId,
+        consolidatedConditions.project_name || projectId,
         `/projects/${projectId}`,
         true
       );
-
       replaceBreadcrumb(
-        META_DOCUMENT_CATEGORY,
-        consolidatedConditions?.document_category || META_DOCUMENT_CATEGORY,
+        "Document Category",
+        consolidatedConditions.document_category || "Document Category",
         `/documents/project/${projectId}/document-category/${categoryId}/`,
         true
       );
     }
-  }, [consolidatedConditions, replaceBreadcrumb, META_PROJECT_TITLE, META_DOCUMENT_CATEGORY, categoryId, projectId]);
+  }, [consolidatedConditions, replaceBreadcrumb, categoryId, projectId]);
 
   if (isConditionsError) return <Navigate to="/error" />;
 
-  if (isConditionsLoading) {
-    return (
-      <PageGrid>
-        <Grid item xs={12}>
-          <ConsolidatedConditionsSkeleton />
-        </Grid>
-      </PageGrid>
-    );
-  }
-
   return (
-    <PageGrid>
-      <Grid item xs={12}>
-        <ConsolidatedConditions
-          projectName = {consolidatedConditions?.project_name}
-          projectId = {projectId}
-          documentCategory = {consolidatedConditions?.document_category}
-          documentCategoryId = {categoryId}
-          conditions={consolidatedConditions?.conditions}
-          consolidationLevel={'document-category'}
-        />
-      </Grid>
-    </PageGrid>
+    <ConsolidatedConditionsPageContent
+      isLoading={isConditionsLoading}
+      projectName={consolidatedConditions?.project_name}
+      projectId={projectId}
+      documentCategory={consolidatedConditions?.document_category}
+      documentCategoryId={categoryId}
+      conditions={consolidatedConditions?.conditions}
+      consolidationLevel="document-category"
+    />
   );
 }
