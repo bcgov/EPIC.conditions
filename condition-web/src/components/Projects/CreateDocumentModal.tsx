@@ -24,6 +24,7 @@ import { ProjectModel } from "@/models/Project";
 import { DocumentTypes } from "@/utils/enums"
 import { useCreateDocument, useGetDocumentsByProject } from "@/hooks/api/useDocuments";
 import { useCreateAmendment } from "@/hooks/api/useAmendments";
+import { QUERY_KEY } from "@/hooks/api/constants";
 import { CreateAmendmentModel } from "@/models/Amendment";
 import { CreateDocumentModel, DocumentModel } from "@/models/Document";
 import { CustomTooltip } from '../Shared/Common';
@@ -201,7 +202,9 @@ export const CreateDocumentModal = ({
             ? await createAmendment(payload as CreateAmendmentModel)
             : await createDocument(payload as CreateDocumentModel);
             
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PROJECTS] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.DOCUMENT] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PROJECTDOCUMENT] });
             
             if (response) {
                 const navigateTo = isAmendment

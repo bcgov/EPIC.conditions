@@ -76,25 +76,18 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
             boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <Typography
-            variant="h6"
+          <Box
             sx={{
               px: BCDesignTokens.layoutPaddingXsmall,
               py: BCDesignTokens.layoutPaddingSmall,
               borderBottom: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
             }}
           >
-            <Grid container direction="row" paddingBottom={3}>
-              <Grid item xs={6}>
-                <Box
-                  sx={{
-                    px: 2.5,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
+            <Grid container direction="row" alignItems="center" paddingBottom={3}>
+              <Grid item xs>
+                <Box sx={{ px: 2.5, display: "flex", alignItems: "center" }}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    {documentLabel}
+                    <Typography variant="h6" component="span">{documentLabel}</Typography>
                     <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
@@ -102,38 +95,24 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                   </Box>
                 </Box>
               </Grid>
-              <Grid item xs={6} textAlign="right" sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
-                {project && documentType && (
+              {project && documentType && (
+                <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium, flex: { xs: "auto", sm: "0 0 15%" } }}>
                   <LoadingButton
                     variant="contained"
+                    color="primary"
+                    size="small"
+                    startIcon={<AddIcon />}
                     onClick={handleOpenAddDocument}
                     loading={isOpeningModal}
                     sx={{
-                      display: "flex",
-                      padding: "8px 22px 7px 15px",
-                      alignItems: "center",
-                      gap: "14.178px",
-                      height: "70%",
                       borderRadius: "4px",
-                      border: "2px solid #353433",
-                      backgroundColor: "#013366",
-                      color: "#FFF",
-                      textAlign: "center",
-                      fontFamily: '"BC Sans"',
-                      fontSize: "16px",
-                      fontStyle: "normal",
-                      fontWeight: 400,
-                      lineHeight: "27.008px",
-                      "&:hover": {
-                        backgroundColor: "#002a52",
-                        border: "2px solid #353433",
-                      },
+                      width: "100%",
                     }}
                   >
-                    <AddIcon fontSize="small" /> Add Document
+                    Add Document
                   </LoadingButton>
-                )}
-              </Grid>
+                </Grid>
+              )}
             </Grid>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>
                 <CardInnerBox
@@ -145,7 +124,7 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                     />
                 </CardInnerBox>
             </Box>
-          </Typography>
+          </Box>
         </Box>
       </ContentBox>
       {project && documentType && (
