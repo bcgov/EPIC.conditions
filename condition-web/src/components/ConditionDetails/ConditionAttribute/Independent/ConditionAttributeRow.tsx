@@ -71,6 +71,8 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
     onEditModeChange?.(isEditable);
   }, [isEditable, onEditModeChange]);
 
+  const [chipInput, setChipInput] = useState("");
+
   const [chips, setChips] = useState<string[]>(
     conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
       ? attributeValue
@@ -140,9 +142,20 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   const handleSave = () => {
     setIsEditable(false);
 
+    // Include any uncommitted text still in the chip input field
+    const chipsToSave =
+      conditionKey === CONDITION_KEYS.PARTIES_REQUIRED && chipInput.trim()
+        ? [...chips, chipInput.trim()]
+        : chips;
+
+    if (conditionKey === CONDITION_KEYS.PARTIES_REQUIRED && chipInput.trim()) {
+      setChips(chipsToSave);
+      setChipInput("");
+    }
+
     const updatedValue =
       conditionKey === CONDITION_KEYS.PARTIES_REQUIRED
-        ? `{${chips
+        ? `{${chipsToSave
             .filter((chip) => chip !== null && chip !== "")
             .map((chip) => escapeValue(chip)) // Add escape to all values
             .join(",")}}`
@@ -184,7 +197,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           value: editableValue,
           setValue: setEditableValue,
         }}
-        chipsData={{ chips, setChips }}
+        chipsData={{ chips, setChips, chipInput, setChipInput }}
         submissionMilestonesData={{ submissionMilestones, setSubmissionMilestones }}
         milestonesData={{ milestones, setMilestones }}
         otherData={{ otherValue, setOtherValue }}

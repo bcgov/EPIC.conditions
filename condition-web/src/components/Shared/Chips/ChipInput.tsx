@@ -7,6 +7,8 @@ type ChipInputProps = {
   setChips: (chips: string[]) => void;
   placeholder?: string;
   inputWidth?: string;
+  chipInput?: string;
+  setChipInput?: (value: string) => void;
 };
 
 const ChipInput: React.FC<ChipInputProps> = ({
@@ -14,8 +16,12 @@ const ChipInput: React.FC<ChipInputProps> = ({
   setChips,
   placeholder = "Add a chip",
   inputWidth = "100%",
+  chipInput: externalChipInput,
+  setChipInput: externalSetChipInput,
 }) => {
-  const [chipInput, setChipInput] = useState("");
+  const [internalChipInput, setInternalChipInput] = useState("");
+  const chipInput = externalChipInput !== undefined ? externalChipInput : internalChipInput;
+  const setChipInput = externalSetChipInput ?? setInternalChipInput;
 
   const handleAddChip = () => {
     if (chipInput.trim() && !chips.includes(chipInput)) {
