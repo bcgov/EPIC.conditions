@@ -165,22 +165,12 @@ export const ConsolidatedConditions = ({
                 )}
                 <Button
                   variant="contained"
+                  color="primary"
                   size="small"
                   startIcon={<FileDownloadOutlinedIcon />}
                   onClick={handleExportPDF}
                   disabled={isExporting || !filteredConditions?.length}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    backgroundColor: "#0d2b4e",
-                    color: "#ffffff",
-                    "&:hover": { backgroundColor: "#0a2240" },
-                    "&:disabled": { backgroundColor: "#0d2b4e", opacity: 0.5, color: "#ffffff" },
-                    borderRadius: "4px",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    px: 2,
-                    py: 0.75,
-                  }}
+                  sx={{ borderRadius: "4px", whiteSpace: "nowrap" }}
                 >
                   {isExporting ? "Exporting..." : "Export PDF"}
                 </Button>

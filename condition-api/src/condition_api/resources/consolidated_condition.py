@@ -13,11 +13,13 @@
 # limitations under the License.
 """API endpoints for managing a consolidated condition resource."""
 
+import base64
 import re
 from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO
 
+import requests as http_requests
 from flask import current_app, request, send_file
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
@@ -33,6 +35,20 @@ from .apihelper import Api as ApiHelper
 from ..auth import auth
 
 API = Namespace("conditions", description="Endpoints for Consolidated Condition Management")
+
+
+def _fetch_logo_as_data_url(logo_url: str) -> str:
+    """Fetch the logo and return it as a base64 data URI so it is embedded in the PDF."""
+    if not logo_url:
+        return ""
+    try:
+        response = http_requests.get(logo_url, timeout=10)
+        response.raise_for_status()
+        content_type = response.headers.get("Content-Type", "image/png").split(";")[0]
+        b64 = base64.b64encode(response.content).decode("utf-8")
+        return f"data:{content_type};base64,{b64}"
+    except Exception:  # pylint: disable=broad-except
+        return logo_url  # fall back to URL if fetch fails
 
 
 def _build_render_context(consolidated: dict) -> dict:
@@ -59,7 +75,7 @@ def _build_render_context(consolidated: dict) -> dict:
         "all_approved": all(cond.get("is_approved") for cond in conditions),
         "approved_count": approved_count,
         "awaiting_count": len(conditions) - approved_count,
-        "logo_url": current_app.config.get("EAO_LOGO_URL", ""),
+        "logo_url": _fetch_logo_as_data_url(current_app.config.get("EAO_LOGO_URL", "")),
         "conditions": conditions,
     }
 
