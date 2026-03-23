@@ -219,7 +219,8 @@ class DocumentService:
             document_label=document.get("document_label"),
             document_link=document.get("document_link"),
             document_type_id=document.get("document_type_id"),
-            is_latest_amendment_added=document.get("is_latest_amendment_added")
+            is_latest_amendment_added=document.get("is_latest_amendment_added"),
+            is_active=True
         )
         db.session.add(new_document)
         db.session.flush()
