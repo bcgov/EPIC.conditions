@@ -133,7 +133,7 @@ export const ConsolidatedConditions = ({
             }}
           >
             <Grid container direction="row" paddingBottom={3}>
-              <Grid item xs={6}>
+              <Grid item xs>
                 <Stack direction={"row"}>
                   <Box sx={{ display: "flex", alignItems: "left", ml: 2, mr: 1, gap: 1 }}>
                     {consolidationLevel == 'project' ? 'Consolidated Conditions' : documentCategory}
@@ -150,8 +150,8 @@ export const ConsolidatedConditions = ({
                   </Box>
                 </Stack>
               </Grid>
-              <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2 }}>
-                {consolidationLevel != 'project' && (
+              {consolidationLevel != 'project' && (
+                <Grid item sx={{ display: "flex", alignItems: "center" }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -162,7 +162,9 @@ export const ConsolidatedConditions = ({
                     label="View Consolidated Conditions"
                     labelPlacement="end"
                   />
-                )}
+                </Grid>
+              )}
+              <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium, flex: { xs: "auto", sm: "0 0 15%" } }}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -170,7 +172,7 @@ export const ConsolidatedConditions = ({
                   startIcon={<FileDownloadOutlinedIcon />}
                   onClick={handleExportPDF}
                   disabled={isExporting || !filteredConditions?.length}
-                  sx={{ borderRadius: "4px", whiteSpace: "nowrap" }}
+                  sx={{ borderRadius: "4px", whiteSpace: "nowrap", width: "100%" }}
                 >
                   {isExporting ? "Exporting..." : "Export PDF"}
                 </Button>
