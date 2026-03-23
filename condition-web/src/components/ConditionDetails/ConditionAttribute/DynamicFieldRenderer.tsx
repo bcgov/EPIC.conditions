@@ -28,6 +28,8 @@ type DynamicFieldRendererProps = {
     chipsData: {
       chips: string[];
       setChips: (value: string[]) => void;
+      chipInput?: string;
+      setChipInput?: (value: string) => void;
     };
     submissionMilestonesData: {
         submissionMilestones: string[];
@@ -294,6 +296,8 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
                 setChips={chipsData.setChips}
                 placeholder="Add a party"
                 inputWidth={editMode ? "30%" : "100%"}
+                chipInput={chipsData.chipInput}
+                setChipInput={chipsData.setChipInput}
             />
         );
     }
