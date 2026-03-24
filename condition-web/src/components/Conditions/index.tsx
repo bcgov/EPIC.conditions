@@ -197,7 +197,10 @@ export const Conditions = ({
                   size="small"
                   sx={{
                     borderRadius: "4px",
-                    paddingLeft: "2px"
+                    paddingLeft: "2px",
+                    minWidth: "170px",
+                    maxWidth: "200px",
+                    height: "42px",
                   }}
                   onClick={() => handleOpenCreateNewCondition()}
                   loading={loading}

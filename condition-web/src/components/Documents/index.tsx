@@ -96,7 +96,7 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                 </Box>
               </Grid>
               {project && documentType && (
-                <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium, flex: { xs: "auto", sm: "0 0 15%" } }}>
+                <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium }}>
                   <LoadingButton
                     variant="contained"
                     color="primary"
@@ -107,6 +107,9 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                     sx={{
                       borderRadius: "4px",
                       width: "100%",
+                      minWidth: "170px",
+                      maxWidth: "200px",
+                      height: "42px",
                     }}
                   >
                     Add Document
