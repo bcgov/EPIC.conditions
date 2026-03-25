@@ -88,6 +88,7 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'development')):
         response.headers.add('Cross-Origin-Resource-Policy', '*')
         response.headers['Cross-Origin-Opener-Policy'] = '*'
         response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
+        return response
 
     @app.errorhandler(Exception)
     def handle_error(err):
