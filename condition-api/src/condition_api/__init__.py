@@ -83,13 +83,11 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'development')):
 
     @app.after_request
     def set_secure_headers(response):
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "SAMEORIGIN"
-        response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
-        return response
+        """Set CORS headers for security."""
+        secure_headers.framework.flask(response)
+        response.headers.add('Cross-Origin-Resource-Policy', '*')
+        response.headers['Cross-Origin-Opener-Policy'] = '*'
+        response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
 
     @app.errorhandler(Exception)
     def handle_error(err):
