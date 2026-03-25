@@ -855,6 +855,23 @@ class ConditionService:
             )
         )
 
+        latest_amendment_subquery = (
+            db.session.query(
+                DocumentCategory.id.label("category_id"),
+                Condition.condition_number,
+                func.max(Amendment.date_issued).label("latest_amendment_date"),
+            )
+            .select_from(Project)
+            .join(Document, Document.project_id == Project.project_id)
+            .join(DocumentType, DocumentType.id == Document.document_type_id)
+            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+            .join(Amendment, Amendment.document_id == Document.id)
+            .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
+            .filter(filter_condition)
+            .group_by(DocumentCategory.id, Condition.condition_number)
+            .subquery()
+        )
+
         if user_is_internal:
             amendment_subquery = (
                 db.session.query(
@@ -882,7 +899,11 @@ class ConditionService:
                 Document.id,
                 Document.document_id,
                 DocumentCategory.category_name,
-                extract("year", Document.date_issued).label("year_issued"),
+                case(
+                    (latest_amendment_subquery.c.latest_amendment_date.isnot(None),
+                     extract("year", latest_amendment_subquery.c.latest_amendment_date)),
+                    else_=extract("year", Document.date_issued),
+                ).label("year_issued"),
                 Condition.id.label("condition_id"),
                 Condition.condition_name,
                 Condition.condition_number,
@@ -906,6 +927,13 @@ class ConditionService:
             .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
             .join(Condition, Condition.document_id == Document.document_id)
             .outerjoin(Amendment, Amendment.amended_document_id == Condition.amended_document_id)
+            .outerjoin(
+                latest_amendment_subquery,
+                and_(
+                    Condition.condition_number == latest_amendment_subquery.c.condition_number,
+                    DocumentCategory.id == latest_amendment_subquery.c.category_id,
+                ),
+            )
             .filter(filter_condition)
             .filter(Condition.is_active.is_(True))
         )
