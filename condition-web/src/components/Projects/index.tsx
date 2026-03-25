@@ -93,8 +93,10 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             sx={{
               flex: { xs: "auto", sm: "0 0 15%" },
               width: { xs: "100%", sm: "auto" },
-              height: "70%",
               borderRadius: "4px",
+              minWidth: "170px",
+              maxWidth: "200px",
+              height: "42px",
             }}
             onClick={handleOpenCreateNewDocument}
             loading={isOpeningModal}

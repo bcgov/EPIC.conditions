@@ -164,7 +164,7 @@ export const ConsolidatedConditions = ({
                   />
                 </Grid>
               )}
-              <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium, flex: { xs: "auto", sm: "0 0 15%" } }}>
+              <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium }}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -172,7 +172,7 @@ export const ConsolidatedConditions = ({
                   startIcon={<FileDownloadOutlinedIcon />}
                   onClick={handleExportPDF}
                   disabled={isExporting || !filteredConditions?.length}
-                  sx={{ borderRadius: "4px", whiteSpace: "nowrap", width: "100%" }}
+                  sx={{ borderRadius: "4px", whiteSpace: "nowrap", width: "100%", minWidth: "170px", maxWidth: "200px", height: "42px" }}
                 >
                   {isExporting ? "Exporting..." : "Export PDF"}
                 </Button>
