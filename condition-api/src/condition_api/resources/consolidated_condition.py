@@ -48,7 +48,8 @@ def _fetch_logo_as_data_url(logo_url: str) -> str:
         content_type = response.headers.get("Content-Type", "image/png").split(";")[0]
         b64 = base64.b64encode(response.content).decode("utf-8")
         return f"data:{content_type};base64,{b64}"
-    except Exception:  # pylint: disable=broad-except
+    except Exception as exc:  # pylint: disable=broad-except  # noqa: B902
+        del exc
         return logo_url  # fall back to URL if fetch fails
 
 
@@ -165,5 +166,5 @@ class ConsolidatedConditionRenderResource(Resource):
 
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
-        except Exception as err:  # pylint: disable=broad-except
+        except Exception as err:  # pylint: disable=broad-except  # noqa: B902
             return {"message": f"Failed to generate PDF: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR

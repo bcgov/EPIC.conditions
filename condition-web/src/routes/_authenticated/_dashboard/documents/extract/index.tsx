@@ -42,7 +42,6 @@ export function DocumentExtractPage() {
                 <DocumentEntryPage
                     projects={projectsData ?? []}
                     documentType={documentTypeData ?? []}
-                    isLoading={isProjectsLoading}
                 />
             </Grid>
         </PageGrid>

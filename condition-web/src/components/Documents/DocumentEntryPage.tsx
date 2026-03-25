@@ -11,13 +11,11 @@ import { DocumentExtractionForm } from "./DocumentExtractionForm";
 type DocumentEntryPageProps = {
     projects: ProjectModel[];
     documentType: DocumentTypeModel[];
-    isLoading: boolean;
 };
 
 export const DocumentEntryPage = ({
     projects,
     documentType,
-    isLoading,
 }: DocumentEntryPageProps) => {
     const [tab, setTab] = useState(0);
     const navigate = useNavigate();
