@@ -27,6 +27,7 @@ from flask_restx import Namespace, Resource
 from marshmallow import ValidationError
 
 from condition_api.services import authorization
+from condition_api.services.amendment_service import AmendmentService
 from condition_api.services.condition_service import ConditionService
 from condition_api.services.docgen_service import TEMPLATE_KEY, DocGenService
 from condition_api.utils.util import allowedorigins, cors_preflight
@@ -51,18 +52,12 @@ def _fetch_logo_as_data_url(logo_url: str) -> str:
         return logo_url  # fall back to URL if fetch fails
 
 
-def _build_render_context(consolidated: dict) -> dict:
+def _build_render_context(consolidated: dict, project_id: str) -> dict:
     """Build the template context dict from consolidated conditions data."""
     conditions = consolidated.get("conditions", [])
     project_name = consolidated.get("project_name", "")
 
-    amendment_set = set()
-    for cond in conditions:
-        for part in (cond.get("amendment_names") or "").split(","):
-            trimmed = part.strip()
-            if trimmed:
-                amendment_set.add(trimmed)
-
+    amendment_names = AmendmentService.get_amendment_names_for_project(project_id)
     approved_count = sum(1 for c in conditions if c.get("is_approved"))
     now = datetime.now()
 
@@ -71,7 +66,7 @@ def _build_render_context(consolidated: dict) -> dict:
         "generated_on": now.strftime("%A, %B ") + str(now.day) + now.strftime(", %Y"),
         "generated_on_short": now.strftime("%B ") + str(now.day) + now.strftime(", %Y"),
         "total_conditions": len(conditions),
-        "amendment_list": ", ".join(sorted(amendment_set)),
+        "amendment_list": ", ".join(amendment_names),
         "all_approved": all(cond.get("is_approved") for cond in conditions),
         "approved_count": approved_count,
         "awaiting_count": len(conditions) - approved_count,
@@ -154,7 +149,7 @@ class ConsolidatedConditionRenderResource(Resource):
             if not consolidated:
                 return {"message": "No conditions found for this project"}, HTTPStatus.NOT_FOUND
 
-            context = _build_render_context(consolidated)
+            context = _build_render_context(consolidated, project_id)
             docgen_response = DocGenService.render_template(TEMPLATE_KEY, context, output_format)
 
             if output_format == "pdf":

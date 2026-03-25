@@ -57,6 +57,22 @@ class AmendmentService:
         return new_amendment
 
     @staticmethod
+    def get_amendments_for_project(project_id: str) -> list:
+        """Return all amendments for a given project from the database."""
+        return (
+            db.session.query(Amendment)
+            .join(Document, Amendment.document_id == Document.id)
+            .filter(Document.project_id == project_id)
+            .all()
+        )
+
+    @staticmethod
+    def get_amendment_names_for_project(project_id: str) -> list[str]:
+        """Return sorted unique amendment names for a given project."""
+        amendments = AmendmentService.get_amendments_for_project(project_id)
+        return sorted({a.amendment_name for a in amendments if a.amendment_name})
+
+    @staticmethod
     def _update_document(document_id, is_latest_amendment_added):
         """Update a SQLAlchemy model instance from a dictionary."""
         document = Document.get_by_id(document_id)
