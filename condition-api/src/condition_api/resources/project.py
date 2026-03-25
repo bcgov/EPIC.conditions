@@ -64,6 +64,26 @@ class ProjectsResource(Resource):
 
 
 @cors_preflight("GET, OPTIONS")
+@API.route("/all", methods=["GET", "OPTIONS"])
+class AllProjectsResource(Resource):
+    """Resource for fetching all projects regardless of active status."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get all projects including inactive")
+    @API.response(code=HTTPStatus.OK, model=projects_model, description="Get all projects")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def get():
+        """Fetch all projects including inactive ones."""
+        try:
+            project_data = ProjectService.get_all_projects_simple()
+            return ProjectSchema(many=True).dump(project_data), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
 @API.route("/available", methods=["GET", "OPTIONS"])
 class AvailableProjectsResource(Resource):
     """Resource for fetching inactive (available to add) projects."""

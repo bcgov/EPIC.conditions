@@ -25,6 +25,18 @@ export const useGetProjects = () => {
   });
 };
 
+const fetchAllProjects = async () => {
+  return await submitRequest<AvailableProjectModel[]>({ url: "/projects/all" });
+};
+
+export const useGetAllProjects = () => {
+  return useQuery({
+    queryKey: [QUERY_KEY.PROJECTS, 'all'],
+    queryFn: fetchAllProjects,
+    ...defaultUseQueryOptions,
+  });
+};
+
 const fetchAvailableProjects = async () => {
   return await submitRequest<AvailableProjectModel[]>({
     url: "/projects/available",

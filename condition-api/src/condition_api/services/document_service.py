@@ -409,6 +409,33 @@ class DocumentService:
         return DocumentService.get_document_details(document_id)
 
     @staticmethod
+    def get_document_labels_by_project(project_id):
+        """Fetch document metadata for documents of a project that are not yet active (not yet extracted)."""
+        documents = (
+            db.session.query(
+                Document.document_id,
+                Document.document_label,
+                Document.date_issued,
+                Document.act,
+                Project.project_type,
+            )
+            .join(Project, Project.project_id == Document.project_id)
+            .filter(Document.project_id == project_id, Document.is_active.is_(False))
+            .order_by(Document.document_label)
+            .all()
+        )
+        return [
+            {
+                "document_id": row.document_id,
+                "document_label": row.document_label,
+                "date_issued": str(row.date_issued) if row.date_issued else None,
+                "act": row.act,
+                "project_type": row.project_type,
+            }
+            for row in documents
+        ]
+
+    @staticmethod
     def get_available_documents(project_id):
         """Fetch all inactive documents for a project (synced but not yet added)."""
         documents = (

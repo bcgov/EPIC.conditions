@@ -11,13 +11,14 @@ import {
 } from "@mui/material";
 import { Project } from "./Project";
 import { ContentBoxSkeleton } from "../Shared/ContentBox/ContentBoxSkeleton";
-import { Navigate } from "@tanstack/react-router";
+import { Navigate, useNavigate } from "@tanstack/react-router";
 import TuneIcon from '@mui/icons-material/Tune';
 import AddIcon from '@mui/icons-material/Add';
 import { usePagination } from "@/hooks/api/usePagination";
 import { CreateDocumentModal } from "./CreateDocumentModal";
 import LoadingButton from "../Shared/Buttons/LoadingButton";
 import { SearchFilter } from "../Filters/SearchFilter";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 type ProjectsParams = {
   projects?: ProjectModel[];
@@ -31,6 +32,9 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const [openModal, setOpenModal] = useState(false);
   const [isOpeningModal, setIsOpeningModal] = useState(false);
 
+  const hasExtractionRole = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS]);
+  const navigate = useNavigate();
+
   const filteredProjects = projectArray?.filter(project =>
     project.project_name.toLowerCase().includes(projectSearch.toLowerCase())
   );
@@ -38,8 +42,12 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
   const { currentPageItems, totalPages, currentPage, setPage } = usePagination(filteredProjects, itemsPerPage);
 
   const handleOpenCreateNewDocument = () => {
-    setIsOpeningModal(true); // Set loading state before modal opens
-    setOpenModal(true);
+    if (hasExtractionRole) {
+      navigate({ to: "/documents/extract" });
+    } else {
+      setIsOpeningModal(true);
+      setOpenModal(true);
+    }
   };
 
   const handleCloseCreateNewDocument = () => {
@@ -89,19 +97,20 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
             variant="contained"
             color="primary"
             size="small"
-            startIcon={<AddIcon fontSize="small" />}
             sx={{
-              flex: { xs: "auto", sm: "0 0 15%" },
-              width: { xs: "100%", sm: "auto" },
+              flex: { xs: "auto", sm: "0 0 15%" }, // Auto width, no extra space
+              width: { xs: "100%", sm: "auto" }, // Full width on mobile, auto on large screens
+              height: "70%",
               borderRadius: "4px",
-              minWidth: "170px",
-              maxWidth: "200px",
-              height: "42px",
+              paddingLeft: "2px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             onClick={handleOpenCreateNewDocument}
             loading={isOpeningModal}
           >
-            Add Document
+            <AddIcon fontSize="small" /> {hasExtractionRole ? "Add/Extract Document" : "Add Document"}
           </LoadingButton>
         </Stack>
       </Grid>

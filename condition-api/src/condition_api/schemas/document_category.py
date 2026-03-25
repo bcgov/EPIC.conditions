@@ -14,3 +14,10 @@ class DocumentCategorySchema(Schema):
     project_name = fields.Str(data_key="project_name")
     document_category = fields.Str(data_key="document_category")
     documents = fields.List(fields.Nested(DocumentSchema), data_key="documents")
+
+
+class DocumentCategoryListSchema(Schema):
+    """Schema for a single document category list item."""
+
+    id = fields.Int(data_key="id")
+    category_name = fields.Str(data_key="category_name")

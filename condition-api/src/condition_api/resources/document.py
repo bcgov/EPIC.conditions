@@ -23,7 +23,7 @@ from marshmallow import ValidationError
 
 from condition_api.models.document_type import DocumentType
 from condition_api.models.project import Project
-from condition_api.schemas.document import DocumentSchema, DocumentTypeSchema
+from condition_api.schemas.document import DocumentLabelSchema, DocumentSchema, DocumentTypeSchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import allowedorigins, cors_preflight
@@ -82,6 +82,26 @@ class DocumentsResource(Resource):
                 return {}
 
             return DocumentSchema(many=True).dump(documents), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
+@cors_preflight("GET, OPTIONS")
+@API.route("/project/<string:project_id>/labels", methods=["GET", "OPTIONS"])
+class DocumentLabelsResource(Resource):
+    """Resource for fetching document labels for a project."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get document labels for a project")
+    @API.response(code=HTTPStatus.OK, description="Get document labels")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def get(project_id):
+        """Fetch document_id and document_label for all documents of a project."""
+        try:
+            labels = DocumentService.get_document_labels_by_project(project_id)
+            return DocumentLabelSchema(many=True).dump(labels), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 

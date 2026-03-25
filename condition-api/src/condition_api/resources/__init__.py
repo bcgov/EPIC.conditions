@@ -24,6 +24,7 @@ That are used to expose operational health information about the service, and me
 from flask import Blueprint
 
 from .amendment import API as AMENDMENT_API
+from .extraction_request import API as EXTRACTION_REQUEST_API
 from .apihelper import Api
 from .attribute_key import API as ATTRIBUTE_KEY_API
 from .condition import API as CONDITION_API
@@ -62,6 +63,7 @@ API = Api(
 # HANDLER = ExceptionHandler(API)
 
 API.add_namespace(AMENDMENT_API)
+API.add_namespace(EXTRACTION_REQUEST_API)
 API.add_namespace(ATTRIBUTE_KEY_API)
 API.add_namespace(CONDITION_API)
 API.add_namespace(CONDITION_ATTRIBUTE_API)

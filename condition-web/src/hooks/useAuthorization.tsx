@@ -5,6 +5,7 @@ import { OidcConfig } from "@/utils/config";
 // Enum-like object for role constants
 export const KeycloakRoles = {
   VIEW_CONDITIONS: "view_conditions",
+  EXTRACT_CONDITIONS: "extract_conditions",
 };
 
 // Extend the JWT payload to include optional groups
