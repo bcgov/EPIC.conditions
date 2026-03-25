@@ -21,7 +21,6 @@ export const Route = createFileRoute(
 export function DocumentExtractPage() {
     const {
         data: projectsData,
-        isPending: isProjectsLoading,
         isError: isProjectsError,
     } = useGetProjects();
 
