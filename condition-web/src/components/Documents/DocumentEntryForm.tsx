@@ -32,18 +32,22 @@ type DocumentEntryFormProps = {
     documentType: DocumentTypeModel[];
     projectArray: ProjectModel[];
     onCancel?: () => void;
+    preselectedProject?: ProjectModel | null;
+    restrictToCategoryId?: number | null;
 };
 
 export const DocumentEntryForm = ({
     documentType,
     projectArray,
     onCancel,
+    preselectedProject = null,
+    restrictToCategoryId = null,
 }: DocumentEntryFormProps) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
     const [formState, setFormState] = useState({
-        selectedProject: null as ProjectModel | null,
+        selectedProject: preselectedProject as ProjectModel | null,
         selectedDocumentType: null as number | null,
         selectedDocumentId: null as string | null,
         selectedDocumentLabel: null as string | null,
@@ -82,7 +86,7 @@ export const DocumentEntryForm = ({
 
     const resetForm = () => {
         setFormState({
-            selectedProject: null,
+            selectedProject: preselectedProject,
             selectedDocumentType: null,
             selectedDocumentId: null,
             selectedDocumentLabel: null,
@@ -95,6 +99,7 @@ export const DocumentEntryForm = ({
     };
 
     const filteredDocumentTypes = (documentType || []).filter((type) => {
+        if (restrictToCategoryId !== null && type.document_category_id !== restrictToCategoryId) return false;
         if (!formState.selectedProject || !formState.selectedProject.documents) return true;
 
         const hasCertificate = formState.selectedProject.documents.some((document) =>

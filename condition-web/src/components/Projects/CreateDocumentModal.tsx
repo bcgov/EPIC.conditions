@@ -18,6 +18,8 @@ type CreateDocumentModalProps = {
     documentType: DocumentTypeModel[];
     projectArray: ProjectModel[];
     onTransitionEnd?: () => void;
+    preselectedProject?: ProjectModel | null;
+    restrictToCategoryId?: number | null;
 };
 
 export const CreateDocumentModal = ({
@@ -26,6 +28,8 @@ export const CreateDocumentModal = ({
     documentType,
     projectArray,
     onTransitionEnd,
+    preselectedProject = null,
+    restrictToCategoryId = null,
 }: CreateDocumentModalProps) => {
     const [formKey, setFormKey] = useState(0);
 
@@ -69,6 +73,8 @@ export const CreateDocumentModal = ({
                     key={formKey}
                     documentType={documentType}
                     projectArray={projectArray}
+                    preselectedProject={preselectedProject}
+                    restrictToCategoryId={restrictToCategoryId}
                 />
             </Paper>
         </Modal>
