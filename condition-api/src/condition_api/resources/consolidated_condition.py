@@ -167,6 +167,7 @@ class ConsolidatedConditionRenderResource(Resource):
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
         except http_requests.exceptions.RequestException as err:
-            return {"message": f"Failed to reach document generation service: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR
+            return {"message": f"Failed to reach document generation service: {str(err)}"}, \
+                HTTPStatus.INTERNAL_SERVER_ERROR
         except SQLAlchemyError as err:
             return {"message": f"Database error: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR
