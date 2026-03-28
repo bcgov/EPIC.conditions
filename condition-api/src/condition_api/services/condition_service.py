@@ -857,18 +857,16 @@ class ConditionService:
 
         latest_amendment_subquery = (
             db.session.query(
-                DocumentCategory.id.label("category_id"),
+                Document.document_id.label("document_id"),
                 Condition.condition_number,
                 func.max(Amendment.date_issued).label("latest_amendment_date"),
             )
             .select_from(Project)
             .join(Document, Document.project_id == Project.project_id)
-            .join(DocumentType, DocumentType.id == Document.document_type_id)
-            .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
             .join(Amendment, Amendment.document_id == Document.id)
             .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
             .filter(filter_condition)
-            .group_by(DocumentCategory.id, Condition.condition_number)
+            .group_by(Document.document_id, Condition.condition_number)
             .subquery()
         )
 
@@ -931,7 +929,7 @@ class ConditionService:
                 latest_amendment_subquery,
                 and_(
                     Condition.condition_number == latest_amendment_subquery.c.condition_number,
-                    DocumentCategory.id == latest_amendment_subquery.c.category_id,
+                    Document.document_id == latest_amendment_subquery.c.document_id,
                 ),
             )
             .filter(filter_condition)
