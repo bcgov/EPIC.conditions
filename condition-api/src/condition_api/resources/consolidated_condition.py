@@ -25,6 +25,7 @@ from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
 
 from condition_api.services import authorization
 from condition_api.services.amendment_service import AmendmentService
@@ -48,7 +49,7 @@ def _fetch_logo_as_data_url(logo_url: str) -> str:
         content_type = response.headers.get("Content-Type", "image/png").split(";")[0]
         b64 = base64.b64encode(response.content).decode("utf-8")
         return f"data:{content_type};base64,{b64}"
-    except Exception:
+    except http_requests.exceptions.RequestException:
         return logo_url
 
 
@@ -165,5 +166,7 @@ class ConsolidatedConditionRenderResource(Resource):
 
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
-        except Exception as err:
-            return {"message": f"Failed to generate PDF: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR
+        except http_requests.exceptions.RequestException as err:
+            return {"message": f"Failed to reach document generation service: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR
+        except SQLAlchemyError as err:
+            return {"message": f"Database error: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR
