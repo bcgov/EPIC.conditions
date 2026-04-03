@@ -9,7 +9,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
 
 export const Route = createFileRoute(
-    "/_authenticated/_dashboard/documents/extract/"
+    "/_authenticated/documents/extract/"
 )({
     component: DocumentExtractPage,
     meta: () => [

@@ -35,7 +35,7 @@ type DocumentExtractionFormProps = {
 export const DocumentExtractionForm = ({
     documentType,
 }: DocumentExtractionFormProps) => {
-    const canExtract = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS]);
+    const canExtract = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS, KeycloakRoles.VIEW_CONDITIONS]);
     const { data: projects = [], isPending: isProjectsLoading } = useGetAllProjects();
     const [selectedProject, setSelectedProject] = useState<AvailableProjectModel | null>(null);
     const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentTypeModel | null>(null);
@@ -413,10 +413,25 @@ export const DocumentExtractionForm = ({
                             <Typography variant="body2" fontWeight={600}>
                                 Document successfully submitted for extraction
                             </Typography>
-                            <Typography variant="body2" sx={{ mt: 0.5 }}>
-                                The extracted conditions will be available in the repository within a few hours.
-                                You can upload another document if there are any.
+                            <Typography variant="body2" sx={{ mt: 0.5, mb: 1.5 }}>
+                                Your document will be extracted shortly. Please return to the <strong>Extracted Documents</strong> tab to review and import condition data once the automatic extraction is complete.
                             </Typography>
+                            <Box display="flex" gap={1}>
+                                <Button 
+                                    variant="outlined" 
+                                    size="small" 
+                                    onClick={handleClear}
+                                >
+                                    Upload Another
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    size="small" 
+                                    onClick={() => window.location.href = "/extracted-documents"}
+                                >
+                                    Go to Extracted Documents
+                                </Button>
+                            </Box>
                         </Box>
                     </Box>
                 )}

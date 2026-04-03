@@ -55,19 +55,23 @@ def get_pending_requests() -> list[dict]:
         conn.close()
 
 
-def update_status(request_id: int, status: str, error_message: str = None) -> None:
-    """Update the status (and optional error message) of an extraction request."""
+import json
+
+def update_status(request_id: int, status: str, error_message: str = None, extracted_data: dict = None) -> None:
+    """Update the status, an optional error message, and extracted JSON data."""
     conn, cur = _get_connection()
     try:
+        extracted_data_json = json.dumps(extracted_data) if extracted_data else None
         cur.execute(
             """
             UPDATE condition.extraction_requests
             SET status = %s,
                 error_message = %s,
+                extracted_data = %s,
                 updated_date = NOW()
             WHERE id = %s
             """,
-            (status, error_message, request_id),
+            (status, error_message, extracted_data_json, request_id),
         )
         conn.commit()
     except Exception:

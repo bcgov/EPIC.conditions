@@ -17,8 +17,14 @@ export default function SideNavBar() {
         <List>
           <MainListItem
             route={{
-              name: "Home",
+              name: "Projects",
               path: "/projects",
+            }}
+          />
+          <MainListItem
+            route={{
+              name: "Extracted Documents",
+              path: "/extracted-documents",
             }}
           />
         </List>
