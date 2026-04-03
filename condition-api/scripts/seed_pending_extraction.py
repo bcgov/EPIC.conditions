@@ -1,14 +1,24 @@
-import sys, os, random
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+"""Seed a single pending extraction request for local development testing."""
+import os
+import random
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
 from condition_api import create_app
 from condition_api.models.db import db
 from condition_api.models.extraction_request import ExtractionRequest
 from condition_api.models.project import Project
 
-def seed_data():
+
+def seed_data() -> None:
     app = create_app()
     with app.app_context():
         project = db.session.query(Project).filter_by(is_active=True).first()
+        if not project:
+            print("⚠️  No active project found. Run seed_demo_extraction.py first.")
+            sys.exit(1)
+
         mock_document_id = f"DOC-TEST-PEND-{random.randint(1000, 9999)}"
         req = ExtractionRequest(
             project_id=project.project_id,
@@ -19,5 +29,8 @@ def seed_data():
         )
         db.session.add(req)
         db.session.commit()
+        print(f"✅  Seeded pending extraction request ID {req.id}")
+
+
 if __name__ == "__main__":
     seed_data()

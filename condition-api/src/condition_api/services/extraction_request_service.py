@@ -1,8 +1,14 @@
 """Service for extraction request management."""
+import logging
+
+from sqlalchemy.exc import SQLAlchemyError
+
 from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.extraction_request import ExtractionRequest
 from condition_api.models.project import Project
+
+logger = logging.getLogger(__name__)
 
 
 class ExtractionRequestService:
@@ -50,12 +56,21 @@ class ExtractionRequestService:
 
     @staticmethod
     def reject_request(request_id: int):
-        """Mark an extraction request as rejected."""
+        """Permanently delete an extraction request.
+
+        This is a destructive, irreversible operation. The row and its
+        associated JSON payload are physically removed from the database.
+        """
         req = db.session.query(ExtractionRequest).filter_by(id=request_id).first()
         if not req:
             raise ValueError("ExtractionRequest not found")
-        db.session.delete(req)
-        db.session.commit()
+        try:
+            db.session.delete(req)
+            db.session.commit()
+        except SQLAlchemyError as exc:
+            db.session.rollback()
+            logger.error("Failed to delete ExtractionRequest id=%s: %s", request_id, exc)
+            raise ValueError("Failed to delete extraction request due to a database error.") from exc
         return req
 
     @staticmethod

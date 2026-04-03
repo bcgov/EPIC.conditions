@@ -1,130 +1,169 @@
 import React from "react";
-import { 
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
-    Button, 
-    Typography, 
-    IconButton, 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableContainer, 
-    TableHead, 
-    TableRow, 
-    Paper, 
-    Box 
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ExtractionRequest } from "@/hooks/api/useExtractionRequests";
 
-interface ExtractionPreviewModalProps {
-    open: boolean;
-    onClose: () => void;
-    extractionRequest: ExtractionRequest | null;
-    onReject: (id: number) => void;
-    onImport: (id: number) => void;
-    isImporting: boolean;
-    isRejecting: boolean;
+// ---------- Design tokens --------------------------------------------------
+const colors = {
+  primary: "#003366",
+  primaryDark: "#002244",
+  primary04: "rgba(0, 51, 102, 0.04)",
+  headerBg: "#F7F9FC",
+  divider: "#E0E0E0",
+  tableHeaderText: "#666",
+  conditionNumber: "#003366",
+};
+// ---------------------------------------------------------------------------
+
+export interface ExtractionPreviewModalProps {
+  open: boolean;
+  onClose: () => void;
+  /** The request to preview. When null the dialog is mounted but hidden. */
+  extractionRequest: ExtractionRequest | null;
+  onReject: (id: number) => void;
+  onImport: (id: number) => void;
+  isImporting: boolean;
+  isRejecting: boolean;
 }
 
-export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({ 
-    open, 
-    onClose, 
-    extractionRequest, 
-    onReject, 
-    onImport,
-    isImporting,
-    isRejecting
+export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
+  open,
+  onClose,
+  extractionRequest,
+  onReject,
+  onImport,
+  isImporting,
+  isRejecting,
 }) => {
-    if (!extractionRequest || !extractionRequest.extracted_data) return null;
+  // Keep the Dialog mounted so MUI can run open/close animations correctly.
+  // We render empty content when there is no request to show.
+  const conditions = extractionRequest?.extracted_data?.conditions ?? [];
+  const isBusy = isImporting || isRejecting;
 
-    const conditions = extractionRequest.extracted_data?.conditions || [];
-
-    return (
-        <Dialog 
-            open={open} 
-            onClose={onClose} 
-            maxWidth="md" 
-            fullWidth
-            PaperProps={{ sx: { borderRadius: 2 } }}
-        >
-            <DialogTitle sx={{ backgroundColor: "#F7F9FC", borderBottom: "1px solid #E0E0E0", pb: 2, pt: 2.5 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold">Extracted Conditions Preview</Typography>
-                        <Typography variant="body2" color="textSecondary" mt={0.5}>
-                            {extractionRequest.document_label || `Project Schedule B: Table of Conditions`}
-                        </Typography>
-                    </Box>
-                    <IconButton onClick={onClose} size="small" disabled={isImporting || isRejecting}>
-                        <CloseIcon />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
-            
-            <DialogContent sx={{ pt: 3, pb: 4 }}>
-                <Typography variant="subtitle1" fontWeight="bold" mb={2} mt={1}>
-                    {conditions.length} Conditions Extracted
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{ sx: { borderRadius: 2 } }}
+    >
+      {extractionRequest && (
+        <>
+          <DialogTitle
+            sx={{
+              backgroundColor: colors.headerBg,
+              borderBottom: `1px solid ${colors.divider}`,
+              pb: 2,
+              pt: 2.5,
+            }}
+          >
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="h6" fontWeight="bold">
+                  Extracted Conditions Preview
                 </Typography>
-                
-                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
-                    <Table size="small" stickyHeader>
-                        <TableHead>
-                            <TableRow sx={{ backgroundColor: "#F9F9F9" }}>
-                                <TableCell sx={{ fontWeight: "bold", color: "#666" }}>Condition #</TableCell>
-                                <TableCell sx={{ fontWeight: "bold", color: "#666" }}>Condition Name</TableCell>
-                                <TableCell sx={{ fontWeight: "bold", color: "#666" }}>Tags</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {conditions.map((cond: any, index: number) => (
-                                <TableRow key={index} hover>
-                                    <TableCell sx={{ color: "#003366", fontWeight: "bold" }}>
-                                        {cond.condition_number || index + 1}
-                                    </TableCell>
-                                    <TableCell>{cond.condition_name}</TableCell>
-                                    <TableCell>{cond.topic_tags?.join(", ") || ""}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </DialogContent>
+                <Typography variant="body2" color="textSecondary" mt={0.5}>
+                  {extractionRequest.document_label ?? "Project Schedule B: Table of Conditions"}
+                </Typography>
+              </Box>
+              <IconButton onClick={onClose} size="small" disabled={isBusy} aria-label="Close">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
 
-            <DialogActions sx={{ backgroundColor: "#F7F9FC", borderTop: "1px solid #E0E0E0", p: 2, gap: 1 }}>
-                <Button 
-                    variant="outlined" 
-                    onClick={() => onReject(extractionRequest.id)}
-                    disabled={isRejecting || isImporting}
-                    sx={{ 
-                        color: "#003366", 
-                        borderColor: "#003366", 
-                        textTransform: "none", 
-                        px: 3, 
-                        fontWeight: "bold",
-                        "&:hover": { borderColor: "#003366", backgroundColor: "rgba(0, 51, 102, 0.04)" }
-                    }}
-                >
-                    {isRejecting ? "Rejecting..." : "Reject Extraction"}
-                </Button>
-                <Button 
-                    variant="contained" 
-                    onClick={() => onImport(extractionRequest.id)}
-                    disabled={isImporting || isRejecting}
-                    sx={{ 
-                        backgroundColor: "#003366", 
-                        color: "white", 
-                        textTransform: "none", 
-                        px: 3, 
-                        fontWeight: "bold",
-                        "&:hover": { backgroundColor: "#002244" }
-                    }}
-                >
-                    {isImporting ? "Importing..." : "Import Conditions"}
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
+          <DialogContent sx={{ pt: 3, pb: 4 }}>
+            <Typography variant="subtitle1" fontWeight="bold" mb={2} mt={1}>
+              {conditions.length} Condition{conditions.length !== 1 ? "s" : ""} Extracted
+            </Typography>
+
+            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
+              <Table size="small" stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    {["Condition #", "Condition Name", "Tags"].map((header) => (
+                      <TableCell
+                        key={header}
+                        sx={{ fontWeight: "bold", color: colors.tableHeaderText }}
+                      >
+                        {header}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {conditions.map((cond: any, index: number) => (
+                    <TableRow key={cond.condition_number ?? index} hover>
+                      <TableCell sx={{ color: colors.conditionNumber, fontWeight: "bold" }}>
+                        {cond.condition_number ?? index + 1}
+                      </TableCell>
+                      <TableCell>{cond.condition_name}</TableCell>
+                      <TableCell>{cond.topic_tags?.join(", ") ?? ""}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </DialogContent>
+
+          <DialogActions
+            sx={{
+              backgroundColor: colors.headerBg,
+              borderTop: `1px solid ${colors.divider}`,
+              p: 2,
+              gap: 1,
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={() => onReject(extractionRequest.id)}
+              disabled={isBusy}
+              sx={{
+                color: colors.primary,
+                borderColor: colors.primary,
+                textTransform: "none",
+                px: 3,
+                fontWeight: "bold",
+                "&:hover": { borderColor: colors.primary, backgroundColor: colors.primary04 },
+              }}
+            >
+              {isRejecting ? "Rejecting…" : "Reject Extraction"}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => onImport(extractionRequest.id)}
+              disabled={isBusy}
+              sx={{
+                backgroundColor: colors.primary,
+                color: "white",
+                textTransform: "none",
+                px: 3,
+                fontWeight: "bold",
+                "&:hover": { backgroundColor: colors.primaryDark },
+              }}
+            >
+              {isImporting ? "Importing…" : "Import Conditions"}
+            </Button>
+          </DialogActions>
+        </>
+      )}
+    </Dialog>
+  );
 };

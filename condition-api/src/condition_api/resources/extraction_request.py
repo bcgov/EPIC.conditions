@@ -61,7 +61,7 @@ class ExtractionRequestActionResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Perform action on an extraction request")
     @API.response(code=HTTPStatus.OK, model=extraction_request_model, description="Action successful")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.EXTRACT_CONDITIONS.value, EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.EXTRACT_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def post(request_id, action):
         """Perform action (import)."""
@@ -76,7 +76,7 @@ class ExtractionRequestActionResource(Resource):
     @staticmethod
     @ApiHelper.swagger_decorators(API, endpoint_description="Update extraction request status")
     @API.response(code=HTTPStatus.OK, model=extraction_request_model, description="Status updated")
-    @auth.has_one_of_roles([EpicConditionRole.EXTRACT_CONDITIONS.value, EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.EXTRACT_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def patch(request_id, action):
         """Perform action (reject)."""
