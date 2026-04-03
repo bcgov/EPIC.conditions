@@ -13,5 +13,6 @@ class ExtractionRequestSchema(Schema):
     s3_url = fields.Str(required=True)
     status = fields.Str(dump_only=True)
     error_message = fields.Str(dump_only=True, allow_none=True)
+    extracted_data = fields.Dict(dump_only=True, allow_none=True)
     created_date = fields.Str(dump_only=True)
     updated_date = fields.Str(dump_only=True, allow_none=True)

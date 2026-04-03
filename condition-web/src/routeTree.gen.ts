@@ -19,9 +19,10 @@ import { Route as ErrorImport } from './routes/error'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/_dashboard'
+import { Route as AuthenticatedDocumentsExtractIndexImport } from './routes/_authenticated/documents/extract/index'
 import { Route as AuthenticatedDashboardProjectsIndexImport } from './routes/_authenticated/_dashboard/projects/index'
+import { Route as AuthenticatedDashboardExtractedDocumentsIndexImport } from './routes/_authenticated/_dashboard/extracted-documents/index'
 import { Route as AuthenticatedDashboardProjectsProjectIdIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/index'
-import { Route as AuthenticatedDashboardDocumentsExtractIndexImport } from './routes/_authenticated/_dashboard/documents/extract/index'
 import { Route as AuthenticatedDashboardProjectsProjectIdConsolidatedConditionsIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/index'
 import { Route as AuthenticatedDashboardProjectsProjectIdDocumentCategoryCategoryIdConsolidatedConditionsIndexImport } from './routes/_authenticated/_dashboard/projects/$projectId/document-category/$categoryId/consolidated-conditions/index'
 import { Route as AuthenticatedDashboardDocumentsProjectProjectIdDocumentCategoryCategoryIdIndexImport } from './routes/_authenticated/_dashboard/documents/project/$projectId/document-category/$categoryId/index'
@@ -71,21 +72,27 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardImport.update({
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
+const AuthenticatedDocumentsExtractIndexRoute =
+  AuthenticatedDocumentsExtractIndexImport.update({
+    path: '/documents/extract/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+
 const AuthenticatedDashboardProjectsIndexRoute =
   AuthenticatedDashboardProjectsIndexImport.update({
     path: '/projects/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 
-const AuthenticatedDashboardProjectsProjectIdIndexRoute =
-  AuthenticatedDashboardProjectsProjectIdIndexImport.update({
-    path: '/projects/$projectId/',
+const AuthenticatedDashboardExtractedDocumentsIndexRoute =
+  AuthenticatedDashboardExtractedDocumentsIndexImport.update({
+    path: '/extracted-documents/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 
-const AuthenticatedDashboardDocumentsExtractIndexRoute =
-  AuthenticatedDashboardDocumentsExtractIndexImport.update({
-    path: '/documents/extract/',
+const AuthenticatedDashboardProjectsProjectIdIndexRoute =
+  AuthenticatedDashboardProjectsProjectIdIndexImport.update({
+    path: '/projects/$projectId/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 
@@ -197,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardImport
       parentRoute: typeof AuthenticatedImport
     }
+    '/_authenticated/_dashboard/extracted-documents/': {
+      id: '/_authenticated/_dashboard/extracted-documents/'
+      path: '/extracted-documents'
+      fullPath: '/extracted-documents'
+      preLoaderRoute: typeof AuthenticatedDashboardExtractedDocumentsIndexImport
+      parentRoute: typeof AuthenticatedDashboardImport
+    }
     '/_authenticated/_dashboard/projects/': {
       id: '/_authenticated/_dashboard/projects/'
       path: '/projects'
@@ -204,12 +218,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardProjectsIndexImport
       parentRoute: typeof AuthenticatedDashboardImport
     }
-    '/_authenticated/_dashboard/documents/extract/': {
-      id: '/_authenticated/_dashboard/documents/extract/'
+    '/_authenticated/documents/extract/': {
+      id: '/_authenticated/documents/extract/'
       path: '/documents/extract'
       fullPath: '/documents/extract'
-      preLoaderRoute: typeof AuthenticatedDashboardDocumentsExtractIndexImport
-      parentRoute: typeof AuthenticatedDashboardImport
+      preLoaderRoute: typeof AuthenticatedDocumentsExtractIndexImport
+      parentRoute: typeof AuthenticatedImport
     }
     '/_authenticated/_dashboard/projects/$projectId/': {
       id: '/_authenticated/_dashboard/projects/$projectId/'
@@ -269,8 +283,8 @@ export const routeTree = rootRoute.addChildren({
   IndexRoute,
   AuthenticatedRoute: AuthenticatedRoute.addChildren({
     AuthenticatedDashboardRoute: AuthenticatedDashboardRoute.addChildren({
+      AuthenticatedDashboardExtractedDocumentsIndexRoute,
       AuthenticatedDashboardProjectsIndexRoute,
-      AuthenticatedDashboardDocumentsExtractIndexRoute,
       AuthenticatedDashboardProjectsProjectIdIndexRoute,
       AuthenticatedDashboardProjectsProjectIdConsolidatedConditionsIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdIndexRoute,
@@ -279,6 +293,7 @@ export const routeTree = rootRoute.addChildren({
       AuthenticatedDashboardConditionsCreateProjectProjectIdDocumentDocumentIdIndexRoute,
       AuthenticatedDashboardConditionsProjectProjectIdDocumentDocumentIdConditionConditionIdIndexRoute,
     }),
+    AuthenticatedDocumentsExtractIndexRoute,
   }),
   ErrorRoute,
   LogoutRoute,
@@ -310,7 +325,8 @@ export const routeTree = rootRoute.addChildren({
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
       "children": [
-        "/_authenticated/_dashboard"
+        "/_authenticated/_dashboard",
+        "/_authenticated/documents/extract/"
       ]
     },
     "/error": {
@@ -332,8 +348,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_authenticated/_dashboard.tsx",
       "parent": "/_authenticated",
       "children": [
+        "/_authenticated/_dashboard/extracted-documents/",
         "/_authenticated/_dashboard/projects/",
-        "/_authenticated/_dashboard/documents/extract/",
         "/_authenticated/_dashboard/projects/$projectId/",
         "/_authenticated/_dashboard/projects/$projectId/consolidated-conditions/",
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/",
@@ -343,13 +359,17 @@ export const routeTree = rootRoute.addChildren({
         "/_authenticated/_dashboard/conditions/project/$projectId/document/$documentId/condition/$conditionId/"
       ]
     },
+    "/_authenticated/_dashboard/extracted-documents/": {
+      "filePath": "_authenticated/_dashboard/extracted-documents/index.tsx",
+      "parent": "/_authenticated/_dashboard"
+    },
     "/_authenticated/_dashboard/projects/": {
       "filePath": "_authenticated/_dashboard/projects/index.tsx",
       "parent": "/_authenticated/_dashboard"
     },
-    "/_authenticated/_dashboard/documents/extract/": {
-      "filePath": "_authenticated/_dashboard/documents/extract/index.tsx",
-      "parent": "/_authenticated/_dashboard"
+    "/_authenticated/documents/extract/": {
+      "filePath": "_authenticated/documents/extract/index.tsx",
+      "parent": "/_authenticated"
     },
     "/_authenticated/_dashboard/projects/$projectId/": {
       "filePath": "_authenticated/_dashboard/projects/$projectId/index.tsx",

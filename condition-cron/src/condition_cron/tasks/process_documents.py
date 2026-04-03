@@ -51,11 +51,11 @@ class ProcessDocuments:
                 result['date_issued'] = req['date_issued']
                 result['act'] = req['act']
 
-                # 5. Load into database
-                loader_service.load_extracted_data(result)
+                # 5. Skip direct loading into database, instead save for human review
+                # loader_service.load_extracted_data(result)
 
-                # 6. Mark as completed
-                db_service.update_status(request_id, 'completed')
+                # 6. Mark as completed and save JSON blob
+                db_service.update_status(request_id, 'completed', extracted_data=result)
 
                 success += 1
                 logger.info('Successfully processed extraction request %d', request_id)
