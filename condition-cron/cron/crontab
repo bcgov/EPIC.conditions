@@ -1,0 +1,2 @@
+# PROCESS_DOCUMENTS — runs every 30 minutes
+*/30 * * * * default cd /condition-cron && ./run_process_documents.sh
