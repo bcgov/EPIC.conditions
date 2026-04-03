@@ -12,6 +12,7 @@ declare global {
       VITE_OIDC_AUTHORITY: string;
       VITE_CLIENT_ID: string;
       VITE_SUPPORT_EMAIL: string;
+      VITE_OBJECT_STORAGE_URL: string;
     };
   }
 }
@@ -31,9 +32,12 @@ const CLIENT_ID =
   window._env_?.VITE_CLIENT_ID || import.meta.env.VITE_CLIENT_ID;
 const SUPPORT_EMAIL =
   window._env_?.VITE_SUPPORT_EMAIL || import.meta.env.VITE_SUPPORT_EMAIL;
+const OBJECT_STORAGE_URL =
+  window._env_?.VITE_OBJECT_STORAGE_URL || import.meta.env.VITE_OBJECT_STORAGE_URL || "";
 
 export const AppConfig = {
   apiUrl: `${API_URL}`,
+  documentUrl: OBJECT_STORAGE_URL,
   environment: APP_ENVIRONMENT,
   version: APP_VERSION,
   appTitle: APP_TITLE,

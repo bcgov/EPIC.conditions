@@ -240,6 +240,16 @@ class ProjectService:
         ]
 
     @staticmethod
+    def get_all_projects_simple():
+        """Fetch all projects (active and inactive) as a simple id/name list."""
+        projects = (
+            db.session.query(Project.project_id, Project.project_name)
+            .order_by(Project.project_name)
+            .all()
+        )
+        return [{"project_id": row.project_id, "project_name": row.project_name} for row in projects]
+
+    @staticmethod
     def activate_project(project_id):
         """Activate a project to make it visible in the condition repo."""
         project = Project.get_by_id(project_id)

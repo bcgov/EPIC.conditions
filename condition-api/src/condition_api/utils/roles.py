@@ -19,3 +19,4 @@ class EpicConditionRole(Enum):
     """User Role."""
 
     VIEW_CONDITIONS = "view_conditions"
+    EXTRACT_CONDITIONS = "extract_conditions"

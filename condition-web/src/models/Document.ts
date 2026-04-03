@@ -80,6 +80,19 @@ export interface DocumentDetailsModel {
   document_type_id: number;
 }
 
+export interface DocumentLabelModel {
+  document_id: string;
+  document_label: string;
+  date_issued: string | null;
+  act: number | null;
+  project_type: string | null;
+}
+
+export interface DocumentCategoryModel {
+  id: number;
+  category_name: string;
+}
+
 export interface AvailableDocumentModel {
   document_id: string;
   document_label: string;

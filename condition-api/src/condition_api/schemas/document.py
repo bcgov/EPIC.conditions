@@ -8,6 +8,16 @@ from condition_api.schemas.condition import ConditionSchema
 from marshmallow import Schema, fields
 
 
+class DocumentLabelSchema(Schema):
+    """Schema for document label dropdown items."""
+
+    document_id = fields.Str(data_key="document_id")
+    document_label = fields.Str(data_key="document_label")
+    date_issued = fields.Str(data_key="date_issued", allow_none=True)
+    act = fields.Int(data_key="act", allow_none=True)
+    project_type = fields.Str(data_key="project_type", allow_none=True)
+
+
 class DocumentTypeSchema(Schema):
     """Documents type schema."""
 

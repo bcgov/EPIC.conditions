@@ -2,11 +2,14 @@
 import { AppConfig, OidcConfig } from "@/utils/config";
 import axios, { AxiosError, AxiosInstance } from "axios";
 import { User } from "oidc-client-ts";
+import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 
 export type OnErrorType = (error: AxiosError) => void;
 export type OnSuccessType = (data: any) => void;
 
 const submitClient = axios.create({ baseURL: AppConfig.apiUrl });
+const documentClient = axios.create({ baseURL: AppConfig.documentUrl });
+const axiosClient = axios.create();
 
 function getUser() {
   const oidcStorage = sessionStorage.getItem(
@@ -68,4 +71,38 @@ export const OSSPutRequest = <T>(
       Authorization: requestOptions.authHeader,
     },
   });
+};
+
+export const documentRequest = async <T = any>({ ...options }) => {
+  setAuthToken(documentClient);
+
+  const response = await documentClient.request<T>(options);
+  return response.data;
+};
+
+type ErrorResponseData = {
+  message: string;
+};
+
+export const requestAxios = async ({ ...options }) => {
+  try {
+    const response = await axiosClient(options);
+    return response?.data ?? response.data;
+  } catch (error) {
+    if (!axios.isAxiosError(error)) {
+      throw new Error("Unexpected error occurred!");
+    }
+
+    if (!error.response) {
+      notify.error("Network error or CORS issue");
+      throw new Error("Network error or CORS issue");
+    } else {
+      notify.error(
+        (error.response?.data as ErrorResponseData)?.message ??
+          error.message ??
+          "API Error!",
+      );
+    }
+    throw error;
+  }
 };

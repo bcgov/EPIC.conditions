@@ -15,6 +15,7 @@
 """This exports all of the models and schemas used by the application."""
 
 from .amendment import Amendment
+from .extraction_request import ExtractionRequest
 from .attribute_key import AttributeKey
 from .base_model import BaseModel
 from .condition import Condition

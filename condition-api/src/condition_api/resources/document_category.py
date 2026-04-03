@@ -20,7 +20,8 @@ from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
-from condition_api.schemas.document_category import DocumentCategorySchema
+from condition_api.models.document_category import DocumentCategory
+from condition_api.schemas.document_category import DocumentCategoryListSchema, DocumentCategorySchema
 from condition_api.services.document_service import DocumentService
 from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import allowedorigins, cors_preflight
@@ -35,6 +36,26 @@ API = Namespace("document-category", description="Endpoints for Document Managem
 document_model = ApiHelper.convert_ma_schema_to_restx_model(
     API, DocumentCategorySchema(), "Document"
 )
+
+
+@cors_preflight("GET, OPTIONS")
+@API.route("/", methods=["GET", "OPTIONS"])
+class DocumentCategoryListResource(Resource):
+    """Resource for fetching all document categories."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get all document categories")
+    @API.response(code=HTTPStatus.OK, description="Get all document categories")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def get():
+        """Fetch all document categories."""
+        try:
+            categories = DocumentCategory.get_all()
+            return DocumentCategoryListSchema(many=True).dump(categories), HTTPStatus.OK
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
 
 @cors_preflight("GET, OPTIONS")

@@ -1,6 +1,8 @@
 import {
   AvailableDocumentModel,
   CreateDocumentModel,
+  DocumentCategoryModel,
+  DocumentLabelModel,
   DocumentModel,
   DocumentDetailsModel,
   ProjectDocumentAllAmendmentsModel
@@ -41,6 +43,31 @@ export const useGetDocumentType = () => {
   return useQuery({
     queryKey: [QUERY_KEY.DOCUMENTTYPE],
     queryFn: () => fetchDocumentType(),
+    ...defaultUseQueryOptions,
+  });
+};
+
+const fetchDocumentLabels = (projectId: string) => {
+  return submitRequest<DocumentLabelModel[]>({ url: `/documents/project/${projectId}/labels` });
+};
+
+export const useGetDocumentLabels = (projectId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEY.PROJECTDOCUMENT, projectId, 'labels'],
+    queryFn: () => fetchDocumentLabels(projectId!),
+    enabled: Boolean(projectId),
+    ...defaultUseQueryOptions,
+  });
+};
+
+const fetchDocumentCategories = () => {
+  return submitRequest<DocumentCategoryModel[]>({ url: '/document-category/' });
+};
+
+export const useGetDocumentCategories = () => {
+  return useQuery({
+    queryKey: [QUERY_KEY.DOCUMENTTYPE, 'categories'],
+    queryFn: fetchDocumentCategories,
     ...defaultUseQueryOptions,
   });
 };

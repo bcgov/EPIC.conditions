@@ -16,4 +16,5 @@ data:
         "VITE_OIDC_AUTHORITY": "{{ .Values.app.oidcAuthority }}",
         "VITE_CLIENT_ID": "{{ .Values.app.clientId }}",
         "SUPPORT_EMAIL": "{{ .Values.app.supportEmail }}",
+        "VITE_OBJECT_STORAGE_URL": "{{ .Values.app.objectStorageUrl }}",
       }
