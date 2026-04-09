@@ -4,11 +4,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export interface ExtractionRequest {
     id: number;
     project_id: string;
-    document_id: string;
-    document_label: string;
+    document_id?: string | null;
+    document_type_id?: number | null;
+    document_label?: string | null;
+    original_file_name?: string | null;
+    s3_url: string;
+    file_size_bytes?: number | null;
     status: string;
+    error_message?: string | null;
     extracted_data?: Record<string, any>;
     created_date: string;
+    updated_date?: string | null;
 }
 
 export interface CreateExtractionRequestPayload {
@@ -16,7 +22,9 @@ export interface CreateExtractionRequestPayload {
     document_id?: string | null;
     document_type_id?: number | null;
     document_label?: string | null;
+    original_file_name?: string | null;
     s3_url: string;
+    file_size_bytes?: number | null;
 }
 
 const createExtractionRequest = (payload: CreateExtractionRequestPayload) => {

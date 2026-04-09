@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
 import { useGetDocumentType } from "@/hooks/api/useDocuments";
 import { useGetProjects } from "@/hooks/api/useProjects";
@@ -12,6 +12,17 @@ export const Route = createFileRoute(
     "/_authenticated/documents/extract/"
 )({
     component: DocumentExtractPage,
+    validateSearch: (search: Record<string, unknown>) => ({
+        manualEntry: search.manualEntry === true || search.manualEntry === "true",
+        projectId: typeof search.projectId === "string" ? search.projectId : undefined,
+        documentTypeId: typeof search.documentTypeId === "number"
+            ? search.documentTypeId
+            : typeof search.documentTypeId === "string" && search.documentTypeId
+                ? Number(search.documentTypeId)
+                : undefined,
+        documentLabel: typeof search.documentLabel === "string" ? search.documentLabel : undefined,
+        dateIssued: typeof search.dateIssued === "string" ? search.dateIssued : undefined,
+    }),
     meta: () => [
         { title: "Home", path: "/projects" },
         { title: "Add/Extract Document", path: "/documents/extract/" },
@@ -26,6 +37,7 @@ export function DocumentExtractPage() {
 
     const { data: documentTypeData } = useGetDocumentType();
     const { replaceBreadcrumb } = useBreadCrumb();
+    const manualEntrySearch = useSearch({ from: Route.id });
 
     useEffect(() => {
         replaceBreadcrumb("Home", "Home", "/projects", true);
@@ -41,6 +53,7 @@ export function DocumentExtractPage() {
                 <DocumentEntryPage
                     projects={projectsData ?? []}
                     documentType={documentTypeData ?? []}
+                    manualEntrySearch={manualEntrySearch}
                 />
             </Grid>
         </PageGrid>

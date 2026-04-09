@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -51,6 +51,12 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
   isImporting,
   isRejecting,
 }) => {
+  const [showRejectConfirmation, setShowRejectConfirmation] = useState(false);
+
+  useEffect(() => {
+    setShowRejectConfirmation(false);
+  }, [extractionRequest?.id, open]);
+
   // Keep the Dialog mounted so MUI can run open/close animations correctly.
   // We render empty content when there is no request to show.
   const conditions = extractionRequest?.extracted_data?.conditions ?? [];
@@ -125,42 +131,71 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
 
           <DialogActions
             sx={{
-              backgroundColor: colors.headerBg,
+              backgroundColor: showRejectConfirmation ? "#F8E1E4" : colors.headerBg,
               borderTop: `1px solid ${colors.divider}`,
               p: 2,
               gap: 1,
+              justifyContent: showRejectConfirmation ? "space-between" : "flex-end",
             }}
           >
-            <Button
-              variant="outlined"
-              onClick={() => onReject(extractionRequest.id)}
-              disabled={isBusy}
-              sx={{
-                color: colors.primary,
-                borderColor: colors.primary,
-                textTransform: "none",
-                px: 3,
-                fontWeight: "bold",
-                "&:hover": { borderColor: colors.primary, backgroundColor: colors.primary04 },
-              }}
-            >
-              {isRejecting ? "Rejecting…" : "Reject Extraction"}
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => onImport(extractionRequest.id)}
-              disabled={isBusy}
-              sx={{
-                backgroundColor: colors.primary,
-                color: "white",
-                textTransform: "none",
-                px: 3,
-                fontWeight: "bold",
-                "&:hover": { backgroundColor: colors.primaryDark },
-              }}
-            >
-              {isImporting ? "Importing…" : "Import Conditions"}
-            </Button>
+            {showRejectConfirmation ? (
+              <>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    Reject Confirmation
+                  </Typography>
+                  <Typography variant="body1">
+                    Are you sure you want to reject this extraction?
+                  </Typography>
+                </Box>
+                <Box display="flex" gap={1}>
+                  <Button variant="outlined" onClick={() => setShowRejectConfirmation(false)} disabled={isBusy}>
+                    No, Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => onReject(extractionRequest.id)}
+                    disabled={isBusy}
+                  >
+                    {isRejecting ? "Rejecting…" : "Yes, Reject"}
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowRejectConfirmation(true)}
+                  disabled={isBusy}
+                  sx={{
+                    color: colors.primary,
+                    borderColor: colors.primary,
+                    textTransform: "none",
+                    px: 3,
+                    fontWeight: "bold",
+                    "&:hover": { borderColor: colors.primary, backgroundColor: colors.primary04 },
+                  }}
+                >
+                  Reject Extraction
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => onImport(extractionRequest.id)}
+                  disabled={isBusy}
+                  sx={{
+                    backgroundColor: colors.primary,
+                    color: "white",
+                    textTransform: "none",
+                    px: 3,
+                    fontWeight: "bold",
+                    "&:hover": { backgroundColor: colors.primaryDark },
+                  }}
+                >
+                  {isImporting ? "Importing…" : "Import Conditions"}
+                </Button>
+              </>
+            )}
           </DialogActions>
         </>
       )}

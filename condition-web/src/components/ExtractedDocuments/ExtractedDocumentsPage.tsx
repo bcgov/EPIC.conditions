@@ -3,6 +3,10 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   IconButton,
   LinearProgress,
@@ -13,11 +17,13 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CloseIcon from "@mui/icons-material/Close";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "@tanstack/react-router";
 import { ExtractionPreviewModal } from "./ExtractionPreviewModal";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
+import { useGetAllProjects } from "@/hooks/api/useProjects";
 import {
   ExtractionRequest,
   useGetExtractionRequests,
@@ -51,8 +57,9 @@ const colors = {
   // Extraction in progress
   pendingBorder: "#E0E0E0",
   pendingBg: "#F8F9FA",
-  progressTrack: "#E0E0E0",
-  progressBar: "#2E7D32",
+  pendingText: "#5F6368",
+  pendingAccent: "#2E7D32",
+  pendingTrack: "#D9DEE5",
 
   // Archive
   archiveBg: "#F0F0F0",
@@ -71,11 +78,14 @@ const colors = {
 
 interface SectionHeaderProps {
   title: string;
+  expanded: boolean;
+  onToggle: () => void;
 }
 
 /** Static header bar rendered at the top of each section panel. */
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, expanded, onToggle }) => (
   <Box
+    onClick={onToggle}
     sx={{
       backgroundColor: colors.sectionHeaderBg,
       px: 2,
@@ -84,12 +94,17 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
+      cursor: "pointer",
     }}
   >
     <Typography variant="subtitle2" fontWeight="bold" color={colors.sectionHeaderText}>
       {title}
     </Typography>
-    <ExpandMoreIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
+    {expanded ? (
+      <ExpandLessIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
+    ) : (
+      <ExpandMoreIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
+    )}
   </Box>
 );
 
@@ -97,10 +112,17 @@ export default function ExtractedDocumentsPage() {
   const { replaceBreadcrumb } = useBreadCrumb();
   const navigate = useNavigate();
   const { data: requests, isLoading, error } = useGetExtractionRequests();
+  const { data: projects = [] } = useGetAllProjects();
   const importMutation = useImportExtractionRequest();
   const rejectMutation = useRejectExtractionRequest();
 
   const [previewRequest, setPreviewRequest] = useState<ExtractionRequest | null>(null);
+  const [stopRequest, setStopRequest] = useState<ExtractionRequest | null>(null);
+  const [sectionsOpen, setSectionsOpen] = useState({
+    complete: true,
+    progress: true,
+    archive: true,
+  });
 
   useEffect(() => {
     replaceBreadcrumb("Extracted Documents", "Extracted Documents", "/extracted-documents", true);
@@ -125,19 +147,38 @@ export default function ExtractedDocumentsPage() {
   const handleReject = (id: number) => {
     rejectMutation.mutate(id, {
       onSuccess: () => {
-        notify.success("Extraction rejected and deleted successfully!");
+        notify.success("Extraction rejected successfully!");
         setPreviewRequest(null);
+        setStopRequest(null);
       },
       onError: (err: any) =>
         notify.error(err?.response?.data?.message || "Failed to reject extraction"),
     });
   };
 
+  const getDocumentName = (req: ExtractionRequest) =>
+    req.original_file_name || req.s3_url?.split("/").pop() || req.document_label || `Document ${req.document_id}`;
+
+  const getProjectName = (req: ExtractionRequest) =>
+    projects.find((project) => project.project_id === req.project_id)?.project_name ?? req.project_id;
+
+  const formatFileSize = (fileSizeBytes?: number | null) => {
+    if (!fileSizeBytes || fileSizeBytes <= 0) {
+      return null;
+    }
+
+    return `${(fileSizeBytes / 1024).toFixed(1)} KB`;
+  };
+
   const completedRequests =
     requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
-  const pendingRequests = requests?.filter((r) => r.status === "pending") ?? [];
+  const pendingRequests = requests?.filter((r) => r.status === "pending" || r.status === "processing") ?? [];
   const archivedRequests =
-    requests?.filter((r) => r.status === "imported" || r.status === "rejected") ?? [];
+    requests?.filter((r) => r.status === "imported") ?? [];
+
+  const toggleSection = (section: keyof typeof sectionsOpen) => {
+    setSectionsOpen((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   return (
     <PageGrid>
@@ -150,6 +191,42 @@ export default function ExtractedDocumentsPage() {
         isImporting={importMutation.isPending}
         isRejecting={rejectMutation.isPending}
       />
+      <Dialog
+        open={!!stopRequest}
+        onClose={() => setStopRequest(null)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 1 } }}
+      >
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h5" fontWeight="bold">
+            Stop Extraction?
+          </Typography>
+          <IconButton onClick={() => setStopRequest(null)} aria-label="Close" disabled={rejectMutation.isPending}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography color="error" fontSize="1.1rem">
+            This will stop the extraction process for {stopRequest ? getDocumentName(stopRequest) : "this document"}.
+          </Typography>
+          <Typography color="error" fontSize="1.1rem">
+            Are you sure you wish to proceed?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setStopRequest(null)} disabled={rejectMutation.isPending}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => stopRequest && handleReject(stopRequest.id)}
+            disabled={rejectMutation.isPending}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Page header */}
       <Grid item xs={12} display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -175,8 +252,12 @@ export default function ExtractedDocumentsPage() {
 
             {/* ── Extraction Complete ───────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
-              <SectionHeader title="Extraction Complete" />
-              <Box p={2} display="flex" flexDirection="column" gap={2}>
+              <SectionHeader
+                title="Extraction Complete"
+                expanded={sectionsOpen.complete}
+                onToggle={() => toggleSection("complete")}
+              />
+              {sectionsOpen.complete && <Box p={2} display="flex" flexDirection="column" gap={2}>
                 {completedRequests.length === 0 ? (
                   <Typography variant="body2" color="textSecondary" sx={{ px: 2 }}>
                     No recent extractions completed.
@@ -201,11 +282,14 @@ export default function ExtractedDocumentsPage() {
                         {/* Document label */}
                         <Box flex={1}>
                           <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
-                            {req.document_label || `Document ${req.document_id}`}
+                            {getDocumentName(req)}
                           </Typography>
-                          {isSuccess && (
-                            <Typography variant="caption" color="textSecondary">
-                              {conditionCount} condition{conditionCount !== 1 ? "s" : ""} extracted
+                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                            {getProjectName(req)}
+                          </Typography>
+                          {formatFileSize(req.file_size_bytes) && (
+                            <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                              {formatFileSize(req.file_size_bytes)}
                             </Typography>
                           )}
                         </Box>
@@ -227,8 +311,8 @@ export default function ExtractedDocumentsPage() {
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
                               {isSuccess
-                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""} from the document.`
-                                : "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format."}
+                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""} from ${getDocumentName(req)}.`
+                                : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format."}
                             </Typography>
                           </Box>
                         </Box>
@@ -242,7 +326,15 @@ export default function ExtractedDocumentsPage() {
                             onClick={() =>
                               isSuccess
                                 ? setPreviewRequest(req)
-                                : navigate({ to: "/documents/extract" })
+                                : navigate({
+                                  to: "/documents/extract",
+                                  search: {
+                                    manualEntry: true,
+                                    projectId: req.project_id,
+                                    documentTypeId: req.document_type_id,
+                                    documentLabel: req.document_label,
+                                  },
+                                })
                             }
                             sx={{
                               textTransform: "none",
@@ -262,13 +354,17 @@ export default function ExtractedDocumentsPage() {
                     );
                   })
                 )}
-              </Box>
+              </Box>}
             </Paper>
 
             {/* ── Extraction In Progress ────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
-              <SectionHeader title="Extraction In Progress" />
-              <Box p={2} display="flex" flexDirection="column" gap={2}>
+              <SectionHeader
+                title="Extraction In Progress"
+                expanded={sectionsOpen.progress}
+                onToggle={() => toggleSection("progress")}
+              />
+              {sectionsOpen.progress && <Box p={2} display="flex" flexDirection="column" gap={2}>
                 {pendingRequests.length === 0 ? (
                   <Typography variant="body2" color="textSecondary" sx={{ px: 2 }}>
                     No extractions currently in progress.
@@ -289,20 +385,35 @@ export default function ExtractedDocumentsPage() {
                     >
                       <Box flex={1}>
                         <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
-                          {req.document_label || `Document ${req.document_id}`}
+                          {getDocumentName(req)}
                         </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          Processing…
+                        <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                          {getProjectName(req)}
                         </Typography>
+                        {formatFileSize(req.file_size_bytes) && (
+                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                            {formatFileSize(req.file_size_bytes)}
+                          </Typography>
+                        )}
                       </Box>
-                      <Box flex={1} px={4}>
+                      <Box
+                        flex={0.8}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="flex-start"
+                        px={2}
+                      >
                         <LinearProgress
                           variant="indeterminate"
                           sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            backgroundColor: colors.progressTrack,
-                            "& .MuiLinearProgress-bar": { backgroundColor: colors.progressBar },
+                            width: "100%",
+                            height: 6,
+                            borderRadius: 999,
+                            backgroundColor: colors.pendingTrack,
+                            "& .MuiLinearProgress-bar": {
+                              backgroundColor: colors.pendingAccent,
+                              borderRadius: 999,
+                            },
                           }}
                         />
                       </Box>
@@ -310,7 +421,7 @@ export default function ExtractedDocumentsPage() {
                         <IconButton
                           size="small"
                           aria-label="Cancel extraction"
-                          onClick={() => handleReject(req.id)}
+                          onClick={() => setStopRequest(req)}
                         >
                           <CloseIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
                         </IconButton>
@@ -318,13 +429,17 @@ export default function ExtractedDocumentsPage() {
                     </Box>
                   ))
                 )}
-              </Box>
+              </Box>}
             </Paper>
 
             {/* ── Documents Archive ─────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
-              <SectionHeader title="Documents Archive" />
-              <Box>
+              <SectionHeader
+                title="Documents Archive"
+                expanded={sectionsOpen.archive}
+                onToggle={() => toggleSection("archive")}
+              />
+              {sectionsOpen.archive && <Box>
                 <Box
                   display="flex"
                   justifyContent="space-between"
@@ -337,7 +452,7 @@ export default function ExtractedDocumentsPage() {
                     Document Name
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Date
+                    Imported On
                   </Typography>
                 </Box>
                 <Box p={2} display="flex" flexDirection="column" gap={1}>
@@ -361,14 +476,22 @@ export default function ExtractedDocumentsPage() {
                       >
                         <Box>
                           <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
-                            {req.document_label || `Document ${req.document_id}`}
+                            {getDocumentName(req)}
                           </Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            {req.status === "imported" ? "Imported" : "Rejected"}
+                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                            {getProjectName(req)}
+                          </Typography>
+                          {formatFileSize(req.file_size_bytes) && (
+                            <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                              {formatFileSize(req.file_size_bytes)}
+                            </Typography>
+                          )}
+                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+                            Imported
                           </Typography>
                         </Box>
                         <Typography variant="body2" color={colors.archiveDateText}>
-                          {new Date(req.created_date).toLocaleDateString("en-US", {
+                          {new Date(req.updated_date || req.created_date).toLocaleDateString("en-US", {
                             month: "long",
                             day: "numeric",
                             year: "numeric",
@@ -378,7 +501,7 @@ export default function ExtractedDocumentsPage() {
                     ))
                   )}
                 </Box>
-              </Box>
+              </Box>}
             </Paper>
 
           </Box>

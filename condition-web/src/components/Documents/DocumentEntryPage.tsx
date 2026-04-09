@@ -11,13 +11,21 @@ import { DocumentExtractionForm } from "./DocumentExtractionForm";
 type DocumentEntryPageProps = {
     projects: ProjectModel[];
     documentType: DocumentTypeModel[];
+    manualEntrySearch?: {
+        manualEntry?: boolean;
+        projectId?: string;
+        documentTypeId?: number;
+        documentLabel?: string;
+        dateIssued?: string;
+    };
 };
 
 export const DocumentEntryPage = ({
     projects,
     documentType,
+    manualEntrySearch,
 }: DocumentEntryPageProps) => {
-    const [tab, setTab] = useState(0);
+    const [tab, setTab] = useState(manualEntrySearch?.manualEntry ? 1 : 0);
     const navigate = useNavigate();
 
     return (
@@ -42,6 +50,7 @@ export const DocumentEntryPage = ({
                     documentType={documentType}
                     projectArray={projects}
                     onCancel={() => navigate({ to: "/projects" })}
+                    transferData={manualEntrySearch?.manualEntry ? manualEntrySearch : undefined}
                 />
             )}
         </Paper>

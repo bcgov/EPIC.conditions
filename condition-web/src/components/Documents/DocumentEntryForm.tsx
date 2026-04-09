@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import {
     Autocomplete,
     Box,
@@ -34,6 +35,12 @@ type DocumentEntryFormProps = {
     onCancel?: () => void;
     preselectedProject?: ProjectModel | null;
     restrictToCategoryId?: number | null;
+    transferData?: {
+        projectId?: string;
+        documentTypeId?: number;
+        documentLabel?: string;
+        dateIssued?: string;
+    };
 };
 
 export const DocumentEntryForm = ({
@@ -42,6 +49,7 @@ export const DocumentEntryForm = ({
     onCancel,
     preselectedProject = null,
     restrictToCategoryId = null,
+    transferData,
 }: DocumentEntryFormProps) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -53,7 +61,7 @@ export const DocumentEntryForm = ({
         selectedDocumentLabel: null as string | null,
         documentLabel: "",
         documentLink: "",
-        dateIssued: null as Date | null,
+        dateIssued: null as any,
         isLatestAmendment: false,
     });
 
@@ -63,6 +71,27 @@ export const DocumentEntryForm = ({
     const updateFormState = (updates: Partial<typeof formState>) => {
         setFormState((prev) => ({ ...prev, ...updates }));
     };
+
+    useEffect(() => {
+        if (!transferData) return;
+        const transferredProject = projectArray.find(
+            (project) => project.project_id === transferData.projectId
+        ) || preselectedProject;
+
+        updateFormState({
+            selectedProject: transferredProject || null,
+            selectedDocumentType: transferData.documentTypeId || null,
+            documentLabel: transferData.documentLabel || "",
+            dateIssued: transferData.dateIssued ? dayjs(transferData.dateIssued) : null,
+        });
+    }, [
+        projectArray,
+        preselectedProject,
+        transferData?.dateIssued,
+        transferData?.documentLabel,
+        transferData?.documentTypeId,
+        transferData?.projectId,
+    ]);
 
     const resetErrors = () => {
         setErrors({
@@ -215,14 +244,18 @@ export const DocumentEntryForm = ({
                 }}
             >
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Manual Document Entry
+                    {transferData ? "Information Transferred from Extractor" : "Manual Document Entry"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" display="block">
-                    Manually register a document and its details into the system.
+                    {transferData
+                        ? "The document details have been populated from your previous entry. You can edit any field if needed."
+                        : "Manually register a document and its details into the system."}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                    <strong>Note:</strong> Use this option for amendments and documents that cannot be extracted automatically.
-                </Typography>
+                {!transferData && (
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                        <strong>Note:</strong> Use this option for amendments and documents that cannot be extracted automatically.
+                    </Typography>
+                )}
             </Box>
         <Box
             display="flex"
