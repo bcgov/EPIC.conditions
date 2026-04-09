@@ -26,7 +26,9 @@ class ExtractionRequestService:
             document_id=data.get('document_id'),
             document_type_id=data.get('document_type_id'),
             document_label=data.get('document_label'),
+            original_file_name=data.get('original_file_name'),
             s3_url=data['s3_url'],
+            file_size_bytes=data.get('file_size_bytes'),
             status='pending',
         )
         db.session.add(request)
@@ -56,21 +58,19 @@ class ExtractionRequestService:
 
     @staticmethod
     def reject_request(request_id: int):
-        """Permanently delete an extraction request.
-
-        This is a destructive, irreversible operation. The row and its
-        associated JSON payload are physically removed from the database.
-        """
+        """Reject an extraction request and purge its raw extracted JSON."""
         req = db.session.query(ExtractionRequest).filter_by(id=request_id).first()
         if not req:
             raise ValueError("ExtractionRequest not found")
         try:
-            db.session.delete(req)
+            req.status = 'rejected'
+            req.extracted_data = None
+            req.error_message = None
             db.session.commit()
         except SQLAlchemyError as exc:
             db.session.rollback()
-            logger.error("Failed to delete ExtractionRequest id=%s: %s", request_id, exc)
-            raise ValueError("Failed to delete extraction request due to a database error.") from exc
+            logger.error("Failed to reject ExtractionRequest id=%s: %s", request_id, exc)
+            raise ValueError("Failed to reject extraction request due to a database error.") from exc
         return req
 
     @staticmethod

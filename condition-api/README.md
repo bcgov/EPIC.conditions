@@ -28,6 +28,24 @@ make setup
 Once the setup is completed use make run to start the server:
 make run
 
+## Local extraction UI demo data
+
+To test the async extraction UI without calling Azure, OpenAI, object storage, or the cron, seed local extraction request rows from JSON fixtures:
+
+```bash
+cd condition-api
+. venv/bin/activate
+python scripts/seed_demo_extraction.py --count 8
+```
+
+The script reads fixture JSON from `../test_documents/completed_jsons` and creates randomized `pending`, `processing`, `completed`, `failed`, and `imported` rows in `condition.extraction_requests`. Open the Extracted Documents page in the frontend after seeding.
+
+You can control the data shape:
+
+```bash
+python scripts/seed_demo_extraction.py --count 4 --statuses completed,failed
+```
+
 
 ## Backend Setup on Windows
 
