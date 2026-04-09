@@ -7,6 +7,7 @@ Create Date: 2026-03-24
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -24,9 +25,12 @@ def upgrade():
         sa.Column('document_id', sa.String(255), nullable=True),
         sa.Column('document_type_id', sa.Integer(), sa.ForeignKey('condition.document_types.id'), nullable=True),
         sa.Column('document_label', sa.Text(), nullable=True),
+        sa.Column('original_file_name', sa.Text(), nullable=True),
         sa.Column('s3_url', sa.Text(), nullable=False),
+        sa.Column('file_size_bytes', sa.Integer(), nullable=True),
         sa.Column('status', sa.String(50), nullable=False, server_default='pending'),
         sa.Column('error_message', sa.Text(), nullable=True),
+        sa.Column('extracted_data', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column('created_date', sa.DateTime(), server_default=sa.func.now(), nullable=False),
         sa.Column('updated_date', sa.DateTime(), nullable=True),
         sa.Column('created_by', sa.String(50), nullable=True),
