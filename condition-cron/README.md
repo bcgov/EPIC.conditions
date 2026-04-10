@@ -1,13 +1,13 @@
 # condition-cron
 
-Scheduled cron job that processes pending document extraction requests. It reads records from the `extraction_requests` database table, fetches the corresponding PDF via the Object Storage API, extracts conditions using the condition-parser AI pipeline, and loads the results into the condition database.
+Scheduled cron job that processes pending document extraction requests. It reads records from the `extraction_requests` database table, fetches the corresponding PDF via the Object Storage API, extracts conditions using the cron-owned AI extraction package, and saves the parsed JSON for staff review.
 
 ---
 
 ## How It Works
 
 1. **Trigger** — `go-crond` runs the job on a schedule (default: every 30 minutes)
-2. **Poll** — queries `condition.extraction_requests` WHERE `status = 'pending'` ORDER BY `created_date ASC`
+2. **Poll** — queries `condition.extraction_requests` WHERE `status = 'pending'`, plus stale `processing` records older than two hours, ORDER BY `created_date ASC`
 3. **Process** — for each pending record:
    - Sets status → `processing`
    - Authenticates with Keycloak using a service-account client credentials grant
@@ -16,9 +16,10 @@ Scheduled cron job that processes pending document extraction requests. It reads
    - Classifies the document type (numbered conditions, table format, etc.)
    - Extracts and enriches all conditions via OpenAI GPT
    - Extracts First Nations references from the document
-   - Loads conditions, subconditions, and attributes into PostgreSQL
+   - Saves the parsed JSON in `condition.extraction_requests.extracted_data`
    - Sets status → `completed`
 4. **On failure** — sets status → `failed` and stores the error message in `error_message` column for inspection
+5. **Staff review** — staff preview the completed extraction in the web UI, then either import it into the condition tables or reject it
 
 Documents are never deleted from S3. Processing state is managed entirely through the `extraction_requests` table status column.
 
@@ -48,8 +49,10 @@ The Keycloak token is obtained via the `client_credentials` grant and cached loc
 |--------|---------|
 | `pending` | Uploaded via UI, waiting to be processed |
 | `processing` | Currently being processed by the cron |
-| `completed` | Successfully extracted and loaded into the database |
-| `failed` | Processing failed — see `error_message` column for details. Will be retried on the next cron run. |
+| `completed` | Successfully extracted and saved to `extracted_data` for staff review |
+| `failed` | Processing failed — see `error_message` column for details. Staff can switch to manual entry. |
+| `imported` | Staff imported the extracted JSON into the condition tables |
+| `rejected` | Staff rejected or stopped the extraction; raw extracted JSON is cleared |
 
 ---
 
@@ -62,7 +65,7 @@ condition-cron/
 ├── src/condition_cron/
 │   ├── services/
 │   │   ├── db_service.py        # Reads/updates extraction_requests table
-│   │   ├── extraction_service.py # Thin wrapper around condition-parser
+│   │   ├── extraction_service.py # Thin wrapper around condition_cron.extraction
 │   │   ├── loader_service.py    # Inserts extracted data into PostgreSQL
 │   │   └── s3_service.py        # Fetches PDFs via Object Storage API (presigned URLs)
 │   ├── tasks/
@@ -81,10 +84,10 @@ condition-cron/
 
 ## Dependencies
 
-The cron imports condition-parser modules directly at runtime. The Dockerfile copies `../condition-parser` into the image at `/condition-parser` and adds it to `PYTHONPATH`.
+The cron owns its runtime extraction package under `src/condition_cron/extraction`. It no longer depends on copying or importing the sibling `condition-parser` folder at runtime.
 
 ```
-PYTHONPATH=/condition-cron/src:/condition-parser
+PYTHONPATH=/condition-cron/src
 ```
 
 ---
@@ -124,9 +127,9 @@ make install
 make run
 ```
 
-`make install` installs both `requirements.txt` (cron dependencies) and `../condition-parser/requirements.txt` (AI pipeline dependencies) into the same virtualenv.
+`make install` installs the cron runtime dependencies, including the OpenAI and PDF libraries used by `condition_cron.extraction`.
 
-`make run` sets `PYTHONPATH` correctly so `condition-parser` modules resolve, then runs `invoke_jobs.py PROCESS_DOCUMENTS`.
+`make run` sets `PYTHONPATH` correctly so `condition_cron` modules resolve, then runs `invoke_jobs.py PROCESS_DOCUMENTS`.
 
 ### Available Make targets
 
@@ -145,6 +148,7 @@ make help        List all targets
 ## Running with Docker
 
 ```bash
+cd condition-cron
 docker build -t condition-cron .
 docker run --env-file .env condition-cron
 ```

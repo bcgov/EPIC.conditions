@@ -1,9 +1,9 @@
 """Task: read pending extraction requests from DB, extract conditions, and load into the database."""
 
-import logging
 import os
+import logging
 
-from condition_cron.services import db_service, extraction_service, loader_service, s3_service
+from condition_cron.services import db_service, extraction_service, s3_service
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class ProcessDocuments:
                 logger.info('Processing extraction request %d — %s', request_id, s3_key)
 
                 # 1. Mark as processing
-                db_service.update_status(request_id, 'processing')
+                db_service.mark_processing(request_id)
 
                 # 2. Download PDF from S3
                 local_path = s3_service.download_file(s3_key)
@@ -55,7 +55,11 @@ class ProcessDocuments:
                 # loader_service.load_extracted_data(result)
 
                 # 6. Mark as completed and save JSON blob
-                db_service.update_status(request_id, 'completed', extracted_data=result)
+                if db_service.get_request_status(request_id) == 'rejected':
+                    logger.info('Skipping save for rejected extraction request %d', request_id)
+                    continue
+
+                db_service.save_extraction_result(request_id, result)
 
                 success += 1
                 logger.info('Successfully processed extraction request %d', request_id)
@@ -65,7 +69,7 @@ class ProcessDocuments:
                 error_msg = str(exc)
                 logger.error('Failed to process extraction request %d: %s', request_id, error_msg, exc_info=True)
                 try:
-                    db_service.update_status(request_id, 'failed', error_message=error_msg)
+                    db_service.mark_failed(request_id, error_msg)
                 except Exception:
                     logger.error('Could not update status to failed for request %d', request_id)
 

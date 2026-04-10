@@ -1,0 +1,86 @@
+{
+  "type": "function",
+  "function": {
+    "name": "format_conditions",
+    "description": "Format the conditions/commitments/requirements extracted from the document.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition_name": {
+                "type": "string",
+                "description": "The name or title associated with the condition. For numbered conditions, this is the explicit name (e.g., 'Wildlife Management'). For non-numbered items, use the section or topic header the item falls under (e.g., 'Environmental Management', 'Acid Rock Drainage'). Is null if not identifiable."
+              },
+              "condition_number": {
+                "type": "integer",
+                "description": "The number associated with the condition. For explicitly numbered conditions, use the document's numbering. For non-numbered items, assign sequential numbers starting from the provided offset. Is null only if not explicitly mentioned and no offset was provided."
+              },
+              "condition_text": {
+                "type": "string",
+                "description": "The COMPLETE text of the condition/commitment/requirement, including ALL bullet points and sub-bullets that belong to it. When a condition has multiple bullet points under one heading, combine them ALL into this single field. Fix spacing issues. Preserve the original structure including newlines and bullet points. Do NOT split a multi-bullet condition into separate entries."
+              },
+              "topic_tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["Economic", "Health", "Heritage/Culture", "Environment", "Social"]
+                },
+                "description": "List of one or more tags that best describe the condition. Economic: employment, income, labour force, housing, accommodation, property values. Health: air quality, acoustics, human health. Heritage/Culture: heritage, culture, cultural sites, landmarks. Environment: air quality, marine resources, aquatic resources, ecosystems, vegetation, greenhouse gas emissions, wildlife. Social: land use, community well-being, services and infrastructure, recreation, housing and accommodation. If none apply, leave blank."
+              },
+              "subtopic_tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "Community Well-being",
+                    "Employment & Income",
+                    "Labour Force",
+                    "Housing & Accommodation",
+                    "Property Values",
+                    "Mammals",
+                    "Air Quality",
+                    "Marine Resources",
+                    "Aquatic Resources",
+                    "Ecosystems",
+                    "Marine Mammals",
+                    "Groundwater",
+                    "Vegetation",
+                    "Rare Plants",
+                    "Greenhouse Gas Emissions",
+                    "Wildlife",
+                    "Birds",
+                    "Amphibians",
+                    "Fish & Fish Habitat",
+                    "Surface Water",
+                    "Benthic Invertebrates",
+                    "Terrain",
+                    "Acoustics",
+                    "Human Health",
+                    "Aboriginal Interests",
+                    "Heritage Resources",
+                    "Accidents & Malfunctions",
+                    "Land & Resource Use",
+                    "L&RU Traditional Purposes",
+                    "Services & Infrastructure",
+                    "Transportation & Access",
+                    "Recreation",
+                    "Visual Quality",
+                    "Marine Transportation & Use"
+                  ]
+                },
+                "description": "List of one or more specific subtopic tags that best describe the condition. If none apply, leave blank."
+              }
+            },
+            "required": ["condition_name", "condition_text", "condition_number", "topic_tags", "subtopic_tags"]
+          },
+          "description": "All conditions/commitments/requirements extracted from the document or page range."
+        }
+      },
+      "required": ["conditions"]
+    }
+  }
+}

@@ -48,6 +48,7 @@ class _Config:
     # OpenAI / Extractor
     EXTRACTOR_API_URL = os.getenv('EXTRACTOR_API_URL', '')
     EXTRACTOR_API_KEY = os.getenv('EXTRACTOR_API_KEY', '')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
 
 class DevConfig(_Config):

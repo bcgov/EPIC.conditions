@@ -1,4 +1,8 @@
-FROM python:3.10-buster
+FROM python:3.10-slim-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # ── Install go-crond ──────────────────────────────────────────────────────────
 ARG SOURCE_REPO=BCDevOps
@@ -27,18 +31,13 @@ RUN mkdir $HOME && chmod 755 $HOME
 WORKDIR $HOME
 
 # ── Install dependencies ───────────────────────────────────────────────────────
-COPY ./requirements.txt .
+COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy condition-parser so its modules can be imported directly
-COPY ../condition-parser /condition-parser
-RUN pip install --no-cache-dir -r /condition-parser/requirements.txt
-
 COPY . .
 
-# condition-parser is imported directly — add it to PYTHONPATH alongside the cron src
-ENV PYTHONPATH=/condition-cron/src:/condition-parser
+ENV PYTHONPATH=/condition-cron/src
 
 # ── Permissions ───────────────────────────────────────────────────────────────
 RUN chown -R $user:root $HOME \
