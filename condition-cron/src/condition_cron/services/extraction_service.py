@@ -1,10 +1,7 @@
-"""Extraction service — thin wrapper around condition-parser.
+"""Extraction service — thin wrapper around the cron extraction package.
 
-All extraction logic lives in condition-parser (gpt.py, document_classifier.py,
-extract_management_plans.py, read_pdf.py).  This module imports those directly
-so the cron always uses identical extraction quality to the Gradio UI.
-
-The Dockerfile adds /condition-parser to PYTHONPATH so the imports resolve.
+All runtime extraction logic lives under condition_cron.extraction so this
+service can run without the old Gradio/manual condition-parser module.
 """
 
 import logging
@@ -16,13 +13,12 @@ logger = logging.getLogger(__name__)
 def extract_and_enrich(file_path: str) -> dict:
     """Full pipeline: classify → extract → enrich.
 
-    Delegates entirely to condition-parser's extract_and_enrich_all().
+    Delegates to condition_cron.extraction.extractor.extract_and_enrich_all().
     Returns a dict with 'conditions' and 'classification' keys.
     """
-    # Imported here (not at module level) so Flask has loaded env vars first,
-    # which condition-parser reads at module level via os.getenv.
-    from gpt import classify_and_count, extract_and_enrich_all
-    from extract_first_nations import process_single_pdf
+    # Imported here so Flask has loaded env vars before the OpenAI client is built.
+    from condition_cron.extraction.extractor import classify_and_count, extract_and_enrich_all
+    from condition_cron.extraction.first_nations import process_single_pdf
 
     logger.info('Classifying %s', file_path)
     classification = classify_and_count(file_path)

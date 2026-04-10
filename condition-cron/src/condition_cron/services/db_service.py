@@ -1,8 +1,10 @@
 """DB service — read and update extraction_requests, fetch supporting metadata."""
 
 import logging
+from typing import Optional
 
 import psycopg2
+from psycopg2.extras import Json
 from flask import current_app
 
 logger = logging.getLogger(__name__)
@@ -33,6 +35,7 @@ def get_pending_requests() -> list[dict]:
                 er.document_type_id,
                 er.document_label,
                 er.s3_url,
+                er.status,
                 p.project_name,
                 p.project_type,
                 d.date_issued,
@@ -43,7 +46,8 @@ def get_pending_requests() -> list[dict]:
             LEFT JOIN condition.projects p ON p.project_id = er.project_id
             LEFT JOIN condition.documents d ON d.document_id = er.document_id
             LEFT JOIN condition.document_types dt ON dt.id = er.document_type_id
-            WHERE er.status IN ('pending', 'failed')
+            WHERE er.status = 'pending'
+               OR (er.status = 'processing' AND er.updated_date < NOW() - INTERVAL '2 hours')
             ORDER BY er.created_date ASC
             """
         )
@@ -55,13 +59,31 @@ def get_pending_requests() -> list[dict]:
         conn.close()
 
 
-import json
-
-def update_status(request_id: int, status: str, error_message: str = None, extracted_data: dict = None) -> None:
-    """Update the status, an optional error message, and extracted JSON data."""
+def get_request_status(request_id: int) -> Optional[str]:
+    """Return the current status for an extraction request."""
     conn, cur = _get_connection()
     try:
-        extracted_data_json = json.dumps(extracted_data) if extracted_data else None
+        cur.execute(
+            "SELECT status FROM condition.extraction_requests WHERE id = %s",
+            (request_id,),
+        )
+        row = cur.fetchone()
+        return row[0] if row else None
+    finally:
+        cur.close()
+        conn.close()
+
+
+def _update_extraction_request_state(
+    request_id: int,
+    status: str,
+    error_message: str = None,
+    extracted_data: dict = None,
+) -> None:
+    """Update request state, optional error text, and optional extracted JSON."""
+    conn, cur = _get_connection()
+    try:
+        extracted_data_json = Json(extracted_data) if extracted_data else None
         cur.execute(
             """
             UPDATE condition.extraction_requests
@@ -80,3 +102,18 @@ def update_status(request_id: int, status: str, error_message: str = None, extra
     finally:
         cur.close()
         conn.close()
+
+
+def mark_processing(request_id: int) -> None:
+    """Mark an extraction request as actively processing."""
+    _update_extraction_request_state(request_id, 'processing')
+
+
+def mark_failed(request_id: int, error_message: str) -> None:
+    """Mark an extraction request as failed with an error message."""
+    _update_extraction_request_state(request_id, 'failed', error_message=error_message)
+
+
+def save_extraction_result(request_id: int, extracted_data: dict) -> None:
+    """Save parsed extraction JSON and mark the request completed."""
+    _update_extraction_request_state(request_id, 'completed', extracted_data=extracted_data)
