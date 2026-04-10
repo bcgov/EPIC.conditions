@@ -81,25 +81,28 @@ class ExtractionRequestService:
             raise ValueError("ExtractionRequest not found")
         if req.status != 'completed':
             raise ValueError("Request must be completed to import")
+        if not req.document_id:
+            raise ValueError("Request must reference an existing document to import")
 
-        from condition_api.services.loader_service import load_extracted_data
-        
+        from condition_api.services.extraction_import_service import load_extracted_data
+
         try:
-            # 1. Load the data using the ported loader service logic
-            load_extracted_data(req.extracted_data)
-            
-            # 2. Update status and purge raw JSON array now that the DB schema has it
+            load_extracted_data(
+                data=req.extracted_data or {},
+                project_id=req.project_id,
+                document_id=req.document_id,
+            )
+
             req.status = 'imported'
             req.extracted_data = None
-            
-            # 3. Ensure document is active immediately after import
+
             if req.document_id:
                 document = db.session.query(Document).filter_by(document_id=req.document_id).first()
                 if document:
                     document.is_active = True
 
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            raise e
+            raise
         return req

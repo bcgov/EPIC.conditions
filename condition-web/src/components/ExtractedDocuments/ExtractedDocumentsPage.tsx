@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Grid,
   IconButton,
-  LinearProgress,
   Paper,
   Typography,
 } from "@mui/material";
@@ -58,8 +57,7 @@ const colors = {
   pendingBorder: "#E0E0E0",
   pendingBg: "#F8F9FA",
   pendingText: "#5F6368",
-  pendingAccent: "#2E7D32",
-  pendingTrack: "#D9DEE5",
+  pendingAccent: "#5F7F68",
 
   // Archive
   archiveBg: "#F0F0F0",
@@ -401,21 +399,19 @@ export default function ExtractedDocumentsPage() {
                         display="flex"
                         alignItems="center"
                         justifyContent="flex-start"
+                        gap={1}
                         px={2}
                       >
-                        <LinearProgress
-                          variant="indeterminate"
+                        <CircularProgress
+                          size={16}
+                          thickness={4}
                           sx={{
-                            width: "100%",
-                            height: 6,
-                            borderRadius: 999,
-                            backgroundColor: colors.pendingTrack,
-                            "& .MuiLinearProgress-bar": {
-                              backgroundColor: colors.pendingAccent,
-                              borderRadius: 999,
-                            },
+                            color: colors.pendingAccent,
                           }}
                         />
+                        <Typography variant="body2" color={colors.pendingText}>
+                          {req.status === "processing" ? "Processing" : "Queued"}
+                        </Typography>
                       </Box>
                       <Box flex={0.2} display="flex" justifyContent="flex-end">
                         <IconButton
