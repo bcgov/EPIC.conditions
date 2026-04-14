@@ -35,7 +35,7 @@ type DocumentExtractionFormProps = {
 export const DocumentExtractionForm = ({
     documentType,
 }: DocumentExtractionFormProps) => {
-    const canExtract = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS]);
+    const canExtract = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS, KeycloakRoles.VIEW_CONDITIONS]);
     const { data: projects = [], isPending: isProjectsLoading } = useGetAllProjects();
     const [selectedProject, setSelectedProject] = useState<AvailableProjectModel | null>(null);
     const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentTypeModel | null>(null);
@@ -85,7 +85,9 @@ export const DocumentExtractionForm = ({
                             document_id: selectedDisplayName?.document_id ?? null,
                             document_type_id: selectedDocumentType?.id ?? null,
                             document_label: selectedDisplayName?.document_label ?? null,
+                            original_file_name: uploadedFile.name,
                             s3_url: s3RelativeUrl,
+                            file_size_bytes: uploadedFile.size,
                         },
                         {
                             onSuccess: () => {
@@ -260,7 +262,7 @@ export const DocumentExtractionForm = ({
 
                 <Box>
                     <Typography variant="body2" fontWeight={500} marginBottom={"8px"}>
-                        Upload Document <span style={{ color: "red" }}>*</span>
+                        Document <span style={{ color: "red" }}>*</span>
                     </Typography>
 
                     {/* Permission warning */}
@@ -345,12 +347,12 @@ export const DocumentExtractionForm = ({
                                     {isUploading ? (
                                         <>
                                             <CircularProgress size={10} />
-                                            <Typography variant="caption" color="primary.main">Uploading…</Typography>
+                                            <Typography variant="caption" color="primary.main">Submitting…</Typography>
                                         </>
                                     ) : s3Key ? (
                                         <>
                                             <CheckCircleIcon sx={{ fontSize: 12, color: "success.main" }} />
-                                            <Typography variant="caption" color="success.main">Upload complete</Typography>
+                                        <Typography variant="caption" color="success.main">Ready for extraction</Typography>
                                         </>
                                     ) : (
                                         <Typography variant="caption" color="text.secondary">Ready to upload</Typography>
@@ -389,7 +391,7 @@ export const DocumentExtractionForm = ({
                                 onClick={handleSubmit}
                                 startIcon={isUploading ? <CircularProgress size={14} color="inherit" /> : <UploadFileIcon />}
                             >
-                                {isUploading ? "Uploading…" : "Upload Document"}
+                                {isUploading ? "Submitting…" : "Extract Conditions"}
                             </Button>
                         </span>
                     </Tooltip>
@@ -411,12 +413,27 @@ export const DocumentExtractionForm = ({
                         <CheckCircleOutlineIcon sx={{ color: BCDesignTokens.iconsColorSuccess, mt: 0.25, fontSize: 20 }} />
                         <Box>
                             <Typography variant="body2" fontWeight={600}>
-                                Document successfully submitted for extraction
+                                Extraction started successfully. You can now navigate away from this page.
                             </Typography>
-                            <Typography variant="body2" sx={{ mt: 0.5 }}>
-                                The extracted conditions will be available in the repository within a few hours.
-                                You can upload another document if there are any.
+                            <Typography variant="body2" sx={{ mt: 0.5, mb: 1.5 }}>
+                                To view the status, please go to the <strong>Extracted Documents</strong> tab.
                             </Typography>
+                            <Box display="flex" gap={1}>
+                                <Button 
+                                    variant="outlined" 
+                                    size="small" 
+                                    onClick={handleClear}
+                                >
+                                    Upload Another
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    size="small" 
+                                    onClick={() => window.location.href = "/extracted-documents"}
+                                >
+                                    Go to Extracted Documents
+                                </Button>
+                            </Box>
                         </Box>
                     </Box>
                 )}

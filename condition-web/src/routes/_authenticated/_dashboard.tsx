@@ -1,4 +1,5 @@
 import BreadcrumbNav from "@/components/Shared/layout/SideNav/BreadcrumbNav";
+import SideNavBar from "@/components/Shared/layout/SideNav/SideNavBar";
 import { Box } from "@mui/material";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 
@@ -12,7 +13,10 @@ function DashboardLayout() {
     <div>
       <BreadcrumbNav />
       <Box flexDirection={"row"} display={"flex"}>
-        <Outlet />
+        <SideNavBar />
+        <Box flex={1}>
+          <Outlet />
+        </Box>
       </Box>
     </div>
   );

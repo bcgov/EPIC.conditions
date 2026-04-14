@@ -28,7 +28,6 @@ make setup
 Once the setup is completed use make run to start the server:
 make run
 
-
 ## Backend Setup on Windows
 
 ## Step 1: Download the Latest Python Version
