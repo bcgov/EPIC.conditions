@@ -2,25 +2,14 @@
 
 import json
 import logging
-import os
 
-from openai import OpenAI
+from typing import Any, Dict, Optional
+
+from condition_cron.extraction.client import get_openai_client
 
 logger = logging.getLogger(__name__)
 
-
-class _NoColor:
-    RED = GREEN = YELLOW = CYAN = RESET = ""
-
-
-Fore = _NoColor()
-
-client = OpenAI(
-    api_key=os.getenv("EXTRACTOR_API_KEY") or os.getenv("OPENAI_API_KEY") or "not-set",
-    base_url=f"{os.getenv('EXTRACTOR_API_URL', '').rstrip('/')}/v1" if os.getenv("EXTRACTOR_API_URL") else None,
-)
-
-def management_plan_required(input_condition_text):
+def management_plan_required(input_condition_text: str) -> bool:
    
   tools = [
     {
@@ -46,6 +35,7 @@ def management_plan_required(input_condition_text):
     }
   ]
   messages = [{"role": "user", "content": f"Here is the text of a condition:\n\n{input_condition_text}"}]
+  client = get_openai_client()
   completion = client.chat.completions.create(
     model="gpt-4o-2024-05-13",
     messages=messages,
@@ -54,8 +44,6 @@ def management_plan_required(input_condition_text):
     tool_choice={"type": "function", "function": {"name": "extract_info"}}
   )
 
-  # print(completion)
-
   result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
 
   # If result is not null, return the value of contains_subconditions
@@ -63,10 +51,10 @@ def management_plan_required(input_condition_text):
     return result["requires_plan"]
   
   else:
-    print(Fore.RED + "Error: result is null" + Fore.RESET)
+    logger.error("management_plan_required: result is null")
+    return False
 
-
-def extract_management_plan_info_using_gpt(condition_text):
+def extract_management_plan_info_using_gpt(condition_text: str) -> str:
    
   tools = [
     {
@@ -133,6 +121,7 @@ def extract_management_plan_info_using_gpt(condition_text):
   ]
   messages = [{"role": "user", "content": f"Here is a condition written by the Environmental Assessment Office:\n\n{condition_text}\n\nFormat the information related to the management plan."}]
 
+  client = get_openai_client()
   completion = client.chat.completions.create(
       model="gpt-4o-2024-05-13",
       messages=messages,
@@ -143,17 +132,17 @@ def extract_management_plan_info_using_gpt(condition_text):
 
   return completion.choices[0].message.tool_calls[0].function.arguments
 
-def extract_management_plan_info(condition_text):
+def extract_management_plan_info(condition_text: str) -> Optional[str]:
     if management_plan_required(condition_text):
-        print(Fore.GREEN + "This condition requires a deliverable!" + Fore.RESET)
+        logger.debug("This condition requires a deliverable!")
         return extract_management_plan_info_using_gpt(condition_text)
     else:
-        print(Fore.RED + "This condition does not require a deliverable." + Fore.RESET)
+        logger.debug("This condition does not require a deliverable.")
         return None
 
-def extract_management_plan_info_from_json(input_json):
-    for condition in input_json["conditions"]:
-        print(Fore.YELLOW + f"\nChecking if condition {condition['condition_number']} requires deliverable(s):" + Fore.RESET)
+def extract_management_plan_info_from_json(input_json: Dict[str, Any]) -> Dict[str, Any]:
+    for condition in input_json.get("conditions", []):
+        logger.info("Checking if condition %s requires deliverable(s):", condition.get('condition_number'))
 
         condition_name = condition["condition_name"] + "\n\n" if condition["condition_name"] else ""
         condition_text = condition_name + condition["condition_text"]

@@ -1,26 +1,14 @@
 import json
 import logging
-import os
 
-from openai import OpenAI
+from typing import Any, Dict
+
+from condition_cron.extraction.client import get_openai_client
 from condition_cron.extraction.pdf_reader import read_pdf
 
 logger = logging.getLogger(__name__)
 
-
-class _NoColor:
-    RED = GREEN = CYAN = RESET = ""
-
-
-Fore = _NoColor()
-
-
-client = OpenAI(
-    api_key=os.getenv("EXTRACTOR_API_KEY") or os.getenv("OPENAI_API_KEY") or "not-set",
-    base_url=f"{os.getenv('EXTRACTOR_API_URL', '').rstrip('/')}/v1" if os.getenv("EXTRACTOR_API_URL") else None,
-)
-
-def extract_first_nation_from_pdf(pdf_file_path):
+def extract_first_nation_from_pdf(pdf_file_path: str) -> str:
     pdf_text = read_pdf(pdf_file_path)
 
     tools = [
@@ -51,6 +39,7 @@ def extract_first_nation_from_pdf(pdf_file_path):
     ]
     messages = [{"role": "user", "content": f"{pdf_text}\n\n\n\nThis is a document written by the BC Environmental Assessment Office. Extract the names of the indigenous nations/First Nations/aboriginal peoples that need to be consulted."}]
 
+    client = get_openai_client()
     completion = client.chat.completions.create(
         model="gpt-4o-2024-05-13",
         messages=messages,
@@ -59,10 +48,11 @@ def extract_first_nation_from_pdf(pdf_file_path):
         tool_choice={"type": "function", "function": {"name": "format_info"}}
     )
 
-    print(completion.choices[0].message.tool_calls[0].function.arguments)
-    return completion.choices[0].message.tool_calls[0].function.arguments
+    result = completion.choices[0].message.tool_calls[0].function.arguments
+    logger.debug("Extracted First Nations info: %s", result)
+    return result
 
-def process_single_pdf(pdf_file_path, old_json):
+def process_single_pdf(pdf_file_path: str, old_json: Dict[str, Any]) -> Dict[str, Any]:
     first_nations_info = extract_first_nation_from_pdf(pdf_file_path)
     first_nations_json = json.loads(first_nations_info)
     

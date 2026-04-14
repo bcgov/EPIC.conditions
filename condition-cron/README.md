@@ -66,7 +66,6 @@ condition-cron/
 │   ├── services/
 │   │   ├── db_service.py        # Reads/updates extraction_requests table
 │   │   ├── extraction_service.py # Thin wrapper around condition_cron.extraction
-│   │   ├── loader_service.py    # Inserts extracted data into PostgreSQL
 │   │   └── s3_service.py        # Fetches PDFs via Object Storage API (presigned URLs)
 │   ├── tasks/
 │   │   └── process_documents.py # Main pipeline orchestrator

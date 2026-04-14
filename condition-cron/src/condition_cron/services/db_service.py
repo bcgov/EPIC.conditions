@@ -1,6 +1,8 @@
 """DB service — read and update extraction_requests, fetch supporting metadata."""
 
 import logging
+import json
+from datetime import date, datetime
 from typing import Optional
 
 import psycopg2
@@ -20,6 +22,13 @@ def _get_connection():
         password=cfg['DB_PASSWORD'],
     )
     return conn, conn.cursor()
+
+
+def _json_default(value):
+    """Serialize DB-native values that can be carried into extracted_data metadata."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    raise TypeError(f'Object of type {value.__class__.__name__} is not JSON serializable')
 
 
 def get_pending_requests() -> list[dict]:
@@ -83,7 +92,11 @@ def _update_extraction_request_state(
     """Update request state, optional error text, and optional extracted JSON."""
     conn, cur = _get_connection()
     try:
-        extracted_data_json = Json(extracted_data) if extracted_data else None
+        extracted_data_json = (
+            Json(extracted_data, dumps=lambda value: json.dumps(value, default=_json_default))
+            if extracted_data
+            else None
+        )
         cur.execute(
             """
             UPDATE condition.extraction_requests
