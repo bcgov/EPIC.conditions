@@ -1,25 +1,14 @@
-import os
 import json
 import logging
 
-from openai import OpenAI
+from typing import Any, Dict
+
+from condition_cron.extraction.client import get_openai_client
 
 logger = logging.getLogger(__name__)
 
 
-class _NoColor:
-    RED = CYAN = RESET = ""
-
-
-Fore = _NoColor()
-
-client = OpenAI(
-    api_key=os.getenv("EXTRACTOR_API_KEY") or os.getenv("OPENAI_API_KEY") or "not-set",
-    base_url=f"{os.getenv('EXTRACTOR_API_URL', '').rstrip('/')}/v1" if os.getenv("EXTRACTOR_API_URL") else None,
-)
-
-
-def classify_document(file_text):
+def classify_document(file_text: str) -> Dict[str, Any]:
     """Classify the structure of a document to determine the extraction strategy.
 
     Returns a dict with:
@@ -99,6 +88,7 @@ def classify_document(file_text):
     messages = [{"role": "user", "content": prompt}]
 
     try:
+        client = get_openai_client()
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
@@ -109,16 +99,18 @@ def classify_document(file_text):
 
         result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
 
-        print(Fore.CYAN + f"\nDocument Classification:" + Fore.RESET)
-        print(Fore.CYAN + f"  Type: {result['document_type']}" + Fore.RESET)
-        print(Fore.CYAN + f"  Has numbered conditions: {result['has_numbered_conditions']}" + Fore.RESET)
-        print(Fore.CYAN + f"  Section headers: {result['section_headers']}" + Fore.RESET)
-        print(Fore.CYAN + f"  Estimated item count: {result['estimated_item_count']}" + Fore.RESET)
+        logger.info(
+            "Document Classification - Type: %s, Numbered: %s, Estimated Count: %s, Headers: %s",
+            result['document_type'],
+            result['has_numbered_conditions'],
+            result['estimated_item_count'],
+            result['section_headers']
+        )
 
         return result
 
     except Exception as e:
-        print(Fore.RED + f"Classification error: {e}" + Fore.RESET)
+        logger.error("Classification error: %s", e, exc_info=True)
         # Default to numbered_conditions for backward compatibility
         return {
             "document_type": "numbered_conditions",
