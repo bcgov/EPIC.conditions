@@ -871,13 +871,15 @@ class ConditionService:
         )
 
         if user_is_internal:
-            amendment_subquery = (
+            ranked_amendments = (
                 db.session.query(
-                    DocumentCategory.id,
-                    Condition.condition_number,
-                    func.string_agg(
-                        Amendment.amendment_name.distinct(), ', '
-                    ).label('amendment_names'),
+                    DocumentCategory.id.label('category_id'),
+                    Condition.condition_number.label('condition_number'),
+                    Amendment.amendment_name.label('amendment_name'),
+                    func.row_number().over(
+                        partition_by=[DocumentCategory.id, Condition.condition_number],
+                        order_by=Amendment.date_issued.desc()
+                    ).label('rn')
                 )
                 .select_from(Project)
                 .join(Document, Document.project_id == Project.project_id)
@@ -887,7 +889,15 @@ class ConditionService:
                 .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
                 .filter(filter_condition)
                 .filter(Condition.condition_type == ConditionType.AMEND)
-                .group_by(DocumentCategory.id, Condition.condition_number)
+                .subquery()
+            )
+            amendment_subquery = (
+                db.session.query(
+                    ranked_amendments.c.category_id.label('id'),
+                    ranked_amendments.c.condition_number,
+                    ranked_amendments.c.amendment_name.label('amendment_names'),
+                )
+                .filter(ranked_amendments.c.rn == 1)
                 .subquery()
             )
 
