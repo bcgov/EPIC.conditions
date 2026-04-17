@@ -195,9 +195,9 @@ export const Conditions = ({
                   variant="contained"
                   color="primary"
                   size="small"
+                  startIcon={<AddIcon fontSize="small" />}
                   sx={{
                     borderRadius: "4px",
-                    paddingLeft: "2px",
                     minWidth: "170px",
                     maxWidth: "200px",
                     height: "42px",
@@ -205,7 +205,7 @@ export const Conditions = ({
                   onClick={() => handleOpenCreateNewCondition()}
                   loading={loading}
                 >
-                  <AddIcon fontSize="small" /> Add Condition
+                  Add Condition
                 </LoadingButton>
               </Grid>
             </Grid>
