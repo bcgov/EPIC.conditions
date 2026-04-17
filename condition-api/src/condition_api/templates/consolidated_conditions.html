@@ -116,21 +116,24 @@
       margin-bottom: 8.5mm;
     }
 
-    .stats-row {
-      display: flex;
-      margin-bottom: 2.1mm;
+    .stats-table {
+      border-collapse: collapse;
       font-size: 10.5pt;
     }
 
     .stats-label {
       font-weight: bold;
       color: #0a0a0a;
-      min-width: 60mm;
-      flex-shrink: 0;
+      white-space: nowrap;
+      padding-right: 3mm;
+      padding-bottom: 2.1mm;
+      vertical-align: top;
     }
 
     .stats-value {
       color: #0a0a0a;
+      vertical-align: top;
+      padding-bottom: 2.1mm;
     }
 
     .info-box {
@@ -188,22 +191,22 @@
     }
 
     .metadata-row2 {
-      display: flex;
-      align-items: flex-start;
+      width: 100%;
+      border-collapse: collapse;
     }
 
     .metadata-label {
       font-size: 10pt;
       color: #4a5565;
-      margin-right: 1.5mm;
+      padding-right: 1.5mm;
       white-space: nowrap;
-      flex-shrink: 0;
-      min-width: 40mm;
+      vertical-align: top;
     }
 
     .metadata-value {
       font-size: 10.5pt;
       color: #101828;
+      vertical-align: top;
     }
 
     .condition-text {
@@ -324,20 +327,22 @@
   <hr class="separator">
 
   <div class="stats-section">
-    <div class="stats-row">
-      <span class="stats-label">Generated on:</span>
-      <span class="stats-value">{{ generated_on }}</span>
-    </div>
-    <div class="stats-row">
-      <span class="stats-label">Total Conditions:</span>
-      <span class="stats-value">{{ total_conditions }}</span>
-    </div>
-    {% if amendment_list %}
-    <div class="stats-row">
-      <span class="stats-label">Included Amendments:</span>
-      <span class="stats-value">{{ amendment_list }}</span>
-    </div>
-    {% endif %}
+    <table class="stats-table">
+      <tr>
+        <td class="stats-label">Generated on:</td>
+        <td class="stats-value">{{ generated_on }}</td>
+      </tr>
+      <tr>
+        <td class="stats-label">Total Conditions:</td>
+        <td class="stats-value">{{ total_conditions }}</td>
+      </tr>
+      {% if amendment_list %}
+      <tr>
+        <td class="stats-label">Included Amendments:</td>
+        <td class="stats-value">{{ amendment_list }}</td>
+      </tr>
+      {% endif %}
+    </table>
   </div>
 
   <div class="info-box">
@@ -372,10 +377,12 @@
           {% endif %}
         </div>
       </div>
-      <div class="metadata-row2">
-        <span class="metadata-label">Source Document:</span>
-        <span class="metadata-value">{{ condition.source_document if condition.source_document else '' }}</span>
-      </div>
+      <table class="metadata-row2">
+        <tr>
+          <td class="metadata-label">Source Document:</td>
+          <td class="metadata-value">{{ condition.source_document if condition.source_document else '' }}</td>
+        </tr>
+      </table>
     </div>
     </div>
 
