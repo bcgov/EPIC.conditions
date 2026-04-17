@@ -52,7 +52,7 @@ function ConditionPage() {
           { title: "Home", path: "/projects", clickable: true },
           { title: conditionDetails?.project_name || "", path: `/projects/${projectId}`, clickable: true },
           { title: conditionDetails?.document_category || "", path: `/documents/project/${projectId}/document-category/${conditionDetails.document_category_id}/`, clickable: true },
-          { title: conditionDetails?.document_label || "", path: undefined, clickable: false },
+          { title: conditionDetails?.document_label || "", path: `/conditions/project/${projectId}/document/${documentId}/`, clickable: true },
           { title: conditionDetails?.condition.condition_name || "", path: undefined, clickable: false }
         ]);
       }
