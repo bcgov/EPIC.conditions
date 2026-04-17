@@ -1,6 +1,6 @@
 # condition-cron
 
-Scheduled cron job that processes pending document extraction requests. It reads records from the `extraction_requests` database table, fetches the corresponding PDF via the Object Storage API, extracts conditions using the cron-owned AI extraction package, and saves the parsed JSON for staff review.
+Scheduled cron job that processes pending document extraction requests. It reads records from the `extraction_requests` database table, downloads the corresponding PDF directly from S3, extracts conditions using the cron-owned AI extraction package, and saves the parsed JSON for staff review.
 
 ---
 
@@ -10,9 +10,7 @@ Scheduled cron job that processes pending document extraction requests. It reads
 2. **Poll** — queries `condition.extraction_requests` WHERE `status = 'pending'`, plus stale `processing` records older than two hours, ORDER BY `created_date ASC`
 3. **Process** — for each pending record:
    - Sets status → `processing`
-   - Authenticates with Keycloak using a service-account client credentials grant
-   - Requests a presigned GET URL from the Object Storage API for the `s3_url` stored in the record
-   - Downloads the PDF from the presigned URL
+   - Downloads the PDF from S3 using the `s3_url` key stored in the record
    - Classifies the document type (numbered conditions, table format, etc.)
    - Extracts and enriches all conditions via OpenAI GPT
    - Extracts First Nations references from the document
@@ -25,21 +23,11 @@ Documents are never deleted from S3. Processing state is managed entirely throug
 
 ---
 
-## File Retrieval — Object Storage API
+## File Retrieval — S3
 
-The cron does **not** connect to S3 directly. Instead it delegates to the shared Object Storage API (the same service the web frontend uses for uploads):
+The cron is a trusted backend job, so it connects directly to S3 with credentials supplied through deployment secrets. Condition extraction uploads are stored under the `condition_extraction_documents/` prefix. The `s3_url` value stored on each extraction request is used as the S3 object key, matching the relative URL returned by EPIC.document.
 
-```
-POST {OBJECT_STORAGE_URL}/storage-operations/presigned-urls
-  Body:  { "relative_url": "<s3_url>", "action": "GET" }
-  Auth:  Bearer <Keycloak service-account token>
-
-← { "presigned_url": "https://..." }
-
-GET <presigned_url>   ← streams the PDF
-```
-
-The Keycloak token is obtained via the `client_credentials` grant and cached locally until 60 seconds before expiry.
+Use a read-only S3 credential scoped to the document bucket, and preferably to the `condition_extraction_documents/` prefix used by this workflow.
 
 ---
 
@@ -66,7 +54,7 @@ condition-cron/
 │   ├── services/
 │   │   ├── db_service.py        # Reads/updates extraction_requests table
 │   │   ├── extraction_service.py # Thin wrapper around condition_cron.extraction
-│   │   └── s3_service.py        # Fetches PDFs via Object Storage API (presigned URLs)
+│   │   └── s3_service.py        # Downloads PDFs directly from S3
 │   ├── tasks/
 │   │   └── process_documents.py # Main pipeline orchestrator
 │   └── utils/
@@ -103,11 +91,12 @@ Copy `sample.env` to `.env` and fill in the values.
 | `DATABASE_NAME` | PostgreSQL database name |
 | `DATABASE_HOST` | PostgreSQL host |
 | `DATABASE_PORT` | PostgreSQL port (default: `5432`) |
-| `OBJECT_STORAGE_URL` | Base URL of the Object Storage service that issues presigned S3 URLs |
-| `KEYCLOAK_URL` | Keycloak base URL (e.g. `https://loginproxy.gov.bc.ca/auth`) |
-| `KEYCLOAK_REALM` | Keycloak realm name |
-| `KEYCLOAK_CLIENT_ID` | Service-account client ID |
-| `KEYCLOAK_CLIENT_SECRET` | Service-account client secret |
+| `S3_BUCKET` | S3 bucket name |
+| `S3_ACCESS_KEY_ID` | S3 access key ID |
+| `S3_SECRET_ACCESS_KEY` | S3 secret access key |
+| `S3_HOST` | S3 endpoint host, without protocol unless the provider requires one |
+| `S3_REGION` | S3 region (defaults to `us-east-1` in code if unset) |
+| `S3_SERVICE` | S3 service name, usually `s3` |
 | `EXTRACTOR_API_URL` | Azure-hosted extractor API URL (optional) |
 | `EXTRACTOR_API_KEY` | Extractor API key (optional) |
 

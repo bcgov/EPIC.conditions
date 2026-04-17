@@ -1,103 +1,59 @@
-"""Document storage service — downloads files via the Object Storage API (presigned URLs).
-
-Instead of connecting to S3 directly, this service authenticates with Keycloak as a
-service account, requests a presigned GET URL from the Object Storage API, then
-downloads the file from that URL.  No S3 credentials are required in the cron.
-"""
+"""Document storage service for downloading files directly from S3."""
 
 import logging
 import os
 import tempfile
-import time
 
-import requests
+import boto3
+from botocore.config import Config
+from botocore.exceptions import BotoCoreError, ClientError
 from flask import current_app
 
 logger = logging.getLogger(__name__)
 
-_token_cache: dict = {'token': None, 'expires_at': 0.0}
-
 
 class ObjectStorageAccessError(RuntimeError):
-    """Raised when the cron cannot authenticate to or download from object storage."""
+    """Raised when the cron cannot download from object storage."""
 
 
-def _get_token() -> str:
-    """Return a valid Keycloak service-account access token, refreshing when near expiry."""
-    now = time.time()
-    if _token_cache['token'] and now < _token_cache['expires_at']:
-        return _token_cache['token']
-
+def _get_s3_client():
+    """Create an S3 client using the same config shape as EPIC.document."""
     cfg = current_app.config
-    url = (
-        f"{cfg['KEYCLOAK_URL'].rstrip('/')}"
-        f"/realms/{cfg['KEYCLOAK_REALM']}"
-        f"/protocol/openid-connect/token"
-    )
-    try:
-        resp = requests.post(
-            url,
-            data={
-                'grant_type': 'client_credentials',
-                'client_id': cfg['KEYCLOAK_CLIENT_ID'],
-                'client_secret': cfg['KEYCLOAK_CLIENT_SECRET'],
-            },
-            timeout=15,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except requests.RequestException as exc:
-        raise ObjectStorageAccessError(
-            f"Failed to fetch Keycloak service token from {url}: {exc}"
-        ) from exc
+    s3_host = cfg['S3_HOST'].strip()
+    endpoint_url = s3_host if s3_host.startswith(('http://', 'https://')) else f'https://{s3_host}'
 
-    _token_cache['token'] = data['access_token']
-    _token_cache['expires_at'] = now + data.get('expires_in', 300) - 60
-    return _token_cache['token']
+    return boto3.client(
+        's3',
+        aws_access_key_id=cfg['S3_ACCESS_KEY_ID'],
+        aws_secret_access_key=cfg['S3_SECRET_ACCESS_KEY'],
+        endpoint_url=endpoint_url,
+        region_name=cfg.get('S3_REGION') or 'us-east-1',
+        config=Config(
+            retries={'max_attempts': 3, 'mode': 'standard'},
+            connect_timeout=60,
+            read_timeout=120,
+        ),
+    )
 
 
 def download_file(key: str) -> str:
-    """Download a file from object storage via presigned URL. Returns the local file path."""
+    """Download a file directly from S3. Returns the local file path."""
     cfg = current_app.config
-    storage_url = cfg['OBJECT_STORAGE_URL'].rstrip('/')
-    token = _get_token()
-
-    # 1. Request a presigned GET URL from the Object Storage API
-    presigned_url_endpoint = f'{storage_url}/storage-operations/presigned-urls'
-    try:
-        resp = requests.post(
-            presigned_url_endpoint,
-            params={'public-read': False},
-            json={'relative_url': key, 'action': 'GET'},
-            headers={'Authorization': f'Bearer {token}'},
-            timeout=15,
-        )
-        resp.raise_for_status()
-        presigned_url = resp.json()['presigned_url']
-    except requests.RequestException as exc:
-        raise ObjectStorageAccessError(
-            f"Failed to fetch presigned download URL for {key} from {presigned_url_endpoint}: {exc}"
-        ) from exc
-    except KeyError as exc:
-        raise ObjectStorageAccessError(
-            f"Object storage response for {key} did not contain presigned_url"
-        ) from exc
-
-    # 2. Stream the file to a temp location
     filename = os.path.basename(key)
     tmp = tempfile.NamedTemporaryFile(suffix=f'_{filename}', delete=False)
-    try:
-        try:
-            with requests.get(presigned_url, stream=True, timeout=120) as r:
-                r.raise_for_status()
-                for chunk in r.iter_content(chunk_size=8192):
-                    tmp.write(chunk)
-        except requests.RequestException as exc:
-            raise ObjectStorageAccessError(
-                f"Failed to download file for {key} from presigned URL: {exc}"
-            ) from exc
-    finally:
-        tmp.close()
+    tmp.close()
 
-    logger.info('Downloaded %s → %s', key, tmp.name)
+    try:
+        _get_s3_client().download_file(cfg['S3_BUCKET'], key, tmp.name)
+    except (BotoCoreError, ClientError, OSError) as exc:
+        if os.path.exists(tmp.name):
+            os.remove(tmp.name)
+        raise ObjectStorageAccessError(
+            f"Failed to download file for {key} from S3 bucket {cfg['S3_BUCKET']}: {exc}"
+        ) from exc
+    finally:
+        if not os.path.exists(tmp.name):
+            logger.debug('Temporary download path was removed after failed S3 download: %s', tmp.name)
+
+    logger.info('Downloaded %s from S3 bucket %s to %s', key, cfg['S3_BUCKET'], tmp.name)
     return tmp.name

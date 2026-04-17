@@ -13,7 +13,7 @@ def test_process_skips_save_when_request_was_rejected(monkeypatch, tmp_path):
         "condition_cron.tasks.process_documents.db_service.get_pending_requests",
         lambda: [{
             "id": 1,
-            "s3_url": "condition_documents/document.pdf",
+            "s3_url": "condition_extraction_documents/document.pdf",
             "project_id": "project-1",
             "document_id": "document-1",
             "project_name": "Project 1",

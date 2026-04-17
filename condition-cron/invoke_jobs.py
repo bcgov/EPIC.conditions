@@ -11,9 +11,15 @@ from datetime import datetime
 from flask import Flask
 
 import config
+
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+SRC_DIR = os.path.join(CURRENT_DIR, 'src')
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
 from condition_cron.utils.logger import setup_logging
 
-setup_logging(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logging.conf'))
+setup_logging(os.path.join(CURRENT_DIR, 'logging.conf'))
 
 
 def validate_runtime_config(app: Flask) -> None:
@@ -23,11 +29,10 @@ def validate_runtime_config(app: Flask) -> None:
         "DB_PASSWORD",
         "DB_NAME",
         "DB_HOST",
-        "OBJECT_STORAGE_URL",
-        "KEYCLOAK_URL",
-        "KEYCLOAK_REALM",
-        "KEYCLOAK_CLIENT_ID",
-        "KEYCLOAK_CLIENT_SECRET",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY",
+        "S3_HOST",
     ]
     missing = [key for key in required_keys if not app.config.get(key)]
     if missing:
