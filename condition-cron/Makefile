@@ -27,31 +27,30 @@ clean-pyc: ## Remove Python cache files
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-install: ## Create venv and install all dependencies (cron + condition-parser)
+install: ## Create venv and install cron dependencies
 	test -f venv/bin/activate || python3 -m venv $(CURRENT_ABS_DIR)/venv ;\
 	. venv/bin/activate ;\
 	pip install --upgrade pip ;\
-	pip install -Ur requirements.txt ;\
-	pip install -Ur ../condition-parser/requirements.txt
+	pip install -Ur requirements.txt
 
 #################################################################################
 # COMMANDS -- Local                                                             #
 #################################################################################
 run: ## Run PROCESS_DOCUMENTS job manually
 	. venv/bin/activate && \
-	PYTHONPATH=$(CURRENT_ABS_DIR)/src:$(CURRENT_ABS_DIR)/src/condition_cron:$(CURRENT_ABS_DIR)/../condition-parser \
+	PYTHONPATH=$(CURRENT_ABS_DIR)/src \
 	python invoke_jobs.py PROCESS_DOCUMENTS
 
 #################################################################################
 # COMMANDS -- Docker                                                            #
 #################################################################################
 build: ## Build the Docker image
-	docker build . -t $(DOCKER_NAME) \
+	docker build $(CURRENT_ABS_DIR) -t $(DOCKER_NAME) \
 		--build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 		--build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 build-nc: ## Build the Docker image without cache
-	docker build --no-cache -t $(DOCKER_NAME) .
+	docker build --no-cache $(CURRENT_ABS_DIR) -t $(DOCKER_NAME)
 
 docker-run: ## Run the job once inside Docker (requires .env)
 	docker run --env-file .env $(DOCKER_NAME)

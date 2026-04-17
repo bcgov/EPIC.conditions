@@ -13,6 +13,7 @@ declare global {
       VITE_CLIENT_ID: string;
       VITE_SUPPORT_EMAIL: string;
       VITE_OBJECT_STORAGE_URL: string;
+      VITE_CONDITION_DOCUMENTS_FOLDER: string;
     };
   }
 }
@@ -34,10 +35,17 @@ const SUPPORT_EMAIL =
   window._env_?.VITE_SUPPORT_EMAIL || import.meta.env.VITE_SUPPORT_EMAIL;
 const OBJECT_STORAGE_URL =
   window._env_?.VITE_OBJECT_STORAGE_URL || import.meta.env.VITE_OBJECT_STORAGE_URL || "";
+const CONDITION_DOCUMENTS_FOLDER =
+  (
+    window._env_?.VITE_CONDITION_DOCUMENTS_FOLDER ||
+    import.meta.env.VITE_CONDITION_DOCUMENTS_FOLDER ||
+    ""
+  ).trim() || "condition_extraction_documents";
 
 export const AppConfig = {
   apiUrl: `${API_URL}`,
   documentUrl: OBJECT_STORAGE_URL,
+  conditionDocumentsFolder: CONDITION_DOCUMENTS_FOLDER,
   environment: APP_ENVIRONMENT,
   version: APP_VERSION,
   appTitle: APP_TITLE,

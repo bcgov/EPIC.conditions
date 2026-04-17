@@ -1,9 +1,10 @@
 import { documentRequest, requestAxios } from "@/utils/axiosUtils";
+import { AppConfig } from "@/utils/config";
 import { useMutation } from "@tanstack/react-query";
 
 export const S3_FOLDER = {
     CONDITION_DOCUMENTS: {
-        value: "condition_documents",
+        value: AppConfig.conditionDocumentsFolder,
         label: "Condition Documents",
     }
 };

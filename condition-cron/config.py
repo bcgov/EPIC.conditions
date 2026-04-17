@@ -36,18 +36,18 @@ class _Config:
     DB_HOST = os.getenv('DATABASE_HOST', '')
     DB_PORT = os.getenv('DATABASE_PORT', '5432')
 
-    # Object Storage API
-    OBJECT_STORAGE_URL = os.getenv('OBJECT_STORAGE_URL', '')
-
-    # Keycloak service account (for Object Storage API auth)
-    KEYCLOAK_URL = os.getenv('KEYCLOAK_URL', '')
-    KEYCLOAK_REALM = os.getenv('KEYCLOAK_REALM', '')
-    KEYCLOAK_CLIENT_ID = os.getenv('KEYCLOAK_CLIENT_ID', '')
-    KEYCLOAK_CLIENT_SECRET = os.getenv('KEYCLOAK_CLIENT_SECRET', '')
+    # S3 object storage
+    S3_BUCKET = os.getenv('S3_BUCKET', '')
+    S3_ACCESS_KEY_ID = os.getenv('S3_ACCESS_KEY_ID', '')
+    S3_SECRET_ACCESS_KEY = os.getenv('S3_SECRET_ACCESS_KEY', '')
+    S3_HOST = os.getenv('S3_HOST', '')
+    S3_REGION = os.getenv('S3_REGION', 'us-east-1')
+    S3_SERVICE = os.getenv('S3_SERVICE', 's3')
 
     # OpenAI / Extractor
     EXTRACTOR_API_URL = os.getenv('EXTRACTOR_API_URL', '')
     EXTRACTOR_API_KEY = os.getenv('EXTRACTOR_API_KEY', '')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
 
 class DevConfig(_Config):

@@ -28,7 +28,7 @@ def test_reject_request_soft_rejects_and_clears_extracted_data():
         document_id=document.document_id,
         document_type_id=doc_type.id,
         document_label=document.document_label,
-        s3_url="condition_documents/test.pdf",
+        s3_url="condition_extraction_documents/test.pdf",
         status="completed",
         extracted_data={"conditions": [{"condition_number": 1}]},
     )
@@ -55,7 +55,7 @@ def test_import_request_loads_conditions_into_existing_document():
         document_id=document.document_id,
         document_type_id=doc_type.id,
         document_label=document.document_label,
-        s3_url="condition_documents/test.pdf",
+        s3_url="condition_extraction_documents/test.pdf",
         status="completed",
         extracted_data={
             "conditions": [

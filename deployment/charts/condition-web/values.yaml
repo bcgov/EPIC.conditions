@@ -9,6 +9,7 @@ app:
   clientId: epic-condition
   supportEmail: EAO.ManagementPlanSupport@gov.bc.ca
   objectStorageUrl: https://epic-document-api-c8b80a-dev.apps.gold.devops.gov.bc.ca/api
+  conditionDocumentsFolder: condition_extraction_documents
 resources:
   cpu:
     limit: 200m
@@ -29,4 +30,3 @@ service:
 replicas:
   count: 1
 mountPath: /usr/share/nginx/html/config/
-
