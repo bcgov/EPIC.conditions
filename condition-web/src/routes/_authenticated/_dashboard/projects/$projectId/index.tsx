@@ -5,7 +5,7 @@ import { useGetDocumentType } from "@/hooks/api/useDocuments";
 import { useGetProjects } from "@/hooks/api/useProjects";
 import { Else, If, Then } from "react-if";
 import { Projects, ProjectsSkeleton } from "@/components/Projects";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { HTTP_STATUS_CODES } from "../../../../../hooks/api/constants";
@@ -22,7 +22,11 @@ export const Route = createFileRoute("/_authenticated/_dashboard/projects/$proje
 
 export function ProjectsPage() {
   const { projectId } = useParams({ strict: false });
-  const { replaceBreadcrumb, breadcrumbs } = useBreadCrumb();
+  const { replaceBreadcrumb, breadcrumbs, setIsFromConsolidated } = useBreadCrumb();
+
+  useLayoutEffect(() => {
+    setIsFromConsolidated(false);
+  }, [setIsFromConsolidated]);
   const {
     data: projectsData,
     isPending: isProjectsLoading,
