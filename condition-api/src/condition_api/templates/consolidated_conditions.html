@@ -192,7 +192,14 @@
 
     .metadata-row2 {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 1.5mm 0;
+    }
+
+    .metadata-row2 .metadata-label {
+      white-space: nowrap;
+      width: 1%;
+      padding-right: 0;
     }
 
     .metadata-label {
@@ -366,8 +373,7 @@
     <div class="metadata-card">
       <div class="metadata-row1">
         <div>
-          <span class="metadata-label">Year Condition Issued:</span>
-          <span class="metadata-value">{{ condition.year_issued if condition.year_issued else '' }}</span>
+          <span class="metadata-label">Year Condition Issued:</span><span class="metadata-value">{{ condition.year_issued if condition.year_issued else '' }}</span>
         </div>
         <div>
           {% if condition.is_approved %}

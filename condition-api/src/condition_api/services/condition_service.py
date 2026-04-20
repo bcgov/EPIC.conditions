@@ -844,6 +844,7 @@ class ConditionService:
         all_conditions=False,
         include_condition_attributes=False,
         user_is_internal=False,
+        latest_amendment_only=False,
     ):
         """Fetch all consolidated conditions."""
         filter_condition = (
@@ -871,35 +872,56 @@ class ConditionService:
         )
 
         if user_is_internal:
-            ranked_amendments = (
-                db.session.query(
-                    DocumentCategory.id.label('category_id'),
-                    Condition.condition_number.label('condition_number'),
-                    Amendment.amendment_name.label('amendment_name'),
-                    func.row_number().over(
-                        partition_by=[DocumentCategory.id, Condition.condition_number],
-                        order_by=Amendment.date_issued.desc()
-                    ).label('rn')
+            if latest_amendment_only:
+                ranked = (
+                    db.session.query(
+                        DocumentCategory.id.label('category_id'),
+                        Condition.condition_number.label('condition_number'),
+                        Amendment.amendment_name.label('amendment_name'),
+                        func.row_number().over(
+                            partition_by=[DocumentCategory.id, Condition.condition_number],
+                            order_by=Amendment.date_issued.desc()
+                        ).label('rn')
+                    )
+                    .select_from(Project)
+                    .join(Document, Document.project_id == Project.project_id)
+                    .join(DocumentType, DocumentType.id == Document.document_type_id)
+                    .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                    .join(Amendment, Amendment.document_id == Document.id)
+                    .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
+                    .filter(filter_condition)
+                    .filter(Condition.condition_type == ConditionType.AMEND)
+                    .subquery()
                 )
-                .select_from(Project)
-                .join(Document, Document.project_id == Project.project_id)
-                .join(DocumentType, DocumentType.id == Document.document_type_id)
-                .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
-                .join(Amendment, Amendment.document_id == Document.id)
-                .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
-                .filter(filter_condition)
-                .filter(Condition.condition_type == ConditionType.AMEND)
-                .subquery()
-            )
-            amendment_subquery = (
-                db.session.query(
-                    ranked_amendments.c.category_id.label('id'),
-                    ranked_amendments.c.condition_number,
-                    ranked_amendments.c.amendment_name.label('amendment_names'),
+                amendment_subquery = (
+                    db.session.query(
+                        ranked.c.category_id.label('id'),
+                        ranked.c.condition_number,
+                        ranked.c.amendment_name.label('amendment_names'),
+                    )
+                    .filter(ranked.c.rn == 1)
+                    .subquery()
                 )
-                .filter(ranked_amendments.c.rn == 1)
-                .subquery()
-            )
+            else:
+                amendment_subquery = (
+                    db.session.query(
+                        DocumentCategory.id,
+                        Condition.condition_number,
+                        func.string_agg(
+                            Amendment.amendment_name.distinct(), ', '
+                        ).label('amendment_names'),
+                    )
+                    .select_from(Project)
+                    .join(Document, Document.project_id == Project.project_id)
+                    .join(DocumentType, DocumentType.id == Document.document_type_id)
+                    .join(DocumentCategory, DocumentCategory.id == DocumentType.document_category_id)
+                    .join(Amendment, Amendment.document_id == Document.id)
+                    .join(Condition, Condition.amended_document_id == Amendment.amended_document_id)
+                    .filter(filter_condition)
+                    .filter(Condition.condition_type == ConditionType.AMEND)
+                    .group_by(DocumentCategory.id, Condition.condition_number)
+                    .subquery()
+                )
 
         query = (
             db.session.query(
