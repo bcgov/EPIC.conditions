@@ -144,6 +144,7 @@ class ConsolidatedConditionRenderResource(Resource):
                 all_conditions=True,
                 include_condition_attributes=False,
                 user_is_internal=True,
+                latest_amendment_only=True,
             )
 
             if not consolidated:
