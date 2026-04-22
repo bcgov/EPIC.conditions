@@ -1,0 +1,40 @@
+name: condition-cron
+imageNamespace: c8b80a-tools
+env: dev
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+replicaCount: 1
+imageTag: dev
+imagePullPolicy: Always
+
+cronTab: |
+  # PROCESS_DOCUMENTS - runs every 30 minutes
+  */30 * * * * default cd /condition-cron && ./run_process_documents.sh
+
+flask:
+  env: production
+
+database:
+  secret: condition-patroni
+  host: condition-patroni
+  port: "5432"
+
+s3:
+  bucket: ""
+  host: ""
+  region: "us-east-1"
+  service: "s3"
+
+extractor:
+  apiUrl: ""
+
+secrets:
+  s3AccessKeyId: ""
+  s3SecretAccessKey: ""
+  extractorApiKey: ""
+  openaiApiKey: ""
