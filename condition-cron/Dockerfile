@@ -41,7 +41,6 @@ WORKDIR $HOME
 
 # Install the requirements
 COPY ./requirements.txt .
-COPY ./requirements/ ./requirements/
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
