@@ -29,7 +29,7 @@ RUN chmod ug+x /usr/local/bin/go-crond
 
 # Add a job user
 ARG uid=1001
-ARG user=pay
+ARG user=cron
 RUN useradd -U -ms /bin/bash -u $uid $user \
     && usermod -a -G root $user
 
