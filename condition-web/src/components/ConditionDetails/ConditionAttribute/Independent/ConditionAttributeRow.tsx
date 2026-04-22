@@ -15,6 +15,7 @@ import {
   managementRequiredKeys
 } from "../Constants";
 import DynamicFieldRenderer from "../DynamicFieldRenderer";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 const StyledTableRow = styled(TableRow)(() => ({}));
 
@@ -62,6 +63,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
   isConsultationRequired,
   isIEMRequired
 }) => {
+  const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const { key: conditionKey, value: attributeValue } = conditionAttributeItem;
   const [isEditable, setIsEditable] = useState(false);
   const [editableValue, setEditableValue] = useState(attributeValue ?? "");
@@ -289,7 +291,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
           <IconButton size="small" disabled sx={{ cursor: "default" }}>
             <RemoveIcon />
           </IconButton>
-        ) : (
+        ) : canManage ? (
           isEditable ? (
             <Button
               variant="contained"
@@ -309,7 +311,7 @@ const ConditionAttributeRow: React.FC<ConditionAttributeRowProps> = ({
               <EditIcon />
             </IconButton>
           )
-        )}
+        ) : null}
       </ConditionAttributeHeadTableCell>
     </PackageTableRow>
   );

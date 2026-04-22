@@ -39,6 +39,7 @@ import { validateRequiredAttributes } from "@/utils/attributeValidation";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 type Props = {
   attributes: ManagementPlanModel;
@@ -56,6 +57,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     onDelete
 }) => {
   const queryClient = useQueryClient();
+  const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [editMode, setEditMode] = useState(false);
   const [planName, setPlanName] = useState(title);
   const [expanded, setExpanded] = useState(false);
@@ -378,7 +380,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                   ) : (
                   <Box display="flex" alignItems="center" gap={1}>
                       <Typography fontWeight="bold">{planName}</Typography>
-                      {expanded && !attributes.is_approved && (
+                      {canManage && expanded && !attributes.is_approved && (
                       <Button
                           variant="contained"
                           size="small"
@@ -418,17 +420,19 @@ const ManagementPlanAccordion: React.FC<Props> = ({
               marginTop="5px"
               alignItems="flex-end"
             >
-              <Tooltip title="Delete Management Plan">
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent accordion toggle
-                    setIsDeleteModalOpen(true);
-                  }}
-                  size="small"
-                >
-                  <DeleteIcon sx={{ fontSize: '34px' }} />
-                </IconButton>
-              </Tooltip>
+              {canManage && (
+                <Tooltip title="Delete Management Plan">
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent accordion toggle
+                      setIsDeleteModalOpen(true);
+                    }}
+                    size="small"
+                  >
+                    <DeleteIcon sx={{ fontSize: '34px' }} />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
         </AccordionSummary>
 
@@ -486,7 +490,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
           />
 
           <Stack sx={{ mt: 5 }} direction={"row"}>
-            {origin !== 'create' && (
+            {canManage && origin !== 'create' && (
                 <Box width="100%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                         <ApproveButton

@@ -14,6 +14,7 @@ import { useRemoveManagementPlan } from "@/hooks/api/useManagementPlan";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@/hooks/api/constants";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 type ManagementPlanSectionProps = {
     condition: ConditionModel;
@@ -22,6 +23,7 @@ type ManagementPlanSectionProps = {
 
 const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlanSectionProps) => {
     const queryClient = useQueryClient();
+    const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
 
     const managementPlans = condition?.condition_attributes?.management_plans || [];
 
@@ -112,7 +114,7 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
           />
           ))}
 
-          {isUpdating ? (
+          {canManage && (isUpdating ? (
             <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
           ) : (
             <Button
@@ -123,7 +125,7 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
                 >
                 Add Management Plan
             </Button>
-          )}
+          ))}
       </Box>
     );
 });
