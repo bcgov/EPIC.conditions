@@ -1,0 +1,10 @@
+app: condition-cron
+githubRepo: https://github.com/bcgov/EPIC.conditions.git
+githubContextDir: /condition-cron
+resources:
+  limits:
+    cpu: 1500m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 2Gi

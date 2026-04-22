@@ -1,0 +1,6 @@
+apiVersion: v2
+name: condition-cron-bc
+description: Build config for condition-cron
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
