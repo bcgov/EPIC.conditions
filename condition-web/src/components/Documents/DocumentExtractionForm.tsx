@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useDropzone } from "react-dropzone";
+import { useNavigate } from "@tanstack/react-router";
 import {
     Autocomplete,
     Box,
@@ -35,6 +36,7 @@ type DocumentExtractionFormProps = {
 export const DocumentExtractionForm = ({
     documentType,
 }: DocumentExtractionFormProps) => {
+    const navigate = useNavigate();
     const canExtract = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS, KeycloakRoles.VIEW_CONDITIONS]);
     const { data: projects = [], isPending: isProjectsLoading } = useGetAllProjects();
     const [selectedProject, setSelectedProject] = useState<AvailableProjectModel | null>(null);
@@ -429,7 +431,7 @@ export const DocumentExtractionForm = ({
                                 <Button 
                                     variant="contained" 
                                     size="small" 
-                                    onClick={() => window.location.href = "/extracted-documents"}
+                                    onClick={() => navigate({ to: "/extracted-documents" })}
                                 >
                                     Go to Extracted Documents
                                 </Button>
