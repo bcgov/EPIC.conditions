@@ -33,8 +33,11 @@ jobs:
           CURRENT_DATE=$(date +"%d_%m_%Y")
           oc tag condition-api:${{ github.event.inputs.environment }} condition-api:${{ github.event.inputs.environment }}_bkp_${CURRENT_DATE}
           oc tag condition-web:${{ github.event.inputs.environment }} condition-web:${{ github.event.inputs.environment }}_bkp_${CURRENT_DATE}
+          oc tag condition-cron:${{ github.event.inputs.environment }} condition-cron:${{ github.event.inputs.environment }}_bkp_${CURRENT_DATE}
           oc tag condition-api:latest condition-api:${{ github.event.inputs.environment }}
           oc tag condition-web:latest condition-web:${{ github.event.inputs.environment }}
+          oc tag condition-cron:latest condition-cron:${{ github.event.inputs.environment }}
           
           oc rollout restart deployment/condition-api -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }}
           oc rollout restart deployment/condition-web -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }}
+          oc rollout restart deployment/condition-cron -n ${{ secrets.OPENSHIFT_REPOSITORY }}-${{ github.event.inputs.environment }}
