@@ -1,6 +1,17 @@
 import { submitRequest } from "@/utils/axiosUtils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+export interface ExtractedCondition {
+    condition_number?: number | null;
+    condition_name?: string | null;
+    topic_tags?: string[] | null;
+}
+
+export interface ExtractedData {
+    conditions?: ExtractedCondition[];
+    [key: string]: unknown;
+}
+
 export interface ExtractionRequest {
     id: number;
     project_id: string;
@@ -12,7 +23,7 @@ export interface ExtractionRequest {
     file_size_bytes?: number | null;
     status: string;
     error_message?: string | null;
-    extracted_data?: Record<string, any>;
+    extracted_data?: ExtractedData | null;
     created_date: string;
     updated_date?: string | null;
 }

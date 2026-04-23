@@ -52,6 +52,7 @@ class ExtractionRequestsResource(Resource):
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
+
 @cors_preflight("PATCH, POST, OPTIONS")
 @API.route("/<int:request_id>/<string:action>", methods=["PATCH", "POST", "OPTIONS"])
 class ExtractionRequestActionResource(Resource):
