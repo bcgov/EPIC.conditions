@@ -69,7 +69,8 @@ class ExtractionImportService:
                 f"Document '{self.document_id}' does not belong to project '{self.project_id}'"
             )
 
-    def _load_attribute_keys(self) -> dict[str, AttributeKey]:
+    @staticmethod
+    def _load_attribute_keys() -> dict[str, AttributeKey]:
         keys = db.session.query(AttributeKey).all()
         key_map: dict[str, AttributeKey] = {}
         for key in keys:

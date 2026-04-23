@@ -7,6 +7,7 @@ from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.extraction_request import ExtractionRequest
 from condition_api.models.project import Project
+from condition_api.services.extraction_import_service import load_extracted_data
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +84,6 @@ class ExtractionRequestService:
             raise ValueError("Request must be completed to import")
         if not req.document_id:
             raise ValueError("Request must reference an existing document to import")
-
-        from condition_api.services.extraction_import_service import load_extracted_data
 
         try:
             load_extracted_data(

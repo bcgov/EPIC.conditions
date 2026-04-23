@@ -1,6 +1,7 @@
 """API endpoints for extraction requests."""
 from http import HTTPStatus
 
+from flask import request
 from flask_cors import cross_origin
 from flask_restx import Namespace, Resource
 from marshmallow import ValidationError
@@ -32,7 +33,6 @@ class ExtractionRequestsResource(Resource):
     @cross_origin(origins=allowedorigins())
     def get():
         """Get all extraction requests."""
-        from flask import request
         status_filter = request.args.get('status')
         results = ExtractionRequestService.get_all(status_filter=status_filter)
         return ExtractionRequestSchema(many=True).dump(results), HTTPStatus.OK
