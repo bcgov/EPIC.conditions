@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { Dayjs } from "dayjs";
 import {
     Autocomplete,
     Box,
@@ -61,16 +62,12 @@ export const DocumentEntryForm = ({
         selectedDocumentLabel: null as string | null,
         documentLabel: "",
         documentLink: "",
-        dateIssued: null as any,
+        dateIssued: null as Dayjs | null,
         isLatestAmendment: false,
     });
 
     const [errors, setErrors] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(false);
-
-    const updateFormState = (updates: Partial<typeof formState>) => {
-        setFormState((prev) => ({ ...prev, ...updates }));
-    };
 
     useEffect(() => {
         if (!transferData) return;
@@ -78,20 +75,18 @@ export const DocumentEntryForm = ({
             (project) => project.project_id === transferData.projectId
         ) || preselectedProject;
 
-        updateFormState({
+        setFormState((prev) => ({
+            ...prev,
             selectedProject: transferredProject || null,
             selectedDocumentType: transferData.documentTypeId || null,
             documentLabel: transferData.documentLabel || "",
             dateIssued: transferData.dateIssued ? dayjs(transferData.dateIssued) : null,
-        });
-    }, [
-        projectArray,
-        preselectedProject,
-        transferData?.dateIssued,
-        transferData?.documentLabel,
-        transferData?.documentTypeId,
-        transferData?.projectId,
-    ]);
+        }));
+    }, [projectArray, preselectedProject, transferData]);
+
+    const updateFormState = (updates: Partial<typeof formState>) => {
+        setFormState((prev) => ({ ...prev, ...updates }));
+    };
 
     const resetErrors = () => {
         setErrors({

@@ -32,6 +32,7 @@ class ExtractionImportService:
     """Import extracted JSON into condition tables using SQLAlchemy models."""
 
     def __init__(self, project_id: str, document_id: str, payload: dict[str, Any]):
+        """Initialize the importer for a specific project/document target."""
         self.project_id = project_id
         self.document_id = document_id
         self.payload = payload or {}

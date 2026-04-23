@@ -102,7 +102,7 @@ class ExtractionRequestService:
                     document.is_active = True
 
             db.session.commit()
-        except Exception:
+        except (SQLAlchemyError, ValueError, TypeError):
             db.session.rollback()
             raise
         return req

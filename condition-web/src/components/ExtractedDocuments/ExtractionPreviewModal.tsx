@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { ExtractionRequest } from "@/hooks/api/useExtractionRequests";
+import { ExtractedCondition, ExtractionRequest } from "@/hooks/api/useExtractionRequests";
 
 // ---------- Design tokens --------------------------------------------------
 const colors = {
@@ -115,7 +115,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {conditions.map((cond: any, index: number) => (
+                  {conditions.map((cond: ExtractedCondition, index: number) => (
                     <TableRow key={cond.condition_number ?? index} hover>
                       <TableCell sx={{ color: colors.conditionNumber, fontWeight: "bold" }}>
                         {cond.condition_number ?? index + 1}

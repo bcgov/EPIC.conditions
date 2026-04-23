@@ -7,6 +7,7 @@ import { PageGrid } from "@/components/Shared/PageGrid";
 import { DocumentEntryPage } from "@/components/Documents/DocumentEntryPage";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useBreadCrumb } from "@/components/Shared/layout/SideNav/breadCrumbStore";
+import BreadcrumbNav from "@/components/Shared/layout/SideNav/BreadcrumbNav";
 
 export const Route = createFileRoute(
     "/_authenticated/documents/extract/"
@@ -25,7 +26,7 @@ export const Route = createFileRoute(
     }),
     meta: () => [
         { title: "Home", path: "/projects" },
-        { title: "Add/Extract Document", path: "/documents/extract/" },
+        { title: "Add/Extract Document", path: "/documents/extract" },
     ],
 });
 
@@ -48,14 +49,17 @@ export function DocumentExtractPage() {
     }, [isProjectsError]);
 
     return (
-        <PageGrid>
-            <Grid item xs={12}>
-                <DocumentEntryPage
-                    projects={projectsData ?? []}
-                    documentType={documentTypeData ?? []}
-                    manualEntrySearch={manualEntrySearch}
-                />
-            </Grid>
-        </PageGrid>
+        <>
+            <BreadcrumbNav />
+            <PageGrid>
+                <Grid item xs={12}>
+                    <DocumentEntryPage
+                        projects={projectsData ?? []}
+                        documentType={documentTypeData ?? []}
+                        manualEntrySearch={manualEntrySearch}
+                    />
+                </Grid>
+            </PageGrid>
+        </>
     );
 }
