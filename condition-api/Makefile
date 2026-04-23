@@ -1,5 +1,6 @@
 .PHONY: license
 .PHONY: setup
+.PHONY: ci-setup
 .PHONY: ci cd
 .PHONY: db run
 
@@ -19,6 +20,14 @@ license: ## Verify source code license headers.
 # COMMANDS -- Setup                                                             #
 #################################################################################
 setup: clean install install-dev ## Setup the project
+
+ci-setup: ## Setup the project for CI without deleting the virtual environment
+	test -f venv/bin/activate || python3 -m venv $(CURRENT_ABS_DIR)/venv ;\
+	. venv/bin/activate ;\
+	pip install --upgrade pip ;\
+	pip install -Ur requirements.txt ;\
+	pip install -Ur requirements/dev.txt ;\
+	pip install -e .
 
 clean: clean-build clean-pyc clean-test ## Clean the project
 	rm -rf venv/
