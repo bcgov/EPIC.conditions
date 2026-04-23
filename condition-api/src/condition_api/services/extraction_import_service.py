@@ -27,6 +27,15 @@ ATTRIBUTE_EXTERNAL_KEYS = (
     "stakeholders_to_consult",
 )
 
+ATTRIBUTE_EXTERNAL_KEY_ALIASES = {
+    "approval_type": "submitted_to_eao_for",
+    "days_prior_to_commencement": "time_associated_with_submission_milestone",
+    "implementation_phase": "milestones_related_to_plan_implementation",
+    "fn_consultation_required": "requires_consultation",
+    "stakeholders_to_submit_to": "parties_required_to_be_submitted",
+    "stakeholders_to_consult": "parties_required_to_be_consulted",
+}
+
 
 class ExtractionImportService:
     """Import extracted JSON into condition tables using SQLAlchemy models."""
@@ -143,6 +152,10 @@ class ExtractionImportService:
 
             for external_key in ATTRIBUTE_EXTERNAL_KEYS:
                 attribute_key = self.attribute_keys.get(external_key)
+                if not attribute_key:
+                    attribute_key = self.attribute_keys.get(
+                        ATTRIBUTE_EXTERNAL_KEY_ALIASES.get(external_key, "")
+                    )
                 if not attribute_key:
                     continue
 
