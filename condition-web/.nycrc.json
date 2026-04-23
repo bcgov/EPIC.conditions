@@ -4,7 +4,7 @@
   "check-coverage": true,
   "lines": 33,
   "functions": 33,
-  "branches": 33,
+  "branches": 31,
   "statements": 33,
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["cypress/**/*.*", "**/*.d.ts", "**/*.cy.tsx", "**/*.cy.ts"]

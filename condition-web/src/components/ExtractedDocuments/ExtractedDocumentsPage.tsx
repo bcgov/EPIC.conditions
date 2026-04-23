@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { AxiosError } from "axios";
 import {
   Box,
   Button,
@@ -126,6 +127,13 @@ export default function ExtractedDocumentsPage() {
     replaceBreadcrumb("Extracted Documents", "Extracted Documents", "/extracted-documents", true);
   }, [replaceBreadcrumb]);
 
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof AxiosError) {
+      return error.response?.data?.message ?? fallback;
+    }
+    return fallback;
+  };
+
   // Only toast once when the query fails, not on every render.
   useEffect(() => {
     if (error) notify.error("Failed to load extraction requests");
@@ -137,8 +145,8 @@ export default function ExtractedDocumentsPage() {
         notify.success("Conditions imported successfully!");
         setPreviewRequest(null);
       },
-      onError: (err: any) =>
-        notify.error(err?.response?.data?.message || "Failed to import conditions"),
+      onError: (error: unknown) =>
+        notify.error(getErrorMessage(error, "Failed to import conditions")),
     });
   };
 
@@ -149,8 +157,8 @@ export default function ExtractedDocumentsPage() {
         setPreviewRequest(null);
         setStopRequest(null);
       },
-      onError: (err: any) =>
-        notify.error(err?.response?.data?.message || "Failed to reject extraction"),
+      onError: (error: unknown) =>
+        notify.error(getErrorMessage(error, "Failed to reject extraction")),
     });
   };
 

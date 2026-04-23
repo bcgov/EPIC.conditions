@@ -5,4 +5,8 @@ export const Route = createFileRoute(
   "/_authenticated/_dashboard/extracted-documents/"
 )({
   component: ExtractedDocumentsPage,
+  meta: () => [
+    { title: "Home", path: "/projects" },
+    { title: "Extracted Documents", path: "/extracted-documents" },
+  ],
 });

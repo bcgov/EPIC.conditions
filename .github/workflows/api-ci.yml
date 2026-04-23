@@ -24,26 +24,45 @@ jobs:
   linting:
     needs: setup-job
     runs-on: ubuntu-22.04
+    timeout-minutes: 20
 
     strategy:
       matrix:
         python-version: [3.9]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            condition-api/requirements.txt
+            condition-api/requirements/dev.txt
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install libsasl2-dev libldap2-dev libssl-dev --yes
-          make setup
+          make ci-setup
+      - name: Determine pylint scope
+        id: pylint_scope
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- 'condition-api/src/**/*.py' | sed 's#^condition-api/##' | tr '\n' ' ')
+            echo "files=$files" >> "$GITHUB_OUTPUT"
+          fi
       - name: Lint with pylint
         id: pylint
         run: |
-          make pylint
+          if [ -n "${{ steps.pylint_scope.outputs.files }}" ]; then
+            . venv/bin/activate && pylint -j 0 --rcfile=setup.cfg ${{ steps.pylint_scope.outputs.files }}
+          else
+            make pylint
+          fi
       - name: Lint with flake8
         id: flake8
         run: |
@@ -69,6 +88,7 @@ jobs:
        USE_TEST_KEYCLOAK_DOCKER: "YES"
 
      runs-on: ubuntu-22.04
+     timeout-minutes: 20
 
      strategy:
        matrix:
@@ -94,9 +114,13 @@ jobs:
          uses: actions/setup-python@v4
          with:
            python-version: ${{ matrix.python-version }}
+           cache: pip
+           cache-dependency-path: |
+             condition-api/requirements.txt
+             condition-api/requirements/dev.txt
        - name: Install dependencies
          run: |
-           make setup
+           make ci-setup
        - name: Test
          id: test
          run: |

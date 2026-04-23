@@ -27,11 +27,21 @@ ATTRIBUTE_EXTERNAL_KEYS = (
     "stakeholders_to_consult",
 )
 
+ATTRIBUTE_EXTERNAL_KEY_ALIASES = {
+    "approval_type": "submitted_to_eao_for",
+    "days_prior_to_commencement": "time_associated_with_submission_milestone",
+    "implementation_phase": "milestones_related_to_plan_implementation",
+    "fn_consultation_required": "requires_consultation",
+    "stakeholders_to_submit_to": "parties_required_to_be_submitted",
+    "stakeholders_to_consult": "parties_required_to_be_consulted",
+}
+
 
 class ExtractionImportService:
     """Import extracted JSON into condition tables using SQLAlchemy models."""
 
     def __init__(self, project_id: str, document_id: str, payload: dict[str, Any]):
+        """Initialize the importer for a specific project/document target."""
         self.project_id = project_id
         self.document_id = document_id
         self.payload = payload or {}
@@ -59,7 +69,8 @@ class ExtractionImportService:
                 f"Document '{self.document_id}' does not belong to project '{self.project_id}'"
             )
 
-    def _load_attribute_keys(self) -> dict[str, AttributeKey]:
+    @staticmethod
+    def _load_attribute_keys() -> dict[str, AttributeKey]:
         keys = db.session.query(AttributeKey).all()
         key_map: dict[str, AttributeKey] = {}
         for key in keys:
@@ -142,6 +153,10 @@ class ExtractionImportService:
 
             for external_key in ATTRIBUTE_EXTERNAL_KEYS:
                 attribute_key = self.attribute_keys.get(external_key)
+                if not attribute_key:
+                    attribute_key = self.attribute_keys.get(
+                        ATTRIBUTE_EXTERNAL_KEY_ALIASES.get(external_key, "")
+                    )
                 if not attribute_key:
                     continue
 

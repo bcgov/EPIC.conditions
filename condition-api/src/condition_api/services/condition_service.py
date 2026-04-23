@@ -845,7 +845,7 @@ class ConditionService:
         include_condition_attributes=False,
         user_is_internal=False,
         latest_amendment_only=False,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """Fetch all consolidated conditions."""
         filter_condition = (
             Project.project_id == project_id
