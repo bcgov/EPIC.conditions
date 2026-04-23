@@ -47,7 +47,7 @@ class DocumentCategoryListResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all document categories")
     @API.response(code=HTTPStatus.OK, description="Get all document categories")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get():
         """Fetch all document categories."""
@@ -67,7 +67,7 @@ class DocumentCategoryResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents for document category")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(project_id, category_id):
         """Fetch all documents for a specific document category."""

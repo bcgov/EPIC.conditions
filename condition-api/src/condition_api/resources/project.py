@@ -46,7 +46,7 @@ class ProjectsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all projects")
     @API.response(code=HTTPStatus.OK, model=projects_model, description="Get projects")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get():
         """Fetch projects and related documents."""
@@ -72,7 +72,7 @@ class AllProjectsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all projects including inactive")
     @API.response(code=HTTPStatus.OK, model=projects_model, description="Get all projects")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get():
         """Fetch all projects including inactive ones."""
@@ -92,7 +92,7 @@ class AvailableProjectsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get available projects")
     @API.response(code=HTTPStatus.OK, model=projects_model, description="Get available projects")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get():
         """Fetch inactive projects that can be added to the condition repo."""
@@ -113,7 +113,7 @@ class ActivateProjectResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Activate a project")
     @API.response(code=HTTPStatus.OK, model=projects_model, description="Activate project")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def patch(project_id):
         """Activate a project to make it visible."""
