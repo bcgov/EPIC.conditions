@@ -489,7 +489,7 @@ export default function ExtractedDocumentsPage() {
             {/* ── Import History ───────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
               <SectionHeader
-                title="Documents Archive"
+                title="Import History"
                 expanded={sectionsOpen.archive}
                 onToggle={() => toggleSection("archive")}
                 backgroundColor="#F4F6FB"
