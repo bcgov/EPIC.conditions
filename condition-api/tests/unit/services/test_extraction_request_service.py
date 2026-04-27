@@ -53,6 +53,7 @@ def test_reject_request_soft_rejects_and_clears_extracted_data():
     project = factory_project_model(project_id=str(uuid.uuid4()))
     doc_type = get_seeded_document_type("Certificate")
     document = factory_document_model(project_id=project.project_id, document_type_id=doc_type.id)
+    document.is_active = True
     request = ExtractionRequest(
         project_id=project.project_id,
         document_id=document.document_id,
@@ -73,6 +74,9 @@ def test_reject_request_soft_rejects_and_clears_extracted_data():
     persisted = db.session.query(ExtractionRequest).filter_by(id=request.id).one()
     assert persisted.status == "rejected"
     assert persisted.extracted_data is None
+
+    refreshed_document = db.session.query(type(document)).filter_by(document_id=document.document_id).one()
+    assert refreshed_document.is_active is False
 
 
 def test_import_request_loads_conditions_into_existing_document():

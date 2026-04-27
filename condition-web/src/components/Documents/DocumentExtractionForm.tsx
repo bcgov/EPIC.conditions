@@ -44,7 +44,10 @@ export const DocumentExtractionForm = ({
     const [selectedDisplayName, setSelectedDisplayName] = useState<DocumentLabelModel | null>(null);
     const [showMore, setShowMore] = useState(false);
 
-    const { data: documentLabels = [], isPending: isLabelsLoading } = useGetDocumentLabels(selectedProject?.project_id);
+    const { data: documentLabels = [], isPending: isLabelsLoading } = useGetDocumentLabels(
+        selectedProject?.project_id,
+        selectedDocumentType?.id
+    );
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [s3Key, setS3Key] = useState<string | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -169,7 +172,10 @@ export const DocumentExtractionForm = ({
                             )}
                             value={selectedDocumentType}
                             getOptionLabel={(t) => t.document_type}
-                            onChange={(_, v) => setSelectedDocumentType(v)}
+                            onChange={(_, v) => {
+                                setSelectedDocumentType(v);
+                                setSelectedDisplayName(null);
+                            }}
                             disabled={!selectedProject}
                             renderInput={(params) => (
                                 <TextField
@@ -192,7 +198,7 @@ export const DocumentExtractionForm = ({
                             loading={isLabelsLoading}
                             getOptionLabel={(d) => d.document_label ?? ""}
                             onChange={(_, v) => setSelectedDisplayName(v)}
-                            disabled={!selectedProject}
+                            disabled={!selectedProject || !selectedDocumentType}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}

@@ -89,6 +89,12 @@ class ExtractionRequestService:
             req.status = 'rejected'
             req.extracted_data = None
             req.error_message = None
+
+            if req.document_id:
+                document = db.session.query(Document).filter_by(document_id=req.document_id).first()
+                if document:
+                    document.is_active = False
+
             db.session.commit()
         except SQLAlchemyError as exc:
             db.session.rollback()

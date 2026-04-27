@@ -389,7 +389,7 @@ export default function ExtractedDocumentsPage() {
                               },
                             }}
                           >
-                            {isSuccess ? "Review & Import" : "Switch to Manual Entry"}
+                            {isSuccess ? "Preview & Import" : "Switch to Manual Entry"}
                           </Button>
                         </Box>
                       </Box>

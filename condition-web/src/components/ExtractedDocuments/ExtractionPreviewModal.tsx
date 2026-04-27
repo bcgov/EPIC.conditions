@@ -15,7 +15,6 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Alert,
   Chip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -99,10 +98,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
           </DialogTitle>
 
           <DialogContent sx={{ pt: 3, pb: 4 }}>
-            <Alert severity="info" sx={{ mb: 2, mt: 1 }}>
-              Please review the automatically extracted conditions below. You can import them into the project or discard the extraction.
-            </Alert>
-            <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+            <Typography variant="subtitle1" fontWeight="bold" mb={2} mt={1}>
               {conditions.length} Condition{conditions.length !== 1 ? "s" : ""} Extracted
             </Typography>
 

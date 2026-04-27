@@ -409,9 +409,9 @@ class DocumentService:
         return DocumentService.get_document_details(document_id)
 
     @staticmethod
-    def get_document_labels_by_project(project_id):
-        """Fetch document metadata for documents of a project that are not yet active (not yet extracted)."""
-        documents = (
+    def get_document_labels_by_project(project_id, document_type_id=None):
+        """Fetch inactive document metadata for a project, optionally filtered by document type."""
+        documents_query = (
             db.session.query(
                 Document.document_id,
                 Document.document_label,
@@ -422,8 +422,13 @@ class DocumentService:
             .join(Project, Project.project_id == Document.project_id)
             .filter(Document.project_id == project_id, Document.is_active.is_(False))
             .order_by(Document.document_label)
-            .all()
         )
+
+        if document_type_id:
+            documents_query = documents_query.filter(Document.document_type_id == document_type_id)
+
+        documents = documents_query.all()
+
         return [
             {
                 "document_id": row.document_id,

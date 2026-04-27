@@ -47,15 +47,18 @@ export const useGetDocumentType = () => {
   });
 };
 
-const fetchDocumentLabels = (projectId: string) => {
-  return submitRequest<DocumentLabelModel[]>({ url: `/documents/project/${projectId}/labels` });
+const fetchDocumentLabels = (projectId: string, documentTypeId?: number) => {
+  return submitRequest<DocumentLabelModel[]>({
+    url: `/documents/project/${projectId}/labels`,
+    params: documentTypeId ? { documentTypeId } : undefined,
+  });
 };
 
-export const useGetDocumentLabels = (projectId?: string) => {
+export const useGetDocumentLabels = (projectId?: string, documentTypeId?: number) => {
   return useQuery({
-    queryKey: [QUERY_KEY.PROJECTDOCUMENT, projectId, 'labels'],
-    queryFn: () => fetchDocumentLabels(projectId!),
-    enabled: Boolean(projectId),
+    queryKey: [QUERY_KEY.PROJECTDOCUMENT, projectId, documentTypeId, 'labels'],
+    queryFn: () => fetchDocumentLabels(projectId!, documentTypeId),
+    enabled: Boolean(projectId && documentTypeId),
     ...defaultUseQueryOptions,
   });
 };
