@@ -97,8 +97,8 @@ export default function ConditionTableRow({
             <Typography
               component="span"
               color={BCDesignTokens.themeBlue90}
-              fontWeight={"bold"}
-              fontSize={18}
+              fontWeight={"normal"}
+              fontSize={16}
               sx={{ textAlign: "left" }}
             >
               {condition.condition_name ?? "--"}
