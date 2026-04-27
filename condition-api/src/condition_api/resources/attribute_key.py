@@ -48,7 +48,7 @@ class AttributeKeyResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get attribute keys")
     @API.response(code=HTTPStatus.CREATED, model=attributes_model, description="Get attribute keys")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(condition_id):
         """Fetch attribute keys."""

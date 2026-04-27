@@ -49,7 +49,7 @@ class DocumentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Create new documents")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Create documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def post(project_id):
         """Create a new document."""
@@ -70,7 +70,7 @@ class DocumentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all documents")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get all documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(project_id):
         """Get all documents."""
@@ -95,7 +95,7 @@ class DocumentLabelsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get document labels for a project")
     @API.response(code=HTTPStatus.OK, description="Get document labels")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(project_id):
         """Fetch document_id and document_label for all documents of a project."""
@@ -116,7 +116,7 @@ class AvailableDocumentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get available documents for a project")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get available documents")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(project_id):
         """Fetch inactive documents for a project that can be added."""
@@ -136,7 +136,7 @@ class ActivateDocumentResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Activate a document")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Activate document")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def patch(document_id):
         """Activate a document to make it visible."""
@@ -162,7 +162,7 @@ class DocumentTypeResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get all document type")
     @API.response(code=HTTPStatus.OK, model=document_model, description="Get all document type")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get():
         """Get all document type."""
@@ -185,7 +185,7 @@ class DocumentResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get document details")
     @API.response(code=HTTPStatus.CREATED, model=document_model, description="Get document details")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(document_id):
         """Fetch document details by document ID."""
@@ -206,7 +206,7 @@ class DocumentResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def patch(document_id):
         """Edit document label."""
         try:

@@ -20,3 +20,4 @@ class EpicConditionRole(Enum):
 
     VIEW_CONDITIONS = "view_conditions"
     EXTRACT_CONDITIONS = "extract_conditions"
+    MANAGE_CONDITIONS = "manage_conditions"
