@@ -44,7 +44,10 @@ export const DocumentExtractionForm = ({
     const [selectedDisplayName, setSelectedDisplayName] = useState<DocumentLabelModel | null>(null);
     const [showMore, setShowMore] = useState(false);
 
-    const { data: documentLabels = [], isPending: isLabelsLoading } = useGetDocumentLabels(selectedProject?.project_id);
+    const { data: documentLabels = [], isPending: isLabelsLoading } = useGetDocumentLabels(
+        selectedProject?.project_id,
+        selectedDocumentType?.id
+    );
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [s3Key, setS3Key] = useState<string | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -124,7 +127,7 @@ export const DocumentExtractionForm = ({
                     Fill in the document details and upload a file to extract document conditions automatically.
                 </Typography>
                 <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                    <strong>Note:</strong> Amendments must be entered manually.
+                    <strong>Note:</strong> Amendments must be added manually.
                 </Typography>
             </Box>
         <Box padding={"24px"}>
@@ -169,7 +172,10 @@ export const DocumentExtractionForm = ({
                             )}
                             value={selectedDocumentType}
                             getOptionLabel={(t) => t.document_type}
-                            onChange={(_, v) => setSelectedDocumentType(v)}
+                            onChange={(_, v) => {
+                                setSelectedDocumentType(v);
+                                setSelectedDisplayName(null);
+                            }}
                             disabled={!selectedProject}
                             renderInput={(params) => (
                                 <TextField
@@ -184,7 +190,7 @@ export const DocumentExtractionForm = ({
                     </Box>
                     <Box flex={1}>
                         <Typography variant="body2" fontWeight={500} marginBottom={"4px"}>
-                            Display Name <span style={{ color: "red" }}>*</span>
+                            Document <span style={{ color: "red" }}>*</span>
                         </Typography>
                         <Autocomplete
                             options={documentLabels}
@@ -192,7 +198,7 @@ export const DocumentExtractionForm = ({
                             loading={isLabelsLoading}
                             getOptionLabel={(d) => d.document_label ?? ""}
                             onChange={(_, v) => setSelectedDisplayName(v)}
-                            disabled={!selectedProject}
+                            disabled={!selectedProject || !selectedDocumentType}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -216,7 +222,7 @@ export const DocumentExtractionForm = ({
                     >
                         {showMore ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
                         <Typography variant="body2" color="primary.main">
-                            Show more details
+                            Show document details
                         </Typography>
                     </Box>
                     {showMore && (

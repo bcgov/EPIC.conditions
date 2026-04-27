@@ -100,7 +100,8 @@ class DocumentLabelsResource(Resource):
     def get(project_id):
         """Fetch document_id and document_label for all documents of a project."""
         try:
-            labels = DocumentService.get_document_labels_by_project(project_id)
+            document_type_id = request.args.get("documentTypeId", type=int)
+            labels = DocumentService.get_document_labels_by_project(project_id, document_type_id)
             return DocumentLabelSchema(many=True).dump(labels), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

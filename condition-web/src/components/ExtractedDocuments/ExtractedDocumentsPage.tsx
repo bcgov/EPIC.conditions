@@ -40,28 +40,28 @@ const colors = {
   primaryHover: "rgba(0, 51, 102, 0.04)",
 
   // Section header
-  sectionHeaderBg: "#FFF8E1",
-  sectionHeaderText: "#333",
-  sectionHeaderChevron: "#666",
+  sectionHeaderBg: "rgba(0, 51, 102, 0.04)",
+  sectionHeaderText: "#003366",
+  sectionHeaderChevron: "#003366",
 
   // Extraction complete – success
   successBorder: "#C8E6C9",
-  successBg: "#F1F8E9",
+  successBg: "#FFFFFF",
   successText: "#2E7D32",
 
   // Extraction complete – failed
   errorBorder: "#FFCDD2",
-  errorBg: "#FFEBEE",
+  errorBg: "#FFFFFF",
   errorText: "#C62828",
 
   // Extraction in progress
   pendingBorder: "#E0E0E0",
-  pendingBg: "#F8F9FA",
+  pendingBg: "#FFFFFF",
   pendingText: "#5F6368",
   pendingAccent: "#5F7F68",
 
   // Archive
-  archiveBg: "#F0F0F0",
+  archiveBg: "#FFFFFF",
   archiveBorder: "#E0E0E0",
   archiveHeaderBg: "#FAFAFA",
   archiveDateText: "#666",
@@ -176,6 +176,35 @@ export default function ExtractedDocumentsPage() {
     return `${(fileSizeBytes / 1024).toFixed(1)} KB`;
   };
 
+  const formatName = (name: string | undefined | null) => {
+    if (!name) return "";
+    const parts = name.trim().split(" ");
+    if (parts.length > 1) {
+      const lastName = parts.pop();
+      return `${lastName}, ${parts.join(" ")}`;
+    }
+    return name;
+  };
+
+  const renderStaffAttribution = (req: ExtractionRequest) => {
+    const uploadedBy = formatName(req.uploaded_by_name);
+    const importedBy = formatName(req.imported_by_name);
+
+    if (!uploadedBy && !importedBy) return null;
+
+    return (
+      <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
+        {uploadedBy && importedBy && uploadedBy === importedBy ? (
+          <>Uploaded & Imported by: <strong>{uploadedBy}</strong></>
+        ) : uploadedBy && importedBy ? (
+          <>Uploaded by: <strong>{uploadedBy}</strong> • Imported by: <strong>{importedBy}</strong></>
+        ) : uploadedBy ? (
+          <>Uploaded by: <strong>{uploadedBy}</strong></>
+        ) : null}
+      </Typography>
+    );
+  };
+
   const completedRequests =
     requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
   const pendingRequests = requests?.filter((r) => r.status === "pending" || r.status === "processing") ?? [];
@@ -256,17 +285,17 @@ export default function ExtractedDocumentsPage() {
         ) : (
           <Box display="flex" flexDirection="column" gap={4}>
 
-            {/* ── Extraction Complete ───────────────────────────────── */}
+            {/* ── Ready for Review ─────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
               <SectionHeader
-                title="Extraction Complete"
+                title="Ready for Review"
                 expanded={sectionsOpen.complete}
                 onToggle={() => toggleSection("complete")}
               />
               {sectionsOpen.complete && <Box p={2} display="flex" flexDirection="column" gap={2}>
                 {completedRequests.length === 0 ? (
                   <Typography variant="body2" color="textSecondary" sx={{ px: 2 }}>
-                    No recent extractions completed.
+                    No recent extractions are ready for review.
                   </Typography>
                 ) : (
                   completedRequests.map((req) => {
@@ -283,6 +312,7 @@ export default function ExtractedDocumentsPage() {
                           borderRadius: 1,
                           border: `1px solid ${isSuccess ? colors.successBorder : colors.errorBorder}`,
                           backgroundColor: isSuccess ? colors.successBg : colors.errorBg,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                         }}
                       >
                         {/* Document label */}
@@ -290,14 +320,20 @@ export default function ExtractedDocumentsPage() {
                           <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
                             {getDocumentName(req)}
                           </Typography>
-                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                            {getProjectName(req)}
-                          </Typography>
-                          {formatFileSize(req.file_size_bytes) && (
-                            <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                              {formatFileSize(req.file_size_bytes)}
+                          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
+                            <Typography variant="caption" color="textSecondary">
+                              {getProjectName(req)}
                             </Typography>
-                          )}
+                            {formatFileSize(req.file_size_bytes) && (
+                              <>
+                                <Typography variant="caption" color="textSecondary">•</Typography>
+                                <Typography variant="caption" color="textSecondary">
+                                  {formatFileSize(req.file_size_bytes)}
+                                </Typography>
+                              </>
+                            )}
+                          </Box>
+                          {renderStaffAttribution(req)}
                         </Box>
 
                         {/* Status indicator */}
@@ -313,7 +349,7 @@ export default function ExtractedDocumentsPage() {
                               fontWeight="bold"
                               color={isSuccess ? colors.successText : colors.errorText}
                             >
-                              {isSuccess ? "Extraction Complete!" : "Extraction Failed"}
+                              {isSuccess ? "Ready to Review" : "Extraction Failed"}
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
                               {isSuccess
@@ -387,20 +423,27 @@ export default function ExtractedDocumentsPage() {
                         borderRadius: 1,
                         border: `1px solid ${colors.pendingBorder}`,
                         backgroundColor: colors.pendingBg,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                       }}
                     >
                       <Box flex={1}>
                         <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
                           {getDocumentName(req)}
                         </Typography>
-                        <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                          {getProjectName(req)}
-                        </Typography>
-                        {formatFileSize(req.file_size_bytes) && (
-                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                            {formatFileSize(req.file_size_bytes)}
+                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
+                          <Typography variant="caption" color="textSecondary">
+                            {getProjectName(req)}
                           </Typography>
-                        )}
+                          {formatFileSize(req.file_size_bytes) && (
+                            <>
+                              <Typography variant="caption" color="textSecondary">•</Typography>
+                              <Typography variant="caption" color="textSecondary">
+                                {formatFileSize(req.file_size_bytes)}
+                              </Typography>
+                            </>
+                          )}
+                        </Box>
+                        {renderStaffAttribution(req)}
                       </Box>
                       <Box
                         flex={0.8}
@@ -436,10 +479,10 @@ export default function ExtractedDocumentsPage() {
               </Box>}
             </Paper>
 
-            {/* ── Documents Archive ─────────────────────────────────── */}
+            {/* ── Import History ───────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
               <SectionHeader
-                title="Documents Archive"
+                title="Import History"
                 expanded={sectionsOpen.archive}
                 onToggle={() => toggleSection("archive")}
               />
@@ -462,7 +505,7 @@ export default function ExtractedDocumentsPage() {
                 <Box p={2} display="flex" flexDirection="column" gap={1}>
                   {archivedRequests.length === 0 ? (
                     <Typography variant="body2" color="textSecondary" sx={{ px: 2 }}>
-                      No archived documents.
+                      No imported documents yet.
                     </Typography>
                   ) : (
                     archivedRequests.map((req) => (
@@ -476,23 +519,27 @@ export default function ExtractedDocumentsPage() {
                           borderRadius: 1,
                           backgroundColor: colors.archiveBg,
                           border: `1px solid ${colors.archiveBorder}`,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                         }}
                       >
                         <Box>
                           <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
                             {getDocumentName(req)}
                           </Typography>
-                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                            {getProjectName(req)}
-                          </Typography>
-                          {formatFileSize(req.file_size_bytes) && (
-                            <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                              {formatFileSize(req.file_size_bytes)}
+                          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
+                            <Typography variant="caption" color="textSecondary">
+                              {getProjectName(req)}
                             </Typography>
-                          )}
-                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-                            Imported
-                          </Typography>
+                            {formatFileSize(req.file_size_bytes) && (
+                              <>
+                                <Typography variant="caption" color="textSecondary">•</Typography>
+                                <Typography variant="caption" color="textSecondary">
+                                  {formatFileSize(req.file_size_bytes)}
+                                </Typography>
+                              </>
+                            )}
+                          </Box>
+                          {renderStaffAttribution(req)}
                         </Box>
                         <Typography variant="body2" color={colors.archiveDateText}>
                           {new Date(req.updated_date || req.created_date).toLocaleDateString("en-US", {

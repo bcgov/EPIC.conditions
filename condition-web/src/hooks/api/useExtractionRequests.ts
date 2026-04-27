@@ -26,6 +26,8 @@ export interface ExtractionRequest {
     extracted_data?: ExtractedData | null;
     created_date: string;
     updated_date?: string | null;
+    uploaded_by_name?: string | null;
+    imported_by_name?: string | null;
 }
 
 export interface CreateExtractionRequestPayload {
