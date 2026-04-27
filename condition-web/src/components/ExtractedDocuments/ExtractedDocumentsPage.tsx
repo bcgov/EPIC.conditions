@@ -79,14 +79,24 @@ interface SectionHeaderProps {
   title: string;
   expanded: boolean;
   onToggle: () => void;
+  backgroundColor?: string;
+  textColor?: string;
+  chevronColor?: string;
 }
 
 /** Static header bar rendered at the top of each section panel. */
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title, expanded, onToggle }) => (
+const SectionHeader: React.FC<SectionHeaderProps> = ({
+  title,
+  expanded,
+  onToggle,
+  backgroundColor = colors.sectionHeaderBg,
+  textColor = colors.sectionHeaderText,
+  chevronColor = colors.sectionHeaderChevron,
+}) => (
   <Box
     onClick={onToggle}
     sx={{
-      backgroundColor: colors.sectionHeaderBg,
+      backgroundColor,
       px: 2,
       py: 1.5,
       borderBottom: `1px solid ${colors.divider}`,
@@ -96,13 +106,13 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title, expanded, onToggle
       cursor: "pointer",
     }}
   >
-    <Typography variant="subtitle2" fontWeight="bold" color={colors.sectionHeaderText}>
+    <Typography variant="subtitle2" fontWeight="bold" color={textColor}>
       {title}
     </Typography>
     {expanded ? (
-      <ExpandLessIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
+      <ExpandLessIcon fontSize="small" sx={{ color: chevronColor }} />
     ) : (
-      <ExpandMoreIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
+      <ExpandMoreIcon fontSize="small" sx={{ color: chevronColor }} />
     )}
   </Box>
 );
@@ -187,20 +197,13 @@ export default function ExtractedDocumentsPage() {
   };
 
   const renderStaffAttribution = (req: ExtractionRequest) => {
-    const uploadedBy = formatName(req.uploaded_by_name);
     const importedBy = formatName(req.imported_by_name);
 
-    if (!uploadedBy && !importedBy) return null;
+    if (req.status !== "imported" || !importedBy) return null;
 
     return (
       <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.25 }}>
-        {uploadedBy && importedBy && uploadedBy === importedBy ? (
-          <>Uploaded & Imported by: <strong>{uploadedBy}</strong></>
-        ) : uploadedBy && importedBy ? (
-          <>Uploaded by: <strong>{uploadedBy}</strong> • Imported by: <strong>{importedBy}</strong></>
-        ) : uploadedBy ? (
-          <>Uploaded by: <strong>{uploadedBy}</strong></>
-        ) : null}
+        Imported by: <strong>{importedBy}</strong>
       </Typography>
     );
   };
@@ -250,7 +253,7 @@ export default function ExtractedDocumentsPage() {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setStopRequest(null)} disabled={rejectMutation.isPending}>
+          <Button variant="outlined" onClick={() => setStopRequest(null)} disabled={rejectMutation.isPending}>
             Cancel
           </Button>
           <Button
@@ -283,14 +286,17 @@ export default function ExtractedDocumentsPage() {
             <CircularProgress />
           </Box>
         ) : (
-          <Box display="flex" flexDirection="column" gap={4}>
+          <Box display="flex" flexDirection="column" gap="15px" pb={2}>
 
             {/* ── Ready for Review ─────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
               <SectionHeader
-                title="Ready for Review"
+                title="Extraction Complete"
                 expanded={sectionsOpen.complete}
                 onToggle={() => toggleSection("complete")}
+                backgroundColor="#F3FBF4"
+                textColor={colors.bodyText}
+                chevronColor={colors.bodyText}
               />
               {sectionsOpen.complete && <Box p={2} display="flex" flexDirection="column" gap={2}>
                 {completedRequests.length === 0 ? (
@@ -312,7 +318,6 @@ export default function ExtractedDocumentsPage() {
                           borderRadius: 1,
                           border: `1px solid ${isSuccess ? colors.successBorder : colors.errorBorder}`,
                           backgroundColor: isSuccess ? colors.successBg : colors.errorBg,
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                         }}
                       >
                         {/* Document label */}
@@ -349,7 +354,7 @@ export default function ExtractedDocumentsPage() {
                               fontWeight="bold"
                               color={isSuccess ? colors.successText : colors.errorText}
                             >
-                              {isSuccess ? "Ready to Review" : "Extraction Failed"}
+                              {isSuccess ? "Extraction Complete!" : "Extraction Failed"}
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
                               {isSuccess
@@ -405,6 +410,9 @@ export default function ExtractedDocumentsPage() {
                 title="Extraction In Progress"
                 expanded={sectionsOpen.progress}
                 onToggle={() => toggleSection("progress")}
+                backgroundColor="#FFF9E6"
+                textColor={colors.bodyText}
+                chevronColor={colors.bodyText}
               />
               {sectionsOpen.progress && <Box p={2} display="flex" flexDirection="column" gap={2}>
                 {pendingRequests.length === 0 ? (
@@ -423,7 +431,6 @@ export default function ExtractedDocumentsPage() {
                         borderRadius: 1,
                         border: `1px solid ${colors.pendingBorder}`,
                         backgroundColor: colors.pendingBg,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                       }}
                     >
                       <Box flex={1}>
@@ -482,9 +489,12 @@ export default function ExtractedDocumentsPage() {
             {/* ── Import History ───────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
               <SectionHeader
-                title="Import History"
+                title="Documents Archive"
                 expanded={sectionsOpen.archive}
                 onToggle={() => toggleSection("archive")}
+                backgroundColor="#F4F6FB"
+                textColor={colors.bodyText}
+                chevronColor={colors.bodyText}
               />
               {sectionsOpen.archive && <Box>
                 <Box
@@ -519,7 +529,6 @@ export default function ExtractedDocumentsPage() {
                           borderRadius: 1,
                           backgroundColor: colors.archiveBg,
                           border: `1px solid ${colors.archiveBorder}`,
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                         }}
                       >
                         <Box>
