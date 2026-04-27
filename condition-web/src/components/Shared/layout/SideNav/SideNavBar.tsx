@@ -3,12 +3,11 @@ import { MainListItem } from "./MainListItem";
 
 export default function SideNavBar() {
   return (
-    <div style={{ height: "100%" }}>
+    <div style={{ minHeight: "calc(100vh - 88px)", borderRight: "1px solid #0000001A", width: 240 }}>
       <Box
         sx={{
           overflow: "auto",
-          borderRight: "1px solid #0000001A",
-          width: 240,
+          width: "100%",
           height: "calc(100vh - 88px)",
           zIndex: 0,
           position: "static",

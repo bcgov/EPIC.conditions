@@ -246,7 +246,7 @@ export default function ExtractedDocumentsPage() {
         </DialogTitle>
         <DialogContent dividers>
           <Typography color="error" fontSize="1.1rem">
-            This will stop the extraction process for {stopRequest ? getDocumentName(stopRequest) : "this document"}.
+            This will stop the extraction process for <strong>{stopRequest ? getDocumentName(stopRequest) : "this document"}</strong>.
           </Typography>
           <Typography color="error" fontSize="1.1rem">
             Are you sure you wish to proceed?
@@ -298,7 +298,7 @@ export default function ExtractedDocumentsPage() {
                 textColor={colors.bodyText}
                 chevronColor={colors.bodyText}
               />
-              {sectionsOpen.complete && <Box p={2} display="flex" flexDirection="column" gap={2}>
+              {sectionsOpen.complete && <Box p={2} display="flex" flexDirection="column" gap="15px">
                 {completedRequests.length === 0 ? (
                   <Typography variant="body2" color="textSecondary" sx={{ px: 2 }}>
                     No recent extractions are ready for review.
@@ -358,7 +358,7 @@ export default function ExtractedDocumentsPage() {
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
                               {isSuccess
-                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""} from ${getDocumentName(req)}.`
+                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
                                 : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format."}
                             </Typography>
                           </Box>
@@ -385,6 +385,7 @@ export default function ExtractedDocumentsPage() {
                             }
                             sx={{
                               textTransform: "none",
+                              whiteSpace: "nowrap",
                               backgroundColor: colors.buttonBg,
                               color: colors.bodyText,
                               borderColor: colors.divider,
