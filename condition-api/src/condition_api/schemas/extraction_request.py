@@ -18,3 +18,5 @@ class ExtractionRequestSchema(Schema):
     extracted_data = fields.Dict(dump_only=True, allow_none=True)
     created_date = fields.Str(dump_only=True)
     updated_date = fields.Str(dump_only=True, allow_none=True)
+    uploaded_by_name = fields.Str(attribute="uploaded_by_name", dump_only=True, allow_none=True)
+    imported_by_name = fields.Str(attribute="imported_by_name", dump_only=True, allow_none=True)

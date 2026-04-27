@@ -15,8 +15,11 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Alert,
+  Chip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { ExtractedCondition, ExtractionRequest } from "@/hooks/api/useExtractionRequests";
 
 // ---------- Design tokens --------------------------------------------------
@@ -66,7 +69,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       PaperProps={{ sx: { borderRadius: 2 } }}
     >
@@ -83,7 +86,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Box>
                 <Typography variant="h6" fontWeight="bold">
-                  Extracted Conditions Preview
+                  Review Extracted Conditions
                 </Typography>
                 <Typography variant="body2" color="textSecondary" mt={0.5}>
                   {extractionRequest.document_label ?? "Project Schedule B: Table of Conditions"}
@@ -96,11 +99,14 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
           </DialogTitle>
 
           <DialogContent sx={{ pt: 3, pb: 4 }}>
-            <Typography variant="subtitle1" fontWeight="bold" mb={2} mt={1}>
+            <Alert severity="info" sx={{ mb: 2, mt: 1 }}>
+              Please review the automatically extracted conditions below. You can import them into the project or discard the extraction.
+            </Alert>
+            <Typography variant="subtitle1" fontWeight="bold" mb={2}>
               {conditions.length} Condition{conditions.length !== 1 ? "s" : ""} Extracted
             </Typography>
 
-            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
+            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, maxHeight: '50vh' }}>
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
@@ -121,7 +127,13 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
                         {cond.condition_number ?? index + 1}
                       </TableCell>
                       <TableCell>{cond.condition_name}</TableCell>
-                      <TableCell>{cond.topic_tags?.join(", ") ?? ""}</TableCell>
+                      <TableCell>
+                        <Box display="flex" gap={0.5} flexWrap="wrap">
+                          {cond.topic_tags?.map((tag) => (
+                            <Chip key={tag} label={tag} size="small" sx={{ backgroundColor: '#E3F2FD', color: colors.primaryDark }} />
+                          ))}
+                        </Box>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -131,7 +143,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
 
           <DialogActions
             sx={{
-              backgroundColor: showRejectConfirmation ? "#F8E1E4" : colors.headerBg,
+              backgroundColor: colors.headerBg,
               borderTop: `1px solid ${colors.divider}`,
               p: 2,
               gap: 1,
@@ -140,17 +152,15 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
           >
             {showRejectConfirmation ? (
               <>
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    Reject Confirmation
-                  </Typography>
-                  <Typography variant="body1">
-                    Are you sure you want to reject this extraction?
+                <Box display="flex" alignItems="center" gap={1}>
+                  <ErrorOutlineIcon color="error" />
+                  <Typography variant="body2" color="error" fontWeight="bold">
+                    Are you sure you want to discard this extraction?
                   </Typography>
                 </Box>
                 <Box display="flex" gap={1}>
                   <Button variant="outlined" onClick={() => setShowRejectConfirmation(false)} disabled={isBusy}>
-                    No, Cancel
+                    Cancel
                   </Button>
                   <Button
                     variant="contained"
@@ -158,7 +168,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
                     onClick={() => onReject(extractionRequest.id)}
                     disabled={isBusy}
                   >
-                    {isRejecting ? "Rejecting…" : "Yes, Reject"}
+                    {isRejecting ? "Discarding…" : "Yes, Discard"}
                   </Button>
                 </Box>
               </>
@@ -177,7 +187,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
                     "&:hover": { borderColor: colors.primary, backgroundColor: colors.primary04 },
                   }}
                 >
-                  Reject Extraction
+                  Discard Extraction
                 </Button>
                 <Button
                   variant="contained"
@@ -192,7 +202,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
                     "&:hover": { backgroundColor: colors.primaryDark },
                   }}
                 >
-                  {isImporting ? "Importing…" : "Import Conditions"}
+                  {isImporting ? "Importing…" : "Approve & Import"}
                 </Button>
               </>
             )}

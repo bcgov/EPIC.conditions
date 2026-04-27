@@ -2,12 +2,15 @@
 import logging
 
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.extraction_request import ExtractionRequest
 from condition_api.models.project import Project
 from condition_api.services.extraction_import_service import load_extracted_data
+from condition_api.services.staff_user_service import StaffUserService
+from condition_api.utils.token_info import TokenInfo
 
 logger = logging.getLogger(__name__)
 
@@ -16,16 +19,27 @@ class ExtractionRequestService:
     """Service for managing extraction requests."""
 
     @staticmethod
+    def _get_current_staff_user():
+        """Return the current authenticated staff user, creating it if needed."""
+        auth_guid = TokenInfo.get_id()
+        if auth_guid:
+            return StaffUserService.get_by_auth_guid(auth_guid)
+        return None
+
+    @staticmethod
     def create(data: dict) -> ExtractionRequest:
         """Create a new extraction request with status pending.
 
         Also activates the associated document and project so they are
         immediately visible in the repository while extraction processes.
         """
+        current_staff_user = ExtractionRequestService._get_current_staff_user()
+
         request = ExtractionRequest(
             project_id=data['project_id'],
             document_id=data.get('document_id'),
             document_type_id=data.get('document_type_id'),
+            uploaded_by_staff_user_id=current_staff_user.id if current_staff_user else None,
             document_label=data.get('document_label'),
             original_file_name=data.get('original_file_name'),
             s3_url=data['s3_url'],
@@ -47,12 +61,20 @@ class ExtractionRequestService:
             project.is_active = True
 
         db.session.commit()
+        db.session.refresh(request)
         return request
 
     @staticmethod
     def get_all(status_filter=None):
         """Get extraction requests optionally filtered by status."""
-        query = db.session.query(ExtractionRequest).order_by(ExtractionRequest.created_date.desc())
+        query = (
+            db.session.query(ExtractionRequest)
+            .options(
+                selectinload(ExtractionRequest.uploaded_by_staff_user),
+                selectinload(ExtractionRequest.imported_by_staff_user),
+            )
+            .order_by(ExtractionRequest.created_date.desc())
+        )
         if status_filter:
             query = query.filter(ExtractionRequest.status == status_filter)
         return query.all()
@@ -72,6 +94,7 @@ class ExtractionRequestService:
             db.session.rollback()
             logger.error("Failed to reject ExtractionRequest id=%s: %s", request_id, exc)
             raise ValueError("Failed to reject extraction request due to a database error.") from exc
+        db.session.refresh(req)
         return req
 
     @staticmethod
@@ -86,6 +109,7 @@ class ExtractionRequestService:
             raise ValueError("Request must reference an existing document to import")
 
         try:
+            current_staff_user = ExtractionRequestService._get_current_staff_user()
             load_extracted_data(
                 data=req.extracted_data or {},
                 project_id=req.project_id,
@@ -93,6 +117,7 @@ class ExtractionRequestService:
             )
 
             req.status = 'imported'
+            req.imported_by_staff_user_id = current_staff_user.id if current_staff_user else None
             req.extracted_data = None
 
             if req.document_id:
@@ -104,4 +129,5 @@ class ExtractionRequestService:
         except (SQLAlchemyError, ValueError, TypeError):
             db.session.rollback()
             raise
+        db.session.refresh(req)
         return req

@@ -124,7 +124,7 @@ export const DocumentExtractionForm = ({
                     Fill in the document details and upload a file to extract document conditions automatically.
                 </Typography>
                 <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                    <strong>Note:</strong> Amendments must be entered manually.
+                    <strong>Note:</strong> Amendments must be added manually.
                 </Typography>
             </Box>
         <Box padding={"24px"}>
@@ -184,7 +184,7 @@ export const DocumentExtractionForm = ({
                     </Box>
                     <Box flex={1}>
                         <Typography variant="body2" fontWeight={500} marginBottom={"4px"}>
-                            Display Name <span style={{ color: "red" }}>*</span>
+                            Document <span style={{ color: "red" }}>*</span>
                         </Typography>
                         <Autocomplete
                             options={documentLabels}
@@ -216,7 +216,7 @@ export const DocumentExtractionForm = ({
                     >
                         {showMore ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
                         <Typography variant="body2" color="primary.main">
-                            Show more details
+                            Show document details
                         </Typography>
                     </Box>
                     {showMore && (
