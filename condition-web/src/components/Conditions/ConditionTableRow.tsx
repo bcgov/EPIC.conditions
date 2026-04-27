@@ -53,7 +53,6 @@ export default function ConditionTableRow({
           <TableCell
             align="left"
             sx={{
-              borderTop: border,
               borderBottom: border,
               p: BCDesignTokens.layoutPaddingXsmall,
             }}
@@ -64,7 +63,6 @@ export default function ConditionTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
@@ -74,7 +72,6 @@ export default function ConditionTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
@@ -108,7 +105,6 @@ export default function ConditionTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
@@ -118,7 +114,6 @@ export default function ConditionTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
@@ -128,7 +123,6 @@ export default function ConditionTableRow({
         {tableType == "consolidated" && <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
@@ -138,7 +132,6 @@ export default function ConditionTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
@@ -148,7 +141,6 @@ export default function ConditionTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             p: BCDesignTokens.layoutPaddingXsmall,
           }}
