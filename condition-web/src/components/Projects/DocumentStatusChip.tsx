@@ -43,8 +43,8 @@ export default function DocumentStatusChip({
   return (
     <Chip
       sx={{
-        width: "160px",
         justifyContent: "center",
+        "& .MuiChip-label": { px: "20px" },
         ...style.sx,
       }}
       label={style.label}
