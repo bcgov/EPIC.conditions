@@ -10,7 +10,10 @@ export const StyledTableHeadCell = styled(TableCell)(() => ({
   "&:hover": {
     color: BCDesignTokens.surfaceColorMenusHover,
   },
-  border: "none",
+  borderTop: "none",
+  borderLeft: "none",
+  borderRight: "none",
+  borderBottom: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
 }));
 
 export const StyledLabel = styled(Typography)(() => ({
