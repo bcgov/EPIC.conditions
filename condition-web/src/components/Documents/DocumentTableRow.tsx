@@ -36,7 +36,6 @@ export default function DocumentTableRow({ projectId, document }: DocumentRowPro
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             padding: BCDesignTokens.layoutPaddingXsmall,
             width: '50%', // Ensure width matches header
@@ -66,7 +65,6 @@ export default function DocumentTableRow({ projectId, document }: DocumentRowPro
         <TableCell
           align="right"
           sx={{
-            borderTop: border,
             borderBottom: border,
             padding: BCDesignTokens.layoutPaddingXsmall,
             width: '25%', // Ensure width matches header
@@ -77,7 +75,6 @@ export default function DocumentTableRow({ projectId, document }: DocumentRowPro
         <TableCell
           align="right"
           sx={{
-            borderTop: border,
             borderBottom: border,
             padding: BCDesignTokens.layoutPaddingXsmall,
             width: '25%', // Ensure width matches header

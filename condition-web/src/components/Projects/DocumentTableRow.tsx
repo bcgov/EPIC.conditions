@@ -35,7 +35,6 @@ export default function DocumentTableRow({
         <TableCell
           align="left"
           sx={{
-            borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
             paddingLeft: BCDesignTokens.layoutPaddingXsmall,
@@ -66,7 +65,6 @@ export default function DocumentTableRow({
         <TableCell
           align="right"
           sx={{
-            borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
             width: '20%',
@@ -77,7 +75,6 @@ export default function DocumentTableRow({
         <TableCell
           align="right"
           sx={{
-            borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
             width: '20%',
@@ -88,7 +85,6 @@ export default function DocumentTableRow({
         <TableCell
           align="right"
           sx={{
-            borderTop: border,
             borderBottom: border,
             py: BCDesignTokens.layoutPaddingXsmall,
             paddingRight: BCDesignTokens.layoutPaddingXsmall,
