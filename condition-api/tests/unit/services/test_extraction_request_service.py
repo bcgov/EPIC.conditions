@@ -1,5 +1,6 @@
 """Tests for extraction request service behavior."""
 
+from datetime import datetime
 import uuid
 
 from flask import g
@@ -164,3 +165,58 @@ def test_import_request_loads_conditions_into_existing_document():
 
     attributes = db.session.query(ConditionAttribute).filter_by(condition_id=condition.id).all()
     assert len(attributes) >= 6
+
+
+def test_get_all_adds_queue_position_and_estimates(monkeypatch):
+    """Pending and processing requests should expose queue metadata for the UI."""
+    project = factory_project_model(project_id=str(uuid.uuid4()))
+    document = factory_document_model(project_id=project.project_id)
+
+    processing_request = ExtractionRequest(
+        project_id=project.project_id,
+        document_id=document.document_id,
+        document_label="Processing document",
+        s3_url="condition_extraction_documents/processing.pdf",
+        status="processing",
+        created_date=datetime(2026, 4, 29, 8, 0, 0),
+        updated_date=datetime(2026, 4, 29, 8, 5, 0),
+    )
+    first_pending_request = ExtractionRequest(
+        project_id=project.project_id,
+        document_id=document.document_id,
+        document_label="Queued document 1",
+        s3_url="condition_extraction_documents/pending-1.pdf",
+        status="pending",
+        created_date=datetime(2026, 4, 29, 8, 1, 0),
+    )
+    second_pending_request = ExtractionRequest(
+        project_id=project.project_id,
+        document_id=document.document_id,
+        document_label="Queued document 2",
+        s3_url="condition_extraction_documents/pending-2.pdf",
+        status="pending",
+        created_date=datetime(2026, 4, 29, 8, 2, 0),
+    )
+    db.session.add_all([processing_request, first_pending_request, second_pending_request])
+    db.session.commit()
+
+    monkeypatch.setattr(
+        ExtractionRequestService,
+        "_get_queue_reference_time",
+        staticmethod(lambda: datetime(2026, 4, 29, 8, 10, 0)),
+    )
+
+    results = ExtractionRequestService.get_all()
+    results_by_id = {result.id: result for result in results}
+
+    assert results_by_id[processing_request.id].queue_position is None
+    assert results_by_id[processing_request.id].estimated_start_at == datetime(2026, 4, 29, 8, 5, 0)
+    assert results_by_id[processing_request.id].estimated_complete_at == datetime(2026, 4, 29, 8, 20, 0)
+
+    assert results_by_id[first_pending_request.id].queue_position == 1
+    assert results_by_id[first_pending_request.id].estimated_start_at == datetime(2026, 4, 29, 8, 40, 0)
+    assert results_by_id[first_pending_request.id].estimated_complete_at == datetime(2026, 4, 29, 8, 55, 0)
+
+    assert results_by_id[second_pending_request.id].queue_position == 2
+    assert results_by_id[second_pending_request.id].estimated_start_at == datetime(2026, 4, 29, 9, 10, 0)
+    assert results_by_id[second_pending_request.id].estimated_complete_at == datetime(2026, 4, 29, 9, 25, 0)

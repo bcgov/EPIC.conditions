@@ -49,6 +49,22 @@ class _Config:
     EXTRACTOR_API_KEY = os.getenv('EXTRACTOR_API_KEY', '')
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
+    # Queue timing settings shared with condition-api for UI estimates.
+    #
+    # The cron schedule itself is still managed by cron/crontab or a deployment
+    # config map. If that schedule changes, update
+    # EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES here and in condition-api so the UI
+    # queue estimates stay accurate.
+    EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES = int(
+        os.getenv('EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES', '30')
+    )
+    EXTRACTION_PROCESSING_ESTIMATE_MINUTES = int(
+        os.getenv('EXTRACTION_PROCESSING_ESTIMATE_MINUTES', '15')
+    )
+    EXTRACTION_PROCESSING_STALE_AFTER_MINUTES = int(
+        os.getenv('EXTRACTION_PROCESSING_STALE_AFTER_MINUTES', '120')
+    )
+
 
 class DevConfig(_Config):
     DEBUG = True

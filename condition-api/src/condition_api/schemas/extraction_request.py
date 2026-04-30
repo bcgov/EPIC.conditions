@@ -20,3 +20,6 @@ class ExtractionRequestSchema(Schema):
     updated_date = fields.Str(dump_only=True, allow_none=True)
     uploaded_by_name = fields.Str(attribute="uploaded_by_name", dump_only=True, allow_none=True)
     imported_by_name = fields.Str(attribute="imported_by_name", dump_only=True, allow_none=True)
+    queue_position = fields.Int(dump_only=True, allow_none=True)
+    estimated_start_at = fields.DateTime(dump_only=True, allow_none=True)
+    estimated_complete_at = fields.DateTime(dump_only=True, allow_none=True)
