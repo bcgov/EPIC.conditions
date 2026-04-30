@@ -170,7 +170,11 @@ def test_import_request_loads_conditions_into_existing_document():
 def test_get_all_adds_queue_position_and_estimates(monkeypatch):
     """Pending and processing requests should expose queue metadata for the UI."""
     project = factory_project_model(project_id=str(uuid.uuid4()))
-    document = factory_document_model(project_id=project.project_id)
+    doc_type = get_seeded_document_type("Certificate")
+    document = factory_document_model(
+        project_id=project.project_id,
+        document_type_id=doc_type.id,
+    )
 
     processing_request = ExtractionRequest(
         project_id=project.project_id,

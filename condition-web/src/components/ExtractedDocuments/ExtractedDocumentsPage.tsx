@@ -242,7 +242,7 @@ export default function ExtractedDocumentsPage() {
       return `~${hours} hour${hours === 1 ? "" : "s"}`;
     }
 
-    return `~${minutes} minute${minutes === 1 ? "" : "s"}`;
+    return `~${minutes} minutes`;
   };
 
   const getPendingStatusDetails = (req: ExtractionRequest) => {
