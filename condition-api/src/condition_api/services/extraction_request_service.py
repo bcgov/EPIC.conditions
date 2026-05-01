@@ -1,6 +1,6 @@
 """Service for extraction request management."""
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
@@ -74,6 +74,12 @@ class ExtractionRequestService:
         return datetime.utcnow()
 
     @staticmethod
+    def _get_minutes_elapsed(start_time: datetime, reference_time: datetime) -> int:
+        """Return whole elapsed minutes between two timestamps."""
+        elapsed_seconds = max(0, (reference_time - start_time).total_seconds())
+        return int(elapsed_seconds // 60)
+
+    @staticmethod
     def _apply_queue_metadata(requests):
         """Attach transient queue and ETA fields for UI display.
 
@@ -86,14 +92,15 @@ class ExtractionRequestService:
 
         for request in requests:
             request.queue_position = None
-            request.estimated_start_at = None
-            request.estimated_complete_at = None
+            request.estimated_wait_minutes = None
+            request.estimated_ready_minutes = None
 
             if request.status == 'processing':
                 started_at = request.updated_date or request.created_date or now
-                request.estimated_start_at = started_at
-                request.estimated_complete_at = started_at + timedelta(
-                    minutes=processing_estimate_minutes
+                elapsed_minutes = ExtractionRequestService._get_minutes_elapsed(started_at, now)
+                request.estimated_wait_minutes = 0
+                request.estimated_ready_minutes = max(
+                    1, processing_estimate_minutes - elapsed_minutes
                 )
 
         pending_requests = sorted(
@@ -102,11 +109,10 @@ class ExtractionRequestService:
         )
 
         for queue_position, request in enumerate(pending_requests, start=1):
-            estimated_start_at = now + timedelta(minutes=cron_interval_minutes * queue_position)
             request.queue_position = queue_position
-            request.estimated_start_at = estimated_start_at
-            request.estimated_complete_at = estimated_start_at + timedelta(
-                minutes=processing_estimate_minutes
+            request.estimated_wait_minutes = cron_interval_minutes * queue_position
+            request.estimated_ready_minutes = (
+                request.estimated_wait_minutes + processing_estimate_minutes
             )
 
     @staticmethod

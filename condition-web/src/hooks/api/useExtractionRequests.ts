@@ -41,8 +41,8 @@ export interface ExtractionRequest {
     uploaded_by_name?: string | null;
     imported_by_name?: string | null;
     queue_position?: number | null;
-    estimated_start_at?: string | null;
-    estimated_complete_at?: string | null;
+    estimated_wait_minutes?: number | null;
+    estimated_ready_minutes?: number | null;
 }
 
 export interface CreateExtractionRequestPayload {

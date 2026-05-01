@@ -214,13 +214,13 @@ def test_get_all_adds_queue_position_and_estimates(monkeypatch):
     results_by_id = {result.id: result for result in results}
 
     assert results_by_id[processing_request.id].queue_position is None
-    assert results_by_id[processing_request.id].estimated_start_at == datetime(2026, 4, 29, 8, 5, 0)
-    assert results_by_id[processing_request.id].estimated_complete_at == datetime(2026, 4, 29, 8, 20, 0)
+    assert results_by_id[processing_request.id].estimated_wait_minutes == 0
+    assert results_by_id[processing_request.id].estimated_ready_minutes == 10
 
     assert results_by_id[first_pending_request.id].queue_position == 1
-    assert results_by_id[first_pending_request.id].estimated_start_at == datetime(2026, 4, 29, 8, 40, 0)
-    assert results_by_id[first_pending_request.id].estimated_complete_at == datetime(2026, 4, 29, 8, 55, 0)
+    assert results_by_id[first_pending_request.id].estimated_wait_minutes == 30
+    assert results_by_id[first_pending_request.id].estimated_ready_minutes == 45
 
     assert results_by_id[second_pending_request.id].queue_position == 2
-    assert results_by_id[second_pending_request.id].estimated_start_at == datetime(2026, 4, 29, 9, 10, 0)
-    assert results_by_id[second_pending_request.id].estimated_complete_at == datetime(2026, 4, 29, 9, 25, 0)
+    assert results_by_id[second_pending_request.id].estimated_wait_minutes == 60
+    assert results_by_id[second_pending_request.id].estimated_ready_minutes == 75

@@ -128,7 +128,6 @@ export default function ExtractedDocumentsPage() {
 
   const [previewRequest, setPreviewRequest] = useState<ExtractionRequest | null>(null);
   const [stopRequest, setStopRequest] = useState<ExtractionRequest | null>(null);
-  const [currentTimeMs, setCurrentTimeMs] = useState(() => Date.now());
   const [sectionsOpen, setSectionsOpen] = useState({
     complete: true,
     progress: true,
@@ -138,14 +137,6 @@ export default function ExtractedDocumentsPage() {
   useEffect(() => {
     replaceBreadcrumb("Extracted Documents", "Extracted Documents", "/extracted-documents", true);
   }, [replaceBreadcrumb]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setCurrentTimeMs(Date.now());
-    }, 60_000);
-
-    return () => window.clearInterval(timer);
-  }, []);
 
   const getErrorMessage = (error: unknown, fallback: string) => {
     if (error instanceof AxiosError) {
@@ -218,23 +209,6 @@ export default function ExtractedDocumentsPage() {
     );
   };
 
-  const parseApiDateAsUtc = (dateValue?: string | null) => {
-    if (!dateValue) return null;
-
-    const normalizedDateValue =
-      /(?:Z|[+-]\d{2}:\d{2})$/.test(dateValue) ? dateValue : `${dateValue}Z`;
-    const parsedTimeMs = new Date(normalizedDateValue).getTime();
-
-    return Number.isNaN(parsedTimeMs) ? null : parsedTimeMs;
-  };
-
-  const getRemainingMinutes = (dateValue?: string | null) => {
-    const targetTimeMs = parseApiDateAsUtc(dateValue);
-    if (targetTimeMs === null) return null;
-
-    return Math.max(1, Math.ceil((targetTimeMs - currentTimeMs) / 60_000));
-  };
-
   const formatEstimatedDuration = (minutes: number | null) => {
     if (!minutes) return "Updating estimate";
     if (minutes <= 1) return "under 1 minute";
@@ -258,7 +232,7 @@ export default function ExtractedDocumentsPage() {
       return {
         title: "Processing",
         subtitle: `Estimated time remaining: ${formatEstimatedDuration(
-          getRemainingMinutes(req.estimated_complete_at)
+          req.estimated_ready_minutes ?? null
         )}`,
       };
     }
@@ -267,7 +241,7 @@ export default function ExtractedDocumentsPage() {
       title: "Queued",
       subtitle: req.queue_position
         ? `Queue position ${req.queue_position} • Estimated start: ${formatEstimatedDuration(
-            getRemainingMinutes(req.estimated_start_at)
+            req.estimated_wait_minutes ?? null
           )}`
         : "Waiting for the next available extraction run",
     };
