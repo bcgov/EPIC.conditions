@@ -20,6 +20,7 @@ import LoadingButton from "../Shared/Buttons/LoadingButton";
 import ConditionFilters from "@/components/Filters/ConditionFilters";
 import { useConditionFilters } from "@/components/Filters/conditionFilterStore";
 import { CONDITION_STATUS, ConditionStatus } from "@/models/Condition";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -52,6 +53,7 @@ export const Conditions = ({
   onDocumentLabelChange
 }: ConditionsParam) => {
   const navigate = useNavigate();
+  const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [hasAmendments, setHasAmendments] = useState(false);
   const [isToggleEnabled, setIsToggleEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,22 +193,24 @@ export const Conditions = ({
                 </Typography>
               </Grid>
               <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <LoadingButton
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  startIcon={<AddIcon fontSize="small" />}
-                  sx={{
-                    borderRadius: "4px",
-                    minWidth: "170px",
-                    maxWidth: "200px",
-                    height: "42px",
-                  }}
-                  onClick={() => handleOpenCreateNewCondition()}
-                  loading={loading}
-                >
-                  Add Condition
-                </LoadingButton>
+                {canManage && (
+                  <LoadingButton
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    startIcon={<AddIcon fontSize="small" />}
+                    sx={{
+                      borderRadius: "4px",
+                      minWidth: "170px",
+                      maxWidth: "200px",
+                      height: "42px",
+                    }}
+                    onClick={() => handleOpenCreateNewCondition()}
+                    loading={loading}
+                  >
+                    Add Condition
+                  </LoadingButton>
+                )}
               </Grid>
             </Grid>
             <Grid container direction="row" px={2} pb={3} wrap="wrap">
@@ -255,47 +259,49 @@ export const Conditions = ({
                 </Typography>
                 )}
               </Grid>
-              <Grid
-                item
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                  borderLeft: "none",
-                  borderRadius: "0 4px 4px 0",
-                  height: "40px",
-                }}
-              >
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleEditClick}
+              {canManage && (
+                <Grid
+                  item
                   sx={{
-                    alignSelf: "stretch",
-                    borderRadius: "0 4px 4px 0",
+                    display: "flex",
+                    justifyContent: "flex-start",
                     border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-                    backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
-                    height: '100%',
-                    padding: '2.25px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: "black",
-                    '&:hover': {
-                      backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
-                    },
+                    borderLeft: "none",
+                    borderRadius: "0 4px 4px 0",
+                    height: "40px",
                   }}
                 >
-                  <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                    {isEditing ?
-                      <SaveAltIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" /> :
-                      <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
-                    }
-                    <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
-                      {isEditing ? "Save" : "Edit"}
-                    </Box>
-                  </Typography>
-                </Button>
-              </Grid>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleEditClick}
+                    sx={{
+                      alignSelf: "stretch",
+                      borderRadius: "0 4px 4px 0",
+                      border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+                      backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                      height: '100%',
+                      padding: '2.25px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: "black",
+                      '&:hover': {
+                        backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                      },
+                    }}
+                  >
+                    <Typography component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                      {isEditing ?
+                        <SaveAltIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" /> :
+                        <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                      }
+                      <Box component="span" sx={{ mr: 1, color: "#255A90", fontWeight: "bold" }}>
+                        {isEditing ? "Save" : "Edit"}
+                      </Box>
+                    </Typography>
+                  </Button>
+                </Grid>
+              )}
               <Grid item sx={{ display: "flex"}} px={1}>
                 {hasAmendments && (
                   <Box sx={{ display: "flex", justifyContent: 'center', alignItems: "center" }}>

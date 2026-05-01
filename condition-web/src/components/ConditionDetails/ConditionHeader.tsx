@@ -12,6 +12,7 @@ import { PartialUpdateTopicTagsModel } from "@/models/Condition";
 import ChipInput from "../Shared/Chips/ChipInput";
 import { HTTP_STATUS_CODES, QUERY_KEY } from "../../hooks/api/constants";
 import { useQueryClient } from "@tanstack/react-query";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 type ConditionHeaderProps = {
     conditionId: number;
@@ -29,6 +30,7 @@ const ConditionHeader = ({
     setCondition
 }: ConditionHeaderProps) => {
     const queryClient = useQueryClient();
+    const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
     const [editConditionMode, setEditConditionMode] = useState(false);
     const [conditionNumber, setConditionNumber] = useState(condition?.condition_number || "");
     const [conditionName, setConditionName] = useState(condition?.condition_name || "");
@@ -294,7 +296,7 @@ const ConditionHeader = ({
                         </Box>
                       )}
                     </Box>
-                    {!condition.is_topic_tags_approved && !condition.condition_name && (
+                    {canManage && !condition.is_topic_tags_approved && !condition.condition_name && (
                       <Button
                         variant="contained"
                         size="small"
@@ -325,7 +327,7 @@ const ConditionHeader = ({
                         </Typography>
                       </Button>
                     )}
-                    {!condition.is_topic_tags_approved && condition.condition_name && (
+                    {canManage && !condition.is_topic_tags_approved && condition.condition_name && (
                       <Button
                         variant="contained"
                         size="small"
@@ -499,7 +501,7 @@ const ConditionHeader = ({
               </Grid>
             </Box>
 
-            {!condition.is_topic_tags_approved && (
+            {canManage && !condition.is_topic_tags_approved && (
               <Button
                 variant="contained"
                 size="small"
@@ -550,7 +552,7 @@ const ConditionHeader = ({
             paddingBottom={1}
           >
             <Stack direction="row" spacing={1}>
-                {!editMode &&
+                {canManage && !editMode &&
                     <Button
                         variant="contained"
                         color="primary"

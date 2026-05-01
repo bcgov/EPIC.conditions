@@ -50,7 +50,7 @@ class ConditionAttributeaResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition attributes data."""
         try:
@@ -70,7 +70,7 @@ class ConditionAttributeaResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def delete(condition_id):
         """Remove condition attribute data."""
         try:

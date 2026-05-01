@@ -52,7 +52,7 @@ class ConditionDetailsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(project_id, document_id, condition_id):
         """Fetch conditions and condition attributes by project ID."""
@@ -83,7 +83,7 @@ class ConditionDetailsPatchResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition data."""
         try:
@@ -116,7 +116,7 @@ class ConditionDetailResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by project id and document id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(project_id, document_id):
         """Fetch conditions and condition attributes by project ID."""
@@ -140,7 +140,7 @@ class ConditionDetailResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Create new condition")
     @API.response(code=HTTPStatus.OK, model=condition_model, description="Create condition")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def post(project_id, document_id):
         """Create a new condition."""
@@ -182,7 +182,7 @@ class ConditionResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Get conditions by condition id")
     @API.response(code=HTTPStatus.CREATED, model=condition_model, description="Get conditions")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value, EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def get(condition_id):
         """Fetch conditions and condition attributes by condition ID."""
@@ -206,7 +206,7 @@ class ConditionResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def patch(condition_id):
         """Edit condition data."""
         try:
@@ -249,7 +249,7 @@ class ConditionResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def delete(condition_id):
         """Remove condition data."""
         try:

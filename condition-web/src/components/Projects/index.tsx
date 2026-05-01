@@ -26,6 +26,7 @@ type ProjectsParams = {
 };
 
 export const Projects = ({ projects, documentType }: ProjectsParams) => {
+  const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const projectArray = projects || [];
   const itemsPerPage = 10; // Number of projects per page
   const [projectSearch, setProjectSearch] = useState("");
@@ -93,25 +94,27 @@ export const Projects = ({ projects, documentType }: ProjectsParams) => {
           <Box sx={{ flexGrow: 1 }} />
 
           {/* Add Document Button */}
-          <LoadingButton
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{
-              flex: { xs: "auto", sm: "0 0 15%" }, // Auto width, no extra space
-              width: { xs: "100%", sm: "auto" }, // Full width on mobile, auto on large screens
-              height: "70%",
-              borderRadius: "4px",
-              paddingLeft: "2px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={handleOpenCreateNewDocument}
-            loading={isOpeningModal}
-          >
-            <AddIcon fontSize="small" /> {hasExtractionRole ? "Add/Extract Document" : "Add Document"}
-          </LoadingButton>
+          {canManage && (
+            <LoadingButton
+              variant="contained"
+              color="primary"
+              size="small"
+              sx={{
+                flex: { xs: "auto", sm: "0 0 15%" },
+                width: { xs: "100%", sm: "auto" },
+                height: "70%",
+                borderRadius: "4px",
+                paddingLeft: "2px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onClick={handleOpenCreateNewDocument}
+              loading={isOpeningModal}
+            >
+              <AddIcon fontSize="small" /> {hasExtractionRole ? "Add/Extract Document" : "Add Document"}
+            </LoadingButton>
+          )}
         </Stack>
       </Grid>
       <Grid item sx={{ width: '100%', marginTop: 1 }} >

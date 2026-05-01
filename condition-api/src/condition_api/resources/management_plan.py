@@ -50,7 +50,7 @@ class ManagementPlanResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def patch(plan_id):
         """Edit management plan data."""
         try:
@@ -68,7 +68,7 @@ class ManagementPlanResource(Resource):
     )
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @cross_origin(origins=allowedorigins())
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def delete(plan_id):
         """Remove management plan data."""
         try:

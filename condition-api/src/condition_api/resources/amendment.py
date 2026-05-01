@@ -47,7 +47,7 @@ class AmendmentsResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Create new amendments")
     @API.response(code=HTTPStatus.OK, model=amendment_model, description="Create amendments")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
-    @auth.has_one_of_roles([EpicConditionRole.VIEW_CONDITIONS.value])
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def post(document_id):
         """Create a new amendment."""

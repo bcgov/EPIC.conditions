@@ -11,6 +11,7 @@ import { QUERY_KEY } from "@/hooks/api/constants";
 import { BCDesignTokens } from "epic.theme";
 import SubconditionComponent from "./SubCondition";
 import { useSubconditionHandler } from "@/hooks/api/useSubconditionHandler";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import {
   DragDropContext,
   Droppable,
@@ -48,6 +49,7 @@ const ConditionDescription = memo(({
   setIsLoading
 }: ConditionDescriptionProps) => {
   const queryClient = useQueryClient();
+  const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [isEditing, setIsEditing] = useState(editMode);
   const [showEditingError, setShowEditingError] = useState(false);
   const [activeDroppableId, setActiveDroppableId] = useState<string | null>(null);
@@ -225,7 +227,7 @@ const ConditionDescription = memo(({
       </DragDropContext>
       <Stack sx={{ mt: 5 }} direction={"row"}>
         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-          {isEditing && (
+          {canManage && isEditing && (
             <Button
               variant="contained"
               color="secondary"
@@ -244,20 +246,22 @@ const ConditionDescription = memo(({
         </Box>
         <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <Button
+            {canManage && (
+              <Button
                 variant="contained"
                 color="primary"
                 size="small"
                 sx={{
-                  width: "260px", 
+                  width: "260px",
                   padding: "4px 8px",
                   borderRadius: "4px",
                 }}
                 onClick={approveConditionDescription}
-            >
-              {isConditionApproved ?
-              'Un-approve Condition Requirements' : 'Approve Condition Requirements'}
-            </Button>
+              >
+                {isConditionApproved ?
+                'Un-approve Condition Requirements' : 'Approve Condition Requirements'}
+              </Button>
+            )}
             {showEditingError && isEditing && (
               <Box
                 sx={{

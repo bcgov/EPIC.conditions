@@ -29,6 +29,7 @@ import { useGetAttributes } from "@/hooks/api/useAttributeKey";
 import ErrorMessage from "../ErrorMessage";
 import { ApproveButton } from "../ApproveButton";
 import { validateRequiredAttributes } from "@/utils/attributeValidation";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 type ConditionAttributeTableProps = {
     condition: ConditionModel;
@@ -42,6 +43,7 @@ const ConditionAttributeTable = memo(({
     origin
   }: ConditionAttributeTableProps) => {
     const queryClient = useQueryClient();
+    const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
     const [conditionAttributeError, setConditionAttributeError] = useState(false);
     const [isAnyRowEditing, setIsAnyRowEditing] = useState(false);
     const [showEditingError, setShowEditingError] = useState(false);
@@ -371,7 +373,7 @@ const ConditionAttributeTable = memo(({
 
         <Stack sx={{ mt: 5 }} direction={"row"}>
           <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-            {!condition.is_condition_attributes_approved 
+            {canManage && !condition.is_condition_attributes_approved
              && attributesData && attributesData?.length > 0 && (
               <Button
                 variant="contained"
@@ -408,7 +410,7 @@ const ConditionAttributeTable = memo(({
             />
           }
 
-          {origin !== 'create' && (
+          {canManage && origin !== 'create' && (
             <Box width="50%" sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <ApproveButton
                 isApproved={condition.is_condition_attributes_approved || false}
