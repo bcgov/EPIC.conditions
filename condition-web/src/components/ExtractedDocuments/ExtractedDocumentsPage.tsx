@@ -218,11 +218,19 @@ export default function ExtractedDocumentsPage() {
     );
   };
 
-  const getRemainingMinutes = (dateValue?: string | null) => {
+  const parseApiDateAsUtc = (dateValue?: string | null) => {
     if (!dateValue) return null;
 
-    const targetTimeMs = new Date(dateValue).getTime();
-    if (Number.isNaN(targetTimeMs)) return null;
+    const normalizedDateValue =
+      /(?:Z|[+-]\d{2}:\d{2})$/.test(dateValue) ? dateValue : `${dateValue}Z`;
+    const parsedTimeMs = new Date(normalizedDateValue).getTime();
+
+    return Number.isNaN(parsedTimeMs) ? null : parsedTimeMs;
+  };
+
+  const getRemainingMinutes = (dateValue?: string | null) => {
+    const targetTimeMs = parseApiDateAsUtc(dateValue);
+    if (targetTimeMs === null) return null;
 
     return Math.max(1, Math.ceil((targetTimeMs - currentTimeMs) / 60_000));
   };
