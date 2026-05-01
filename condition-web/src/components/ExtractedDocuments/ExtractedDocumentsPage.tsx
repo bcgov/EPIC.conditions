@@ -231,7 +231,7 @@ export default function ExtractedDocumentsPage() {
     if (req.status === "processing") {
       return {
         title: "Processing",
-        subtitle: `Estimated time remaining: ${formatEstimatedDuration(
+        subtitle: `Estimated time: ${formatEstimatedDuration(
           req.estimated_ready_minutes ?? null
         )}`,
       };
@@ -239,17 +239,29 @@ export default function ExtractedDocumentsPage() {
 
     return {
       title: "Queued",
-      subtitle: req.queue_position
-        ? `Queue position ${req.queue_position} • Estimated start: ${formatEstimatedDuration(
-            req.estimated_wait_minutes ?? null
-          )}`
-        : "Waiting for the next available extraction run",
+      subtitle: `Estimated time: ${formatEstimatedDuration(
+        req.estimated_wait_minutes ?? null
+      )}`,
     };
   };
 
   const completedRequests =
     requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
-  const pendingRequests = requests?.filter((r) => r.status === "pending" || r.status === "processing") ?? [];
+  const pendingRequests =
+    requests
+      ?.filter((r) => r.status === "pending" || r.status === "processing")
+      .sort((left, right) => {
+        if (left.status === "processing" && right.status !== "processing") {
+          return -1;
+        }
+
+        if (right.status === "processing" && left.status !== "processing") {
+          return 1;
+        }
+
+        return (left.queue_position ?? Number.MAX_SAFE_INTEGER) -
+          (right.queue_position ?? Number.MAX_SAFE_INTEGER);
+      }) ?? [];
   const archivedRequests =
     requests?.filter((r) => r.status === "imported") ?? [];
 
