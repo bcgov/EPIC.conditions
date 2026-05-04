@@ -1,3 +1,5 @@
+import { AppConfig } from "@/utils/config";
+
 export const CONDITION_KEYS = {
   REQUIRES_CONSULTATION: "Requires consultation",
   SUBMITTED_TO_EAO_FOR: "Submitted to EAO for",
@@ -65,7 +67,7 @@ export const SELECT_OPTIONS = {
     { value: "Acceptance", label: "Acceptance" },
     { value: "Review", label: "Review" },
     { value: "Satisfaction", label: "Satisfaction" },
-    { value: "N/A", label: "N/A" },
+    ...(AppConfig.enableNewSubmitFlow ? [{ value: "N/A", label: "N/A" }] : []),
   ],
   [CONDITION_KEYS.MILESTONES_RELATED_TO_PLAN_SUBMISSION]: [
     { value: "Pre-Construction", label: "Pre-Construction" },
