@@ -22,7 +22,11 @@ function Auth() {
       guid: user?.profile.sub,
     });
 
-  const hasRequiredRole = useHasAllowedRoles([KeycloakRoles.VIEW_CONDITIONS]);
+  const hasRequiredRole = useHasAllowedRoles([
+    KeycloakRoles.VIEW_CONDITIONS,
+    KeycloakRoles.EXTRACT_CONDITIONS,
+    KeycloakRoles.MANAGE_CONDITIONS,
+  ]);
 
   const isLoading = isUserAuthLoading || isUserAccountLoading;
 
