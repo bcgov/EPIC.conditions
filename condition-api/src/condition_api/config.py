@@ -85,6 +85,25 @@ class _Config():  # pylint: disable=too-few-public-methods
     DOCGEN_SERVICE_URL = os.getenv('DOCGEN_SERVICE_URL', '')
     EAO_LOGO_URL = os.getenv('EAO_LOGO_URL', '')
 
+    # Extraction queue timing.
+    #
+    # These values must be kept in sync with condition-cron configuration.
+    # The actual job schedule still lives in condition-cron/cron/crontab (or the
+    # deployed config map), while the API uses these values to estimate queue and
+    # processing times for the UI.
+    #
+    # If the cron schedule changes manually, update
+    # EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES here as well.
+    EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES = int(
+        os.getenv('EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES', '30')
+    )
+    EXTRACTION_PROCESSING_ESTIMATE_MINUTES = int(
+        os.getenv('EXTRACTION_PROCESSING_ESTIMATE_MINUTES', '15')
+    )
+    EXTRACTION_PROCESSING_STALE_AFTER_MINUTES = int(
+        os.getenv('EXTRACTION_PROCESSING_STALE_AFTER_MINUTES', '120')
+    )
+
     # Service account details
     KEYCLOAK_BASE_URL = os.getenv('KEYCLOAK_BASE_URL')
     KEYCLOAK_REALMNAME = os.getenv('KEYCLOAK_REALMNAME', 'condition')

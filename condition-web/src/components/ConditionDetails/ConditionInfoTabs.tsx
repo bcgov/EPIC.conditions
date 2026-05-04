@@ -7,6 +7,7 @@ import { BCDesignTokens } from 'epic.theme';
 import ConditionAttribute from './ConditionAttribute';
 import ConditionDescription from './ConditionDescription';
 import { ConditionModel } from "@/models/Condition";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 const StyledTabs = styled(Tabs)({
     transition: 'none',
@@ -59,6 +60,7 @@ const ConditionInfoTabs: React.FC<{
     condition: ConditionModel;
     setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 }> = ({ projectId, documentId, conditionId, condition, setCondition }) => {
+    const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
     const [selectedTab, setSelectedTab] = useState('requirements');
     const [editMode, setEditMode] = useState(false);
     const [isConditionApproved, setIsConditionApproved] = useState(condition.is_approved || false);
@@ -91,7 +93,7 @@ const ConditionInfoTabs: React.FC<{
                 </StyledTabs>
 
                 {/* Conditionally render the Edit button only if the "requirements" tab is selected */}
-                {selectedTab === 'requirements' && !isConditionApproved && (
+                {canManage && selectedTab === 'requirements' && !isConditionApproved && (
                     <EditButton
                         variant="contained"
                         size="small"

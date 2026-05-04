@@ -1,2 +1,18 @@
-# PROCESS_DOCUMENTS — runs every 30 minutes
+# PROCESS_DOCUMENTS schedule used by go-crond.
+#
+# IMPORTANT:
+# - If you change this cron expression in the deployment config map, also update
+#   EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES in both:
+#     1. condition-cron config/env
+#     2. condition-api config/env
+# - The web UI uses EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES to estimate when the
+#   next queued document will start processing.
+# - Keep these values aligned manually. The app no longer rewrites this file at
+#   container startup.
+#
+# Example:
+# - `*/30 * * * *` means every 30 minutes, so use
+#   EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES=30
+# - `0 * * * *` means every 60 minutes, so use
+#   EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES=60
 */30 * * * * default cd /condition-cron && ./run_process_documents.sh

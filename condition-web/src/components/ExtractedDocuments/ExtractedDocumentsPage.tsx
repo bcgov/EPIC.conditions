@@ -19,7 +19,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import { useNavigate } from "@tanstack/react-router";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import { ExtractionPreviewModal } from "./ExtractionPreviewModal";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -120,6 +122,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 export default function ExtractedDocumentsPage() {
   const { replaceBreadcrumb } = useBreadCrumb();
   const navigate = useNavigate();
+  const hasExtractionRole = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS]);
   const { data: requests, isLoading, error } = useGetExtractionRequests();
   const { data: projects = [] } = useGetAllProjects();
   const importMutation = useImportExtractionRequest();
@@ -208,9 +211,59 @@ export default function ExtractedDocumentsPage() {
     );
   };
 
+  const formatEstimatedDuration = (minutes: number | null) => {
+    if (!minutes) return "Updating estimate";
+    if (minutes <= 1) return "under 1 minute";
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (hours > 0 && remainingMinutes > 0) {
+      return `~${hours}h ${remainingMinutes}m`;
+    }
+
+    if (hours > 0) {
+      return `~${hours} hour${hours === 1 ? "" : "s"}`;
+    }
+
+    return `~${minutes} minutes`;
+  };
+
+  const getPendingStatusDetails = (req: ExtractionRequest) => {
+    if (req.status === "processing") {
+      return {
+        title: "Processing",
+        subtitle: `Estimated time: ${formatEstimatedDuration(
+          req.estimated_ready_minutes ?? null
+        )}`,
+      };
+    }
+
+    return {
+      title: "Queued",
+      subtitle: `Estimated time: ${formatEstimatedDuration(
+        req.estimated_wait_minutes ?? null
+      )}`,
+    };
+  };
+
   const completedRequests =
     requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
-  const pendingRequests = requests?.filter((r) => r.status === "pending" || r.status === "processing") ?? [];
+  const pendingRequests =
+    requests
+      ?.filter((r) => r.status === "pending" || r.status === "processing")
+      .sort((left, right) => {
+        if (left.status === "processing" && right.status !== "processing") {
+          return -1;
+        }
+
+        if (right.status === "processing" && left.status !== "processing") {
+          return 1;
+        }
+
+        return (left.queue_position ?? Number.MAX_SAFE_INTEGER) -
+          (right.queue_position ?? Number.MAX_SAFE_INTEGER);
+      }) ?? [];
   const archivedRequests =
     requests?.filter((r) => r.status === "imported") ?? [];
 
@@ -271,13 +324,15 @@ export default function ExtractedDocumentsPage() {
         <Typography variant="h5" fontWeight="bold" color={colors.primary}>
           Extracted Documents
         </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate({ to: "/documents/extract" })}
-          sx={{ backgroundColor: colors.primary, textTransform: "none", borderRadius: 2 }}
-        >
-          + Add/Extract Document
-        </Button>
+        {hasExtractionRole && (
+          <Button
+            variant="contained"
+            onClick={() => navigate({ to: "/documents/extract", search: { manualEntry: false, projectId: undefined, documentTypeId: undefined, documentLabel: undefined, dateIssued: undefined } })}
+            sx={{ backgroundColor: colors.primary, textTransform: "none", borderRadius: 2 }}
+          >
+            + Add/Extract Document
+          </Button>
+        )}
       </Grid>
 
       <Grid item xs={12}>
@@ -405,10 +460,10 @@ export default function ExtractedDocumentsPage() {
               </Box>}
             </Paper>
 
-            {/* ── Extraction In Progress ────────────────────────────── */}
+            {/* ── Extraction Queue ───────────────────────────────────── */}
             <Paper elevation={0} sx={{ border: `1px solid ${colors.divider}`, borderRadius: 2, overflow: "hidden" }}>
               <SectionHeader
-                title="Extraction In Progress"
+                title="Extraction Queue"
                 expanded={sectionsOpen.progress}
                 onToggle={() => toggleSection("progress")}
                 backgroundColor="#FFF9E6"
@@ -418,71 +473,79 @@ export default function ExtractedDocumentsPage() {
               {sectionsOpen.progress && <Box p={2} display="flex" flexDirection="column" gap={2}>
                 {pendingRequests.length === 0 ? (
                   <Typography variant="body2" color="textSecondary" sx={{ px: 2 }}>
-                    No extractions currently in progress.
+                    No documents are currently queued or processing.
                   </Typography>
                 ) : (
-                  pendingRequests.map((req) => (
-                    <Box
-                      key={req.id}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 2,
-                        borderRadius: 1,
-                        border: `1px solid ${colors.pendingBorder}`,
-                        backgroundColor: colors.pendingBg,
-                      }}
-                    >
-                      <Box flex={1}>
-                        <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
-                          {getDocumentName(req)}
-                        </Typography>
-                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
-                          <Typography variant="caption" color="textSecondary">
-                            {getProjectName(req)}
-                          </Typography>
-                          {formatFileSize(req.file_size_bytes) && (
-                            <>
-                              <Typography variant="caption" color="textSecondary">•</Typography>
-                              <Typography variant="caption" color="textSecondary">
-                                {formatFileSize(req.file_size_bytes)}
-                              </Typography>
-                            </>
-                          )}
-                        </Box>
-                        {renderStaffAttribution(req)}
-                      </Box>
+                  pendingRequests.map((req) => {
+                    const pendingStatus = getPendingStatusDetails(req);
+
+                    return (
                       <Box
-                        flex={0.8}
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="flex-start"
-                        gap={1}
-                        px={2}
+                        key={req.id}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          p: 2,
+                          borderRadius: 1,
+                          border: `1px solid ${colors.pendingBorder}`,
+                          backgroundColor: colors.pendingBg,
+                        }}
                       >
-                        <CircularProgress
-                          size={16}
-                          thickness={4}
-                          sx={{
-                            color: colors.pendingAccent,
-                          }}
-                        />
-                        <Typography variant="body2" color={colors.pendingText}>
-                          {req.status === "processing" ? "Processing" : "Queued"}
-                        </Typography>
-                      </Box>
-                      <Box flex={0.2} display="flex" justifyContent="flex-end">
-                        <IconButton
-                          size="small"
-                          aria-label="Cancel extraction"
-                          onClick={() => setStopRequest(req)}
+                        <Box flex={1}>
+                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
+                            {getDocumentName(req)}
+                          </Typography>
+                          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
+                            <Typography variant="caption" color="textSecondary">
+                              {getProjectName(req)}
+                            </Typography>
+                            {formatFileSize(req.file_size_bytes) && (
+                              <>
+                                <Typography variant="caption" color="textSecondary">•</Typography>
+                                <Typography variant="caption" color="textSecondary">
+                                  {formatFileSize(req.file_size_bytes)}
+                                </Typography>
+                              </>
+                            )}
+                          </Box>
+                          {renderStaffAttribution(req)}
+                        </Box>
+                        <Box
+                          flex={0.8}
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="flex-start"
+                          gap={1.5}
+                          px={2}
                         >
-                          <CloseIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
-                        </IconButton>
+                          <ScheduleOutlinedIcon
+                            sx={{
+                              color: colors.pendingAccent,
+                              fontSize: 22,
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="body2" color={colors.bodyText} fontWeight="bold">
+                              {pendingStatus.title}
+                            </Typography>
+                            <Typography variant="body2" color={colors.pendingText}>
+                              {pendingStatus.subtitle}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box flex={0.2} display="flex" justifyContent="flex-end">
+                          <IconButton
+                            size="small"
+                            aria-label="Cancel extraction"
+                            onClick={() => setStopRequest(req)}
+                          >
+                            <CloseIcon fontSize="small" sx={{ color: colors.sectionHeaderChevron }} />
+                          </IconButton>
+                        </Box>
                       </Box>
-                    </Box>
-                  ))
+                    );
+                  })
                 )}
               </Box>}
             </Paper>

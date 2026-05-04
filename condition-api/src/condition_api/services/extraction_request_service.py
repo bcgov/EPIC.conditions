@@ -1,6 +1,8 @@
 """Service for extraction request management."""
 import logging
+from datetime import datetime
 
+from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
@@ -17,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 class ExtractionRequestService:
     """Service for managing extraction requests."""
+
+    ACTIVE_QUEUE_STATUSES = {'pending', 'processing'}
 
     @staticmethod
     def _get_current_staff_user():
@@ -65,6 +69,53 @@ class ExtractionRequestService:
         return request
 
     @staticmethod
+    def _get_queue_reference_time():
+        """Return the current reference time used for queue estimates."""
+        return datetime.utcnow()
+
+    @staticmethod
+    def _get_minutes_elapsed(start_time: datetime, reference_time: datetime) -> int:
+        """Return whole elapsed minutes between two timestamps."""
+        elapsed_seconds = max(0, (reference_time - start_time).total_seconds())
+        return int(elapsed_seconds // 60)
+
+    @staticmethod
+    def _apply_queue_metadata(requests):
+        """Attach transient queue and ETA fields for UI display.
+
+        The UI should treat these values as rough operational estimates only.
+        They are derived from config, not from a direct cron scheduler callback.
+        """
+        cron_interval_minutes = current_app.config['EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES']
+        processing_estimate_minutes = current_app.config['EXTRACTION_PROCESSING_ESTIMATE_MINUTES']
+        now = ExtractionRequestService._get_queue_reference_time()
+
+        for request in requests:
+            request.queue_position = None
+            request.estimated_wait_minutes = None
+            request.estimated_ready_minutes = None
+
+            if request.status == 'processing':
+                started_at = request.updated_date or request.created_date or now
+                elapsed_minutes = ExtractionRequestService._get_minutes_elapsed(started_at, now)
+                request.estimated_wait_minutes = 0
+                request.estimated_ready_minutes = max(
+                    1, processing_estimate_minutes - elapsed_minutes
+                )
+
+        pending_requests = sorted(
+            (request for request in requests if request.status == 'pending'),
+            key=lambda request: (request.created_date or now, request.id),
+        )
+
+        for queue_position, request in enumerate(pending_requests, start=1):
+            request.queue_position = queue_position
+            request.estimated_wait_minutes = cron_interval_minutes * queue_position
+            request.estimated_ready_minutes = (
+                request.estimated_wait_minutes + processing_estimate_minutes
+            )
+
+    @staticmethod
     def get_all(status_filter=None):
         """Get extraction requests optionally filtered by status."""
         query = (
@@ -77,7 +128,11 @@ class ExtractionRequestService:
         )
         if status_filter:
             query = query.filter(ExtractionRequest.status == status_filter)
-        return query.all()
+        requests = query.all()
+        ExtractionRequestService._apply_queue_metadata(
+            [request for request in requests if request.status in ExtractionRequestService.ACTIVE_QUEUE_STATUSES]
+        )
+        return requests
 
     @staticmethod
     def reject_request(request_id: int):

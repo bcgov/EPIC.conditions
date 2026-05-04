@@ -11,6 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import LoadingButton from "../Shared/Buttons/LoadingButton";
 import { CreateDocumentModal } from "../Projects/CreateDocumentModal";
 import { ProjectModel } from "@/models/Project";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 export const CardInnerBox = styled(Box)({
   display: "flex",
@@ -32,6 +33,7 @@ type DocumentsParam = {
 };
 
 export const Documents = ({ projectName, projectId, categoryId, documentLabel, documents, project, documentType }: DocumentsParam) => {
+  const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [isAllApproved, setIsAllApproved] = useState<boolean | null>(false);
   const [openModal, setOpenModal] = useState(false);
   const [isOpeningModal, setIsOpeningModal] = useState(false);
@@ -95,7 +97,7 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                   </Box>
                 </Box>
               </Grid>
-              {project && documentType && (
+              {canManage && project && documentType && (
                 <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium }}>
                   <LoadingButton
                     variant="contained"

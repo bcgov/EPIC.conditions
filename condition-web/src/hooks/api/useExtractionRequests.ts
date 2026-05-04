@@ -40,6 +40,9 @@ export interface ExtractionRequest {
     updated_date?: string | null;
     uploaded_by_name?: string | null;
     imported_by_name?: string | null;
+    queue_position?: number | null;
+    estimated_wait_minutes?: number | null;
+    estimated_ready_minutes?: number | null;
 }
 
 export interface CreateExtractionRequestPayload {
@@ -73,6 +76,7 @@ export const useGetExtractionRequests = (status?: string) =>
                 url: `/extraction-requests${status ? `?status=${status}` : ""}`,
                 method: "get",
             }),
+        refetchInterval: 60_000,
     });
 
 export const useImportExtractionRequest = () => {

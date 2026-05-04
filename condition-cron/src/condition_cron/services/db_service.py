@@ -31,38 +31,79 @@ def _json_default(value):
     raise TypeError(f'Object of type {value.__class__.__name__} is not JSON serializable')
 
 
+REQUEST_SELECT = """
+    SELECT
+        er.id,
+        er.project_id,
+        er.document_id,
+        er.document_type_id,
+        er.document_label,
+        er.s3_url,
+        er.status,
+        p.project_name,
+        p.project_type,
+        d.date_issued,
+        d.act,
+        d.document_file_name,
+        dt.document_type
+    FROM condition.extraction_requests er
+    LEFT JOIN condition.projects p ON p.project_id = er.project_id
+    LEFT JOIN condition.documents d ON d.document_id = er.document_id
+    LEFT JOIN condition.document_types dt ON dt.id = er.document_type_id
+"""
+
+
+def _fetch_one_request(cur, where_clause: str, params: tuple) -> Optional[dict]:
+    """Fetch one extraction request row and return it as a dict."""
+    cur.execute(f"""
+        {REQUEST_SELECT}
+        WHERE {where_clause}
+        ORDER BY er.created_date ASC
+        LIMIT 1
+    """, params)
+    row = cur.fetchone()
+    if not row:
+        return None
+
+    cols = [desc[0] for desc in cur.description]
+    return dict(zip(cols, row))
+
+
 def get_pending_requests() -> list[dict]:
-    """Return all pending extraction requests with supporting metadata."""
+    """Return at most one request that is eligible for the next cron run.
+
+    Queue rules:
+    - If a fresh processing request already exists, do not fetch another one.
+    - If a processing request is stale, retry that request first.
+    - Otherwise fetch the oldest pending request.
+    """
     conn, cur = _get_connection()
     try:
+        stale_after_minutes = current_app.config['EXTRACTION_PROCESSING_STALE_AFTER_MINUTES']
+
         cur.execute(
             """
-            SELECT
-                er.id,
-                er.project_id,
-                er.document_id,
-                er.document_type_id,
-                er.document_label,
-                er.s3_url,
-                er.status,
-                p.project_name,
-                p.project_type,
-                d.date_issued,
-                d.act,
-                d.document_file_name,
-                dt.document_type
+            SELECT 1
             FROM condition.extraction_requests er
-            LEFT JOIN condition.projects p ON p.project_id = er.project_id
-            LEFT JOIN condition.documents d ON d.document_id = er.document_id
-            LEFT JOIN condition.document_types dt ON dt.id = er.document_type_id
-            WHERE er.status = 'pending'
-               OR (er.status = 'processing' AND er.updated_date < NOW() - INTERVAL '2 hours')
-            ORDER BY er.created_date ASC
-            """
+            WHERE er.status = 'processing'
+              AND er.updated_date >= NOW() - (%s * INTERVAL '1 minute')
+            LIMIT 1
+            """,
+            (stale_after_minutes,),
         )
-        rows = cur.fetchall()
-        cols = [desc[0] for desc in cur.description]
-        return [dict(zip(cols, row)) for row in rows]
+        if cur.fetchone():
+            return []
+
+        stale_request = _fetch_one_request(
+            cur,
+            "er.status = 'processing' AND er.updated_date < NOW() - (%s * INTERVAL '1 minute')",
+            (stale_after_minutes,),
+        )
+        if stale_request:
+            return [stale_request]
+
+        pending_request = _fetch_one_request(cur, "er.status = 'pending'", ())
+        return [pending_request] if pending_request else []
     finally:
         cur.close()
         conn.close()
