@@ -21,6 +21,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import { useNavigate } from "@tanstack/react-router";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import { ExtractionPreviewModal } from "./ExtractionPreviewModal";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -121,6 +122,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 export default function ExtractedDocumentsPage() {
   const { replaceBreadcrumb } = useBreadCrumb();
   const navigate = useNavigate();
+  const hasExtractionRole = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS]);
   const { data: requests, isLoading, error } = useGetExtractionRequests();
   const { data: projects = [] } = useGetAllProjects();
   const importMutation = useImportExtractionRequest();
@@ -322,13 +324,15 @@ export default function ExtractedDocumentsPage() {
         <Typography variant="h5" fontWeight="bold" color={colors.primary}>
           Extracted Documents
         </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate({ to: "/documents/extract" })}
-          sx={{ backgroundColor: colors.primary, textTransform: "none", borderRadius: 2 }}
-        >
-          + Add/Extract Document
-        </Button>
+        {hasExtractionRole && (
+          <Button
+            variant="contained"
+            onClick={() => navigate({ to: "/documents/extract", search: { manualEntry: false, projectId: undefined, documentTypeId: undefined, documentLabel: undefined, dateIssued: undefined } })}
+            sx={{ backgroundColor: colors.primary, textTransform: "none", borderRadius: 2 }}
+          >
+            + Add/Extract Document
+          </Button>
+        )}
       </Grid>
 
       <Grid item xs={12}>

@@ -1,7 +1,10 @@
 import { Box, List } from "@mui/material";
 import { MainListItem } from "./MainListItem";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 export default function SideNavBar() {
+  const hasExtractionRole = useHasAllowedRoles([KeycloakRoles.EXTRACT_CONDITIONS]);
+
   return (
     <div style={{ minHeight: "calc(100vh - 88px)", borderRight: "1px solid #0000001A", width: 240 }}>
       <Box
@@ -20,12 +23,14 @@ export default function SideNavBar() {
               path: "/projects",
             }}
           />
-          <MainListItem
-            route={{
-              name: "Extracted Documents",
-              path: "/extracted-documents",
-            }}
-          />
+          {hasExtractionRole && (
+            <MainListItem
+              route={{
+                name: "Extracted Documents",
+                path: "/extracted-documents",
+              }}
+            />
+          )}
         </List>
       </Box>
     </div>
