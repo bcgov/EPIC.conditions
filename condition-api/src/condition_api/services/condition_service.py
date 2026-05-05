@@ -20,7 +20,7 @@ import re
 from collections import defaultdict
 from datetime import datetime
 
-from flask import current_app
+from condition_api.config import _Config
 from sqlalchemy import and_, case, extract, func, not_
 from sqlalchemy.orm import aliased
 
@@ -38,6 +38,8 @@ from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
 from condition_api.utils.enums import AttributeKeys, ConditionType, IEMTermsConfig
+
+ENABLE_NEW_SUBMIT_FLOW = _Config.ENABLE_NEW_SUBMIT_FLOW
 
 
 class ConditionService:
@@ -1225,7 +1227,7 @@ class ConditionService:
         if not raw_value:
             return None
         if raw_value == "N/A":
-            return raw_value if current_app.config.get('ENABLE_NEW_SUBMIT_FLOW', False) else None
+            return raw_value if ENABLE_NEW_SUBMIT_FLOW else None
         return raw_value.replace("{", "").replace("}", "").replace('"', "")
 
     @staticmethod
