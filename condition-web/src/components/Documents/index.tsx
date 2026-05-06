@@ -36,6 +36,7 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
   const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [isAllApproved, setIsAllApproved] = useState<boolean | null>(false);
   const [openModal, setOpenModal] = useState(false);
+  const hasAmendments = documents?.some((d) => d.is_latest_amendment_added == null) ?? false;
   const [isOpeningModal, setIsOpeningModal] = useState(false);
 
   const handleOpenAddDocument = () => {
@@ -90,9 +91,9 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
                 <Box sx={{ px: 2.5, display: "flex", alignItems: "center" }}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <Typography variant="h6" component="span">{documentLabel}</Typography>
-                    <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />
+                    {hasAmendments && <LayersOutlinedIcon fontSize="small" sx={{ ml: 1, mr: 1 }} />}
                   </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", fontWeight: "normal", ml: hasAmendments ? 0 : 1 }}>
                     <DocumentStatusChip status={isAllApproved === null ? "nodata" : String(isAllApproved) as DocumentStatus} />
                   </Box>
                 </Box>
