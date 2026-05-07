@@ -43,6 +43,7 @@ export interface AllDocumentModel {
   year_issued: number;
   status: boolean;
   is_latest_amendment_added: boolean;
+  parent_document_id?: string;
 }
 
 export interface ProjectDocumentAllAmendmentsModel {
