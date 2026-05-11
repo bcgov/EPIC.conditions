@@ -80,10 +80,13 @@ class ExtractionRequestActionResource(Resource):
     @auth.has_one_of_roles([EpicConditionRole.EXTRACT_CONDITIONS.value])
     @cross_origin(origins=allowedorigins())
     def patch(request_id, action):
-        """Perform action (reject)."""
+        """Perform action (reject, manual)."""
         try:
             if action == 'reject':
                 result = ExtractionRequestService.reject_request(request_id)
+                return ExtractionRequestSchema().dump(result), HTTPStatus.OK
+            if action == 'manual':
+                result = ExtractionRequestService.manual_entry_request(request_id)
                 return ExtractionRequestSchema().dump(result), HTTPStatus.OK
             return {"message": "Invalid PATCH action"}, HTTPStatus.BAD_REQUEST
         except ValueError as e:

@@ -22,6 +22,7 @@ import { ProjectModel } from "@/models/Project";
 import { DocumentTypes } from "@/utils/enums";
 import { useCreateDocument, useGetDocumentsByProject } from "@/hooks/api/useDocuments";
 import { useCreateAmendment } from "@/hooks/api/useAmendments";
+import { useManualEntryExtractionRequest } from "@/hooks/api/useExtractionRequests";
 import { CreateAmendmentModel } from "@/models/Amendment";
 import { CreateDocumentModel, DocumentModel } from "@/models/Document";
 import { CustomTooltip } from "@/components/Shared/Common";
@@ -41,6 +42,7 @@ type DocumentEntryFormProps = {
         documentTypeId?: number;
         documentLabel?: string;
         dateIssued?: string;
+        extractionRequestId?: number;
     };
 };
 
@@ -164,6 +166,8 @@ export const DocumentEntryForm = ({
         }
     );
 
+    const { mutateAsync: rejectExtractionRequest } = useManualEntryExtractionRequest();
+
     const { mutateAsync: createAmendment } = useCreateAmendment(
         formState.selectedDocumentId ? formState.selectedDocumentId : "",
         {
@@ -210,6 +214,10 @@ export const DocumentEntryForm = ({
                 : await createDocument(payload as CreateDocumentModel);
 
             queryClient.invalidateQueries({ queryKey: ["projects"] });
+
+            if (transferData?.extractionRequestId) {
+                await rejectExtractionRequest(transferData.extractionRequestId);
+            }
 
             if (response) {
                 const navigateTo = isAmendment

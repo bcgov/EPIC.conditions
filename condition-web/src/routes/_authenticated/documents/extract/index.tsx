@@ -23,6 +23,11 @@ export const Route = createFileRoute(
                 : undefined,
         documentLabel: typeof search.documentLabel === "string" ? search.documentLabel : undefined,
         dateIssued: typeof search.dateIssued === "string" ? search.dateIssued : undefined,
+        extractionRequestId: typeof search.extractionRequestId === "number"
+            ? search.extractionRequestId
+            : typeof search.extractionRequestId === "string" && search.extractionRequestId
+                ? Number(search.extractionRequestId)
+                : undefined,
     }),
     meta: () => [
         { title: "Home", path: "/projects" },

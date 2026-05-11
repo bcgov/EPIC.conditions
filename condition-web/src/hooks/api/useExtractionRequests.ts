@@ -93,6 +93,20 @@ export const useImportExtractionRequest = () => {
     });
 };
 
+export const useManualEntryExtractionRequest = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: number) =>
+            submitRequest({
+                url: `/extraction-requests/${id}/manual`,
+                method: "patch",
+            }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["extraction-requests"] });
+        },
+    });
+};
+
 export const useRejectExtractionRequest = () => {
     const queryClient = useQueryClient();
     return useMutation({
