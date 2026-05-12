@@ -179,7 +179,8 @@ class DocumentService:
                     'document_label': amendment.document_label,
                     'created_date': amendment.created_date,
                     'year_issued': amendment.year_issued,
-                    'status': amendment.status
+                    'status': amendment.status,
+                    'parent_document_id': document.document_id
                 })
 
         project_name = documents[0].project_name if documents else None

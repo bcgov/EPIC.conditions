@@ -10,7 +10,20 @@ import {
   import { AllDocumentModel } from "@/models/Document";
   import { StyledTableHeadCell } from "../Shared/Table/common";
   import DocumentTableRow from "./DocumentTableRow";
-  
+
+  interface GroupedDocument {
+    cert: AllDocumentModel;
+    amendments: AllDocumentModel[];
+  }
+
+  function groupDocuments(documents: AllDocumentModel[]): GroupedDocument[] {
+    const certDocs = documents.filter((d) => !d.parent_document_id);
+    return certDocs.map((cert) => ({
+      cert,
+      amendments: documents.filter((d) => d.parent_document_id === cert.document_id),
+    }));
+  }
+
   export default function DocumentTable({
     projectId,
     documents,
@@ -20,6 +33,8 @@ import {
     documents: Array<AllDocumentModel>;
     headless?: boolean;
   }) {
+    const grouped = groupDocuments(documents);
+
     return (
       <TableContainer component={Box} sx={{ height: "100%" }}>
         <Table sx={{ tableLayout: "fixed", border: 0 }} aria-label="simple table">
@@ -46,11 +61,12 @@ import {
             </TableHead>
           )}
           <TableBody>
-            {documents?.map((document) => (
+            {grouped.map(({ cert, amendments }) => (
               <DocumentTableRow
                 projectId={projectId}
-                key={document.document_id}
-                document={document}
+                key={cert.document_id}
+                document={cert}
+                amendments={amendments}
               />
             ))}
           </TableBody>
