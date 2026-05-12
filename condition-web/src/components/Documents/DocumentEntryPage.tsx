@@ -17,6 +17,7 @@ type DocumentEntryPageProps = {
         documentTypeId?: number;
         documentLabel?: string;
         dateIssued?: string;
+        extractionRequestId?: number;
     };
 };
 
@@ -50,7 +51,13 @@ export const DocumentEntryPage = ({
                     documentType={documentType}
                     projectArray={projects}
                     onCancel={() => navigate({ to: "/projects" })}
-                    transferData={manualEntrySearch?.manualEntry ? manualEntrySearch : undefined}
+                    transferData={manualEntrySearch?.manualEntry ? {
+                        projectId: manualEntrySearch.projectId,
+                        documentTypeId: manualEntrySearch.documentTypeId,
+                        documentLabel: manualEntrySearch.documentLabel,
+                        dateIssued: manualEntrySearch.dateIssued,
+                        extractionRequestId: manualEntrySearch.extractionRequestId,
+                    } : undefined}
                 />
             )}
         </Paper>

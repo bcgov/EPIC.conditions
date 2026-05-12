@@ -135,6 +135,25 @@ class ExtractionRequestService:
         return requests
 
     @staticmethod
+    def manual_entry_request(request_id: int):
+        """Mark an extraction request as manually entered and purge its raw extracted JSON."""
+        req = db.session.query(ExtractionRequest).filter_by(id=request_id).first()
+        if not req:
+            raise ValueError("ExtractionRequest not found")
+        try:
+            req.status = 'manual'
+            req.extracted_data = None
+            req.error_message = None
+
+            db.session.commit()
+        except SQLAlchemyError as exc:
+            db.session.rollback()
+            logger.error("Failed to mark ExtractionRequest id=%s as manual: %s", request_id, exc)
+            raise ValueError("Failed to update extraction request due to a database error.") from exc
+        db.session.refresh(req)
+        return req
+
+    @staticmethod
     def reject_request(request_id: int):
         """Reject an extraction request and purge its raw extracted JSON."""
         req = db.session.query(ExtractionRequest).filter_by(id=request_id).first()
