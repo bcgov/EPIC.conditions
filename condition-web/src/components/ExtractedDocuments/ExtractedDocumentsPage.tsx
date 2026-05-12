@@ -130,6 +130,7 @@ export default function ExtractedDocumentsPage() {
 
   const [previewRequest, setPreviewRequest] = useState<ExtractionRequest | null>(null);
   const [stopRequest, setStopRequest] = useState<ExtractionRequest | null>(null);
+  const [discardRequest, setDiscardRequest] = useState<ExtractionRequest | null>(null);
   const [sectionsOpen, setSectionsOpen] = useState({
     complete: true,
     progress: true,
@@ -169,6 +170,7 @@ export default function ExtractedDocumentsPage() {
         notify.success("Extraction rejected successfully!");
         setPreviewRequest(null);
         setStopRequest(null);
+        setDiscardRequest(null);
       },
       onError: (error: unknown) =>
         notify.error(getErrorMessage(error, "Failed to reject extraction")),
@@ -319,6 +321,40 @@ export default function ExtractedDocumentsPage() {
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={!!discardRequest}
+        onClose={() => setDiscardRequest(null)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 1 } }}
+      >
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h5" fontWeight="bold">
+            Discard File?
+          </Typography>
+          <IconButton onClick={() => setDiscardRequest(null)} aria-label="Close" disabled={rejectMutation.isPending}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography color="error" fontSize="1.1rem">
+            This action will discard <strong>{discardRequest ? getDocumentName(discardRequest) : "this file"}</strong>. Are you sure you wish to proceed?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button variant="outlined" onClick={() => setDiscardRequest(null)} disabled={rejectMutation.isPending}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => discardRequest && handleReject(discardRequest.id)}
+            disabled={rejectMutation.isPending}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Page header */}
       <Grid item xs={12} display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5" fontWeight="bold" color={colors.primary}>
@@ -420,7 +456,7 @@ export default function ExtractedDocumentsPage() {
                         </Box>
 
                         {/* Action */}
-                        <Box flex={0.5} display="flex" justifyContent="flex-end">
+                        <Box flex={0.5} display="flex" flexDirection="column" alignItems="flex-end" gap={1}>
                           <Button
                             variant="outlined"
                             size="small"
@@ -441,6 +477,7 @@ export default function ExtractedDocumentsPage() {
                             sx={{
                               textTransform: "none",
                               whiteSpace: "nowrap",
+                              width: "100%",
                               backgroundColor: colors.buttonBg,
                               color: colors.bodyText,
                               borderColor: colors.divider,
@@ -452,6 +489,29 @@ export default function ExtractedDocumentsPage() {
                           >
                             {isSuccess ? "Preview & Import Conditions" : "Switch to Manual Entry"}
                           </Button>
+                          {!isSuccess && (
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => setDiscardRequest(req)}
+                              sx={{
+                                textTransform: "none",
+                                whiteSpace: "nowrap",
+                                width: "100%",
+                                borderRadius: "4px",
+                                border: "1px solid #CE3E39",
+                                backgroundColor: "#F4E1E2",
+                                color: colors.bodyText,
+                                fontWeight: "normal",
+                                "&:hover": {
+                                  backgroundColor: "#F4E1E2",
+                                  borderColor: "#CE3E39",
+                                },
+                              }}
+                            >
+                              Discard File
+                            </Button>
+                          )}
                         </Box>
                       </Box>
                     );
