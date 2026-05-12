@@ -20,10 +20,10 @@ import re
 from collections import defaultdict
 from datetime import datetime
 
-from condition_api.config import _Config
 from sqlalchemy import and_, case, extract, func, not_
 from sqlalchemy.orm import aliased
 
+from condition_api.config import _Config
 from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
