@@ -14,6 +14,7 @@ declare global {
       VITE_SUPPORT_EMAIL: string;
       VITE_OBJECT_STORAGE_URL: string;
       VITE_CONDITION_DOCUMENTS_FOLDER: string;
+    VITE_ENABLE_NEW_SUBMIT_FLOW: string;
     };
   }
 }
@@ -41,6 +42,8 @@ const CONDITION_DOCUMENTS_FOLDER =
     import.meta.env.VITE_CONDITION_DOCUMENTS_FOLDER ||
     ""
   ).trim() || "condition_extraction_documents";
+const ENABLE_NEW_SUBMIT_FLOW =
+  (window._env_?.VITE_ENABLE_NEW_SUBMIT_FLOW || import.meta.env.VITE_ENABLE_NEW_SUBMIT_FLOW || "false").toLowerCase() === "true";
 
 export const AppConfig = {
   apiUrl: `${API_URL}`,
@@ -53,6 +56,7 @@ export const AppConfig = {
   appBasePath: APP_BASE_PATH,
   clientId: CLIENT_ID,
   supportEmail: SUPPORT_EMAIL,
+  enableNewSubmitFlow: ENABLE_NEW_SUBMIT_FLOW,
 };
 
 export const OidcConfig = {
