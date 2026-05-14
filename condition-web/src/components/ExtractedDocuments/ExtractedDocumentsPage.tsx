@@ -101,7 +101,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
       backgroundColor,
       px: 2,
       py: 1.5,
-      borderBottom: `1px solid ${colors.divider}`,
+      borderBottom: expanded ? `1px solid ${colors.divider}` : "none",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -402,18 +402,19 @@ export default function ExtractedDocumentsPage() {
                       <Box
                         key={req.id}
                         sx={{
-                          display: "flex",
+                          display: "grid",
+                          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+                          gap: { xs: 1.5, md: 0 },
                           alignItems: "center",
-                          justifyContent: "space-between",
                           p: 2,
                           borderRadius: 1,
-                          border: `1px solid ${isSuccess ? colors.successBorder : colors.errorBorder}`,
+                          border: `1px solid ${colors.divider}`,
                           backgroundColor: isSuccess ? colors.successBg : colors.errorBg,
                         }}
                       >
                         {/* Document label */}
-                        <Box flex={1}>
-                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText} sx={{ wordBreak: "break-word" }}>
                             {getDocumentName(req)}
                           </Typography>
                           <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
@@ -433,7 +434,7 @@ export default function ExtractedDocumentsPage() {
                         </Box>
 
                         {/* Status indicator */}
-                        <Box flex={1} display="flex" alignItems="center" gap={1}>
+                        <Box display="flex" alignItems="flex-start" gap={1}>
                           {isSuccess ? (
                             <CheckCircleOutlineIcon color="success" />
                           ) : (
@@ -456,7 +457,7 @@ export default function ExtractedDocumentsPage() {
                         </Box>
 
                         {/* Action */}
-                        <Box flex={0.5} display="flex" flexDirection="column" alignItems="flex-end" gap={1}>
+                        <Box display="flex" flexDirection="column" gap={1} sx={{ justifySelf: { xs: "start", md: "end" }, alignItems: { xs: "flex-start", md: "flex-end" } }}>
                           <Button
                             variant="outlined"
                             size="small"
@@ -544,17 +545,18 @@ export default function ExtractedDocumentsPage() {
                       <Box
                         key={req.id}
                         sx={{
-                          display: "flex",
+                          display: "grid",
+                          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+                          gap: { xs: 1.5, md: 0 },
                           alignItems: "center",
-                          justifyContent: "space-between",
                           p: 2,
                           borderRadius: 1,
                           border: `1px solid ${colors.pendingBorder}`,
                           backgroundColor: colors.pendingBg,
                         }}
                       >
-                        <Box flex={1}>
-                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText} sx={{ wordBreak: "break-word" }}>
                             {getDocumentName(req)}
                           </Typography>
                           <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
@@ -573,12 +575,10 @@ export default function ExtractedDocumentsPage() {
                           {renderStaffAttribution(req)}
                         </Box>
                         <Box
-                          flex={0.8}
                           display="flex"
                           alignItems="center"
                           justifyContent="flex-start"
                           gap={1.5}
-                          px={2}
                         >
                           <ScheduleOutlinedIcon
                             sx={{
@@ -595,7 +595,7 @@ export default function ExtractedDocumentsPage() {
                             </Typography>
                           </Box>
                         </Box>
-                        <Box flex={0.2} display="flex" justifyContent="flex-end">
+                        <Box display="flex" sx={{ justifySelf: { xs: "start", md: "end" } }}>
                           <IconButton
                             size="small"
                             aria-label="Cancel extraction"
