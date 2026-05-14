@@ -250,7 +250,11 @@ export default function ExtractedDocumentsPage() {
   };
 
   const completedRequests =
-    requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
+    requests?.filter((r) => (
+      r.status === "completed" ||
+      r.status === "failed" ||
+      r.status === "unsupported"
+    )) ?? [];
   const pendingRequests =
     requests
       ?.filter((r) => r.status === "pending" || r.status === "processing")
@@ -397,7 +401,19 @@ export default function ExtractedDocumentsPage() {
                 ) : (
                   completedRequests.map((req) => {
                     const isSuccess = req.status === "completed";
+                    const isUnsupported = req.status === "unsupported";
                     const conditionCount = req.extracted_data?.conditions?.length ?? 0;
+                    const statusTitle = isSuccess
+                      ? "Extraction Complete!"
+                      : isUnsupported
+                        ? "Unsupported Document"
+                        : "Extraction Failed";
+                    const statusMessage = isSuccess
+                      ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
+                      : isUnsupported
+                        ? req.error_message || "This file does not appear to be an EAO conditions document."
+                        : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format.";
+
                     return (
                       <Box
                         key={req.id}
@@ -445,12 +461,10 @@ export default function ExtractedDocumentsPage() {
                               fontWeight="bold"
                               color={isSuccess ? colors.successText : colors.errorText}
                             >
-                              {isSuccess ? "Extraction Complete!" : "Extraction Failed"}
+                              {statusTitle}
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
-                              {isSuccess
-                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
-                                : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format."}
+                              {statusMessage}
                             </Typography>
                           </Box>
                         </Box>

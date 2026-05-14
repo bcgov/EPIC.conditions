@@ -32,6 +32,7 @@ s3:
 
 extractor:
   apiUrl: ""
+  unsupportedConfidenceThreshold: "0.75"
 
 secrets:
   s3AccessKeyId: ""

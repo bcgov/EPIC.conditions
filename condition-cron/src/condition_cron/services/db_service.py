@@ -168,6 +168,20 @@ def mark_failed(request_id: int, error_message: str) -> None:
     _update_extraction_request_state(request_id, 'failed', error_message=error_message)
 
 
+def mark_unsupported(request_id: int, reason: str, eligibility: dict) -> None:
+    """Mark an extraction request as unsupported with classifier details."""
+    extracted_data = {
+        "conditions": [],
+        "eligibility": eligibility or {},
+    }
+    _update_extraction_request_state(
+        request_id,
+        'unsupported',
+        error_message=reason,
+        extracted_data=extracted_data,
+    )
+
+
 def save_extraction_result(request_id: int, extracted_data: dict) -> None:
     """Save parsed extraction JSON and mark the request completed."""
     _update_extraction_request_state(request_id, 'completed', extracted_data=extracted_data)

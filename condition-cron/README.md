@@ -99,6 +99,7 @@ Copy `sample.env` to `.env` and fill in the values.
 | `S3_SERVICE` | S3 service name, usually `s3` |
 | `EXTRACTOR_API_URL` | Azure-hosted extractor API URL (optional) |
 | `EXTRACTOR_API_KEY` | Extractor API key (optional) |
+| `EXTRACTION_UNSUPPORTED_CONFIDENCE_THRESHOLD` | Confidence required to stop extraction as unsupported (default: `0.75`) |
 
 ---
 

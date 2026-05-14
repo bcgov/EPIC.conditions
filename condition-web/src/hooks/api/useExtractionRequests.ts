@@ -24,6 +24,15 @@ export interface ExtractedData {
     [key: string]: unknown;
 }
 
+export type ExtractionRequestStatus =
+    | "pending"
+    | "processing"
+    | "completed"
+    | "failed"
+    | "unsupported"
+    | "imported"
+    | "rejected";
+
 export interface ExtractionRequest {
     id: number;
     project_id: string;
@@ -33,7 +42,7 @@ export interface ExtractionRequest {
     original_file_name?: string | null;
     s3_url: string;
     file_size_bytes?: number | null;
-    status: string;
+    status: ExtractionRequestStatus;
     error_message?: string | null;
     extracted_data?: ExtractedData | null;
     created_date: string;
