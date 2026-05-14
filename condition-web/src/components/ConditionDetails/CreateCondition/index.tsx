@@ -26,6 +26,10 @@ import LoadingButton from "../../Shared/Buttons/LoadingButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@/hooks/api/constants";
 
+const FormLabelCell = styled(StyledTableHeadCell)({
+  borderBottom: "none",
+});
+
 export const CardInnerBox = styled(Box)({
   display: "flex",
   alignItems: "flex-start",
@@ -177,26 +181,26 @@ export const CreateConditionPage = ({
             <Grid container direction="row">
               <Grid item xs={8}>
                 <Stack direction="row" alignItems="flex-start" spacing={1}>
-                  <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                  <FormLabelCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                       Project:
-                  </StyledTableHeadCell>
-                  <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                  </FormLabelCell>
+                  <FormLabelCell sx={{ verticalAlign: "top" }}>
                       <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
                           {projectName}
                       </Typography>
-                  </StyledTableHeadCell>
+                  </FormLabelCell>
                 </Stack>
               </Grid>
               <Grid item xs={4}>
                 <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                    <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                    <FormLabelCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                         Year Condition Issued:
-                    </StyledTableHeadCell>
-                    <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                    </FormLabelCell>
+                    <FormLabelCell sx={{ verticalAlign: "top" }}>
                         <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
                             {condition?.year_issued}
                         </Typography>
-                    </StyledTableHeadCell>
+                    </FormLabelCell>
                 </Stack>
               </Grid>
             </Grid>
@@ -204,14 +208,14 @@ export const CreateConditionPage = ({
               <Grid container direction="row" alignItems="center">
                   <Grid item xs={8} sx={{ height: "60px" }}>
                       <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                          <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                          <FormLabelCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                               Document:
-                          </StyledTableHeadCell>
-                          <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                          </FormLabelCell>
+                          <FormLabelCell sx={{ verticalAlign: "top" }}>
                               <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
                                   {documentLabel}
                               </Typography>
-                          </StyledTableHeadCell>
+                          </FormLabelCell>
                       </Stack>
                   </Grid>
               </Grid>
@@ -221,17 +225,17 @@ export const CreateConditionPage = ({
           <Box sx={{ display: 'flex', flexDirection: 'column', width: '50%', height: '100%' }}>
             <Grid container direction="row">
               <Stack direction="row" alignItems="flex-start" spacing={-2}>
-                <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+                <FormLabelCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
                   Tags:
-                </StyledTableHeadCell>
-                <StyledTableHeadCell sx={{ verticalAlign: "top" }}>
+                </FormLabelCell>
+                <FormLabelCell sx={{ verticalAlign: "top" }}>
                   <ChipInput
                     chips={tags}
                     setChips={setTags}
                     placeholder="Add tag"
                     inputWidth="100%"
                   />
-                </StyledTableHeadCell>
+                </FormLabelCell>
               </Stack>
             </Grid>
           </Box>
@@ -239,9 +243,9 @@ export const CreateConditionPage = ({
 
         <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'row'}}>
           <Grid item xs={1.25} sx={{ flexGrow: 0 }}>
-            <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+            <FormLabelCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
               Condition Number
-            </StyledTableHeadCell>
+            </FormLabelCell>
             <Box sx={{ paddingLeft: "15px" }}>
               <TextField
                 variant="outlined"
@@ -256,9 +260,9 @@ export const CreateConditionPage = ({
           </Grid>
 
           <Grid item xs={3} sx={{ flexGrow: 0 }}>
-            <StyledTableHeadCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
+            <FormLabelCell sx={{ verticalAlign: "top", whiteSpace: "nowrap" }}>
               Condition Name
-            </StyledTableHeadCell>
+            </FormLabelCell>
             <Box sx={{ paddingLeft: "15px" }}>
               <TextField
                 variant="outlined"
