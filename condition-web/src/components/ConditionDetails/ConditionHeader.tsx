@@ -269,8 +269,9 @@ const ConditionHeader = ({
                             variant="outlined"
                             fullWidth
                             value={conditionName}
-                            onChange={(e) => setConditionName(e.target.value)}
+                            onChange={(e) => canManage && setConditionName(e.target.value)}
                             placeholder="Enter condition name"
+                            disabled={!canManage}
                             size="small"
                             sx={{
                               "& .MuiOutlinedInput-root": {
@@ -371,7 +372,7 @@ const ConditionHeader = ({
                   This condition number already exists. Please enter a new one.
                 </Box>
               )}
-              {(!conditionName || approvalError) && (
+              {((!conditionName && canManage) || approvalError) && (
                 <Box
                   sx={{
                     display: "flex",
