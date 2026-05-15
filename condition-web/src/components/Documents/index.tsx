@@ -36,7 +36,8 @@ export const Documents = ({ projectName, projectId, categoryId, documentLabel, d
   const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [isAllApproved, setIsAllApproved] = useState<boolean | null>(false);
   const [openModal, setOpenModal] = useState(false);
-  const hasAmendments = documents?.some((d) => d.is_latest_amendment_added == null) ?? false;
+  const amendmentCount = documents?.filter((d) => d.parent_document_id != null).length ?? 0;
+  const hasAmendments = amendmentCount > 0;
   const [isOpeningModal, setIsOpeningModal] = useState(false);
 
   const handleOpenAddDocument = () => {
