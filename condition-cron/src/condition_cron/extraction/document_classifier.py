@@ -24,6 +24,12 @@ UNSUPPORTED_DOCUMENT_FAMILIES = {
     "unsupported",
 }
 
+UNSUPPORTED_CATEGORIES = {
+    "amendment_document",
+    "invalid_document",
+    "unreadable_format",
+}
+
 SUPPORTED_SIGNALS = [
     "environmental assessment certificate",
     "environmental assessment office",
@@ -93,11 +99,17 @@ def _clip_document_text(file_text: str) -> str:
     return f"{text[:half]}\n\n[...document text clipped...]\n\n{text[-half:]}"
 
 
-def _unsupported_eligibility(reason: str, evidence: list[str], confidence: float = 1.0) -> Dict[str, Any]:
+def _unsupported_eligibility(
+    reason: str,
+    evidence: list[str],
+    confidence: float = 1.0,
+    unsupported_category: str = "invalid_document",
+) -> Dict[str, Any]:
     """Build a consistent unsupported eligibility response."""
     return {
         "is_supported_document": False,
         "document_family": "unsupported",
+        "unsupported_category": unsupported_category,
         "confidence": confidence,
         "reason": reason,
         "evidence": evidence,
@@ -109,10 +121,20 @@ def _fail_open_eligibility(reason: str) -> Dict[str, Any]:
     return {
         "is_supported_document": True,
         "document_family": "uncertain",
+        "unsupported_category": None,
         "confidence": 0.0,
         "reason": reason,
         "evidence": [],
     }
+
+
+def _unsupported_category_for(document_family: str, category: str = None) -> str:
+    """Return one of the supported UI-facing unsupported categories."""
+    if document_family == "amendment":
+        return "amendment_document"
+    if category in UNSUPPORTED_CATEGORIES:
+        return category
+    return "invalid_document"
 
 
 def _normalize_eligibility_result(result: Dict[str, Any]) -> Dict[str, Any]:
@@ -130,6 +152,13 @@ def _normalize_eligibility_result(result: Dict[str, Any]) -> Dict[str, Any]:
         )
     if document_family in UNSUPPORTED_DOCUMENT_FAMILIES:
         is_supported = False
+
+    unsupported_category = None
+    if not is_supported:
+        unsupported_category = _unsupported_category_for(
+            document_family,
+            result.get("unsupported_category"),
+        )
 
     try:
         confidence = float(result.get("confidence", 0.0))
@@ -153,6 +182,7 @@ def _normalize_eligibility_result(result: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "is_supported_document": is_supported,
         "document_family": document_family,
+        "unsupported_category": unsupported_category,
         "confidence": confidence,
         "reason": reason,
         "evidence": evidence,
@@ -196,6 +226,7 @@ def classify_document_eligibility(file_text: str) -> Dict[str, Any]:
             "No readable text was found in the document.",
             ["No readable text"],
             confidence=1.0,
+            unsupported_category="unreadable_format",
         )
 
     supported_signals = _find_signals(readable_text, SUPPORTED_SIGNALS)
@@ -222,6 +253,16 @@ def classify_document_eligibility(file_text: str) -> Dict[str, Any]:
                             "type": "string",
                             "enum": sorted(DOCUMENT_FAMILIES),
                             "description": "The closest supported document family, or unsupported/uncertain.",
+                        },
+                        "unsupported_category": {
+                            "type": "string",
+                            "enum": sorted(UNSUPPORTED_CATEGORIES),
+                            "description": (
+                                "Only set when is_supported_document is false. Use "
+                                "amendment_document for amendment documents, unreadable_format "
+                                "when no readable text is present, and invalid_document for other "
+                                "unrelated documents."
+                            ),
                         },
                         "confidence": {
                             "type": "number",
@@ -260,6 +301,8 @@ def classify_document_eligibility(file_text: str) -> Dict[str, Any]:
         "amendment documents. Amendments are not supported by the conditions repository "
         "yet; if the document is an amendment, mark it unsupported with document_family "
         "'amendment'.\n\n"
+        "When a document is unsupported, also set unsupported_category to exactly one "
+        "of these values: amendment_document, invalid_document, unreadable_format.\n\n"
         "Be permissive: if the document could reasonably be an EAO/environmental "
         "assessment conditions document, mark it supported. Mark unsupported only "
         "when the document is clearly unrelated. Numbered sections alone are not "

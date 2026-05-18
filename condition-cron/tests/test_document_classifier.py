@@ -15,6 +15,7 @@ def test_classify_document_eligibility_rejects_empty_text():
 
     assert result["is_supported_document"] is False
     assert result["document_family"] == "unsupported"
+    assert result["unsupported_category"] == "unreadable_format"
     assert result["confidence"] == 1.0
 
 
@@ -23,6 +24,7 @@ def test_is_document_supported_for_extraction_blocks_high_confidence_unsupported
     eligibility = {
         "is_supported_document": False,
         "document_family": "unsupported",
+        "unsupported_category": "invalid_document",
         "confidence": 0.9,
         "reason": "Rental application.",
         "evidence": ["rental application", "tenant"],
@@ -36,6 +38,7 @@ def test_is_document_supported_for_extraction_allows_uncertain_unsupported():
     eligibility = {
         "is_supported_document": False,
         "document_family": "unsupported",
+        "unsupported_category": "invalid_document",
         "confidence": 0.5,
         "reason": "Not enough evidence.",
         "evidence": [],
@@ -49,6 +52,7 @@ def test_is_document_supported_for_extraction_blocks_amendment_family():
     eligibility = {
         "is_supported_document": True,
         "document_family": "amendment",
+        "unsupported_category": "amendment_document",
         "confidence": 0.9,
         "reason": "This is an amendment document.",
         "evidence": ["Amendment to Environmental Assessment Certificate"],
@@ -62,6 +66,7 @@ def test_classify_document_eligibility_normalizes_amendment_as_unsupported(monke
     arguments = {
         "is_supported_document": True,
         "document_family": "amendment",
+        "unsupported_category": "invalid_document",
         "confidence": 0.9,
         "reason": "This is an amendment to an environmental assessment certificate.",
         "evidence": ["Amendment to Environmental Assessment Certificate"],
@@ -99,4 +104,47 @@ def test_classify_document_eligibility_normalizes_amendment_as_unsupported(monke
 
     assert result["is_supported_document"] is False
     assert result["document_family"] == "amendment"
+    assert result["unsupported_category"] == "amendment_document"
     assert result["confidence"] == 0.9
+
+
+def test_classify_document_eligibility_assigns_default_invalid_category(monkeypatch):
+    """Unsupported non-amendment documents default to the invalid document category."""
+    arguments = {
+        "is_supported_document": False,
+        "document_family": "unsupported",
+        "confidence": 0.95,
+        "reason": "This appears to be a rental application.",
+        "evidence": ["rental application", "tenant"],
+    }
+
+    class _FakeCompletions:
+        def create(self, **kwargs):  # noqa: ARG002
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(
+                            tool_calls=[
+                                SimpleNamespace(
+                                    function=SimpleNamespace(
+                                        arguments=json.dumps(arguments)
+                                    )
+                                )
+                            ]
+                        )
+                    )
+                ]
+            )
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(completions=_FakeCompletions())
+    )
+    monkeypatch.setattr(
+        "condition_cron.extraction.document_classifier.get_openai_client",
+        lambda: fake_client,
+    )
+
+    result = classify_document_eligibility("Rental application tenant landlord")
+
+    assert result["is_supported_document"] is False
+    assert result["unsupported_category"] == "invalid_document"

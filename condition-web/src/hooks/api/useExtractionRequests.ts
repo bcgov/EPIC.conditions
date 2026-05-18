@@ -19,8 +19,19 @@ export interface ExtractedSubcondition {
     subconditions?: ExtractedSubcondition[] | null;
 }
 
+export type UnsupportedCategory =
+    | "amendment_document"
+    | "invalid_document"
+    | "unreadable_format";
+
+export interface ExtractionEligibility {
+    unsupported_category?: UnsupportedCategory | null;
+    [key: string]: unknown;
+}
+
 export interface ExtractedData {
     conditions?: ExtractedCondition[];
+    eligibility?: ExtractionEligibility | null;
     [key: string]: unknown;
 }
 

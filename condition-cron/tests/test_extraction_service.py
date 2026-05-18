@@ -9,6 +9,7 @@ def _unsupported_eligibility(confidence: float) -> dict:
     return {
         "is_supported_document": False,
         "document_family": "unsupported",
+        "unsupported_category": "invalid_document",
         "confidence": confidence,
         "reason": "This appears to be a rental application.",
         "evidence": ["rental application", "tenant", "landlord"],

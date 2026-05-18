@@ -63,6 +63,7 @@ def test_process_marks_unsupported_documents(monkeypatch, tmp_path):
     eligibility = {
         "is_supported_document": False,
         "document_family": "unsupported",
+        "unsupported_category": "invalid_document",
         "confidence": 0.9,
         "reason": "This appears to be a rental application.",
         "evidence": ["rental application", "tenant"],
