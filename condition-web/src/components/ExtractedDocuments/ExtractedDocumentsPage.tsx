@@ -28,6 +28,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useGetAllProjects } from "@/hooks/api/useProjects";
 import {
   ExtractionRequest,
+  UnsupportedCategory,
   useGetExtractionRequests,
   useImportExtractionRequest,
   useRejectExtractionRequest,
@@ -85,6 +86,29 @@ interface SectionHeaderProps {
   textColor?: string;
   chevronColor?: string;
 }
+
+const unsupportedDisplayText: Record<UnsupportedCategory, { title: string; message: string }> = {
+  amendment_document: {
+    title: "Amendment Document",
+    message: "Amendment documents are not supported for condition extraction.",
+  },
+  invalid_document: {
+    title: "Invalid Document",
+    message: "This document is not related to EAO project conditions.",
+  },
+  unreadable_format: {
+    title: "Unreadable Format",
+    message: "No readable text was found in this document.",
+  },
+};
+
+const getUnsupportedDisplayText = (req: ExtractionRequest) => {
+  const category = req.extracted_data?.eligibility?.unsupported_category;
+  if (category && unsupportedDisplayText[category]) {
+    return unsupportedDisplayText[category];
+  }
+  return unsupportedDisplayText.invalid_document;
+};
 
 /** Static header bar rendered at the top of each section panel. */
 const SectionHeader: React.FC<SectionHeaderProps> = ({
@@ -250,7 +274,11 @@ export default function ExtractedDocumentsPage() {
   };
 
   const completedRequests =
-    requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
+    requests?.filter((r) => (
+      r.status === "completed" ||
+      r.status === "failed" ||
+      r.status === "unsupported"
+    )) ?? [];
   const pendingRequests =
     requests
       ?.filter((r) => r.status === "pending" || r.status === "processing")
@@ -397,7 +425,20 @@ export default function ExtractedDocumentsPage() {
                 ) : (
                   completedRequests.map((req) => {
                     const isSuccess = req.status === "completed";
+                    const isUnsupported = req.status === "unsupported";
                     const conditionCount = req.extracted_data?.conditions?.length ?? 0;
+                    const unsupportedText = getUnsupportedDisplayText(req);
+                    const statusTitle = isSuccess
+                      ? "Extraction Complete!"
+                      : isUnsupported
+                        ? unsupportedText.title
+                        : "Extraction Failed";
+                    const statusMessage = isSuccess
+                      ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
+                      : isUnsupported
+                        ? unsupportedText.message
+                        : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format.";
+
                     return (
                       <Box
                         key={req.id}
@@ -446,12 +487,10 @@ export default function ExtractedDocumentsPage() {
                               fontWeight="bold"
                               color={isSuccess ? colors.successText : colors.errorText}
                             >
-                              {isSuccess ? "Extraction Complete!" : "Extraction Failed"}
+                              {statusTitle}
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
-                              {isSuccess
-                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
-                                : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format."}
+                              {statusMessage}
                             </Typography>
                           </Box>
                         </Box>

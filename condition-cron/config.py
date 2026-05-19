@@ -8,6 +8,14 @@ from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv())
 
 
+def _float_env(name: str, default: str) -> float:
+    """Read a float environment variable with a safe default."""
+    try:
+        return float(os.getenv(name, default))
+    except (TypeError, ValueError):
+        return float(default)
+
+
 def get_named_config(config_name: str = 'development'):
     """Return the configuration object based on the name."""
     if config_name in ['production', 'staging', 'default']:
@@ -48,6 +56,10 @@ class _Config:
     EXTRACTOR_API_URL = os.getenv('EXTRACTOR_API_URL', '')
     EXTRACTOR_API_KEY = os.getenv('EXTRACTOR_API_KEY', '')
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+    EXTRACTION_UNSUPPORTED_CONFIDENCE_THRESHOLD = _float_env(
+        'EXTRACTION_UNSUPPORTED_CONFIDENCE_THRESHOLD',
+        '0.75',
+    )
 
     # Queue timing settings shared with condition-api for UI estimates.
     #

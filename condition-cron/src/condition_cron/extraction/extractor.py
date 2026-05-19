@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 
 MODEL = "gpt-4o-2024-05-13"
 SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schemas")
+EXTRACTION_SCOPE_INSTRUCTION = (
+    "Extract only legally binding environmental assessment certificate, order, "
+    "Schedule B, table-of-conditions, or similar EAO condition/commitment text. "
+    "If the text is not from a supported environmental assessment conditions "
+    "document, return an empty conditions array."
+)
 
 
 # ---------------------------------------------------------------------------
@@ -42,6 +48,11 @@ def _read_file_text(file_path: str) -> str:
             raise ValueError("Unsupported file type. Only PDF and TXT files are supported.")
 
 
+def read_file_text(file_path: str) -> str:
+    """Read text from a supported document file path."""
+    return _read_file_text(file_path)
+
+
 # ---------------------------------------------------------------------------
 # Custom exceptions
 # ---------------------------------------------------------------------------
@@ -57,13 +68,14 @@ class LengthFinishReasonError(FinishReasonError):
 # Document classification + count (new entry point, replaces count_conditions)
 # ---------------------------------------------------------------------------
 
-def classify_and_count(file_path: str) -> Dict[str, Any]:
+def classify_and_count(file_path: str, file_text: str = None) -> Dict[str, Any]:
     """Classify document structure and estimate condition count.
 
     Returns a dict with: document_type, has_numbered_conditions,
     section_headers, estimated_item_count.
     """
-    file_text = _read_file_text(file_path)
+    if file_text is None:
+        file_text = _read_file_text(file_path)
     classification = classify_document(file_text)
     return classification
 
@@ -133,6 +145,7 @@ def _extract_numbered_range(file_path: str, starting_condition_number: int, endi
 
     tools = [tool_schema]
     messages = [{"role": "user", "content": (
+        f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
         f"Here is a document with conditions:\n\n{file_text}\n\n"
         f"Extract conditions {starting_condition_number} to {ending_condition_number}."
     )}]
@@ -202,6 +215,7 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
         # Build prompt based on document type
         if doc_type == "table_format":
             prompt = (
+                f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
                 f"Here is a section of an environmental assessment document (pages {start_page}-{end_page}). "
                 f"The document contains conditions/commitments organized in a table format.\n\n"
                 f"{page_text}\n\n"
@@ -215,6 +229,7 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
             if section_headers:
                 section_info = f"Known section headers in this document: {', '.join(section_headers)}. "
             prompt = (
+                f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
                 f"Here is a section of an environmental assessment document (pages {start_page}-{end_page}). "
                 f"The document contains commitments organized as bullet points under topic headings. "
                 f"{section_info}\n\n"
@@ -230,6 +245,7 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
             )
         else:  # mixed or fallback
             prompt = (
+                f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
                 f"Here is a section of an environmental assessment document (pages {start_page}-{end_page}).\n\n"
                 f"{page_text}\n\n"
                 f"Extract every discrete condition, commitment, or requirement from this section. "

@@ -95,6 +95,11 @@ spec:
                 configMapKeyRef:
                   name: {{ .Values.name }}-config
                   key: EXTRACTOR_API_URL
+            - name: EXTRACTION_UNSUPPORTED_CONFIDENCE_THRESHOLD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.name }}-config
+                  key: EXTRACTION_UNSUPPORTED_CONFIDENCE_THRESHOLD
             - name: EXTRACTOR_API_KEY
               valueFrom:
                 secretKeyRef:
