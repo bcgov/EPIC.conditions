@@ -366,7 +366,8 @@ const ConditionHeader = ({
                     flexDirection: "row",
                     marginBottom: "15px",
                     color: "#CE3E39",
-                    marginTop: "-20px",
+                    marginTop: 1,
+                    fontSize: "14px",
                   }}
                 >
                   This condition number already exists. Please enter a new one.
