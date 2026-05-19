@@ -559,6 +559,7 @@ const ConditionHeader = ({
                         variant="contained"
                         color="primary"
                         size="small"
+                        disabled={editConditionMode}
                         sx={{ padding: "4px 8px", borderRadius: "4px" }}
                         onClick={() => approveTags(true)}
                     >
