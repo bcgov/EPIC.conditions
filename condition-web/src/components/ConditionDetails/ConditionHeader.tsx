@@ -95,7 +95,7 @@ const ConditionHeader = ({
 
         const data: PartialUpdateTopicTagsModel = {};
 
-        if (conditionNumber !== condition.condition_number) {
+        if (Number(conditionNumber) !== Number(condition.condition_number)) {
             data.condition_number = conditionNumber ? Number(conditionNumber) : condition.condition_number;
         }
 
