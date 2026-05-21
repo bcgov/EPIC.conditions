@@ -164,10 +164,10 @@ export default function ExtractedDocumentsPage() {
     });
   };
 
-  const handleReject = (id: number) => {
+  const handleReject = (id: number, successMessage = "Extraction rejected successfully!") => {
     rejectMutation.mutate(id, {
       onSuccess: () => {
-        notify.success("Extraction rejected successfully!");
+        notify.success(successMessage);
         setPreviewRequest(null);
         setStopRequest(null);
         setDiscardRequest(null);
@@ -347,7 +347,7 @@ export default function ExtractedDocumentsPage() {
           </Button>
           <Button
             variant="contained"
-            onClick={() => discardRequest && handleReject(discardRequest.id)}
+            onClick={() => discardRequest && handleReject(discardRequest.id, "Extraction discarded successfully!")}
             disabled={rejectMutation.isPending}
           >
             Confirm
