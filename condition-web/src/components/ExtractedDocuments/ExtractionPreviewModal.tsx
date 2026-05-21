@@ -351,17 +351,13 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
             </Typography>
 
             <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, maxHeight: '50vh' }}>
-              <Table size="small" stickyHeader>
+              <Table size="small" stickyHeader sx={{ tableLayout: "fixed" }}>
                 <TableHead>
                   <TableRow>
-                    {["", "Condition #", "Condition Name", "Tags"].map((header) => (
-                      <TableCell
-                        key={header}
-                        sx={{ fontWeight: "bold", color: colors.tableHeaderText, whiteSpace: "nowrap" }}
-                      >
-                        {header}
-                      </TableCell>
-                    ))}
+                    <TableCell sx={{ width: 48, fontWeight: "bold", color: colors.tableHeaderText }} />
+                    <TableCell sx={{ width: 120, fontWeight: "bold", color: colors.tableHeaderText, whiteSpace: "nowrap" }}>Condition #</TableCell>
+                    <TableCell sx={{ fontWeight: "bold", color: colors.tableHeaderText }}>Condition Name</TableCell>
+                    <TableCell sx={{ width: "35%", fontWeight: "bold", color: colors.tableHeaderText }}>Tags</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
