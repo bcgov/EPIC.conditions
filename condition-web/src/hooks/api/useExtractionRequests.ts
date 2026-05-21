@@ -19,10 +19,30 @@ export interface ExtractedSubcondition {
     subconditions?: ExtractedSubcondition[] | null;
 }
 
-export interface ExtractedData {
-    conditions?: ExtractedCondition[];
+export type UnsupportedCategory =
+    | "amendment_document"
+    | "invalid_document"
+    | "unreadable_format";
+
+export interface ExtractionEligibility {
+    unsupported_category?: UnsupportedCategory | null;
     [key: string]: unknown;
 }
+
+export interface ExtractedData {
+    conditions?: ExtractedCondition[];
+    eligibility?: ExtractionEligibility | null;
+    [key: string]: unknown;
+}
+
+export type ExtractionRequestStatus =
+    | "pending"
+    | "processing"
+    | "completed"
+    | "failed"
+    | "unsupported"
+    | "imported"
+    | "rejected";
 
 export interface ExtractionRequest {
     id: number;
@@ -33,7 +53,7 @@ export interface ExtractionRequest {
     original_file_name?: string | null;
     s3_url: string;
     file_size_bytes?: number | null;
-    status: string;
+    status: ExtractionRequestStatus;
     error_message?: string | null;
     extracted_data?: ExtractedData | null;
     created_date: string;
