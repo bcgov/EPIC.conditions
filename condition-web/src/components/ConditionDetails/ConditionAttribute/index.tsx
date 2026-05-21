@@ -23,6 +23,7 @@ import { useRemoveConditionAttributes } from "@/hooks/api/useConditionAttribute"
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@/hooks/api/constants";
+import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 
 type ConditionAttributeProps = {
     condition: ConditionModel;
@@ -34,6 +35,7 @@ const ConditionAttribute = memo(({
     setCondition,
   }: ConditionAttributeProps) => {
     const queryClient = useQueryClient();
+    const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
     const [requiresPlan, setRequiresPlan] = useState<boolean>(
         condition.requires_management_plan || false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -178,13 +180,13 @@ const ConditionAttribute = memo(({
                             value="true"
                             control={<Radio />}
                             label="Yes"
-                            disabled={condition?.is_condition_attributes_approved || false}
+                            disabled={!canManage || (condition?.is_condition_attributes_approved || false)}
                         />
                         <FormControlLabel
                             value="false"
                             control={<Radio />}
                             label="No"
-                            disabled={condition?.is_condition_attributes_approved || false}
+                            disabled={!canManage || (condition?.is_condition_attributes_approved || false)}
                         />
                     </RadioGroup>
                 </FormControl>

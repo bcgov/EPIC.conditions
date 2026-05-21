@@ -23,6 +23,7 @@ from datetime import datetime
 from sqlalchemy import and_, case, extract, func, not_
 from sqlalchemy.orm import aliased
 
+from condition_api.config import _Config
 from condition_api.exceptions import ConditionNumberExistsError, ConditionNumberExistsInProjectError
 from condition_api.models.amendment import Amendment
 from condition_api.models.attribute_key import AttributeKey
@@ -37,6 +38,8 @@ from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
 from condition_api.utils.enums import AttributeKeys, ConditionType, IEMTermsConfig
+
+ENABLE_NEW_SUBMIT_FLOW = _Config.ENABLE_NEW_SUBMIT_FLOW
 
 
 class ConditionService:
@@ -1221,11 +1224,11 @@ class ConditionService:
         """Format value"""
         if key_name in formatted_key_names:
             return ConditionService.format_attribute_value(raw_value)
-        return (
-            raw_value.replace("{", "").replace("}", "").replace('"', "")
-            if raw_value
-            else None
-        )
+        if not raw_value:
+            return None
+        if raw_value == "N/A":
+            return raw_value if ENABLE_NEW_SUBMIT_FLOW else None
+        return raw_value.replace("{", "").replace("}", "").replace('"', "")
 
     @staticmethod
     def _process_deliverables(deliverables, requires_iem, formatted_key_names):

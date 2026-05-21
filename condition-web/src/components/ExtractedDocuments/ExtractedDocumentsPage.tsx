@@ -28,6 +28,7 @@ import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useGetAllProjects } from "@/hooks/api/useProjects";
 import {
   ExtractionRequest,
+  UnsupportedCategory,
   useGetExtractionRequests,
   useImportExtractionRequest,
   useRejectExtractionRequest,
@@ -86,6 +87,29 @@ interface SectionHeaderProps {
   chevronColor?: string;
 }
 
+const unsupportedDisplayText: Record<UnsupportedCategory, { title: string; message: string }> = {
+  amendment_document: {
+    title: "Amendment Document",
+    message: "Amendment documents are not supported for condition extraction.",
+  },
+  invalid_document: {
+    title: "Invalid Document",
+    message: "This document is not related to EAO project conditions.",
+  },
+  unreadable_format: {
+    title: "Unreadable Format",
+    message: "No readable text was found in this document.",
+  },
+};
+
+const getUnsupportedDisplayText = (req: ExtractionRequest) => {
+  const category = req.extracted_data?.eligibility?.unsupported_category;
+  if (category && unsupportedDisplayText[category]) {
+    return unsupportedDisplayText[category];
+  }
+  return unsupportedDisplayText.invalid_document;
+};
+
 /** Static header bar rendered at the top of each section panel. */
 const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
@@ -101,7 +125,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
       backgroundColor,
       px: 2,
       py: 1.5,
-      borderBottom: `1px solid ${colors.divider}`,
+      borderBottom: expanded ? `1px solid ${colors.divider}` : "none",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -250,7 +274,11 @@ export default function ExtractedDocumentsPage() {
   };
 
   const completedRequests =
-    requests?.filter((r) => r.status === "completed" || r.status === "failed") ?? [];
+    requests?.filter((r) => (
+      r.status === "completed" ||
+      r.status === "failed" ||
+      r.status === "unsupported"
+    )) ?? [];
   const pendingRequests =
     requests
       ?.filter((r) => r.status === "pending" || r.status === "processing")
@@ -397,23 +425,37 @@ export default function ExtractedDocumentsPage() {
                 ) : (
                   completedRequests.map((req) => {
                     const isSuccess = req.status === "completed";
+                    const isUnsupported = req.status === "unsupported";
                     const conditionCount = req.extracted_data?.conditions?.length ?? 0;
+                    const unsupportedText = getUnsupportedDisplayText(req);
+                    const statusTitle = isSuccess
+                      ? "Extraction Complete!"
+                      : isUnsupported
+                        ? unsupportedText.title
+                        : "Extraction Failed";
+                    const statusMessage = isSuccess
+                      ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
+                      : isUnsupported
+                        ? unsupportedText.message
+                        : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format.";
+
                     return (
                       <Box
                         key={req.id}
                         sx={{
-                          display: "flex",
+                          display: "grid",
+                          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+                          gap: { xs: 1.5, md: 0 },
                           alignItems: "center",
-                          justifyContent: "space-between",
                           p: 2,
                           borderRadius: 1,
-                          border: `1px solid ${isSuccess ? colors.successBorder : colors.errorBorder}`,
+                          border: `1px solid ${colors.divider}`,
                           backgroundColor: isSuccess ? colors.successBg : colors.errorBg,
                         }}
                       >
                         {/* Document label */}
-                        <Box flex={1}>
-                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText} sx={{ wordBreak: "break-word" }}>
                             {getDocumentName(req)}
                           </Typography>
                           <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
@@ -433,7 +475,7 @@ export default function ExtractedDocumentsPage() {
                         </Box>
 
                         {/* Status indicator */}
-                        <Box flex={1} display="flex" alignItems="center" gap={1}>
+                        <Box display="flex" alignItems="flex-start" gap={1}>
                           {isSuccess ? (
                             <CheckCircleOutlineIcon color="success" />
                           ) : (
@@ -445,18 +487,16 @@ export default function ExtractedDocumentsPage() {
                               fontWeight="bold"
                               color={isSuccess ? colors.successText : colors.errorText}
                             >
-                              {isSuccess ? "Extraction Complete!" : "Extraction Failed"}
+                              {statusTitle}
                             </Typography>
                             <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>
-                              {isSuccess
-                                ? `Successfully extracted ${conditionCount} condition${conditionCount !== 1 ? "s" : ""}.`
-                                : req.error_message || "Unable to extract conditions. The file may be corrupted, scanned as an image, or in an unsupported format."}
+                              {statusMessage}
                             </Typography>
                           </Box>
                         </Box>
 
                         {/* Action */}
-                        <Box flex={0.5} display="flex" flexDirection="column" alignItems="flex-end" gap={1}>
+                        <Box display="flex" flexDirection="column" gap={1} sx={{ justifySelf: { xs: "start", md: "end" }, alignItems: { xs: "flex-start", md: "flex-end" } }}>
                           <Button
                             variant="outlined"
                             size="small"
@@ -471,6 +511,7 @@ export default function ExtractedDocumentsPage() {
                                     projectId: req.project_id,
                                     documentTypeId: req.document_type_id,
                                     documentLabel: req.document_label,
+                                    extractionRequestId: req.id,
                                   },
                                 })
                             }
@@ -543,17 +584,18 @@ export default function ExtractedDocumentsPage() {
                       <Box
                         key={req.id}
                         sx={{
-                          display: "flex",
+                          display: "grid",
+                          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+                          gap: { xs: 1.5, md: 0 },
                           alignItems: "center",
-                          justifyContent: "space-between",
                           p: 2,
                           borderRadius: 1,
                           border: `1px solid ${colors.pendingBorder}`,
                           backgroundColor: colors.pendingBg,
                         }}
                       >
-                        <Box flex={1}>
-                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="subtitle2" fontWeight="bold" color={colors.bodyText} sx={{ wordBreak: "break-word" }}>
                             {getDocumentName(req)}
                           </Typography>
                           <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
@@ -572,12 +614,10 @@ export default function ExtractedDocumentsPage() {
                           {renderStaffAttribution(req)}
                         </Box>
                         <Box
-                          flex={0.8}
                           display="flex"
                           alignItems="center"
                           justifyContent="flex-start"
                           gap={1.5}
-                          px={2}
                         >
                           <ScheduleOutlinedIcon
                             sx={{
@@ -594,7 +634,7 @@ export default function ExtractedDocumentsPage() {
                             </Typography>
                           </Box>
                         </Box>
-                        <Box flex={0.2} display="flex" justifyContent="flex-end">
+                        <Box display="flex" sx={{ justifySelf: { xs: "start", md: "end" } }}>
                           <IconButton
                             size="small"
                             aria-label="Cancel extraction"

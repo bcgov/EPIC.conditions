@@ -20,7 +20,7 @@ class ProcessDocuments:
             logger.info('No pending extraction requests found.')
             return
 
-        success, failed = 0, 0
+        success, failed, unsupported = 0, 0, 0
 
         for req in pending:
             request_id = req['id']
@@ -64,6 +64,23 @@ class ProcessDocuments:
                 success += 1
                 logger.info('Successfully processed extraction request %d', request_id)
 
+            except extraction_service.UnsupportedDocumentError as exc:
+                unsupported += 1
+                error_msg = str(exc)
+                logger.info(
+                    'Unsupported extraction request %d: %s',
+                    request_id,
+                    error_msg,
+                )
+                try:
+                    if db_service.get_request_status(request_id) == 'rejected':
+                        logger.info('Skipping unsupported update for rejected extraction request %d', request_id)
+                        continue
+
+                    db_service.mark_unsupported(request_id, error_msg, exc.eligibility)
+                except Exception:
+                    logger.error('Could not update status to unsupported for request %d', request_id)
+
             except Exception as exc:
                 failed += 1
                 error_msg = str(exc)
@@ -77,4 +94,9 @@ class ProcessDocuments:
                 if local_path and os.path.exists(local_path):
                     os.remove(local_path)
 
-        logger.info('ProcessDocuments complete — success: %d, failed: %d', success, failed)
+        logger.info(
+            'ProcessDocuments complete — success: %d, unsupported: %d, failed: %d',
+            success,
+            unsupported,
+            failed,
+        )

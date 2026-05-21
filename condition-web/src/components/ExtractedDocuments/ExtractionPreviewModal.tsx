@@ -357,7 +357,7 @@ export const ExtractionPreviewModal: React.FC<ExtractionPreviewModalProps> = ({
                     {["", "Condition #", "Condition Name", "Tags"].map((header) => (
                       <TableCell
                         key={header}
-                        sx={{ fontWeight: "bold", color: colors.tableHeaderText }}
+                        sx={{ fontWeight: "bold", color: colors.tableHeaderText, whiteSpace: "nowrap" }}
                       >
                         {header}
                       </TableCell>
