@@ -55,15 +55,19 @@ function ConditionPage() {
   useEffect(() => {
     if (documentDetails) {
       setDocumentLabel(documentDetails.document_label || "Document Label");
+    }
+  }, [documentDetails]);
 
+  useEffect(() => {
+    if (documentDetails) {
       setBreadcrumbs([
         { title: "Home", path: "/projects", clickable: true },
         { title: documentDetails?.project_name || "", path: `/projects/${projectId}`, clickable: true },
         { title: documentDetails?.document_category || "", path: `/documents/project/${projectId}/document-category/${documentDetails.document_category_id}/`, clickable: true },
-        { title: documentDetails?.document_label || "", path: undefined, clickable: false }
+        { title: documentLabel || "", path: undefined, clickable: false }
       ]);
     }
-  }, [documentDetails, projectId, setBreadcrumbs]);
+  }, [documentDetails, documentLabel, projectId, setBreadcrumbs]);
 
   const handleDocumentLabelChange = (newLabel: string) => {
     setDocumentLabel(newLabel);

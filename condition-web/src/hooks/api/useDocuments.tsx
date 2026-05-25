@@ -8,7 +8,7 @@ import {
   ProjectDocumentAllAmendmentsModel
 } from "@/models/Document";
 import { submitRequest } from "@/utils/axiosUtils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { Options } from "./types";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -165,6 +165,7 @@ export const useUpdateDocument = (
   documentId?: string,
   options?: Options
 ) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (documentLabel: string) => {
       if (!documentId) {
@@ -175,6 +176,9 @@ export const useUpdateDocument = (
     },
     onSuccess: (updatedDocument) => {
       notify.success("Document name updated successfully!");
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.DOCUMENTDETAIL, documentId] });
+      queryClient.removeQueries({ queryKey: [QUERY_KEY.PROJECTDOCUMENT] });
+      queryClient.removeQueries({ queryKey: [QUERY_KEY.DOCUMENT] });
 
       if (options?.onSuccess) {
         options.onSuccess(updatedDocument); // Pass the updated document back
