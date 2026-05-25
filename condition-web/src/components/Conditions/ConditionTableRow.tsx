@@ -43,7 +43,6 @@ export default function ConditionTableRow({
       <TableRow
         key={`row-${condition.condition_number}`}
         sx={{
-          my: 1,
           "&:hover": {
             backgroundColor: BCDesignTokens.surfaceColorMenusHover,
           },
@@ -54,7 +53,9 @@ export default function ConditionTableRow({
             align="left"
             sx={{
               borderBottom: border,
-              p: BCDesignTokens.layoutPaddingXsmall,
+              pt: BCDesignTokens.layoutPaddingXsmall,
+              pb: BCDesignTokens.layoutPaddingSmall,
+              px: BCDesignTokens.layoutPaddingXsmall,
             }}
           >
             {condition.amendment_names ?? "--"}
@@ -64,7 +65,9 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.condition_number ?? "--"}
@@ -73,7 +76,9 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           <Link
@@ -106,7 +111,9 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.topic_tags?.join(', ') ?? "--"}
@@ -115,7 +122,9 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.year_issued ?? "--"}
@@ -124,7 +133,9 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.source_document ?? "--"}
@@ -133,7 +144,9 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           {condition.is_standard_condition ?? "--"}
@@ -142,22 +155,13 @@ export default function ConditionTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            p: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
+            px: BCDesignTokens.layoutPaddingXsmall,
           }}
         >
           <DocumentStatusChip status={String(condition.is_approved) as DocumentStatus} />
         </TableCell>
-      </TableRow>
-      <TableRow key={`empty-row-${condition.condition_number}`} sx={{ py: 1 }}>
-        <TableCell
-          component="th"
-          scope="row"
-          colSpan={12}
-          sx={{
-            border: 0,
-            py: BCDesignTokens.layoutPaddingXsmall,
-          }}
-        />
       </TableRow>
     </>
   );

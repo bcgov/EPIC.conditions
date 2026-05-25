@@ -252,13 +252,8 @@ export const DocumentEntryForm = ({
                 <Typography variant="caption" color="text.secondary" display="block">
                     {transferData
                         ? "The document details have been populated from your previous entry. You can edit any field if needed."
-                        : "Manually register a document and its details into the system."}
+                        : "Manually enter a document and its details into the system."}
                 </Typography>
-                {!transferData && (
-                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                        <strong>Note:</strong> Use this option for amendments and documents that cannot be extracted automatically.
-                    </Typography>
-                )}
             </Box>
         <Box
             display="flex"

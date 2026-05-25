@@ -36,7 +36,8 @@ export default function DocumentTableRow({
           align="left"
           sx={{
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
             paddingLeft: BCDesignTokens.layoutPaddingXsmall,
             width: '40%',
           }}
@@ -66,7 +67,8 @@ export default function DocumentTableRow({
           align="right"
           sx={{
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
             width: '20%',
           }}
         >
@@ -76,7 +78,8 @@ export default function DocumentTableRow({
           align="right"
           sx={{
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
             width: '20%',
           }}
         >
@@ -86,7 +89,8 @@ export default function DocumentTableRow({
           align="right"
           sx={{
             borderBottom: border,
-            py: BCDesignTokens.layoutPaddingXsmall,
+            pt: BCDesignTokens.layoutPaddingXsmall,
+            pb: BCDesignTokens.layoutPaddingSmall,
             paddingRight: BCDesignTokens.layoutPaddingXsmall,
             width: '20%',
           }}
@@ -95,17 +99,6 @@ export default function DocumentTableRow({
             status={document.status === null ? "nodata" : String(document.status) as DocumentStatus}
           />
         </TableCell>
-      </TableRow>
-      <TableRow key={`empty-row-${document.document_id}`} sx={{ py: 1 }}>
-        <TableCell
-          component="th"
-          scope="row"
-          colSpan={12}
-          sx={{
-            border: 0,
-            py: BCDesignTokens.layoutPaddingXsmall,
-          }}
-        />
       </TableRow>
     </>
   );
