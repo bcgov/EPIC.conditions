@@ -125,6 +125,7 @@ const ConditionHeader = ({
           }
         } else {
           setEditConditionMode(false);
+          setConditionConflictError(false);
         }
     };
 
