@@ -326,18 +326,21 @@ class DocumentService:
         )
 
         if is_amendment_document:
-            document = (
+            amendment_detail = (
                 db.session.query(
                     Project.project_name.label('project_name'),
                     DocumentCategory.id.label('document_category_id'),
-                    DocumentCategory.category_name.label('document_category')
+                    DocumentCategory.category_name.label('document_category'),
+                    extract("year", Amendment.date_issued).label('year_issued')
                 )
                 .outerjoin(Document, Document.project_id == Project.project_id)
                 .outerjoin(DocumentTypeModel, DocumentTypeModel.id == Document.document_type_id)
                 .outerjoin(DocumentCategory, DocumentCategory.id == DocumentTypeModel.document_category_id)
+                .outerjoin(Amendment, Amendment.amended_document_id == document_id)
                 .filter(Document.id == is_amendment_document.document_id)
                 .first()
             )
+            document = amendment_detail
         else:
             # Fetch the original document
             document = (
@@ -347,7 +350,8 @@ class DocumentService:
                     DocumentCategory.category_name.label('document_category'),
                     Document.document_id.label('document_id'),
                     Document.document_label.label('document_label'),
-                    DocumentTypeModel.id.label('document_type_id')
+                    DocumentTypeModel.id.label('document_type_id'),
+                    extract("year", Document.date_issued).label('year_issued')
                 )
                 .outerjoin(Project, Project.project_id == Document.project_id)
                 .outerjoin(DocumentTypeModel, DocumentTypeModel.id == Document.document_type_id)
@@ -376,6 +380,7 @@ class DocumentService:
                 is_amendment_document.document_type_id
                 if is_amendment_document else document.document_type_id
             ),
+            "year_issued": int(document.year_issued) if document.year_issued else None,
         }
 
     @staticmethod

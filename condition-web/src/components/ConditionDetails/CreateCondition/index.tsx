@@ -44,6 +44,7 @@ type CreateConditionProps = {
   documentId: string;
   projectName: string;
   documentLabel: string;
+  yearIssued?: number;
   initialCondition?: ConditionModel;
 };
 
@@ -52,13 +53,14 @@ export const CreateConditionPage = ({
   documentId,
   projectName,
   documentLabel,
+  yearIssued,
   initialCondition,
 }: CreateConditionProps) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [condition, setCondition] = useState<ConditionModel>(
-    initialCondition || createDefaultCondition());
+    initialCondition || { ...createDefaultCondition(), year_issued: yearIssued ?? 0 });
 
   const [tags, setTags] = useState<string[]>(condition?.topic_tags ?? []);
   const [conditionNumberError, setConditionNumberError] = useState(false);

@@ -85,6 +85,7 @@ function CreateConditionRoute() {
               documentId={documentId || ""}
               projectName={documentDetails?.project_name || ""}
               documentLabel={documentDetails?.document_label || ""}
+              yearIssued={documentDetails?.year_issued ?? 0}
               initialCondition={initialCondition}
             />
           </Else>
