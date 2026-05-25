@@ -37,7 +37,9 @@ function DocumentRow({ projectId, document, isAmendment }: { projectId: string; 
         align="left"
         sx={{
           borderBottom: border,
-          padding: BCDesignTokens.layoutPaddingXsmall,
+          pt: BCDesignTokens.layoutPaddingXsmall,
+          pb: BCDesignTokens.layoutPaddingSmall,
+          px: BCDesignTokens.layoutPaddingXsmall,
           paddingLeft: isAmendment ? 6 : BCDesignTokens.layoutPaddingXsmall,
           width: '50%',
         }}
@@ -67,7 +69,9 @@ function DocumentRow({ projectId, document, isAmendment }: { projectId: string; 
         align="right"
         sx={{
           borderBottom: border,
-          padding: BCDesignTokens.layoutPaddingXsmall,
+          pt: BCDesignTokens.layoutPaddingXsmall,
+          pb: BCDesignTokens.layoutPaddingSmall,
+          px: BCDesignTokens.layoutPaddingXsmall,
           width: '25%',
         }}
       >
@@ -77,7 +81,9 @@ function DocumentRow({ projectId, document, isAmendment }: { projectId: string; 
         align="right"
         sx={{
           borderBottom: border,
-          padding: BCDesignTokens.layoutPaddingXsmall,
+          pt: BCDesignTokens.layoutPaddingXsmall,
+          pb: BCDesignTokens.layoutPaddingSmall,
+          px: BCDesignTokens.layoutPaddingXsmall,
           width: '25%',
         }}
       >
@@ -99,9 +105,6 @@ export default function DocumentTableRow({ projectId, document, amendments }: Do
           isAmendment
         />
       ))}
-      <TableRow key={`empty-row-${document.document_id}`}>
-        <TableCell colSpan={12} sx={{ border: 0, py: BCDesignTokens.layoutPaddingXsmall }} />
-      </TableRow>
     </>
   );
 }
