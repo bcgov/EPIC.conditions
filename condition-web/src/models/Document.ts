@@ -79,6 +79,7 @@ export interface DocumentDetailsModel {
   document_id: string;
   document_label: string;
   document_type_id: number;
+  year_issued: number | null;
 }
 
 export interface DocumentLabelModel {
