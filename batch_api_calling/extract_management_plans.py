@@ -75,9 +75,9 @@ def extract_management_plan_info_using_gpt(condition_text):
                         "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring Plan for Operations, etc. Write it in title case (E.g. The Catcher in the Rye)."
                       },
                       "approval_type": {
-                        "type": "string", 
-                        "enum": ["Acceptance", "Satisfaction", "Other"],
-                        "description": "If the plan/report/proposal/etc. is explicitly stated to be to either the \"acceptance\" of or to the \"satisfaction\" of the Environmental Assessment Office (EAO). Is Other if not Satisfaction or Acceptance or if not specified."
+                        "type": "string",
+                        "enum": ["Review", "Acceptance", "Satisfaction", "Approval", "Other"],
+                        "description": "The type of approval required when the plan/report/proposal/etc. is submitted to the EAO. Focus only on the clause describing the submission of the document itself — not clauses about how the plan must be implemented or carried out. Use \"Review\" if the submission clause indicates the document is provided for the EAO to review, or if no specific approval standard is mentioned — this is the default. Use \"Acceptance\" only if the submission clause explicitly requires the document to meet the EAO's acceptance standard. Use \"Satisfaction\" only if the submission clause explicitly requires the document to meet the EAO's satisfaction standard. Use \"Approval\" if the submission clause requires the document to be approved by the EAO. Use \"Other\" for any other explicit approval language. Many conditions include boilerplate language about implementation being to a regulator's standard — do not use that language to determine this field."
                       },
                       "stakeholders_to_consult": {
                         "type": "array",
