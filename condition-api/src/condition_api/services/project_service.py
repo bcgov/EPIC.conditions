@@ -247,7 +247,10 @@ class ProjectService:
             .order_by(Project.project_name)
             .all()
         )
-        return [{"project_id": row.project_id, "project_name": row.project_name, "project_type": row.project_type} for row in projects]
+        return [
+            {"project_id": row.project_id, "project_name": row.project_name, "project_type": row.project_type}
+            for row in projects
+        ]
 
     @staticmethod
     def activate_project(project_id):
