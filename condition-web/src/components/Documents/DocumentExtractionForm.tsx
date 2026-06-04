@@ -8,11 +8,16 @@ import {
     Box,
     Button,
     CircularProgress,
+    IconButton,
+    InputAdornment,
+    Link,
     Stack,
     TextField,
     Tooltip,
     Typography,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -20,10 +25,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { BCDesignTokens } from "epic.theme";
-import { DocumentLabelModel, DocumentTypeModel } from "@/models/Document";
+import { DocumentLabelModel, DocumentTypeModel, EaoSearchDocumentResult } from "@/models/Document";
 import { AvailableProjectModel } from "@/models/Project";
 import { useGetAllProjects } from "@/hooks/api/useProjects";
-import { useGetDocumentLabels } from "@/hooks/api/useDocuments";
+import { useGetDocumentLabels, useSearchEaoDocuments } from "@/hooks/api/useDocuments";
 import { S3_FOLDER, useUploadDocument } from "@/hooks/api/useObjectStorage";
 import { useCreateExtractionRequest } from "@/hooks/api/useExtractionRequests";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -43,6 +48,7 @@ export const DocumentExtractionForm = ({
     const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentTypeModel | null>(null);
     const [selectedDisplayName, setSelectedDisplayName] = useState<DocumentLabelModel | null>(null);
     const [showMore, setShowMore] = useState(false);
+    const [showAllDocSearch, setShowAllDocSearch] = useState(false);
 
     const { data: documentLabels = [], isPending: isLabelsLoading } = useGetDocumentLabels(
         selectedProject?.project_id,
@@ -51,6 +57,11 @@ export const DocumentExtractionForm = ({
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [s3Key, setS3Key] = useState<string | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+
+    const { data: eaoResults = [], isFetching: isEaoLoading } = useSearchEaoDocuments(
+        selectedProject?.project_id,
+        showAllDocSearch
+    );
 
     const uploadDocument = useUploadDocument();
     const createExtractionRequest = useCreateExtractionRequest();
@@ -90,6 +101,8 @@ export const DocumentExtractionForm = ({
                             document_id: selectedDisplayName?.document_id ?? null,
                             document_type_id: selectedDocumentType?.id ?? null,
                             document_label: selectedDisplayName?.document_label ?? null,
+                            date_issued: selectedDisplayName?.date_issued ?? null,
+                            act: selectedDisplayName?.act ?? null,
                             original_file_name: uploadedFile.name,
                             s3_url: s3RelativeUrl,
                             file_size_bytes: uploadedFile.size,
@@ -148,6 +161,7 @@ export const DocumentExtractionForm = ({
                             setSelectedProject(v);
                             setSelectedDocumentType(null);
                             setSelectedDisplayName(null);
+                            setShowAllDocSearch(false);
                         }}
                         renderInput={(params) => (
                             <TextField
@@ -175,6 +189,7 @@ export const DocumentExtractionForm = ({
                             onChange={(_, v) => {
                                 setSelectedDocumentType(v);
                                 setSelectedDisplayName(null);
+                                setShowAllDocSearch(false);
                             }}
                             disabled={!selectedProject}
                             renderInput={(params) => (
@@ -199,6 +214,7 @@ export const DocumentExtractionForm = ({
                             getOptionLabel={(d) => d.document_label ?? ""}
                             onChange={(_, v) => setSelectedDisplayName(v)}
                             disabled={!selectedProject || !selectedDocumentType}
+                            sx={{ "& .MuiFormControl-root": { verticalAlign: "bottom", marginBottom: 0 } }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -209,6 +225,85 @@ export const DocumentExtractionForm = ({
                                 />
                             )}
                         />
+                        {selectedProject && selectedDocumentType && !showAllDocSearch && (
+                            <Link
+                                component="button"
+                                variant="caption"
+                                underline="always"
+                                onClick={() => setShowAllDocSearch(true)}
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.4,
+                                    cursor: "pointer",
+                                    color: "primary.main",
+                                }}
+                            >
+                                <SearchIcon sx={{ fontSize: 14 }} />
+                                Can't find it? Search all documents
+                            </Link>
+                        )}
+                        {showAllDocSearch && (
+                            <Box mt={1}>
+                                <Autocomplete<EaoSearchDocumentResult>
+                                    sx={{ "& .MuiFormControl-root": { marginBottom: 0 } }}
+                                    options={eaoResults}
+                                    loading={isEaoLoading}
+                                    getOptionLabel={(d) => d.displayName ?? ""}
+                                    isOptionEqualToValue={(a, b) => a._id === b._id}
+                                    renderOption={(props, option) => (
+                                        <li {...props} key={option._id}>
+                                            {option.displayName}
+                                        </li>
+                                    )}
+                                    onChange={(_, v) => {
+                                        if (v) {
+                                            setSelectedDisplayName({
+                                                document_id: v._id,
+                                                document_label: v.displayName,
+                                                date_issued: v.datePosted ? v.datePosted.split("T")[0] : null,
+                                                act: v.legislation ?? null,
+                                                project_type: selectedProject?.project_type ?? null,
+                                            });
+                                            setShowAllDocSearch(false);
+                                        }
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            placeholder="Search all documents…"
+                                            size="small"
+                                            fullWidth
+                                            autoFocus
+                                            InputProps={{
+                                                ...params.InputProps,
+                                                startAdornment: (
+                                                    <>
+                                                        <SearchIcon sx={{ color: "text.secondary", fontSize: 18, mr: 0.5 }} />
+                                                        {params.InputProps.startAdornment}
+                                                    </>
+                                                ),
+                                                endAdornment: (
+                                                    <>
+                                                        {params.InputProps.endAdornment}
+                                                        <InputAdornment position="end">
+                                                            <IconButton
+                                                                size="small"
+                                                                edge="end"
+                                                                onClick={() => setShowAllDocSearch(false)}
+                                                                sx={{ color: "text.secondary" }}
+                                                            >
+                                                                <CloseIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    </>
+                                                ),
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        )}
                     </Box>
                 </Box>
 

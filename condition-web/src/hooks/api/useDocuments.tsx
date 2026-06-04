@@ -5,9 +5,10 @@ import {
   DocumentLabelModel,
   DocumentModel,
   DocumentDetailsModel,
+  EaoSearchResponse,
   ProjectDocumentAllAmendmentsModel
 } from "@/models/Document";
-import { submitRequest } from "@/utils/axiosUtils";
+import { submitRequest, requestAxios } from "@/utils/axiosUtils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { Options } from "./types";
@@ -60,6 +61,56 @@ export const useGetDocumentLabels = (projectId?: string, documentTypeId?: number
     queryFn: () => fetchDocumentLabels(projectId!, documentTypeId),
     enabled: Boolean(projectId && documentTypeId),
     ...defaultUseQueryOptions,
+  });
+};
+
+const EAO_SEARCH_BASE = 'https://projects.eao.gov.bc.ca/api/search';
+
+const EAO_PAGE_SIZE = 1000;
+
+const fetchEaoPage = (projectId: string, pageNum: number) => {
+  const params = new URLSearchParams({
+    dataset: 'Document',
+    pageNum: String(pageNum),
+    pageSize: String(EAO_PAGE_SIZE),
+    projectLegislation: 'default',
+    populate: 'false',
+    fuzzy: 'false',
+    'and[project]': projectId,
+    fields: '',
+  });
+  params.append('sortBy', '+displayName');
+  return requestAxios({ url: `${EAO_SEARCH_BASE}?${params.toString()}`, method: 'get' })
+    .then((data): EaoSearchResponse => {
+      const results: EaoSearchResponse[] = Array.isArray(data) ? data : [data];
+      return results[0];
+    });
+};
+
+const fetchEaoDocuments = async (projectId: string): Promise<EaoSearchDocumentResult[]> => {
+  const first = await fetchEaoPage(projectId, 0);
+  const total = first?.meta?.[0]?.searchResultsTotal ?? 0;
+  const allResults = [...(first?.searchResults ?? [])];
+
+  if (total > EAO_PAGE_SIZE) {
+    const extraPages = Math.ceil((total - EAO_PAGE_SIZE) / EAO_PAGE_SIZE);
+    const pages = await Promise.all(
+      Array.from({ length: extraPages }, (_, i) => fetchEaoPage(projectId, i + 1))
+    );
+    pages.forEach(p => allResults.push(...(p?.searchResults ?? [])));
+  }
+
+  return allResults;
+};
+
+export const useSearchEaoDocuments = (projectId?: string, enabled = false) => {
+  return useQuery({
+    queryKey: ['eao-documents', projectId],
+    queryFn: () => fetchEaoDocuments(projectId!),
+    enabled: Boolean(projectId) && enabled,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 };
 

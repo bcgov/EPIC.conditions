@@ -10,6 +10,8 @@ class ExtractionRequestSchema(Schema):
     document_id = fields.Str(allow_none=True)
     document_type_id = fields.Int(allow_none=True)
     document_label = fields.Str(allow_none=True)
+    date_issued = fields.Str(allow_none=True)
+    act = fields.Int(allow_none=True)
     original_file_name = fields.Str(allow_none=True)
     s3_url = fields.Str(required=True)
     file_size_bytes = fields.Int(allow_none=True)
