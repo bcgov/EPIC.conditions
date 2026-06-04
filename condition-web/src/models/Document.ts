@@ -101,3 +101,16 @@ export interface AvailableDocumentModel {
   date_issued: string | null;
   document_type: string | null;
 }
+
+export interface EaoSearchDocumentResult {
+  _id: string;
+  displayName: string;
+  datePosted: string | null;
+  documentType: string | null;
+  legislation: number | null;
+}
+
+export interface EaoSearchResponse {
+  searchResults: EaoSearchDocumentResult[];
+  meta: Array<{ searchResultsTotal: number }>;
+}

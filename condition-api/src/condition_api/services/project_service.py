@@ -243,11 +243,14 @@ class ProjectService:
     def get_all_projects_simple():
         """Fetch all projects (active and inactive) as a simple id/name list."""
         projects = (
-            db.session.query(Project.project_id, Project.project_name)
+            db.session.query(Project.project_id, Project.project_name, Project.project_type)
             .order_by(Project.project_name)
             .all()
         )
-        return [{"project_id": row.project_id, "project_name": row.project_name} for row in projects]
+        return [
+            {"project_id": row.project_id, "project_name": row.project_name, "project_type": row.project_type}
+            for row in projects
+        ]
 
     @staticmethod
     def activate_project(project_id):
