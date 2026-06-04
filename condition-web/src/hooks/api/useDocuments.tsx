@@ -9,6 +9,7 @@ import {
   ProjectDocumentAllAmendmentsModel
 } from "@/models/Document";
 import { submitRequest, requestAxios } from "@/utils/axiosUtils";
+import { AppConfig } from "@/utils/config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { Options } from "./types";
@@ -64,7 +65,7 @@ export const useGetDocumentLabels = (projectId?: string, documentTypeId?: number
   });
 };
 
-const EAO_SEARCH_BASE = 'https://projects.eao.gov.bc.ca/api/search';
+const EAO_SEARCH_BASE = AppConfig.eaoSearchUrl;
 
 const EAO_PAGE_SIZE = 1000;
 
