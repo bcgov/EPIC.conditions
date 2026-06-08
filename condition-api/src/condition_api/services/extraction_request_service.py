@@ -52,12 +52,32 @@ class ExtractionRequestService:
         )
         db.session.add(request)
 
-        # Activate the document so it appears in the repository immediately
+        # Activate the document (create it first if it doesn't exist in the DB)
         document_id = data.get('document_id')
         if document_id:
             document = db.session.query(Document).filter_by(document_id=document_id).first()
-            if document:
-                document.is_active = True
+            if not document:
+                raw_date = data.get('date_issued')
+                parsed_date = None
+                if raw_date:
+                    try:
+                        parsed_date = datetime.strptime(raw_date[:10], '%Y-%m-%d').date()
+                    except ValueError:
+                        logger.warning("Could not parse date_issued '%s' for document_id=%s", raw_date, document_id)
+
+                document = Document(
+                    document_id=document_id,
+                    project_id=data['project_id'],
+                    document_type_id=data.get('document_type_id'),
+                    document_label=data.get('document_label'),
+                    date_issued=parsed_date,
+                    act=data.get('act'),
+                    is_active=False,
+                )
+                db.session.add(document)
+                logger.info("Created new document document_id=%s from extraction request", document_id)
+
+            document.is_active = True
 
         # Activate the project so it is visible in the repository
         project = db.session.query(Project).filter_by(project_id=data['project_id']).first()
