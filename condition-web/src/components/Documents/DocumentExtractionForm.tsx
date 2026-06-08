@@ -229,7 +229,7 @@ export const DocumentExtractionForm = ({
                             <Link
                                 component="button"
                                 variant="caption"
-                                underline="always"
+                                underline="hover"
                                 onClick={() => setShowAllDocSearch(true)}
                                 sx={{
                                     display: "inline-flex",
