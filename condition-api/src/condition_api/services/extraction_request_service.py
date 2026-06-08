@@ -169,6 +169,21 @@ class ExtractionRequestService:
                 if document:
                     document.is_active = False
 
+                    if document.project_id:
+                        other_active = (
+                            db.session.query(Document)
+                            .filter(
+                                Document.project_id == document.project_id,
+                                Document.document_id != req.document_id,
+                                Document.is_active == True,  # noqa: E712
+                            )
+                            .first()
+                        )
+                        if not other_active:
+                            project = db.session.query(Project).filter_by(project_id=document.project_id).first()
+                            if project:
+                                project.is_active = False
+
             db.session.commit()
         except SQLAlchemyError as exc:
             db.session.rollback()
