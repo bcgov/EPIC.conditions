@@ -732,6 +732,7 @@ class ConditionService:
             "is_standard_condition": condition_data.is_standard_condition,
             "topic_tags": condition_data.topic_tags,
             "subtopic_tags": condition_data.subtopic_tags,
+            "condition_type": condition_data.condition_type,
             "year_issued": year_issued,
             "condition_attributes": [],
             "subconditions": []
@@ -761,7 +762,8 @@ class ConditionService:
             Condition.is_approved,
             Condition.is_standard_condition,
             Condition.topic_tags,
-            Condition.subtopic_tags
+            Condition.subtopic_tags,
+            Condition.condition_type
         ).filter(Condition.id == condition_id).first()
 
     @staticmethod
@@ -1352,6 +1354,7 @@ class ConditionService:
                 conditions.is_standard_condition,
                 conditions.requires_management_plan,
                 conditions.subtopic_tags,
+                conditions.condition_type,
                 subconditions.id.label("subcondition_id"),
                 subconditions.subcondition_identifier,
                 subconditions.subcondition_text,
@@ -1384,6 +1387,7 @@ class ConditionService:
             "is_standard_condition": first.is_standard_condition,
             "requires_management_plan": first.requires_management_plan,
             "subtopic_tags": first.subtopic_tags,
+            "condition_type": first.condition_type,
             "year_issued": first.year_issued,
             "condition_attributes": [],
             "subconditions": [],

@@ -3,7 +3,7 @@ import { Box, Button, Grid, Stack, Typography, TextField } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import DocumentStatusChip from "../Projects/DocumentStatusChip";
-import { ConditionModel } from "@/models/Condition";
+import { ConditionModel, ConditionType } from "@/models/Condition";
 import { BCDesignTokens } from "epic.theme";
 import { StyledLabel } from "../Shared/Table/common";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
@@ -34,8 +34,6 @@ const ConditionHeader = ({
     const [editConditionMode, setEditConditionMode] = useState(false);
     const [conditionNumber, setConditionNumber] = useState(condition?.condition_number || "");
     const [conditionName, setConditionName] = useState(condition?.condition_name || "");
-    const [checkConditionExists, setCheckConditionExists] = useState(false);
-    const [checkConditionExistsForProject, setCheckConditionExistsForProject] = useState(false);
     const [conditionConflictError, setConditionConflictError] = useState(false);
     const [approvalError, setApprovalError] = useState(false);
     const [approvalErrorMessage, setApprovalErrorMessage] = useState("");
@@ -54,9 +52,11 @@ const ConditionHeader = ({
         });
     };
 
+    const isAmendCondition = condition.condition_type === ConditionType.AMEND;
+
     const { data: conditionDetails, mutateAsync: updateConditionDetails } = useUpdateConditionDetails(
-        checkConditionExists,
-        checkConditionExistsForProject,
+        true,
+        isAmendCondition,
         conditionId,
         {
           onSuccess: onCreateSuccess,
@@ -79,23 +79,23 @@ const ConditionHeader = ({
     };
 
     const handleSave = async () => {
-        setCheckConditionExists(true);
-
         if (!conditionNumber) {
           notify.error("Condition number is required.");
-          setCheckConditionExists(false);
           return;
         }
 
         if (!conditionName?.trim()) {
           notify.error("Condition name is required.");
-          setCheckConditionExists(false);
           return;
         }
 
         const data: PartialUpdateTopicTagsModel = {};
 
         if (Number(conditionNumber) !== Number(condition.condition_number)) {
+            if (isAmendCondition) {
+              setConditionConflictError(true);
+              return;
+            }
             data.condition_number = conditionNumber ? Number(conditionNumber) : condition.condition_number;
         }
 
@@ -107,8 +107,6 @@ const ConditionHeader = ({
           try {
             await updateConditionDetails(data);
             setEditConditionMode(false);
-            setCheckConditionExists(false);
-            setCheckConditionExistsForProject(false);
             setConditionConflictError(false);
             setApprovalErrorMessage('');
             setApprovalError(false);
@@ -183,10 +181,13 @@ const ConditionHeader = ({
                     marginBottom: "-22px"
                   }}
                 >
-                  <TextField 
-                    variant="outlined" 
+                  <TextField
+                    variant="outlined"
                     value={conditionNumber}
-                    onChange={(e) => setConditionNumber(e.target.value)}
+                    onChange={(e) => {
+                      setConditionNumber(e.target.value);
+                      setConditionConflictError(false);
+                    }}
                     sx={{
                       width: calculateWidth(String(conditionNumber)),
                       "& .MuiOutlinedInput-root": {
@@ -215,10 +216,7 @@ const ConditionHeader = ({
                   <Button
                     variant="contained"
                     size="small"
-                    onClick={() => {
-                      setCheckConditionExistsForProject(true);
-                      handleSave();
-                    }}
+                    onClick={handleSave}
                     sx={{
                       alignSelf: "stretch",
                       borderRadius: "0 4px 4px 0",
@@ -302,10 +300,7 @@ const ConditionHeader = ({
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() => {
-                          setCheckConditionExistsForProject(true);
-                          handleSave();
-                        }}
+                        onClick={handleSave}
                         sx={{
                           alignSelf: "stretch",
                           borderRadius: "0 4px 4px 0",
@@ -371,7 +366,9 @@ const ConditionHeader = ({
                     fontSize: "14px",
                   }}
                 >
-                  This condition number already exists. Please enter a new one.
+                  {isAmendCondition
+                    ? "The condition number cannot be changed because this condition is amending an existing condition."
+                    : "This condition number already exists. Please enter a new one."}
                 </Box>
               )}
               {((!conditionName && canManage) || approvalError) && (
