@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Grid } from "@mui/material";
 import { useGetDocumentType } from "@/hooks/api/useDocuments";
-import { useGetProjects } from "@/hooks/api/useProjects";
+import { useGetAllProjects, useGetProjects } from "@/hooks/api/useProjects";
+import { ProjectModel } from "@/models/Project";
 import { PageGrid } from "@/components/Shared/PageGrid";
 import { DocumentEntryPage } from "@/components/Documents/DocumentEntryPage";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -22,6 +23,7 @@ export const Route = createFileRoute(
                 ? Number(search.documentTypeId)
                 : undefined,
         documentLabel: typeof search.documentLabel === "string" ? search.documentLabel : undefined,
+        documentId: typeof search.documentId === "string" ? search.documentId : undefined,
         dateIssued: typeof search.dateIssued === "string" ? search.dateIssued : undefined,
         extractionRequestId: typeof search.extractionRequestId === "number"
             ? search.extractionRequestId
@@ -41,6 +43,11 @@ export function DocumentExtractPage() {
         isError: isProjectsError,
     } = useGetProjects();
 
+    const {
+        data: allProjectsData,
+        isError: isAllProjectsError,
+    } = useGetAllProjects();
+
     const { data: documentTypeData } = useGetDocumentType();
     const { replaceBreadcrumb } = useBreadCrumb();
     const manualEntrySearch = useSearch({ from: Route.id });
@@ -50,8 +57,14 @@ export function DocumentExtractPage() {
     }, [replaceBreadcrumb]);
 
     useEffect(() => {
-        if (isProjectsError) notify.error("Failed to load projects");
-    }, [isProjectsError]);
+        if (isProjectsError || isAllProjectsError) notify.error("Failed to load projects");
+    }, [isProjectsError, isAllProjectsError]);
+
+    const projects: ProjectModel[] = (allProjectsData ?? []).map((project) => ({
+        project_id: project.project_id,
+        project_name: project.project_name,
+        documents: projectsData?.find((p: ProjectModel) => p.project_id === project.project_id)?.documents ?? [],
+    }));
 
     return (
         <>
@@ -59,7 +72,7 @@ export function DocumentExtractPage() {
             <PageGrid>
                 <Grid item xs={12}>
                     <DocumentEntryPage
-                        projects={projectsData ?? []}
+                        projects={projects}
                         documentType={documentTypeData ?? []}
                         manualEntrySearch={manualEntrySearch}
                     />

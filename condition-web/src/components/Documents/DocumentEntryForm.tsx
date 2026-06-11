@@ -20,7 +20,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DocumentType, DocumentTypeModel } from "@/models/Document";
 import { ProjectModel } from "@/models/Project";
 import { DocumentTypes } from "@/utils/enums";
-import { useCreateDocument, useGetDocumentsByProject } from "@/hooks/api/useDocuments";
+import { useCreateDocument, useGetDocumentsByProject, useUpdateDocumentDetails } from "@/hooks/api/useDocuments";
 import { useCreateAmendment } from "@/hooks/api/useAmendments";
 import { useManualEntryExtractionRequest } from "@/hooks/api/useExtractionRequests";
 import { CreateAmendmentModel } from "@/models/Amendment";
@@ -41,6 +41,7 @@ type DocumentEntryFormProps = {
         projectId?: string;
         documentTypeId?: number;
         documentLabel?: string;
+        documentId?: string;
         dateIssued?: string;
         extractionRequestId?: number;
     };
@@ -166,6 +167,14 @@ export const DocumentEntryForm = ({
         }
     );
 
+    const { mutateAsync: updateDocumentDetails } = useUpdateDocumentDetails(
+        transferData?.documentId,
+        {
+            onSuccess: () => notify.success("Document created successfully"),
+            onError: () => notify.error("Failed to create document"),
+        }
+    );
+
     const { mutateAsync: rejectExtractionRequest } = useManualEntryExtractionRequest();
 
     const { mutateAsync: createAmendment } = useCreateAmendment(
@@ -189,6 +198,9 @@ export const DocumentEntryForm = ({
             formState.selectedDocumentType === DocumentTypes.Amendment &&
             formState.selectedDocumentId;
 
+        // Manual entry replacing a failed extraction reuses the original document record.
+        const isManualEntryUpdate = !isAmendment && !!transferData?.documentId;
+
         updateFormState({
             isLatestAmendment: formState.selectedDocumentType === DocumentTypes.OtherOrder,
         });
@@ -206,12 +218,15 @@ export const DocumentEntryForm = ({
                 document_type_id: formState.selectedDocumentType,
                 date_issued: formattedDateIssued,
                 is_latest_amendment_added: formState.isLatestAmendment,
+                is_active: true,
             };
 
         try {
             const response = isAmendment
                 ? await createAmendment(payload as CreateAmendmentModel)
-                : await createDocument(payload as CreateDocumentModel);
+                : isManualEntryUpdate
+                    ? await updateDocumentDetails(payload as CreateDocumentModel)
+                    : await createDocument(payload as CreateDocumentModel);
 
             queryClient.invalidateQueries({ queryKey: ["projects"] });
 
@@ -222,7 +237,9 @@ export const DocumentEntryForm = ({
             if (response) {
                 const navigateTo = isAmendment
                     ? `/conditions/project/${formState.selectedProject?.project_id}/document/${response.amended_document_id}`
-                    : `/conditions/project/${response.project_id}/document/${response.document_id}`;
+                    : isManualEntryUpdate
+                        ? `/conditions/project/${formState.selectedProject?.project_id}/document/${transferData?.documentId}`
+                        : `/conditions/project/${response.project_id}/document/${response.document_id}`;
 
                 navigate({ to: navigateTo });
             }

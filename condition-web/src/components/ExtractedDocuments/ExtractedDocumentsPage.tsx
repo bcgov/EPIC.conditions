@@ -511,6 +511,7 @@ export default function ExtractedDocumentsPage() {
                                     projectId: req.project_id,
                                     documentTypeId: req.document_type_id,
                                     documentLabel: req.document_label,
+                                    documentId: req.document_id,
                                     extractionRequestId: req.id,
                                   },
                                 })

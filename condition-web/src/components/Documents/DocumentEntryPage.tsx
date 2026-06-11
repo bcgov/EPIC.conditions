@@ -16,6 +16,7 @@ type DocumentEntryPageProps = {
         projectId?: string;
         documentTypeId?: number;
         documentLabel?: string;
+        documentId?: string;
         dateIssued?: string;
         extractionRequestId?: number;
     };
@@ -55,6 +56,7 @@ export const DocumentEntryPage = ({
                         projectId: manualEntrySearch.projectId,
                         documentTypeId: manualEntrySearch.documentTypeId,
                         documentLabel: manualEntrySearch.documentLabel,
+                        documentId: manualEntrySearch.documentId,
                         dateIssued: manualEntrySearch.dateIssued,
                         extractionRequestId: manualEntrySearch.extractionRequestId,
                     } : undefined}
