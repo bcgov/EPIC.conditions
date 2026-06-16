@@ -230,6 +230,27 @@ class DocumentService:
         return new_document
 
     @staticmethod
+    def update_document_details(document_id, document):
+        """Update an existing document's details in place."""
+        existing_document = db.session.query(Document).filter_by(document_id=document_id).first()
+        if not existing_document:
+            raise ValueError("Document not found")
+
+        date_issued = document.get("date_issued")
+        if not date_issued:
+            date_issued = date.today()
+
+        existing_document.document_label = document.get("document_label")
+        existing_document.document_link = document.get("document_link")
+        existing_document.document_type_id = document.get("document_type_id")
+        existing_document.date_issued = date_issued
+        existing_document.is_latest_amendment_added = document.get("is_latest_amendment_added")
+        existing_document.is_active = document.get("is_active")
+
+        db.session.commit()
+        return existing_document
+
+    @staticmethod
     def get_all_documents_by_project_id(project_id, document_id=None, document_type=None):
         """Fetch all documents and its amendments for the given project_id."""
         documents_query = db.session.query(

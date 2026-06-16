@@ -174,6 +174,23 @@ class ExtractionRequestService:
         return req
 
     @staticmethod
+    def _deactivate_project_if_no_active_docs(project_id, exclude_document_id):
+        """Deactivate the project when no other active documents remain."""
+        other_active = (
+            db.session.query(Document)
+            .filter(
+                Document.project_id == project_id,
+                Document.document_id != exclude_document_id,
+                Document.is_active.is_(True),
+            )
+            .first()
+        )
+        if not other_active:
+            project = db.session.query(Project).filter_by(project_id=project_id).first()
+            if project:
+                project.is_active = False
+
+    @staticmethod
     def reject_request(request_id: int):
         """Reject an extraction request and purge its raw extracted JSON."""
         req = db.session.query(ExtractionRequest).filter_by(id=request_id).first()
@@ -188,21 +205,10 @@ class ExtractionRequestService:
                 document = db.session.query(Document).filter_by(document_id=req.document_id).first()
                 if document:
                     document.is_active = False
-
                     if document.project_id:
-                        other_active = (
-                            db.session.query(Document)
-                            .filter(
-                                Document.project_id == document.project_id,
-                                Document.document_id != req.document_id,
-                                Document.is_active == True,  # noqa: E712
-                            )
-                            .first()
+                        ExtractionRequestService._deactivate_project_if_no_active_docs(
+                            document.project_id, req.document_id
                         )
-                        if not other_active:
-                            project = db.session.query(Project).filter_by(project_id=document.project_id).first()
-                            if project:
-                                project.is_active = False
 
             db.session.commit()
         except SQLAlchemyError as exc:

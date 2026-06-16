@@ -65,6 +65,7 @@ export interface CreateDocumentModel {
   document_type_id?: number | null;
   date_issued?: string | null;
   is_latest_amendment_added?: boolean | null;
+  is_active?: boolean;
 }
 
 export enum DocumentType {
