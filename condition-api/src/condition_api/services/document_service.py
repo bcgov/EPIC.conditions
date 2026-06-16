@@ -231,8 +231,7 @@ class DocumentService:
 
     @staticmethod
     def update_document_details(document_id, document):
-        """Update an existing document's details in place.
-        """
+        """Update an existing document's details in place."""
         existing_document = db.session.query(Document).filter_by(document_id=document_id).first()
         if not existing_document:
             raise ValueError("Document not found")
