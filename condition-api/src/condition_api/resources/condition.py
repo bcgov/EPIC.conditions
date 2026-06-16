@@ -90,7 +90,9 @@ class ConditionDetailsPatchResource(Resource):
             conditions_data = ConditionSchema().load(API.payload)
             query_params = request.args
             check_condition_exists = query_params.get('check_condition_exists', 'false', type=str).lower() == 'true'
-            check_condition_over_project = query_params.get('check_condition_over_project', 'false', type=str).lower() == 'true'
+            check_condition_over_project = (
+                query_params.get('check_condition_over_project', 'false', type=str).lower() == 'true'
+            )
             updated_condition = ConditionService.update_condition(
                 conditions_data, condition_id, check_condition_exists,
                 check_condition_over_project)
