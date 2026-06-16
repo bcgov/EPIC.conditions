@@ -224,74 +224,69 @@
     }
 
     .subconditions-list {
-      display: table;
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 6.4mm;
-      margin-top: -6.4mm;
       page-break-inside: auto;
     }
 
     .subcondition-item {
-      display: table-row;
+      display: block;
+      margin-bottom: 6.4mm;
+      page-break-inside: auto;
+    }
+
+    .subcondition-row {
+      display: block;
       page-break-inside: avoid;
     }
 
     .subcondition-identifier {
-      display: table-cell;
-      width: 14mm;
+      display: inline;
+      margin-right: 2.1mm;
       font-size: 12pt;
       font-weight: bold;
       color: #101828;
       line-height: 1.5;
-      vertical-align: top;
       white-space: nowrap;
     }
 
-    .subcondition-body {
-      display: table-cell;
-      vertical-align: top;
-    }
-
     .subcondition-text {
+      display: inline;
       font-size: 12pt;
       color: #101828;
       line-height: 1.5;
     }
 
     .nested-subconditions {
-      display: table;
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 2.1mm;
+      display: block;
       margin-top: 2.1mm;
-      margin-bottom: -2.1mm;
       padding-left: 8.5mm;
       page-break-inside: auto;
     }
 
     .nested-subcondition-item {
-      display: table-row;
+      display: block;
       page-break-inside: avoid;
     }
 
+    .nested-subcondition-item + .nested-subcondition-item {
+      margin-top: 2.1mm;
+    }
+
     .nested-identifier {
-      display: table-cell;
-      width: 8mm;
+      display: inline;
+      margin-right: 2.1mm;
       font-size: 12pt;
       font-weight: bold;
       color: #101828;
       line-height: 1.5;
-      vertical-align: top;
       white-space: nowrap;
     }
 
     .nested-text {
-      display: table-cell;
+      display: inline;
       font-size: 12pt;
       color: #101828;
       line-height: 1.5;
-      vertical-align: top;
     }
 
     .condition-separator {
@@ -400,20 +395,14 @@
     <div class="subconditions-list">
       {% for sub in condition.subconditions | sort(attribute='sort_order') %}
       <div class="subcondition-item">
-        <span class="subcondition-identifier">{{ sub.subcondition_identifier }}</span>
-        <div class="subcondition-body">
-          <span class="subcondition-text">{{ sub.subcondition_text }}</span>
-          {% if sub.subconditions %}
-          <div class="nested-subconditions">
-            {% for nested in sub.subconditions | sort(attribute='sort_order') %}
-            <div class="nested-subcondition-item">
-              <span class="nested-identifier">{{ nested.subcondition_identifier }}</span>
-              <span class="nested-text">{{ nested.subcondition_text }}</span>
-            </div>
-            {% endfor %}
-          </div>
-          {% endif %}
+        <div class="subcondition-row">{% if sub.subcondition_identifier %}<span class="subcondition-identifier">{{ sub.subcondition_identifier }}</span>{% endif %}<span class="subcondition-text">{{ sub.subcondition_text }}</span></div>
+        {% if sub.subconditions %}
+        <div class="nested-subconditions">
+          {% for nested in sub.subconditions | sort(attribute='sort_order') %}
+          <div class="nested-subcondition-item">{% if nested.subcondition_identifier %}<span class="nested-identifier">{{ nested.subcondition_identifier }}</span>{% endif %}<span class="nested-text">{{ nested.subcondition_text }}</span></div>
+          {% endfor %}
         </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
