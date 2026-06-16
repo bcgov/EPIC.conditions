@@ -34,6 +34,8 @@ export const useGetAllProjects = () => {
     queryKey: [QUERY_KEY.PROJECTS, 'all'],
     queryFn: fetchAllProjects,
     ...defaultUseQueryOptions,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };
 

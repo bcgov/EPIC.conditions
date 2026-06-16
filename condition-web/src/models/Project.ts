@@ -10,4 +10,5 @@ export interface ProjectModel {
 export interface AvailableProjectModel {
   project_id: string;
   project_name: string;
+  project_type?: string | null;
 }

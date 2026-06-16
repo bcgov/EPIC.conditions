@@ -22,6 +22,7 @@ class ProjectSchema(BaseSchema):
 
     project_id = fields.Str(data_key="project_id")
     project_name = fields.Str(data_key="project_name")
+    project_type = fields.Str(data_key="project_type", allow_none=True)
     is_active = fields.Bool(data_key="is_active")
 
     # A project can have multiple documents
