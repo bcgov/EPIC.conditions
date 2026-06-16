@@ -153,6 +153,32 @@ export const useCreateDocument = (
   });
 };
 
+const updateDocumentDetails = (
+  documentId: string,
+  documentDetails: CreateDocumentModel
+) => {
+  return submitRequest({
+    url: `/documents/${documentId}/details`,
+    method: "patch",
+    data: documentDetails,
+  });
+};
+
+export const useUpdateDocumentDetails = (
+  documentId?: string,
+  options?: Options
+) => {
+  return useMutation({
+    mutationFn: (documentDetails: CreateDocumentModel) => {
+      if (!documentId) {
+        return Promise.reject(new Error("Document ID is required"));
+      }
+      return updateDocumentDetails(documentId, documentDetails);
+    },
+    ...options,
+  });
+};
+
 const fetchDocumentsByProject = (projectId?: string, documentId?: string, documentType?: string) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));

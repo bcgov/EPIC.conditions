@@ -176,6 +176,29 @@ class DocumentTypeResource(Resource):
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
 
+@cors_preflight("PATCH, OPTIONS")
+@API.route("/<string:document_id>/details", methods=["PATCH", "OPTIONS"])
+class DocumentDetailsResource(Resource):
+    """Resource for updating the full details of an existing document."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Update document details")
+    @API.response(code=HTTPStatus.OK, model=document_model, description="Update document details")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
+    @cross_origin(origins=allowedorigins())
+    def patch(document_id):
+        """Update an existing document's details (used for manual entry transfer)."""
+        try:
+            documents_data = DocumentSchema().load(API.payload, partial=True)
+            updated_document = DocumentService.update_document_details(document_id, documents_data)
+            return DocumentSchema().dump(updated_document), HTTPStatus.OK
+        except ValueError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+        except ValidationError as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
 @cors_preflight("GET, PATCH, OPTIONS")
 @API.route("/<string:document_id>", methods=["GET", "PATCH", "OPTIONS"])
 class DocumentResource(Resource):
