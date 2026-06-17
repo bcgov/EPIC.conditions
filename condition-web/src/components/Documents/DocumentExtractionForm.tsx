@@ -69,7 +69,11 @@ export const DocumentExtractionForm = ({
     );
 
     const activeDocumentIds = useMemo(
-        () => new Set((activeDocuments as { document_id: string }[]).map((d) => d.document_id)),
+        () => new Set(
+            Array.isArray(activeDocuments)
+                ? (activeDocuments as { document_id: string }[]).map((d) => d.document_id)
+                : []
+        ),
         [activeDocuments]
     );
 
