@@ -226,6 +226,11 @@ class DocumentService:
         db.session.add(new_document)
         db.session.flush()
 
+        # Activate the project so the document is visible in the condition repository.
+        project = db.session.query(Project).filter_by(project_id=project_id).first()
+        if project:
+            project.is_active = True
+
         db.session.commit()
         return new_document
 

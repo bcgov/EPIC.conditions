@@ -34,8 +34,8 @@ class ExtractionRequestService:
     def create(data: dict) -> ExtractionRequest:
         """Create a new extraction request with status pending.
 
-        Also activates the associated document and project so they are
-        immediately visible in the repository while extraction processes.
+        The document and project remain inactive until extraction is successfully
+        imported or the user completes manual entry.
         """
         current_staff_user = ExtractionRequestService._get_current_staff_user()
 
@@ -52,7 +52,8 @@ class ExtractionRequestService:
         )
         db.session.add(request)
 
-        # Activate the document (create it first if it doesn't exist in the DB)
+        # Ensure the document record exists in the DB so the extraction result can reference it.
+        # The document stays inactive until extraction is imported or manual entry is completed.
         document_id = data.get('document_id')
         if document_id:
             document = db.session.query(Document).filter_by(document_id=document_id).first()
@@ -76,13 +77,11 @@ class ExtractionRequestService:
                 )
                 db.session.add(document)
                 logger.info("Created new document document_id=%s from extraction request", document_id)
-
-            document.is_active = True
-
-        # Activate the project so it is visible in the repository
-        project = db.session.query(Project).filter_by(project_id=data['project_id']).first()
-        if project:
-            project.is_active = True
+            else:
+                # Always honour the document type the user explicitly selected, even
+                # when the document already exists in the DB with a different type.
+                if data.get('document_type_id'):
+                    document.document_type_id = data['document_type_id']
 
         db.session.commit()
         db.session.refresh(request)
@@ -165,6 +164,18 @@ class ExtractionRequestService:
             req.extracted_data = None
             req.error_message = None
 
+            # Activate the document and project now that the user has completed manual entry.
+            if req.document_id:
+                document = db.session.query(Document).filter_by(document_id=req.document_id).first()
+                if document:
+                    if req.document_type_id:
+                        document.document_type_id = req.document_type_id
+                    document.is_active = True
+
+            project = db.session.query(Project).filter_by(project_id=req.project_id).first()
+            if project:
+                project.is_active = True
+
             db.session.commit()
         except SQLAlchemyError as exc:
             db.session.rollback()
@@ -244,7 +255,14 @@ class ExtractionRequestService:
             if req.document_id:
                 document = db.session.query(Document).filter_by(document_id=req.document_id).first()
                 if document:
+                    if req.document_type_id:
+                        document.document_type_id = req.document_type_id
                     document.is_active = True
+
+            # Activate the project now that extraction is complete and imported.
+            project = db.session.query(Project).filter_by(project_id=req.project_id).first()
+            if project:
+                project.is_active = True
 
             db.session.commit()
         except (SQLAlchemyError, ValueError, TypeError):
