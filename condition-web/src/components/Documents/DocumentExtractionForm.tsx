@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useDropzone } from "react-dropzone";
@@ -28,7 +28,7 @@ import { BCDesignTokens } from "epic.theme";
 import { DocumentLabelModel, DocumentTypeModel, EaoSearchDocumentResult } from "@/models/Document";
 import { AvailableProjectModel } from "@/models/Project";
 import { useGetAllProjects } from "@/hooks/api/useProjects";
-import { useGetDocumentLabels, useSearchEaoDocuments } from "@/hooks/api/useDocuments";
+import { useGetDocumentLabels, useGetDocumentsByProject, useSearchEaoDocuments } from "@/hooks/api/useDocuments";
 import { S3_FOLDER, useUploadDocument } from "@/hooks/api/useObjectStorage";
 import { useCreateExtractionRequest } from "@/hooks/api/useExtractionRequests";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -61,6 +61,21 @@ export const DocumentExtractionForm = ({
     const { data: eaoResults = [], isFetching: isEaoLoading } = useSearchEaoDocuments(
         selectedProject?.project_id,
         showAllDocSearch
+    );
+
+    const { data: activeDocuments = [] } = useGetDocumentsByProject(
+        showAllDocSearch,
+        selectedProject?.project_id
+    );
+
+    const activeDocumentIds = useMemo(
+        () => new Set((activeDocuments as { document_id: string }[]).map((d) => d.document_id)),
+        [activeDocuments]
+    );
+
+    const filteredEaoResults = useMemo(
+        () => eaoResults.filter((d) => !activeDocumentIds.has(d._id)),
+        [eaoResults, activeDocumentIds]
     );
 
     const uploadDocument = useUploadDocument();
@@ -247,7 +262,7 @@ export const DocumentExtractionForm = ({
                             <Box mt={1}>
                                 <Autocomplete<EaoSearchDocumentResult>
                                     sx={{ "& .MuiFormControl-root": { marginBottom: 0 } }}
-                                    options={eaoResults}
+                                    options={filteredEaoResults}
                                     loading={isEaoLoading}
                                     getOptionLabel={(d) => d.displayName ?? ""}
                                     isOptionEqualToValue={(a, b) => a._id === b._id}
