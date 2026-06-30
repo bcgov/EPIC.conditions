@@ -259,7 +259,7 @@ const ConditionDescription = memo(({
                 onClick={approveConditionDescription}
               >
                 {isConditionApproved ?
-                'Un-approve Condition Requirements' : 'Approve Condition Requirements'}
+                'Un-confirm Condition Requirements' : 'Confirm Condition Requirements'}
               </Button>
             )}
             {showEditingError && isEditing && (
