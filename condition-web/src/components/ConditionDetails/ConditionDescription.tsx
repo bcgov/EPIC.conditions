@@ -272,7 +272,7 @@ const ConditionDescription = memo(({
                   textAlign: 'right',
                 }}
               >
-                Please navigate to the top of this section to save your changes before approving Condition Requirements.
+                Please navigate to the top of this section to save your changes before confirming Condition Requirements.
               </Box>
             )}
           </Box>

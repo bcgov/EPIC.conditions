@@ -367,7 +367,7 @@ const ConditionAttributeTable = memo(({
         <Box sx={{ marginTop: 1, marginBottom: 2 }}>
           <ErrorMessage
             visible={conditionAttributeError}
-            message="Please complete all the required attribute fields before approving the Condition Attributes."
+            message="Please complete all the required attribute fields before confirming the Condition Attributes."
           />
         </Box>
 

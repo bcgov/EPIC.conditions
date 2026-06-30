@@ -49,7 +49,7 @@ export const ApproveButton: React.FC<ApproveButtonProps> = ({
               textAlign: "right",
             }}
           >
-            Please save your changes before approving the Condition Attributes.
+            Please save your changes before confirming the Condition Attributes.
           </Box>
         )}
       </Box>
