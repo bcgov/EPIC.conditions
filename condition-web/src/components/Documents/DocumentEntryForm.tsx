@@ -151,6 +151,20 @@ export const DocumentEntryForm = ({
         DocumentTypes.Certificate.toString()
     );
 
+    useEffect(() => {
+        if (formState.selectedDocumentType !== DocumentTypes.Amendment || isDocumentsLoading) return;
+        const docs = (documentData || []) as DocumentModel[];
+        if (docs.length === 1) {
+            updateFormState({
+                selectedDocumentId: docs[0].document_record_id,
+                selectedDocumentLabel: docs[0].document_label,
+            });
+        } else {
+            updateFormState({ selectedDocumentId: null, selectedDocumentLabel: null });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [documentData, isDocumentsLoading, formState.selectedDocumentType]);
+
     const getDocumentName = (type: DocumentTypes | null): string => {
         switch (type) {
             case DocumentTypes.Certificate: return "Certificate";
@@ -344,9 +358,10 @@ export const DocumentEntryForm = ({
                     disabled={!formState.selectedProject}
                 />
 
-                {/* Amended Document Selector */}
+                {/* Amended Document Selector — only shown when multiple documents exist */}
                 {formState.selectedDocumentType === DocumentTypes.Amendment &&
-                    !isDocumentsLoading && (
+                    !isDocumentsLoading &&
+                    ((documentData || []) as DocumentModel[]).length > 1 && (
                         <>
                             <Typography variant="body1">Document being amended</Typography>
                             <Autocomplete
