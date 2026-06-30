@@ -152,7 +152,7 @@ export default function ConditionTableRow({
           {condition.is_standard_condition ?? "--"}
         </TableCell>
         <TableCell
-          align="left"
+          align="right"
           sx={{
             borderBottom: border,
             pt: BCDesignTokens.layoutPaddingXsmall,

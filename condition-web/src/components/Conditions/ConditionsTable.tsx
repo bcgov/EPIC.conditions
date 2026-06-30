@@ -165,7 +165,7 @@ export default function ConditionTable({
                             </TableSortLabel>
                         </StyledTableHeadCell>
 
-                        <StyledTableHeadCell align="left">
+                        <StyledTableHeadCell align="right">
                             <TableSortLabel
                                 active={orderBy === "is_approved"}
                                 direction={orderBy === "is_approved" ? order : "asc"}

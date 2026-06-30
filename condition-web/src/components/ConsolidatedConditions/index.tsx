@@ -165,17 +165,24 @@ export const ConsolidatedConditions = ({
                 </Grid>
               )}
               <Grid item sx={{ pr: BCDesignTokens.layoutPaddingMedium }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  startIcon={<FileDownloadOutlinedIcon />}
-                  onClick={handleExportPDF}
-                  disabled={isExporting || !filteredConditions?.length}
-                  sx={{ borderRadius: "4px", whiteSpace: "nowrap", width: "100%", minWidth: "170px", maxWidth: "200px", height: "42px" }}
-                >
-                  {isExporting ? "Exporting..." : "Export PDF"}
-                </Button>
+                <Stack direction="column" spacing={0.5} sx={{ mr: "6px", alignItems: "flex-end" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    startIcon={<FileDownloadOutlinedIcon />}
+                    onClick={handleExportPDF}
+                    disabled={isExporting || !filteredConditions?.length || !allApproved}
+                    sx={{ borderRadius: "4px", whiteSpace: "nowrap", width: "100%", height: "42px", minWidth: "170px", maxWidth: "200px" }}
+                  >
+                    {isExporting ? "Exporting..." : "Export PDF"}
+                  </Button>
+                  {!noConditions && !allApproved && (
+                    <Typography variant="caption" color="text.secondary" textAlign="right" sx={{ whiteSpace: "nowrap" }}>
+                      Conditions must be confirmed before exporting.
+                    </Typography>
+                  )}
+                </Stack>
               </Grid>
             </Grid>
             <Box height={"100%"} px={BCDesignTokens.layoutPaddingXsmall}>

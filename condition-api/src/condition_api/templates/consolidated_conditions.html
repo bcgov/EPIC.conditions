@@ -427,13 +427,6 @@
         <div>
           <span class="metadata-label">Year Condition Issued:</span><span class="metadata-value">{{ condition.year_issued if condition.year_issued else '' }}</span>
         </div>
-        <div>
-          {% if condition.is_approved %}
-          <span class="badge badge-approved">Confirmed</span>
-          {% else %}
-          <span class="badge badge-awaiting">Awaiting Confirmation</span>
-          {% endif %}
-        </div>
       </div>
       <table class="metadata-row2">
         <tr>
