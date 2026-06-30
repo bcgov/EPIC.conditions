@@ -7,12 +7,26 @@
     {% raw %}
     @page {
       size: A4;
-      margin: 14mm 14mm 34mm 14mm;
+      margin: 30mm 14mm 34mm 14mm;
+
+      @top-left {
+        content: element(page-eao-banner);
+        width: 182mm;
+        vertical-align: top;
+      }
 
       @bottom-left {
         content: element(page-disclaimer);
         width: 182mm;
         vertical-align: top;
+      }
+    }
+
+    @page :first {
+      margin-top: 14mm;
+
+      @top-left {
+        content: none;
       }
     }
 
@@ -40,6 +54,41 @@
 
     .page-disclaimer strong {
       font-weight: bold;
+    }
+
+    .page-eao-banner {
+      position: running(page-eao-banner);
+      width: 100%;
+      background: #FEF1D8;
+      border-radius: 4px;
+      padding: 6px 16px;
+      height: 41px;
+      font-family: "BC Sans", Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #474543;
+      text-align: center;
+      line-height: 29px;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      margin-top: 10mm;
+    }
+
+    .eao-banner-inline {
+      width: 100%;
+      background: #FEF1D8;
+      border-radius: 4px;
+      padding: 6px 16px;
+      height: 41px;
+      font-family: "BC Sans", Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #474543;
+      text-align: center;
+      line-height: 29px;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      margin-bottom: 8.5mm;
     }
 
     .header {
@@ -301,6 +350,10 @@
 </head>
 <body>
 
+  <div class="page-eao-banner">
+    For EAO use only | Please do not distribute
+  </div>
+
   <div class="page-disclaimer">
     <span class="page-disclaimer-text">
       <strong>DISCLAIMER:</strong> This is not an official document. To view official project conditions, please refer to the original condition document(s) found on the EAO&rsquo;s EPIC website.
@@ -324,6 +377,10 @@
         {% endif %}
       </div>
     </div>
+  </div>
+
+  <div class="eao-banner-inline">
+    For EAO use only | Please do not distribute
   </div>
 
   <hr class="separator">
