@@ -35,8 +35,8 @@ export const ApproveButton: React.FC<ApproveButtonProps> = ({
             {label
             ? label
             : isApproved
-            ? "Un-approve Condition Attributes"
-            : "Approve Condition Attributes"}
+            ? "Un-confirm Condition Attributes"
+            : "Confirm Condition Attributes"}
         </Button>
   
         {showEditingError && (isAnyRowEditing || isEditingPlanName) && (

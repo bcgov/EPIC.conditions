@@ -561,7 +561,7 @@ const ConditionHeader = ({
                         sx={{ padding: "4px 8px", borderRadius: "4px" }}
                         onClick={() => approveTags(true)}
                     >
-                        {condition.is_topic_tags_approved ? 'Un-approve Condition Information' : 'Approve Condition Information'}
+                        {condition.is_topic_tags_approved ? 'Un-confirm Condition Information' : 'Confirm Condition Information'}
                     </Button>
                 }
             </Stack>

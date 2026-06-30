@@ -501,8 +501,8 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                             onApprove={handleApprovePlan}
                             label={
                               attributes.is_approved
-                                ? "Un-approve Management Plan Attributes"
-                                : "Approve Management Plan Attributes"
+                                ? "Un-confirm Management Plan Attributes"
+                                : "Confirm Management Plan Attributes"
                             }
                         />
                     </Box>
