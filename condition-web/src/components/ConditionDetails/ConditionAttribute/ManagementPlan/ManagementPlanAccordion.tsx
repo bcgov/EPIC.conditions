@@ -486,7 +486,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
 
           <ErrorMessage
             visible={conditionAttributeError}
-            message="Please complete all the required attribute fields before approving the Management Plan Attributes."
+            message="Please complete all the required attribute fields before confirming the Management Plan Attributes."
           />
 
           <Stack sx={{ mt: 5 }} direction={"row"}>
