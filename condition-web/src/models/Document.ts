@@ -25,7 +25,7 @@ export const DOCUMENT_STATUS: Record<
 > = {
   true: {
     value: "true",
-    label: "Approved",
+    label: "Confirmed",
   },
   false: {
     value: "false",
