@@ -42,8 +42,8 @@ export const ConditionFilters = ({
   amendments = [],
   years = [],
   statusOptions = [
-    { value: "true", label: "Approved" },
-    { value: "false", label: "Awaiting Approval" },
+    { value: "true", label: "Confirmed" },
+    { value: "false", label: "Awaiting Confirmation" },
   ],
   showSourceDocFilter = false,
   onFiltersChange,

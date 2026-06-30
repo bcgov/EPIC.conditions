@@ -318,9 +318,9 @@
       <div class="header-project-name">{{ project_name }}</div>
       <div class="header-badge-row">
         {% if all_approved %}
-        <span class="badge badge-approved">Approved</span>
+        <span class="badge badge-approved">Confirmed</span>
         {% else %}
-        <span class="badge badge-awaiting">Awaiting Approval</span>
+        <span class="badge badge-awaiting">Awaiting Confirmation</span>
         {% endif %}
       </div>
     </div>
@@ -349,7 +349,7 @@
 
   <div class="info-box">
     <p>This Consolidated Conditions document contains the most recent condition information as entered in the Condition Repository. This is not an official or enforceable document and should be used supplementary to official documents.</p>
-    <p><strong>Note:</strong> Conditions with the status &#8216;Awaiting Approval&#8217; have not been approved by a staff member.</p>
+    <p><strong>Note:</strong> Conditions with the status &#8216;Awaiting Confirmation&#8217; have not been confirmed by a staff member.</p>
   </div>
 
   {% for condition in conditions %}
@@ -372,9 +372,9 @@
         </div>
         <div>
           {% if condition.is_approved %}
-          <span class="badge badge-approved">Approved</span>
+          <span class="badge badge-approved">Confirmed</span>
           {% else %}
-          <span class="badge badge-awaiting">Awaiting Approval</span>
+          <span class="badge badge-awaiting">Awaiting Confirmation</span>
           {% endif %}
         </div>
       </div>

@@ -13,7 +13,7 @@ const statusStyles: Record<DocumentStatus, StyleProps> = {
       border: `2px solid ${BCDesignTokens.supportBorderColorSuccess}`,
       background: BCDesignTokens.supportSurfaceColorSuccess,
     },
-    label: "Approved",
+    label: "Confirmed",
   },
   false: {
     sx: {
@@ -21,7 +21,7 @@ const statusStyles: Record<DocumentStatus, StyleProps> = {
       border: `2px solid ${BCDesignTokens.themeGold100}`,
       background: BCDesignTokens.themeGold20,
     },
-    label: "Awaiting Approval",
+    label: "Awaiting Confirmation",
   },
   nodata: {
     sx: {

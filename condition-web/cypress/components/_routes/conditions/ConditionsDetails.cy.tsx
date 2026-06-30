@@ -170,7 +170,7 @@ describe("conditions details page", () => {
     });
 
     // Assert that the condition attribute is approved
-    cy.contains("Approved").should("exist");
+    cy.contains("Confirmed").should("exist");
     cy.contains("Un-approve Management Plan Attributes").should("exist");
   });
 });

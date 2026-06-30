@@ -90,10 +90,10 @@ export const CONDITION_STATUS: Record<
 > = {
   true: {
     value: "true",
-    label: "Approved",
+    label: "Confirmed",
   },
   false: {
     value: "false",
-    label: "Awaiting Approval",
+    label: "Awaiting Confirmation",
   }
 };
