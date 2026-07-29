@@ -12,18 +12,22 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import { useQueryClient } from "@tanstack/react-query";
 import ManagementPlanSection from "./ManagementPlan/ManagementPlanSection";
+import IEMTermsSection from "./IEMTerms/IEMTermsSection";
+import ReportsSection from "./Reports/ReportsSection";
+import AddReportForm, { ReportFormValues } from "./Reports/AddReportForm";
 import { ConditionModel } from "@/models/Condition";
-import { ManagementPlanModel } from "@/models/ConditionAttribute";
+import { IEMTermsModel, ManagementPlanModel } from "@/models/ConditionAttribute";
 import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import { useUpdateConditionAttributeDetails } from "@/hooks/api/useConditionAttribute";
+import { useCreateReport } from "@/hooks/api/useReport";
 import { QUERY_KEY } from "@/hooks/api/constants";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
-import {
-  createDefaultManagementPlan,
-} from "./ManagementPlan/helpers";
+import { createDefaultManagementPlan } from "./ManagementPlan/helpers";
+import { createDefaultIEMTerms } from "./IEMTerms/helpers";
 import {
   managementRequiredKeys,
   managementOptionalDefaultKeys,
+  iemRequiredKeys,
 } from "./Constants";
 
 export type SubmissionType = "management_plan" | "iem_terms_of_engagement" | "report";
@@ -50,26 +54,49 @@ const ConditionAttribute = memo(
     const [activeTypes, setActiveTypes] = useState<SubmissionType[]>(() => {
       const init: SubmissionType[] = [];
       if (condition.requires_management_plan) init.push("management_plan");
+      if (condition.requires_iem_terms) init.push("iem_terms_of_engagement");
+      if (condition.requires_report) init.push("report");
       return init;
     });
 
     const [showForm, setShowForm] = useState(false);
     const [pendingTypes, setPendingTypes] = useState<SubmissionType[]>([]);
+    const [reportFormValues, setReportFormValues] = useState<ReportFormValues | null>(null);
+    const [reportFormValid, setReportFormValid] = useState(false);
 
-    // When all management plans are deleted, drop the type so the empty state shows
     useEffect(() => {
       const planCount = condition.condition_attributes?.management_plans?.length ?? 0;
-      if (planCount === 0) {
+      if (planCount > 0) {
+        setActiveTypes((prev) => prev.includes("management_plan") ? prev : [...prev, "management_plan"]);
+      } else {
         setActiveTypes((prev) => prev.filter((t) => t !== "management_plan"));
       }
     }, [condition.condition_attributes?.management_plans]);
+
+    useEffect(() => {
+      const termsCount = condition.condition_attributes?.iem_terms?.length ?? 0;
+      if (termsCount > 0) {
+        setActiveTypes((prev) => prev.includes("iem_terms_of_engagement") ? prev : [...prev, "iem_terms_of_engagement"]);
+      } else {
+        setActiveTypes((prev) => prev.filter((t) => t !== "iem_terms_of_engagement"));
+      }
+    }, [condition.condition_attributes?.iem_terms]);
+
+    useEffect(() => {
+      if (condition.requires_report) {
+        setActiveTypes((prev) => prev.includes("report") ? prev : [...prev, "report"]);
+      }
+    }, [condition.requires_report]);
 
     const { mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
       condition.condition_id
     );
 
-    // Management Plan can always be re-added (each confirm creates one more plan).
-    // IEM / Report are one-time sections — filter them once active.
+    const { mutateAsync: createReport, isPending: creatingReport } = useCreateReport(
+      condition.condition_id
+    );
+
+    // Management Plan can always be re-added; IEM / Report are one-time sections.
     const availableToAdd = SUBMISSION_OPTIONS.filter((o) => {
       if (pendingTypes.includes(o.value)) return false;
       if (o.value === "management_plan") return true;
@@ -85,17 +112,24 @@ const ConditionAttribute = memo(
 
     const handleRemovePending = (type: SubmissionType) => {
       setPendingTypes((prev) => prev.filter((t) => t !== type));
+      if (type === "report") {
+        setReportFormValues(null);
+        setReportFormValid(false);
+      }
     };
 
     const handleCancel = () => {
       setShowForm(false);
       setPendingTypes([]);
+      setReportFormValues(null);
+      setReportFormValid(false);
     };
 
     const handleConfirm = async () => {
       const addingMP = pendingTypes.includes("management_plan");
+      const addingIEM = pendingTypes.includes("iem_terms_of_engagement");
+      const addingReport = pendingTypes.includes("report");
 
-      // Activate all confirmed types (deduplicate management_plan)
       setActiveTypes((prev) => {
         const next = [...prev];
         pendingTypes.forEach((t) => {
@@ -108,8 +142,7 @@ const ConditionAttribute = memo(
       setPendingTypes([]);
 
       if (addingMP) {
-        const existingPlans =
-          condition.condition_attributes?.management_plans ?? [];
+        const existingPlans = condition.condition_attributes?.management_plans ?? [];
         const newPlan: ManagementPlanModel = createDefaultManagementPlan(
           `${existingPlans.length + 1}-${Date.now()}`,
           managementRequiredKeys,
@@ -117,13 +150,12 @@ const ConditionAttribute = memo(
         );
         const updatedPlans = [...existingPlans, newPlan];
 
-        // Show plan immediately with temp ID — no waiting for the API
         setCondition((prev) => ({
           ...prev,
           condition_attributes: {
-            independent_attributes:
-              prev.condition_attributes?.independent_attributes ?? [],
+            independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
             management_plans: updatedPlans,
+            iem_terms: prev.condition_attributes?.iem_terms ?? [],
           },
           subconditions: prev.subconditions,
         }));
@@ -132,57 +164,120 @@ const ConditionAttribute = memo(
           const response = await updateAttributes({
             requires_management_plan: true,
             condition_attribute: {
-              independent_attributes:
-                condition.condition_attributes?.independent_attributes ?? [],
+              independent_attributes: condition.condition_attributes?.independent_attributes ?? [],
               management_plans: updatedPlans,
+              iem_terms: condition.condition_attributes?.iem_terms ?? [],
             },
           });
 
-          // Replace temp-ID plan with real data (real DB ids, saved attributes)
           const savedPlans = response?.management_plans ?? updatedPlans;
           setCondition((prev) => ({
             ...prev,
             condition_attributes: {
-              independent_attributes:
-                prev.condition_attributes?.independent_attributes ?? [],
+              independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
               management_plans: savedPlans,
+              iem_terms: response?.iem_terms ?? prev.condition_attributes?.iem_terms ?? [],
             },
             subconditions: prev.subconditions,
           }));
 
-          queryClient.invalidateQueries({
-            queryKey: ["conditions", condition.condition_id],
-          });
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEY.CONDITIONSDETAIL],
-          });
-
+          queryClient.invalidateQueries({ queryKey: ["conditions", condition.condition_id] });
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CONDITIONSDETAIL] });
           notify.success("Management Plan added successfully");
         } catch {
-          // Revert the optimistic plan on failure
           setCondition((prev) => ({
             ...prev,
             condition_attributes: {
-              independent_attributes:
-                prev.condition_attributes?.independent_attributes ?? [],
+              independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
               management_plans: existingPlans,
+              iem_terms: prev.condition_attributes?.iem_terms ?? [],
             },
             subconditions: prev.subconditions,
           }));
           notify.error("Failed to add management plan.");
         }
       }
+
+      if (addingIEM) {
+        const existingTerms = condition.condition_attributes?.iem_terms ?? [];
+        const newTerms: IEMTermsModel = createDefaultIEMTerms(
+          `${existingTerms.length + 1}-${Date.now()}`,
+          iemRequiredKeys
+        );
+        const updatedTerms = [...existingTerms, newTerms];
+
+        setCondition((prev) => ({
+          ...prev,
+          condition_attributes: {
+            independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
+            management_plans: prev.condition_attributes?.management_plans ?? [],
+            iem_terms: updatedTerms,
+          },
+          subconditions: prev.subconditions,
+        }));
+
+        try {
+          const response = await updateAttributes({
+            requires_iem_terms: true,
+            condition_attribute: {
+              independent_attributes: condition.condition_attributes?.independent_attributes ?? [],
+              management_plans: condition.condition_attributes?.management_plans ?? [],
+              iem_terms: updatedTerms,
+            },
+          });
+
+          const savedTerms = response?.iem_terms ?? updatedTerms;
+          setCondition((prev) => ({
+            ...prev,
+            condition_attributes: {
+              independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
+              management_plans: response?.management_plans ?? prev.condition_attributes?.management_plans ?? [],
+              iem_terms: savedTerms,
+            },
+            subconditions: prev.subconditions,
+          }));
+
+          queryClient.invalidateQueries({ queryKey: ["conditions", condition.condition_id] });
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CONDITIONSDETAIL] });
+          notify.success("IEM Terms of Engagement added successfully");
+        } catch {
+          setCondition((prev) => ({
+            ...prev,
+            condition_attributes: {
+              independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
+              management_plans: prev.condition_attributes?.management_plans ?? [],
+              iem_terms: existingTerms,
+            },
+            subconditions: prev.subconditions,
+          }));
+          notify.error("Failed to add IEM Terms of Engagement.");
+        }
+      }
+
+      if (addingReport && reportFormValues) {
+        try {
+          await createReport(reportFormValues as never);
+          setReportFormValues(null);
+          setReportFormValid(false);
+          notify.success("Report added successfully");
+        } catch {
+          setActiveTypes((prev) => prev.filter((t) => t !== "report"));
+          notify.error("Failed to add report.");
+        }
+      }
     };
 
-    const isApproved = condition.is_condition_attributes_approved ?? false;
-    // Management Plan is always addable; show button as long as user can manage
-    const canAddMore = canManage && !isApproved;
-
+    const canAddMore = canManage;
     const hasNoTypes = activeTypes.length === 0;
+
+    const isConfirmDisabled =
+      pendingTypes.length === 0 ||
+      creatingReport ||
+      (pendingTypes.includes("report") && !reportFormValid);
 
     const submissionTypeForm = (
       <>
-        <Typography sx={{ fontSize: "14px", mb: 1, ml: "28px" }}>
+        <Typography sx={{ fontSize: "14px", mb: 1 }}>
           Submission Type
         </Typography>
 
@@ -191,7 +286,6 @@ const ConditionAttribute = memo(
           onChange={handleDropdownChange}
           displayEmpty
           sx={{
-            ml: "28px",
             width: "508px",
             height: "40px",
             "& .MuiSelect-select": { fontStyle: "italic", color: "#9f9d9c" },
@@ -208,6 +302,7 @@ const ConditionAttribute = memo(
           )}
         </Select>
 
+        {/* Selected type chips */}
         {pendingTypes.length > 0 && (
           <Box display="flex" flexWrap="wrap" gap={1} mt={1.5}>
             {pendingTypes.map((type) => (
@@ -232,6 +327,27 @@ const ConditionAttribute = memo(
           </Box>
         )}
 
+        {/* Embedded report form — appears inline when Report is pending */}
+        {pendingTypes.includes("report") && (
+          <Box
+            sx={{
+              mt: 2,
+              border: "1px solid #d8d8d8",
+              borderRadius: "4px",
+              p: 2.5,
+            }}
+          >
+            <AddReportForm
+              embedded
+              managementPlans={condition.condition_attributes?.management_plans ?? []}
+              onChange={(values, isValid) => {
+                setReportFormValues(values);
+                setReportFormValid(isValid);
+              }}
+            />
+          </Box>
+        )}
+
         <Box display="flex" justifyContent="flex-end" gap={1.5} mt={3}>
           <Button variant="outlined" onClick={handleCancel}>
             Cancel
@@ -239,9 +355,9 @@ const ConditionAttribute = memo(
           <Button
             variant="contained"
             onClick={handleConfirm}
-            disabled={pendingTypes.length === 0}
+            disabled={isConfirmDisabled}
           >
-            Confirm
+            {creatingReport ? "Saving..." : "Confirm"}
           </Button>
         </Box>
       </>
@@ -273,7 +389,6 @@ const ConditionAttribute = memo(
                 variant="contained"
                 onClick={() => setShowForm(true)}
                 startIcon={<AddIcon />}
-                sx={{ ml: "28px" }}
                 data-testid="add-submission-type-btn"
               >
                 Add Submission Type
@@ -300,38 +415,20 @@ const ConditionAttribute = memo(
             )}
 
             {activeTypes.includes("iem_terms_of_engagement") && (
-              <Box
-                sx={{
-                  mb: 2,
-                  p: 3,
-                  border: "1px solid #d8d8d8",
-                  borderRadius: "4px",
-                }}
-              >
-                <Typography fontWeight={700}>IEM Terms of Engagement</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Coming soon
-                </Typography>
-              </Box>
+              <IEMTermsSection
+                condition={condition}
+                setCondition={setCondition}
+              />
             )}
 
             {activeTypes.includes("report") && (
-              <Box
-                sx={{
-                  mb: 2,
-                  p: 3,
-                  border: "1px solid #d8d8d8",
-                  borderRadius: "4px",
-                }}
-              >
-                <Typography fontWeight={700}>Report</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Coming soon
-                </Typography>
-              </Box>
+              <ReportsSection
+                condition={condition}
+                setCondition={setCondition}
+              />
             )}
 
-            {/* "+ Add Submission Type" sits below all active sections */}
+            {/* "+ Add Submission Type" button */}
             {canAddMore && !showForm && (
               <Button
                 variant="contained"
@@ -344,9 +441,9 @@ const ConditionAttribute = memo(
               </Button>
             )}
 
-            {/* Inline form when adding more types to existing sections */}
+            {/* Inline form when adding more types */}
             {showForm && (
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2, ml: "28px" }}>
                 {submissionTypeForm}
               </Box>
             )}

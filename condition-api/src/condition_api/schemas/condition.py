@@ -27,6 +27,10 @@ class ConditionSchema(Schema):
         data_key="is_condition_attributes_approved", allow_none=True)
     requires_management_plan = fields.Bool(
         data_key="requires_management_plan", allow_none=True)
+    requires_iem_terms = fields.Bool(
+        data_key="requires_iem_terms", allow_none=True)
+    requires_report = fields.Bool(
+        data_key="requires_report", allow_none=True)
     condition_attributes = fields.Nested(ConditionAttributesSchema, data_key="condition_attributes")
     effective_document_id = fields.Str(data_key="effective_document_id", allow_none=True)
     is_standard_condition = fields.Bool(data_key="is_standard_condition", allow_none=True)
