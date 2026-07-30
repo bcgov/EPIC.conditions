@@ -37,6 +37,13 @@ type ConditionDescriptionProps = {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+const normalizeSubconditions = (subs: SubconditionModel[]): SubconditionModel[] =>
+  subs.map((sub) => ({
+    ...sub,
+    subcondition_identifier: sub.subcondition_identifier ?? "",
+    subconditions: normalizeSubconditions(sub.subconditions || []),
+  }));
+
 // Main component to render the condition and its subconditions
 const ConditionDescription = memo(({
   editMode,
@@ -84,13 +91,6 @@ const ConditionDescription = memo(({
       onError: onCreateFailure,
     }
   );
-
-  const normalizeSubconditions = (subs: SubconditionModel[]): SubconditionModel[] =>
-    subs.map((sub) => ({
-      ...sub,
-      subcondition_identifier: sub.subcondition_identifier ?? "",
-      subconditions: normalizeSubconditions(sub.subconditions || []),
-    }));
 
   const saveChanges = useCallback(() => {
     const data: updateTopicTagsModel = {
