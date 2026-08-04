@@ -148,7 +148,8 @@ export const DocumentEntryForm = ({
         formState.selectedDocumentType === DocumentTypes.Amendment,
         formState.selectedProject?.project_id,
         undefined,
-        DocumentTypes.Certificate.toString()
+        DocumentTypes.Certificate.toString(),
+        restrictToCategoryId
     );
 
     useEffect(() => {
