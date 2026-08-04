@@ -5,7 +5,6 @@ import DocumentTable from "./DocumentTable";
 import { ContentBox } from "../Shared/ContentBox";
 import { useNavigate } from "@tanstack/react-router";
 import { theme } from "@/styles/theme";
-import { DocumentCategory } from "@/utils/enums"
 
 export const CardInnerBox = styled(Box)({
     display: "flex",
@@ -24,25 +23,16 @@ export const Project = ({ project }: ProjectParam) => {
 
     const navigate = useNavigate();
 
-    const certificateDocument = project?.documents?.find(
-        (doc) =>
-            (String(doc.document_category_id) === DocumentCategory.CertificateAndAmendments ||
-            String(doc.document_category_id) === DocumentCategory.ExemptionOrderAndAmendments) &&
-            doc.is_latest_amendment_added === true
-    );
-
-    const otherOrderWithAmendments = project?.documents?.find(
-        (doc) =>
-            String(doc.document_category_id) === DocumentCategory.OtherOrders &&
-            doc.amendment_count > 0 &&
-            doc.is_latest_amendment_added === true
-    );
-
-    const allDocumentsStatusTrue = project?.documents?.every(doc =>
+    const hasAtLeastOneLatest = project?.documents?.some(doc =>
         doc.is_latest_amendment_added === true && doc.status !== null
     );
 
-    const canViewConsolidated = !!(certificateDocument || otherOrderWithAmendments) && !!allDocumentsStatusTrue;
+    const allDocumentsStatusTrue = project?.documents?.every(doc =>
+        doc.amendment_count === 0
+        || (doc.is_latest_amendment_added === true && doc.status !== null)
+    );
+
+    const canViewConsolidated = !!hasAtLeastOneLatest && !!allDocumentsStatusTrue;
 
     const handleViewConsolidatedConditions = () => {
         if (project?.project_id && canViewConsolidated) {
