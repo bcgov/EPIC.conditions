@@ -23,7 +23,7 @@ import { ConditionModel, ConditionType } from "@/models/Condition";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useNavigate } from "@tanstack/react-router";
 import { HTTP_STATUS_CODES } from "../../hooks/api/constants";
-import { DocumentTypes } from "@/utils/enums"
+import { DocumentTypes } from "@/utils/enums";
 
 type ConditionModalProps = {
   open: boolean;
