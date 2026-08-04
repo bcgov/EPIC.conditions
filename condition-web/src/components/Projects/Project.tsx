@@ -24,7 +24,9 @@ export const Project = ({ project }: ProjectParam) => {
     const navigate = useNavigate();
 
     const hasAtLeastOneLatest = project?.documents?.some(doc =>
-        doc.is_latest_amendment_added === true && doc.status !== null
+        doc.amendment_count > 0 &&
+        doc.is_latest_amendment_added === true &&
+        doc.status !== null
     );
 
     const allDocumentsStatusTrue = project?.documents?.every(doc =>
