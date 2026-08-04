@@ -38,7 +38,11 @@ export const Project = ({ project }: ProjectParam) => {
             doc.is_latest_amendment_added === true
     );
 
-    const canViewConsolidated = !!(certificateDocument || otherOrderWithAmendments);
+    const allDocumentsStatusTrue = project?.documents?.every(doc =>
+        doc.is_latest_amendment_added === true && doc.status !== null
+    );
+
+    const canViewConsolidated = !!(certificateDocument || otherOrderWithAmendments) && !!allDocumentsStatusTrue;
 
     const handleViewConsolidatedConditions = () => {
         if (project?.project_id && canViewConsolidated) {
