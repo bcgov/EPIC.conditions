@@ -77,7 +77,10 @@ class DocumentsResource(Resource):
         try:
             document_id = request.args.get("documentId")
             document_type = request.args.get("documentType")
-            documents = DocumentService.get_all_documents_by_project_id(project_id, document_id, document_type)
+            document_category_id = request.args.get("documentCategoryId")
+            documents = DocumentService.get_all_documents_by_project_id(
+                project_id, document_id, document_type, document_category_id
+            )
             if not documents:
                 return {}
 
