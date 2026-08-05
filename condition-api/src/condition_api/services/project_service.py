@@ -14,7 +14,7 @@
 
 
 """Service for project management."""
-from sqlalchemy import String, and_, case, func, not_
+from sqlalchemy import String, and_, case, distinct, func, not_
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from condition_api.models.amendment import Amendment
@@ -42,7 +42,8 @@ class ProjectService:
                 func.array_agg(func.distinct(DocumentType.document_type), type_=ARRAY(String)).label("document_types"),
                 func.greatest(func.max(Document.date_issued), func.max(Amendment.date_issued)).label("max_date_issued"),
                 func.count(Amendment.document_id).label("amendment_count"),  # pylint: disable=not-callable
-                func.bool_or(Document.is_latest_amendment_added).label("is_latest_amendment_added")
+                func.bool_and(Document.is_latest_amendment_added).label("is_latest_amendment_added"),
+                func.count(distinct(Document.id)).label("parent_document_count")  # pylint: disable=not-callable
             )
             .outerjoin(Document, and_(Document.project_id == Project.project_id, Document.is_active.is_(True)))
             .outerjoin(DocumentType, DocumentType.id == Document.document_type_id)
@@ -81,6 +82,7 @@ class ProjectService:
                     "status": ProjectService.check_project_conditions(project_id, row.document_category_id),
                     "is_latest_amendment_added": row.is_latest_amendment_added,
                     "amendment_count": row.amendment_count,
+                    "parent_document_count": row.parent_document_count,
                 })
 
         # Convert the map to a list of projects
