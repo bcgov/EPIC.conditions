@@ -9,6 +9,23 @@ from condition_cron.extraction.client import get_openai_client
 
 logger = logging.getLogger(__name__)
 
+# Matches the phase vocabulary used by condition-web's condition attribute
+# dropdowns (see condition-web Constants.ts SELECT_OPTIONS) so extracted
+# values land on options staff can actually select/see in the UI.
+SUBMISSION_MILESTONE_PHASES = [
+    "Pre-Construction",
+    "Construction",
+    "Commissioning",
+    "Operations",
+    "Care and Maintenance",
+    "Decommissioning",
+    "Closure",
+    "N/A",
+]
+
+IMPLEMENTATION_PHASES = SUBMISSION_MILESTONE_PHASES[:-1] + ["All Phases", "N/A"]
+
+
 def management_plan_required(input_condition_text: str) -> bool:
    
   tools = [
@@ -74,6 +91,10 @@ def extract_management_plan_info_using_gpt(condition_text: str) -> str:
                         "type": "string",
                         "description": "The name of the plan/report/proposal/etc. that the condition is requiring to be written. E.g. Air Quality Mitigation and Monitoring Plan, Marine Water Quality Management and Monitoring Plan for Operations, etc. Write it in title case (E.g. The Catcher in the Rye)."
                       },
+                      "management_plan_acronym": {
+                        "type": "string",
+                        "description": "The acronym for the plan, e.g. 'CEMP' for 'Construction Environmental Management Plan'. If the condition text explicitly defines an acronym for the plan (e.g., in parentheses after its name), use that exactly. Otherwise derive it from the initials of deliverable_name (e.g., 'Care and Maintenance Plan' -> 'CMP'), ignoring minor words like 'and', 'for', 'the'. Null if deliverable_name has no reasonable acronym."
+                      },
                       "is_plan": {
                         "type": "boolean",
                         "description": "Whether or not the deliverable is a \"Plan\" document (e.g., Management Plan, Monitoring Plan, Mitigation Plan, etc.). False if not specified."
@@ -81,7 +102,22 @@ def extract_management_plan_info_using_gpt(condition_text: str) -> str:
                       "approval_type": {
                         "type": "string",
                         "enum": ["Review", "Acceptance", "Satisfaction", "Approval", "Other"],
-                        "description": "The type of approval required when the plan/report/proposal/etc. is submitted to the EAO. Focus only on the clause describing the submission of the document itself — not clauses about how the plan must be implemented or carried out. Use \"Review\" if the submission clause indicates the document is provided for the EAO to review, or if no specific approval standard is mentioned — this is the default. Use \"Acceptance\" only if the submission clause explicitly requires the document to meet the EAO's acceptance standard. Use \"Satisfaction\" only if the submission clause explicitly requires the document to meet the EAO's satisfaction standard. Use \"Approval\" if the submission clause requires the document to be approved by the EAO. Use \"Other\" for any other explicit approval language. Many conditions include boilerplate language about implementation being to a regulator's standard — do not use that language to determine this field."
+                        "description": (
+                            "The type of approval required for the plan/report/proposal/etc. Consider the "
+                            "ENTIRE condition, not just the sentence where the document is first provided to "
+                            "the EAO — the true approval standard is often stated in a later clause about how "
+                            "the plan takes effect or must be implemented (e.g., 'the plan has no effect until "
+                            "approved by the EAO', 'must be developed to the satisfaction of the EAO'). Apply "
+                            "this priority, using the STRONGEST standard stated anywhere in the condition: "
+                            "\"Approval\" if any clause says the plan must be approved by the EAO, or has no "
+                            "effect / cannot proceed until approved. \"Acceptance\" if a clause requires the "
+                            "EAO's acceptance. \"Satisfaction\" if a clause requires the plan (or its "
+                            "development/implementation) to be to the satisfaction of the EAO. \"Review\" ONLY "
+                            "if the sole approval-related language anywhere in the condition is that the "
+                            "document is provided for the EAO's review, with no stronger standard stated "
+                            "elsewhere — this is also the default when no approval standard is stated at all. "
+                            "\"Other\" for any other explicit approval language that doesn't fit the above."
+                        ),
                       },
                       "stakeholders_to_consult": {
                         "type": "array",
@@ -103,14 +139,30 @@ def extract_management_plan_info_using_gpt(condition_text: str) -> str:
                       },
                       "related_phase": {
                         "type": "string",
-                        "description": "The phase of the project that the plan/report/proposal/etc.'s due date is related to. E.g. Construction, Construction of Upgrades, Operation, Decommissioning, etc. Write it in title case. Is null if not specified."
+                        "enum": SUBMISSION_MILESTONE_PHASES,
+                        "description": "The project phase that the plan/report/proposal/etc.'s SUBMISSION due date is related to (e.g., the phase referenced in 'a minimum of X days prior to the planned commencement of ___'). Use 'N/A' if not tied to a specific phase, or null if not specified at all."
                       },
-                      "days_prior_to_commencement": {
+                      "submission_time_value": {
                         "type": "integer",
-                        "description": "The number of days prior to the planned commencement that the plan/report/proposal/etc. must be provided to the EAO. Is negative if due after commencement. Is 0 if simple due before commencement without a specific number of days. Is null if not specified."
+                        "description": "The numeric magnitude of time relative to the milestone that the plan/report/proposal/etc. must be provided to the EAO (e.g., 60 for 'a minimum of 60 days prior to...', 30 for 'within 30 days after...'). Always non-negative — use submission_time_direction for before/after, not a negative number. Null if not specified."
+                      },
+                      "submission_time_unit": {
+                        "type": "string",
+                        "enum": ["Days", "Month(s)", "Year(s)"],
+                        "description": "The unit for submission_time_value. Null if not specified."
+                      },
+                      "submission_time_direction": {
+                        "type": "string",
+                        "enum": ["Before", "After", "Prior to"],
+                        "description": "Whether submission is due before or after the milestone. Use 'Prior to' when the condition text literally says 'prior to'. Use 'Before' for other before-the-milestone phrasing (e.g., 'a minimum of X days before'). Use 'After' for after-the-milestone phrasing (e.g., 'within X days after/following'). Null if not specified."
+                      },
+                      "implementation_phase": {
+                        "type": "string",
+                        "enum": IMPLEMENTATION_PHASES,
+                        "description": "The project phase(s) DURING WHICH the plan itself must be implemented/carried out (distinct from related_phase, which is about when the plan must be SUBMITTED). Look for language like 'must be implemented during/throughout ___'. Use 'All Phases' if implementation spans the whole project, 'N/A' if not tied to a specific phase, or null if not specified at all."
                       },
                   },
-                  "required": ["deliverable_name", "approval_type", "stakeholders_to_consult", "related_phase", "days_prior_to_commencement"],
+                  "required": ["deliverable_name", "approval_type", "stakeholders_to_consult", "related_phase", "submission_time_value", "submission_time_unit", "submission_time_direction", "implementation_phase"],
               }
             }
           },
