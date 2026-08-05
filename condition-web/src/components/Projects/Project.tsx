@@ -26,7 +26,7 @@ export const Project = ({ project }: ProjectParam) => {
     const anyDataEntryRequired = project?.documents?.some(doc => doc.status === null);
 
     const totalDocumentCount = project?.documents?.reduce(
-        (sum, doc) => sum + 1 + (doc.amendment_count || 0), 0
+        (sum, doc) => sum + (doc.parent_document_count || 0) + (doc.amendment_count || 0), 0
     ) ?? 0;
 
     const anyMissingMostRecent = project?.documents?.some(doc =>
