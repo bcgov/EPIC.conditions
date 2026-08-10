@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import re
 
 from condition_cron.extraction import pdf_reader
 from condition_cron.extraction.document_classifier import classify_document
@@ -100,6 +101,16 @@ def extract_conditions_from_pages(file_path: str, classification: Dict[str, Any]
         if estimated_count > 0:
             return _extract_numbered_conditions(file_path, estimated_count)
 
+    if doc_type == "table_format" and file_path.endswith(".pdf"):
+        result = _extract_table_conditions_from_pdf(file_path)
+        if result["conditions"]:
+            logger.info(
+                "Extracted %d conditions from PDF tables",
+                len(result["conditions"]),
+            )
+            return result
+        logger.info("No extractable PDF table rows found; falling back to page text extraction")
+
     # For all other formats, use page-based extraction
     return _extract_by_pages(file_path, classification, pages_per_chunk)
 
@@ -182,6 +193,170 @@ def _extract_numbered_range(file_path: str, starting_condition_number: int, endi
             logger.error("Exception in _extract_numbered_range: %s", e, exc_info=True)
 
     return None, "Failed to extract the correct number of conditions after multiple attempts"
+
+
+def _extract_table_conditions_from_pdf(file_path: str) -> Dict[str, Any]:
+    """Extract one condition per structured PDF table row.
+
+    This path avoids asking the model to infer table row boundaries from
+    flattened page text. It is intentionally conservative: if expected table
+    headers are not found, callers can fall back to page-based extraction.
+    """
+    conditions: List[Dict[str, Any]] = []
+    current_subject: Optional[str] = None
+    current_header_map: Optional[Dict[str, Optional[int]]] = None
+    last_condition: Optional[Dict[str, Any]] = None
+
+    for table in pdf_reader.read_pdf_tables(file_path):
+        table_header_map: Optional[Dict[str, Optional[int]]] = None
+
+        for raw_row in table:
+            row = [_clean_table_cell(cell) for cell in raw_row]
+            if not any(row):
+                continue
+
+            header_map = _get_table_header_map(row)
+            if header_map:
+                table_header_map = header_map
+                current_header_map = header_map
+                continue
+
+            column_map = table_header_map or current_header_map
+            if not column_map:
+                continue
+
+            subject = _table_cell(row, column_map.get("subject"))
+            ref = _table_cell(row, column_map.get("ref"))
+            commitment = _table_cell(row, column_map.get("commitment"))
+            agency = _table_cell(row, column_map.get("agency"))
+            timing = _table_cell(row, column_map.get("timing"))
+
+            if subject and not ref and not commitment:
+                current_subject = subject
+                last_condition = None
+                continue
+
+            if subject:
+                current_subject = subject
+
+            if ref and commitment:
+                condition = {
+                    "condition_name": _format_table_condition_name(current_subject, ref),
+                    "condition_number": len(conditions) + 1,
+                    "condition_text": commitment,
+                    "topic_tags": [],
+                    "subtopic_tags": [],
+                    "condition_ref": ref,
+                    "subject_area": current_subject,
+                    "source_agencies": agency,
+                    "timing": timing,
+                }
+                conditions.append(condition)
+                last_condition = condition
+                continue
+
+            if commitment and last_condition:
+                last_condition["condition_text"] = (
+                    f"{last_condition['condition_text']}\n{commitment}"
+                )
+
+    return {"conditions": conditions}
+
+
+def _get_table_header_map(row: List[str]) -> Optional[Dict[str, Optional[int]]]:
+    """Return column indexes for known EAO commitment table headers."""
+    headers = [_normalize_table_header(cell) for cell in row]
+    commitment_idx = _find_header_index(
+        headers,
+        exact={
+            "commitment",
+            "commitments",
+            "condition",
+            "conditions",
+            "requirement",
+            "requirements",
+            "mitigationmeasure",
+            "mitigationmeasures",
+        },
+        contains={"commitment", "requirement", "mitigation"},
+    )
+    if commitment_idx is None:
+        return None
+
+    subject_idx = _find_header_index(
+        headers,
+        exact={
+            "subject",
+            "subjectarea",
+            "category",
+            "component",
+            "topic",
+            "valuedcomponent",
+            "vc",
+        },
+        contains={"subjectarea", "component"},
+    )
+    ref_idx = _find_header_index(
+        headers,
+        exact={
+            "ref",
+            "ref#",
+            "reference",
+            "condition#",
+            "conditionno",
+            "conditionnumber",
+            "commitment#",
+            "commitmentno",
+            "commitmentnumber",
+            "item#",
+            "itemno",
+            "itemnumber",
+        },
+    )
+
+    if subject_idx is None and ref_idx is None:
+        return None
+
+    return {
+        "subject": subject_idx,
+        "ref": ref_idx,
+        "commitment": commitment_idx,
+        "agency": _find_header_index(headers, exact={"agency", "agencies"}),
+        "timing": _find_header_index(headers, exact={"timing", "phase"}),
+    }
+
+
+def _find_header_index(
+    headers: List[str],
+    exact: set[str],
+    contains: Optional[set[str]] = None,
+) -> Optional[int]:
+    contains = contains or set()
+    for index, header in enumerate(headers):
+        if header in exact or any(fragment in header for fragment in contains):
+            return index
+    return None
+
+
+def _clean_table_cell(cell: Any) -> str:
+    return " ".join(str(cell or "").split())
+
+
+def _normalize_table_header(cell: str) -> str:
+    return re.sub(r"[^a-z0-9#]+", "", cell.lower())
+
+
+def _table_cell(row: List[str], index: Optional[int]) -> str:
+    if index is None or index >= len(row):
+        return ""
+    return row[index]
+
+
+def _format_table_condition_name(subject: Optional[str], ref: str) -> str:
+    subject_label = re.sub(r"^[A-Z]\.\s*", "", subject or "").strip()
+    if ref and subject_label:
+        return f"{ref} - {subject_label}"
+    return ref or subject_label or "Table Commitment"
 
 
 def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_chunk: int = 5) -> Dict[str, Any]:
