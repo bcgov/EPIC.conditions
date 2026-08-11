@@ -228,10 +228,26 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
 def _build_page_chunk_prompt(doc_type: str, section_headers: List[str], label: str, page_text: str) -> str:
     """Build the extraction prompt for a text chunk based on document type."""
     if doc_type == "table_format":
+        heading_guide = ""
+        if section_headers:
+            pairs = [f"{chr(ord('A') + i)} = {name}" for i, name in enumerate(section_headers)]
+            heading_guide = (
+                f"This document's full list of Subject Area headings, in the order the classifier "
+                f"found them, is: {'; '.join(pairs)}. In many such tables the Ref # column's leading "
+                f"letter matches this same sequence (e.g., 'C12' under the 3rd heading listed). This "
+                f"excerpt may not include the Subject Area heading text itself, if it appeared earlier "
+                f"in the document outside this excerpt — in that case, use this list as a best-effort "
+                f"guide for the leading letter of the Ref #s you see here, but ONLY if it's actually "
+                f"consistent with the heading text and Ref # pattern visible elsewhere in this document; "
+                f"if the Ref #s don't follow a simple sequential-letter pattern matching this list, "
+                f"ignore this guide and rely on the actual heading text in the document instead. Never "
+                f"use just the bare letter, or a truncated/partial heading, as the condition_name.\n\n"
+            )
         return (
             f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
             f"Here is a section of an environmental assessment document ({label}). "
             f"The document contains conditions/commitments organized in a table format.\n\n"
+            f"{heading_guide}"
             f"{page_text}\n\n"
             f"Extract every discrete condition, commitment, or requirement from this section. "
             f"Each row or distinct commitment in the table should be a separate condition. "
