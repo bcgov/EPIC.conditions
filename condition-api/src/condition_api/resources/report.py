@@ -89,7 +89,7 @@ class ReportResource(Resource):
     def delete(report_id):
         """Remove a report and all its submissions."""
         try:
-            deleted = Report.delete_by_id(report_id)
+            deleted = ReportService.delete_report(report_id)
             if not deleted:
                 return "No report found to remove", HTTPStatus.OK
             return "Report successfully removed", HTTPStatus.OK

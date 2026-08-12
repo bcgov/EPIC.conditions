@@ -20,26 +20,36 @@ import {
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@/components/Shared/Icons/EditIcon";
+import DeleteIcon from "@/components/Shared/Icons/DeleteIcon";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import AddIcon from "@mui/icons-material/Add";
-import { ReportSubmissionModel } from "@/models/ConditionAttribute";
+import { ManagementPlanModel, ReportSubmissionModel } from "@/models/ConditionAttribute";
 import DeleteConfirmationModal from "../ManagementPlan/DeleteConfirmationModal";
 import {
   useAddReportSubmission,
+  usePatchReport,
   usePatchReportSubmission,
   useRemoveReportSubmission,
 } from "@/hooks/api/useReport";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
-import { PSN_FREQUENCIES, PSN_SUBMISSION_TYPES, REPORT_FREQUENCIES } from "./constants";
+import { getFrequencies, PSN_SUBMISSION_TYPES } from "./constants";
 import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import { BCDesignTokens } from "epic.theme";
 
 const PSN_TYPE = "Project Status Notification";
+const CN_TYPE = "Compliance Notification";
+const CSR_TYPE = "Compliance Self-Report";
+const MP_TYPE = "Management Plan Associated Report";
 const TIMING_PLACEHOLDER = "e.g. within 30 days after the issuance of this Certificate.";
 
-export type PhaseRow = ReportSubmissionModel & { reportType: string; reportId: number };
+export type PhaseRow = ReportSubmissionModel & {
+  reportType: string;
+  reportId: number;
+  linked_management_plan_id?: number;
+  linked_management_plan_name?: string;
+  report_title?: string;
+};
 
 type EditValues = {
   frequency: string;
@@ -55,34 +65,62 @@ const toEditValues = (row: PhaseRow): EditValues => ({
   report_submission_type: row.report_submission_type ?? "",
 });
 
-const FrequencyChip = ({ value }: { value: string }) => (
-  <Chip
-    label={value || "—"}
-    size="small"
-    variant="outlined"
-    sx={{
-      fontSize: "11px",
-      height: 22,
-      borderRadius: "100px",
-      borderColor: "#aaa",
-      color: "#444",
-    }}
-  />
-);
+type FrequencyStyle = { borderColor: string; background: string };
+
+// Configurable frequency → visual style mapping.
+// Yellow = recurring, Purple = one-time, Red = as-needed.
+const FREQUENCY_STYLES: Record<string, FrequencyStyle> = {
+  "As Needed":      { borderColor: "#CE3E39", background: "#F4E1E2" },
+  "One Time":       { borderColor: "#6A54A3", background: "#DAD4E8" },
+  "Annually":       { borderColor: "#F8BB47", background: "#FEF1D8" },
+  "Semi-Annually":  { borderColor: "#F8BB47", background: "#FEF1D8" },
+  "Quarterly":      { borderColor: "#F8BB47", background: "#FEF1D8" },
+  "Monthly":        { borderColor: "#F8BB47", background: "#FEF1D8" },
+  "Weekly":         { borderColor: "#F8BB47", background: "#FEF1D8" },
+  "Other":          { borderColor: "#F8BB47", background: "#FEF1D8" },
+};
+const FREQUENCY_STYLE_DEFAULT: FrequencyStyle = { borderColor: "#aaa", background: "#f5f5f5" };
+
+const FrequencyChip = ({ value }: { value: string }) => {
+  const style = FREQUENCY_STYLES[value] ?? FREQUENCY_STYLE_DEFAULT;
+  return (
+    <Box
+      sx={{
+        display: "inline-flex",
+        padding: "2px 8px",
+        alignItems: "center",
+        flexShrink: 0,
+        borderRadius: "10px",
+        border: `1px solid ${style.borderColor}`,
+        background: style.background,
+        fontSize: "11px",
+        color: "#2D2D2D",
+        whiteSpace: "nowrap",
+        lineHeight: "17px",
+      }}
+    >
+      {value || "—"}
+    </Box>
+  );
+};
 
 const SubsectionTypeBadge = ({ subsection, type }: { subsection?: string; type?: string }) => (
   <Box display="flex" alignItems="center" gap={0.75}>
     {subsection && (
       <Box
         sx={{
-          background: "#e8e8e8",
+          height: "21px",
+          padding: "2px 8px",
+          flexShrink: 0,
           borderRadius: "4px",
-          px: 0.75,
-          py: 0.25,
+          border: "1px solid #013366",
+          background: "#D8EAFD",
           fontSize: "11px",
           fontWeight: 600,
-          color: "#444",
+          color: "#013366",
           whiteSpace: "nowrap",
+          display: "flex",
+          alignItems: "center",
         }}
       >
         {subsection}
@@ -92,34 +130,56 @@ const SubsectionTypeBadge = ({ subsection, type }: { subsection?: string; type?:
   </Box>
 );
 
+type ReportEditValues = {
+  linked_management_plan_id?: number;
+  report_title?: string;
+};
+
 type Props = {
   phase: string;
   rows: PhaseRow[];
   conditionId?: number;
-  onRefetch: () => void;
+  managementPlans?: ManagementPlanModel[];
+  onRefetch: () => Promise<unknown>;
 };
 
-const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRefetch }) => {
+const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, managementPlans = [], onRefetch }) => {
   const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [expanded, setExpanded] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editMap, setEditMap] = useState<Record<number, EditValues>>({});
   const [newSubs, setNewSubs] = useState<Record<string, EditValues | null>>({});
+  const [reportEditMap, setReportEditMap] = useState<Record<number, ReportEditValues>>({});
   const [confirmRemoveType, setConfirmRemoveType] = useState<string | null>(null);
   const [confirmRemovePhase, setConfirmRemovePhase] = useState(false);
+  const [freqErrors, setFreqErrors] = useState<Record<string, boolean>>({});
 
   const allApproved = rows.length > 0 && rows.every((r) => r.is_approved);
   const isPSN = rows.some((r) => r.reportType === PSN_TYPE);
-  const frequencies = isPSN ? PSN_FREQUENCIES : REPORT_FREQUENCIES;
+  const hasDataEntryRequired = rows.some((r) => r.reportType === MP_TYPE && !r.linked_management_plan_id);
+
 
   const { mutateAsync: patchSubmission, isPending: saving } = usePatchReportSubmission(conditionId);
   const { mutateAsync: removeSubmission } = useRemoveReportSubmission(conditionId);
   const { mutateAsync: addSubmission } = useAddReportSubmission(conditionId);
+  const { mutateAsync: patchReport } = usePatchReport();
 
   const enterEdit = () => {
     const map: Record<number, EditValues> = {};
     rows.forEach((r) => { map[r.id] = toEditValues(r); });
+    const rMap: Record<number, ReportEditValues> = {};
+    rows.forEach((r) => {
+      if (!rMap[r.reportId]) {
+        rMap[r.reportId] = {
+          // Prefer fresh row data; fall back to previously-saved reportEditMap values
+          // (rows may be stale if refetch hasn't completed yet after the last save)
+          linked_management_plan_id: r.linked_management_plan_id ?? reportEditMap[r.reportId]?.linked_management_plan_id,
+          report_title: r.report_title ?? reportEditMap[r.reportId]?.report_title,
+        };
+      }
+    });
     setEditMap(map);
+    setReportEditMap(rMap);
     setNewSubs({});
     setEditMode(true);
     setExpanded(true);
@@ -129,12 +189,34 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
     setEditMode(false);
     setEditMap({});
     setNewSubs({});
+    setReportEditMap({});
+    setFreqErrors({});
   };
 
   const saveAll = async () => {
+    const errors: Record<string, boolean> = {};
+    rows.forEach((row) => {
+      if (!editMap[row.id]?.frequency) errors[`row_${row.id}`] = true;
+    });
+    Object.entries(newSubs).forEach(([reportType, newSub]) => {
+      if (newSub && !newSub.frequency) errors[`new_${reportType}`] = true;
+    });
+    if (Object.keys(errors).length > 0) {
+      setFreqErrors(errors);
+      return;
+    }
+    setFreqErrors({});
     try {
       await Promise.all(
         rows.map((row) => patchSubmission({ submissionId: row.id, payload: editMap[row.id] }))
+      );
+      // Patch report-level fields for MP rows (deduplicated by reportId)
+      const mpReportIds = [...new Set(rows.filter((r) => r.reportType === MP_TYPE).map((r) => r.reportId))];
+      await Promise.all(
+        mpReportIds.map((reportId) => {
+          const payload = reportEditMap[reportId] ?? {};
+          return patchReport({ reportId, payload });
+        })
       );
       await Promise.all(
         Object.entries(newSubs).map(([reportType, newSub]) => {
@@ -144,10 +226,10 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
           return addSubmission({ reportId, payload: { phases: [phase], ...newSub } });
         })
       );
+      await onRefetch();
       setEditMode(false);
       setEditMap({});
       setNewSubs({});
-      onRefetch();
       notify.success("Changes saved");
     } catch {
       notify.error("Failed to save changes");
@@ -182,7 +264,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
         rows.map((r) => patchSubmission({ submissionId: r.id, payload: { is_approved: next } }))
       );
       onRefetch();
-      notify.success(next ? "Phase approved" : "Approval removed");
+      notify.success(next ? "Report confirmed" : "Confirmation removed");
     } catch {
       notify.error("Failed to update approval");
     }
@@ -221,15 +303,30 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
 
   const statusChip = (
     <Chip
-      label={allApproved ? "Confirmed" : "Awaiting Approval"}
-      size="small"
+      label={hasDataEntryRequired ? "Data Entry Required" : allApproved ? "Confirmed" : "Awaiting Confirmation"}
       sx={{
-        backgroundColor: allApproved ? "#d5f0dd" : "#fef3cd",
-        color: allApproved ? "#1a6431" : "#7a5a00",
-        fontWeight: 600,
-        fontSize: "11px",
-        borderRadius: "4px",
-        height: 22,
+        height: "24px",
+        padding: "2px 8px",
+        alignItems: "center",
+        gap: "8px",
+        justifyContent: "center",
+        "& .MuiChip-label": { px: 0 },
+        background: hasDataEntryRequired
+          ? "var(--support-surfaceColor-danger, #F4E1E2)"
+          : allApproved
+          ? "var(--support-surfaceColor-success, #F6FFF8)"
+          : "var(--support-surfaceColor-warning, #FEF1D8)",
+        border: hasDataEntryRequired
+          ? "1px solid var(--support-borderColor-danger, #CE3E39)"
+          : allApproved
+          ? "1px solid var(--support-borderColor-success, #42814A)"
+          : "1px solid var(--support-borderColor-warning, #F8BB47)",
+        color: "#2D2D2D",
+        fontFamily: '"BC Sans"',
+        fontWeight: 400,
+        fontSize: "12px",
+        lineHeight: "18px",
+        borderRadius: "2px",
       }}
     />
   );
@@ -251,17 +348,17 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
         expandIcon={<ExpandMoreIcon />}
         sx={{ px: 2, minHeight: 48, "& .MuiAccordionSummary-content": { alignItems: "center", gap: 1 } }}
       >
-        {/* Left: phase name + count + status */}
+        {/* Left: phase name + count */}
         <Typography fontWeight={600} fontSize="14px">{phase}</Typography>
         <Chip
           label={rows.length}
           size="small"
           sx={{ backgroundColor: "#e8e8e8", color: "#555", fontSize: "11px", height: 20, borderRadius: "100px" }}
         />
-        {statusChip}
 
-        {/* Right: trash (stop propagation so it doesn't toggle accordion) */}
+        {/* Right: status + trash */}
         <Box flex={1} />
+        {statusChip}
         {canManage && (
           <Tooltip title="Remove phase">
             <IconButton
@@ -269,7 +366,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
               onClick={(e) => { e.stopPropagation(); setConfirmRemovePhase(true); }}
               sx={{ color: "#888", mr: 0.5 }}
             >
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon size={16} />
             </IconButton>
           </Tooltip>
         )}
@@ -335,7 +432,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
               <Button
                 size="small"
                 disableRipple
-                startIcon={<EditIcon sx={{ fontSize: "16px !important", color: BCDesignTokens.typographyColorLink }} />}
+                startIcon={<EditIcon size={16} />}
                 onClick={enterEdit}
                 sx={{
                   fontSize: "14px",
@@ -358,19 +455,22 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
         </Box>
 
         {/* Per-report-type table */}
-        {Object.entries(byType).map(([reportType, typeRows]) => (
+        {Object.entries(byType).map(([reportType, typeRows]) => {
+          const isCN = reportType === CN_TYPE || reportType === CSR_TYPE;
+          const isMP = reportType === MP_TYPE;
+          return (
           <TableContainer key={reportType} sx={{ mb: 1 }}>
-            <Table size="small" sx={{ "& td": { verticalAlign: "middle" } }}>
+            <Table size="small" sx={{ width: "100%", tableLayout: "fixed", "& td": { verticalAlign: "middle" } }}>
               <TableHead>
                 {/* Report type gray header */}
                 <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
                   <TableCell
-                    colSpan={3}
+                    colSpan={isCN ? 2 : isMP ? 4 : 3}
                     sx={{ fontWeight: 700, fontSize: "13px", py: 0.75, color: "#333" }}
                   >
                     {reportType}
                   </TableCell>
-                  <TableCell sx={{ py: 0.75, textAlign: "right" }}>
+                  <TableCell sx={{ py: 0.75, textAlign: "right", width: "8%" }}>
                     {canManage && (
                       <Button
                         size="small"
@@ -383,6 +483,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                           lineHeight: "18px",
                           textAlign: "center",
                           textTransform: "none",
+                          whiteSpace: "nowrap",
                           color: "#D32F2F",
                           p: 0,
                           minWidth: 0,
@@ -399,16 +500,28 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                 </TableRow>
                 {/* Column headers */}
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5 }}>
+                  <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5, width: isCN ? "46%" : isMP ? "18%" : "30%" }}>
                     Frequency
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5 }}>
-                    Type
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5 }}>
+                  {isMP && (
+                    <>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5, width: "28%" }}>
+                        Linked Management Plan
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5, width: "24%" }}>
+                        Report Title
+                      </TableCell>
+                    </>
+                  )}
+                  {!isCN && !isMP && (
+                    <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5, width: "30%" }}>
+                      Type
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ fontWeight: 700, fontSize: "11px", color: "#666", textTransform: "uppercase", py: 0.5, width: isCN ? "46%" : isMP ? "22%" : "30%" }}>
                     Timing
                   </TableCell>
-                  <TableCell />
+                  <TableCell sx={{ width: "8%" }} />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -421,11 +534,12 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                         {editMode ? (
                           <Select
                             value={ev?.frequency ?? ""}
-                            onChange={(e) => setEdit(row.id, "frequency", e.target.value)}
+                            onChange={(e) => { setEdit(row.id, "frequency", e.target.value); setFreqErrors((p) => ({ ...p, [`row_${row.id}`]: false })); }}
                             size="small"
+                            error={!!freqErrors[`row_${row.id}`]}
                             sx={{ minWidth: 140 }}
                           >
-                            {frequencies.map((f) => (
+                            {getFrequencies(reportType).map((f: { value: string; label: string }) => (
                               <MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>
                             ))}
                           </Select>
@@ -434,38 +548,95 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                         )}
                       </TableCell>
 
-                      {/* Type (subsection badge + type name) */}
-                      <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
-                        {editMode ? (
-                          <Box display="flex" gap={1} flexDirection="column">
-                            <TextField
-                              value={ev?.condition_subsection ?? ""}
-                              onChange={(e) => setEdit(row.id, "condition_subsection", e.target.value)}
-                              size="small"
-                              placeholder="e.g. 4.1"
-                              sx={{ width: 90 }}
-                            />
-                            {isPSN && (
+                      {/* MP: separate Linked Management Plan and Report Title columns */}
+                      {isMP && (
+                        <>
+                          <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                            {editMode ? (
                               <Select
-                                value={ev?.report_submission_type ?? ""}
-                                onChange={(e) => setEdit(row.id, "report_submission_type", e.target.value)}
+                                value={reportEditMap[row.reportId]?.linked_management_plan_id ?? -1}
+                                onChange={(e) => setReportEditMap((prev) => ({
+                                  ...prev,
+                                  [row.reportId]: {
+                                    ...prev[row.reportId],
+                                    linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                                  },
+                                }))}
                                 size="small"
-                                sx={{ minWidth: 200 }}
+                                fullWidth
                               >
-                                <MenuItem value=""><em>Select...</em></MenuItem>
-                                {PSN_SUBMISSION_TYPES.map((t) => (
-                                  <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                                <MenuItem value={-1}><em>Select management plan...</em></MenuItem>
+                                {managementPlans.map((mp, idx) => (
+                                  <MenuItem key={mp.id} value={Number(mp.id)}>{mp.name || `Management Plan ${idx + 1}`}</MenuItem>
                                 ))}
                               </Select>
+                            ) : (
+                              <Typography fontSize="13px">
+                                {(() => {
+                                  const planId = reportEditMap[row.reportId]?.linked_management_plan_id ?? row.linked_management_plan_id;
+                                  if (!planId) return "—";
+                                  const idx = managementPlans.findIndex((mp) => Number(mp.id) === Number(planId));
+                                  if (idx < 0) return "—";
+                                  const mp = managementPlans[idx];
+                                  return mp.name || `Management Plan ${idx + 1}`;
+                                })()}
+                              </Typography>
                             )}
-                          </Box>
-                        ) : (
-                          <SubsectionTypeBadge
-                            subsection={row.condition_subsection}
-                            type={row.report_submission_type || (isPSN ? undefined : reportType)}
-                          />
-                        )}
-                      </TableCell>
+                          </TableCell>
+                          <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                            {editMode ? (
+                              <TextField
+                                value={reportEditMap[row.reportId]?.report_title ?? ""}
+                                onChange={(e) => setReportEditMap((prev) => ({
+                                  ...prev,
+                                  [row.reportId]: { ...prev[row.reportId], report_title: e.target.value },
+                                }))}
+                                size="small"
+                                placeholder="Report title..."
+                                fullWidth
+                                sx={{mt:3}}
+                              />
+                            ) : (
+                              <Typography fontSize="13px">{row.report_title || "—"}</Typography>
+                            )}
+                          </TableCell>
+                        </>
+                      )}
+
+                      {/* Type column — PSN/other report types */}
+                      {!isCN && !isMP && (
+                        <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                          {editMode ? (
+                            <Box display="flex" gap={1} flexDirection="row" alignItems="center">
+                              <TextField
+                                value={ev?.condition_subsection ?? ""}
+                                onChange={(e) => setEdit(row.id, "condition_subsection", e.target.value)}
+                                size="small"
+                                placeholder="e.g. 4.1"
+                                sx={{ width: 90, mt: 3 }}
+                              />
+                              {isPSN && (
+                                <Select
+                                  value={ev?.report_submission_type ?? ""}
+                                  onChange={(e) => setEdit(row.id, "report_submission_type", e.target.value)}
+                                  size="small"
+                                  sx={{ width: 220 }}
+                                >
+                                  <MenuItem value=""><em>Select...</em></MenuItem>
+                                  {PSN_SUBMISSION_TYPES.map((t) => (
+                                    <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                                  ))}
+                                </Select>
+                              )}
+                            </Box>
+                          ) : (
+                            <SubsectionTypeBadge
+                              subsection={row.condition_subsection}
+                              type={row.report_submission_type || (isPSN ? undefined : reportType)}
+                            />
+                          )}
+                        </TableCell>
+                      )}
 
                       {/* Timing */}
                       <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
@@ -475,9 +646,9 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                             onChange={(e) => setEdit(row.id, "timing", e.target.value)}
                             size="small"
                             placeholder={TIMING_PLACEHOLDER}
-                            multiline
+                            fullWidth
                             minRows={1}
-                            sx={{ minWidth: 220 }}
+                            sx={{ minWidth: 220 ,mt: 3 }}
                           />
                         ) : (
                           <Typography fontSize="13px">{row.timing || "—"}</Typography>
@@ -521,41 +692,50 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                     <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
                       <Select
                         value={newSubs[reportType]!.frequency}
-                        onChange={(e) => setNewField(reportType, "frequency", e.target.value)}
+                        onChange={(e) => { setNewField(reportType, "frequency", e.target.value); setFreqErrors((p) => ({ ...p, [`new_${reportType}`]: false })); }}
                         size="small"
+                        error={!!freqErrors[`new_${reportType}`]}
                         sx={{ minWidth: 140 }}
                         displayEmpty
                       >
                         <MenuItem value="" disabled><em>Frequency</em></MenuItem>
-                        {frequencies.map((f) => (
+                        {getFrequencies(reportType).map((f: { value: string; label: string }) => (
                           <MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>
                         ))}
                       </Select>
                     </TableCell>
-                    <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
-                      <Box display="flex" gap={1} flexDirection="column">
-                        <TextField
-                          value={newSubs[reportType]!.condition_subsection}
-                          onChange={(e) => setNewField(reportType, "condition_subsection", e.target.value)}
-                          size="small"
-                          placeholder="e.g. 4.1"
-                          sx={{ width: 90 }}
-                        />
-                        {isPSN && (
-                          <Select
-                            value={newSubs[reportType]!.report_submission_type}
-                            onChange={(e) => setNewField(reportType, "report_submission_type", e.target.value)}
+                    {isMP && (
+                      <>
+                        <TableCell />
+                        <TableCell />
+                      </>
+                    )}
+                    {!isCN && !isMP && (
+                      <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                        <Box display="flex" gap={1} flexDirection="row" alignItems="center">
+                          <TextField
+                            value={newSubs[reportType]!.condition_subsection}
+                            onChange={(e) => setNewField(reportType, "condition_subsection", e.target.value)}
                             size="small"
-                            sx={{ minWidth: 200 }}
-                          >
-                            <MenuItem value=""><em>Select type...</em></MenuItem>
-                            {PSN_SUBMISSION_TYPES.map((t) => (
-                              <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      </Box>
-                    </TableCell>
+                            placeholder="e.g. 4.1"
+                            sx={{ width: 90 , mt: 3 }}
+                          />
+                          {isPSN && (
+                            <Select
+                              value={newSubs[reportType]!.report_submission_type}
+                              onChange={(e) => setNewField(reportType, "report_submission_type", e.target.value)}
+                              size="small"
+                              sx={{ width: 220 }}
+                            >
+                              <MenuItem value=""><em>Select type...</em></MenuItem>
+                              {PSN_SUBMISSION_TYPES.map((t) => (
+                                <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                              ))}
+                            </Select>
+                          )}
+                        </Box>
+                      </TableCell>
+                    )}
                     <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
                       <TextField
                         value={newSubs[reportType]!.timing}
@@ -564,7 +744,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                         placeholder={TIMING_PLACEHOLDER}
                         multiline
                         minRows={1}
-                        sx={{ minWidth: 220 }}
+                        sx={{ minWidth: 220, mt: 3 }}
                       />
                     </TableCell>
                     <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
@@ -605,7 +785,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                     [reportType]: { frequency: "", timing: "", condition_subsection: "", report_submission_type: "" },
                   }))}
                   disabled={newSubs[reportType] !== null && newSubs[reportType] !== undefined}
-                  startIcon={<AddIcon sx={{ fontSize: "13px !important", color: BCDesignTokens.typographyColorLink }} />}
+                  startIcon={<AddIcon sx={{ fontSize: "13px !important" }} />}
                   sx={{
                     fontSize: "13px",
                     fontWeight: 400,
@@ -618,6 +798,10 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
                     "&:hover": { background: "transparent", textDecoration: "underline" },
                     "&:active": { background: "transparent" },
                     "&:focus": { background: "transparent" },
+                    "&.Mui-disabled": {
+                      color: "#aaa",
+                      background: "transparent",
+                    },
                   }}
                 >
                   Add Submission Requirement
@@ -625,7 +809,8 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
               </Box>
             )}
         </TableContainer>
-        ))}
+          );
+        })}
 
         {/* Approve Report button (hidden in edit mode) */}
         {!editMode && canManage && (
@@ -636,7 +821,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
               onClick={handleApprove}
               sx={{ textTransform: "none", backgroundColor: allApproved ? "#555" : undefined }}
             >
-              {allApproved ? "Un-approve Report" : "Approve Report"}
+              {allApproved ? "Un-confirm Report" : "Confirm Report"}
             </Button>
           </Box>
         )}
@@ -645,7 +830,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
       <DeleteConfirmationModal
         open={!!confirmRemoveType}
         title="Remove Report"
-        description={`By removing <strong>${confirmRemoveType}</strong>, you will lose all of its submission requirements for this phase.<br/><br/>Are you sure you wish to proceed?`}
+        description={`This will remove the <strong>${confirmRemoveType}</strong> from the phase <strong>${phase}</strong>.<br/>Are you sure you wish to proceed?`}
         onClose={() => setConfirmRemoveType(null)}
         onConfirm={() => confirmRemoveType && handleDeleteReportType(confirmRemoveType)}
       />
@@ -653,7 +838,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, onRef
       <DeleteConfirmationModal
         open={confirmRemovePhase}
         title="Remove Phase"
-        description={`By removing the <strong>${phase}</strong> phase, you will lose all of its submission requirements.<br/><br/>Are you sure you wish to proceed?`}
+        description={`This will remove the <strong>${phase}</strong> phase.<br/>Are you sure you wish to proceed?`}
         onClose={() => setConfirmRemovePhase(false)}
         onConfirm={handleDeletePhase}
       />

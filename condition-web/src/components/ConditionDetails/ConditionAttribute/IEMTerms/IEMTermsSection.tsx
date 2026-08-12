@@ -37,6 +37,7 @@ const IEMTermsSection = memo(({ condition, setCondition }: IEMTermsSectionProps)
       }
       return {
         ...prev,
+        requires_iem_terms: remainingTerms.length > 0,
         is_condition_attributes_approved: allApproved,
         condition_attributes: {
           ...prev.condition_attributes,

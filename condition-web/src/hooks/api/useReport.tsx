@@ -15,6 +15,7 @@ export const useGetReports = (conditionId?: number) =>
     queryFn: () => fetchReports(conditionId!),
     enabled: Boolean(conditionId),
     ...defaultUseQueryOptions,
+    refetchOnMount: true,
   });
 
 export const useCreateReport = (conditionId?: number, options?: Options) => {

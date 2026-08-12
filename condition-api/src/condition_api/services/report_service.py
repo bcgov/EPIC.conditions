@@ -75,6 +75,23 @@ class ReportService:
         return _serialize_report(report)
 
     @staticmethod
+    def delete_report(report_id):
+        """Delete a report and clear requires_report on condition if no reports remain."""
+        report = Report.find_by_id(report_id)
+        if not report:
+            return False
+        condition_id = report.condition_id
+        db.session.delete(report)
+        db.session.flush()
+        remaining = Report.query.filter_by(condition_id=condition_id).count()
+        if remaining == 0:
+            condition = Condition.query.get(condition_id)
+            if condition:
+                condition.requires_report = False
+        db.session.commit()
+        return True
+
+    @staticmethod
     def update_report(report_id, payload):
         """Update report metadata fields."""
         report = Report.find_by_id(report_id)

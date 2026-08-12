@@ -14,12 +14,11 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@/components/Shared/Icons/DeleteIcon";
 import { ManagementPlanModel } from "@/models/ConditionAttribute";
 import {
   PHASE_ORDER,
-  REPORT_FREQUENCIES,
-  PSN_FREQUENCIES,
+  getFrequencies,
   REPORT_TYPES,
   PSN_SUBMISSION_TYPES,
 } from "./constants";
@@ -85,7 +84,7 @@ const AddReportForm: React.FC<Props> = ({
 
   const isPSN = form.report_type === PSN_TYPE;
   const isMP = form.report_type === "Management Plan Associated Report";
-  const frequencies = isPSN ? PSN_FREQUENCIES : REPORT_FREQUENCIES;
+  const frequencies = getFrequencies(form.report_type);
 
   // Notify parent whenever form changes (embedded mode)
   useEffect(() => {
@@ -182,7 +181,6 @@ const AddReportForm: React.FC<Props> = ({
               displayEmpty
               sx={{ width: fieldWidth, height: 40 }}
             >
-              <MenuItem value=""><em>None</em></MenuItem>
               {managementPlans.map((mp) => (
                 <MenuItem key={mp.id} value={mp.id}>{mp.name || `Management Plan ${mp.id}`}</MenuItem>
               ))}
@@ -246,7 +244,7 @@ const AddReportForm: React.FC<Props> = ({
 
           {/* Frequency */}
           <Box mb={1.5}>
-            <Typography fontSize="14px" mb={0.5}>Frequency</Typography>
+            <Typography fontSize="14px" mb={0.5}>Frequency<span style={{ color: "#D32F2F" }}>*</span></Typography>
             <Select
               value={sub.frequency}
               onChange={(e) => updateSub(i, "frequency", e.target.value)}
@@ -255,7 +253,7 @@ const AddReportForm: React.FC<Props> = ({
               error={!!errors[`frequency_${i}`]}
             >
               <MenuItem value="" disabled><em>Select frequency...</em></MenuItem>
-              {frequencies.map((f) => (
+              {frequencies.map((f: { value: string; label: string }) => (
                 <MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>
               ))}
             </Select>
@@ -316,7 +314,7 @@ const AddReportForm: React.FC<Props> = ({
         onClick={addSubmission}
         sx={{ mb: embedded ? 0 : 3 }}
       >
-        + Add Submission Requirement
+        Add Submission Requirement
       </Button>
 
       {/* Standalone mode buttons */}

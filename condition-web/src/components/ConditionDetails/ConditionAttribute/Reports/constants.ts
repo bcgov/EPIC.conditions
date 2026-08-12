@@ -35,6 +35,41 @@ export const PSN_FREQUENCIES = [
   { value: "Quarterly", label: "Quarterly" },
 ];
 
+const PSN_TYPE = "Project Status Notification";
+const CN_TYPE = "Compliance Notification";
+const CSR_TYPE = "Compliance Self-Report";
+const MP_TYPE = "Management Plan Associated Report";
+
+export const getFrequencies = (reportType: string) => {
+  if (reportType === PSN_TYPE) return PSN_FREQUENCIES;
+  if (reportType === CN_TYPE) return COMPLIANCE_NOTIFICATION_FREQUENCIES;
+  if (reportType === CSR_TYPE) return COMPLIANCE_SELF_REPORT_FREQUENCIES;
+  if (reportType === MP_TYPE) return MANAGEMENT_PLAN_FREQUENCIES;
+  return REPORT_FREQUENCIES;
+};
+
+export const MANAGEMENT_PLAN_FREQUENCIES = [
+  { value: "As Needed", label: "As Needed" },
+  { value: "One Time", label: "One Time" },
+  { value: "Annually", label: "Annually" },
+  { value: "Quarterly", label: "Quarterly" },
+  { value: "Other", label: "Other" },
+];
+
+export const COMPLIANCE_SELF_REPORT_FREQUENCIES = [
+  { value: "As Needed", label: "As Needed" },
+  { value: "One Time", label: "One Time" },
+  { value: "Annually", label: "Annually" },
+  { value: "Quarterly", label: "Quarterly" },
+];
+
+export const COMPLIANCE_NOTIFICATION_FREQUENCIES = [
+  { value: "As Needed", label: "As Needed" },
+  { value: "One Time", label: "One Time" },
+  { value: "Annually", label: "Annually" },
+  { value: "Quarterly", label: "Quarterly" },
+];
+
 export const PSN_SUBMISSION_TYPES = [
   { value: "Primary Contact Notification", label: "Primary Contact Notification" },
   { value: "Phase Status Notification", label: "Phase Status Notification" },

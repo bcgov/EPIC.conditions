@@ -37,6 +37,7 @@ from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
+from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.enums import AttributeKeys, ConditionType, IEMTermsConfig
 
 ENABLE_NEW_SUBMIT_FLOW = _Config.ENABLE_NEW_SUBMIT_FLOW
@@ -71,9 +72,9 @@ class ConditionService:
 
         condition = ConditionService._build_condition_structure(condition_rows)
 
-        # Fetch and attach condition attributes
-        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(
-            condition_rows[0].requires_management_plan, condition_id)
+        # Fetch and attach condition attributes (includes management plans, IEM terms, independent)
+        condition["condition_attributes"] = ConditionAttributeService._fetch_all_attributes(
+            condition_id)
 
         # Extract static document metadata from the first row
         first = condition_rows[0]

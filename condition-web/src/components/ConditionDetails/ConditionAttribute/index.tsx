@@ -74,17 +74,18 @@ const ConditionAttribute = memo(
     }, [condition.condition_attributes?.management_plans]);
 
     useEffect(() => {
-      const termsCount = condition.condition_attributes?.iem_terms?.length ?? 0;
-      if (termsCount > 0) {
+      if (condition.requires_iem_terms) {
         setActiveTypes((prev) => prev.includes("iem_terms_of_engagement") ? prev : [...prev, "iem_terms_of_engagement"]);
       } else {
         setActiveTypes((prev) => prev.filter((t) => t !== "iem_terms_of_engagement"));
       }
-    }, [condition.condition_attributes?.iem_terms]);
+    }, [condition.requires_iem_terms]);
 
     useEffect(() => {
       if (condition.requires_report) {
         setActiveTypes((prev) => prev.includes("report") ? prev : [...prev, "report"]);
+      } else {
+        setActiveTypes((prev) => prev.filter((t) => t !== "report"));
       }
     }, [condition.requires_report]);
 
@@ -96,10 +97,10 @@ const ConditionAttribute = memo(
       condition.condition_id
     );
 
-    // Management Plan can always be re-added; IEM / Report are one-time sections.
+    // Management Plan and Report can always be re-added; IEM is a one-time section.
     const availableToAdd = SUBMISSION_OPTIONS.filter((o) => {
       if (pendingTypes.includes(o.value)) return false;
-      if (o.value === "management_plan") return true;
+      if (o.value === "management_plan" || o.value === "report") return true;
       return !activeTypes.includes(o.value);
     });
 
@@ -130,9 +131,10 @@ const ConditionAttribute = memo(
       const addingIEM = pendingTypes.includes("iem_terms_of_engagement");
       const addingReport = pendingTypes.includes("report");
 
+      // Add non-report types immediately; "report" is added only after successful creation
       setActiveTypes((prev) => {
         const next = [...prev];
-        pendingTypes.forEach((t) => {
+        pendingTypes.filter((t) => t !== "report").forEach((t) => {
           if (!next.includes(t)) next.push(t);
         });
         return next;
@@ -208,6 +210,7 @@ const ConditionAttribute = memo(
 
         setCondition((prev) => ({
           ...prev,
+          requires_iem_terms: true,
           condition_attributes: {
             independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
             management_plans: prev.condition_attributes?.management_plans ?? [],
@@ -257,11 +260,11 @@ const ConditionAttribute = memo(
       if (addingReport && reportFormValues) {
         try {
           await createReport(reportFormValues as never);
+          setCondition((prev) => ({ ...prev, requires_report: true }));
           setReportFormValues(null);
           setReportFormValid(false);
           notify.success("Report added successfully");
         } catch {
-          setActiveTypes((prev) => prev.filter((t) => t !== "report"));
           notify.error("Failed to add report.");
         }
       }
