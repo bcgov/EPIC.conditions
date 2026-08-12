@@ -1,10 +1,9 @@
 """migrate_iem_attributes_to_iem_terms
 
-For conditions that already have "Requires IEM Terms of Engagement" = true saved as a
-management-plan attribute, this migration:
+For conditions that already have "Requires IEM Terms of Engagement" = true, this migration:
   1. Creates an iem_terms record for the condition.
   2. Moves the IEM-related condition_attributes out of the management plan context
-     (clears management_plan_id, sets iem_terms_id).
+     (clears management_plan_id, sets iem_terms_id) when a management plan is present.
   3. Sets conditions.requires_iem_terms = TRUE.
 
 Revision ID: a9b8c7d6e5f4
@@ -37,15 +36,17 @@ IEM_ATTRIBUTE_KEY_NAMES = [
 def upgrade():
     conn = op.get_bind()
 
-    # Find every (condition_id, management_plan_id) pair that has
-    # "Requires IEM Terms of Engagement" = 'true' stored as a management-plan attribute.
+    # Find every condition that has "Requires IEM Terms of Engagement" = 'true',
+    # regardless of whether it is under a management plan or not.
     signal_rows = conn.execute(text("""
         SELECT DISTINCT ca.condition_id, ca.management_plan_id
         FROM condition.condition_attributes ca
         JOIN condition.attribute_keys ak ON ca.attribute_key_id = ak.id
         WHERE ak.key_name = 'Requires IEM Terms of Engagement'
           AND LOWER(ca.attribute_value) = 'true'
-          AND ca.management_plan_id IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1 FROM condition.iem_terms it WHERE it.condition_id = ca.condition_id
+          )
     """)).fetchall()
 
     if not signal_rows:
@@ -57,9 +58,6 @@ def upgrade():
         WHERE key_name = ANY(:names)
     """), {"names": list(IEM_ATTRIBUTE_KEY_NAMES)}).fetchall()
     iem_key_ids = [row[0] for row in iem_key_rows]
-
-    if not iem_key_ids:
-        return
 
     for condition_id, management_plan_id in signal_rows:
         # Create the iem_terms record.
@@ -80,20 +78,35 @@ def upgrade():
             WHERE id = :condition_id
         """), {"condition_id": condition_id})
 
-        # Reassign IEM-related attributes: clear management_plan_id, set iem_terms_id.
-        conn.execute(text("""
-            UPDATE condition.condition_attributes
-            SET iem_terms_id    = :iem_terms_id,
-                management_plan_id = NULL
-            WHERE condition_id      = :condition_id
-              AND management_plan_id = :management_plan_id
-              AND attribute_key_id   = ANY(:iem_key_ids)
-        """), {
-            "iem_terms_id": iem_terms_id,
-            "condition_id": condition_id,
-            "management_plan_id": management_plan_id,
-            "iem_key_ids": iem_key_ids,
-        })
+        # Reassign IEM-related attributes to the new iem_terms record.
+        if iem_key_ids:
+            if management_plan_id is not None:
+                conn.execute(text("""
+                    UPDATE condition.condition_attributes
+                    SET iem_terms_id       = :iem_terms_id,
+                        management_plan_id = NULL
+                    WHERE condition_id       = :condition_id
+                      AND management_plan_id = :management_plan_id
+                      AND attribute_key_id   = ANY(:iem_key_ids)
+                """), {
+                    "iem_terms_id": iem_terms_id,
+                    "condition_id": condition_id,
+                    "management_plan_id": management_plan_id,
+                    "iem_key_ids": iem_key_ids,
+                })
+            else:
+                conn.execute(text("""
+                    UPDATE condition.condition_attributes
+                    SET iem_terms_id = :iem_terms_id
+                    WHERE condition_id      = :condition_id
+                      AND management_plan_id IS NULL
+                      AND iem_terms_id      IS NULL
+                      AND attribute_key_id  = ANY(:iem_key_ids)
+                """), {
+                    "iem_terms_id": iem_terms_id,
+                    "condition_id": condition_id,
+                    "iem_key_ids": iem_key_ids,
+                })
 
 
 def downgrade():
