@@ -255,7 +255,7 @@ class DocumentService:
         return existing_document
 
     @staticmethod
-    def get_all_documents_by_project_id(project_id, document_id=None, document_type=None):
+    def get_all_documents_by_project_id(project_id, document_id=None, document_type=None, document_category_id=None):
         """Fetch all documents and its amendments for the given project_id."""
         documents_query = db.session.query(
             Document.id.label('document_record_id'),
@@ -269,6 +269,11 @@ class DocumentService:
             Project.project_id == project_id,
             Document.is_active.is_(True)
         )
+
+        if document_category_id is not None:
+            documents_query = documents_query.filter(
+                Document.document_category_id == int(document_category_id)
+            )
 
         documents = documents_query.all()
 

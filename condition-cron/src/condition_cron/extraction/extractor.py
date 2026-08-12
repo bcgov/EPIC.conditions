@@ -84,7 +84,7 @@ def classify_and_count(file_path: str, file_text: str = None) -> Dict[str, Any]:
 # Page-based condition extraction (universal — works for all doc types)
 # ---------------------------------------------------------------------------
 
-def extract_conditions_from_pages(file_path: str, classification: Dict[str, Any], pages_per_chunk: int = None) -> Dict[str, Any]:
+def extract_conditions_from_pages(file_path: str, classification: Dict[str, Any], pages_per_chunk: int = 3) -> Dict[str, Any]:
     """Extract all conditions from a document using page-based chunking.
 
     Works for numbered conditions, table formats, and bulleted commitments.
@@ -189,7 +189,7 @@ def _extract_numbered_range(file_path: str, starting_condition_number: int, endi
     return None, "Failed to extract the correct number of conditions after multiple attempts"
 
 
-def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_chunk: int = 5) -> Dict[str, Any]:
+def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_chunk: int = 3) -> Dict[str, Any]:
     """Extract conditions/commitments using page-based chunking (for non-numbered docs)."""
     doc_type = classification.get("document_type", "bulleted_commitments")
     section_headers = classification.get("section_headers", [])
@@ -200,12 +200,9 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
         # For text files, treat as single page
         total_pages = 1
 
-    tool_schema = load_schema("condition_schema")
     all_conditions = []
-    condition_offset = 1
-
-    client = get_openai_client()
-    for start_page in range(1, total_pages + 1, pages_per_chunk):
+    start_page = 1
+    while start_page <= total_pages:
         end_page = min(start_page + pages_per_chunk - 1, total_pages)
         logger.info("Extracting from pages %d-%d (of %d)", start_page, end_page, total_pages)
 
@@ -215,89 +212,12 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
             page_text = _read_file_text(file_path)
 
         if not page_text.strip():
-            continue
+            logger.warning("No extractable text on pages %d-%d; skipping", start_page, end_page)
+        else:
+            label = f"pages {start_page}-{end_page}"
+            all_conditions.extend(_extract_text_chunk_with_retry(page_text, doc_type, section_headers, label))
 
-        # Build prompt based on document type
-        if doc_type == "table_format":
-            prompt = (
-                f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
-                f"Here is a section of an environmental assessment document (pages {start_page}-{end_page}). "
-                f"The document contains conditions/commitments organized in a table format.\n\n"
-                f"{page_text}\n\n"
-                f"Extract every discrete condition, commitment, or requirement from this section. "
-                f"Each row or distinct commitment in the table should be a separate condition. "
-                f"Assign sequential condition numbers starting from {condition_offset}. "
-                f"Use the table's category/component column as the condition_name."
-            )
-        elif doc_type == "bulleted_commitments":
-            section_info = ""
-            if section_headers:
-                section_info = f"Known section headers in this document: {', '.join(section_headers)}. "
-            prompt = (
-                f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
-                f"Here is a section of an environmental assessment document (pages {start_page}-{end_page}). "
-                f"The document contains commitments organized as bullet points under topic headings. "
-                f"{section_info}\n\n"
-                f"{page_text}\n\n"
-                f"Extract conditions/commitments from this section. "
-                f"IMPORTANT: Each topic heading (e.g., 'Policies', 'Worker Orientation Training', 'Environmental Management') "
-                f"represents ONE condition. ALL bullet points and sub-bullets under the same topic heading "
-                f"must be combined into a SINGLE condition's condition_text. Do NOT split bullet points "
-                f"under the same heading into separate conditions. "
-                f"Only create a new condition when you encounter a new topic heading. "
-                f"Assign sequential condition numbers starting from {condition_offset}. "
-                f"Use the topic heading as the condition_name."
-            )
-        else:  # mixed or fallback
-            prompt = (
-                f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
-                f"Here is a section of an environmental assessment document (pages {start_page}-{end_page}).\n\n"
-                f"{page_text}\n\n"
-                f"Extract every discrete condition, commitment, or requirement from this section. "
-                f"If conditions are numbered, use the document's numbering. "
-                f"If they are not numbered, assign sequential numbers starting from {condition_offset}. "
-                f"Use the section/topic header as the condition_name where applicable. "
-                f"IMPORTANT: When multiple bullet points or sub-items appear under the same heading or condition, "
-                f"they are part of ONE condition — combine them all into a single condition_text. "
-                f"Do NOT split bullet points under the same heading into separate conditions."
-            )
-
-        tools = [tool_schema]
-        messages = [{"role": "user", "content": prompt}]
-
-        try:
-            completion = client.chat.completions.create(
-                model=MODEL,
-                messages=messages,
-                tools=tools,
-                temperature=0.0,
-                tool_choice={"type": "function", "function": {"name": tool_schema["function"]["name"]}},
-            )
-
-            finish_reason = completion.choices[0].finish_reason
-            if finish_reason == "length":
-                logger.warning("Response cut off on pages %d-%d, retrying with smaller chunks", start_page, end_page)
-                # Retry with half the pages
-                if pages_per_chunk > 1:
-                    half = max(1, pages_per_chunk // 2)
-                    sub_result = _extract_by_pages(file_path, classification, half)
-                    return sub_result
-                else:
-                    logger.error("Single page too long, extracting what we can")
-
-            result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
-            page_conditions = result.get("conditions", [])
-
-            # Reassign sequential numbers to avoid gaps/overlaps
-            for cond in page_conditions:
-                cond["condition_number"] = condition_offset
-                condition_offset += 1
-
-            all_conditions.extend(page_conditions)
-            logger.info("Extracted %d conditions from pages %d-%d", len(page_conditions), start_page, end_page)
-
-        except Exception as e:
-            logger.error("Error extracting pages %d-%d: %s", start_page, end_page, e, exc_info=True)
+        start_page = end_page + 1
 
     # Deduplicate conditions that may span page boundaries
     all_conditions = _deduplicate_conditions(all_conditions)
@@ -308,6 +228,160 @@ def _extract_by_pages(file_path: str, classification: Dict[str, Any], pages_per_
 
     logger.info("Successfully extracted %d conditions!", len(all_conditions))
     return {"conditions": all_conditions}
+
+
+def _build_page_chunk_prompt(doc_type: str, section_headers: List[str], label: str, page_text: str) -> str:
+    """Build the extraction prompt for a text chunk based on document type."""
+    if doc_type == "table_format":
+        heading_guide = ""
+        if section_headers:
+            pairs = [f"{chr(ord('A') + i)} = {name}" for i, name in enumerate(section_headers)]
+            heading_guide = (
+                f"This document's full list of Subject Area headings, in the order the classifier "
+                f"found them, is: {'; '.join(pairs)}. In many such tables the Ref # column's leading "
+                f"letter matches this same sequence (e.g., 'C12' under the 3rd heading listed). This "
+                f"excerpt may not include the Subject Area heading text itself, if it appeared earlier "
+                f"in the document outside this excerpt — in that case, use this list as a best-effort "
+                f"guide for the leading letter of the Ref #s you see here, but ONLY if it's actually "
+                f"consistent with the heading text and Ref # pattern visible elsewhere in this document; "
+                f"if the Ref #s don't follow a simple sequential-letter pattern matching this list, "
+                f"ignore this guide and rely on the actual heading text in the document instead. Never "
+                f"use just the bare letter, or a truncated/partial heading, on its own.\n\n"
+            )
+        return (
+            f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
+            f"Here is a section of an environmental assessment document ({label}). "
+            f"The document contains conditions/commitments organized in a table format.\n\n"
+            f"{heading_guide}"
+            f"{page_text}\n\n"
+            f"Extract every discrete condition, commitment, or requirement from this section. "
+            f"Each row or distinct commitment in the table should be a separate condition. "
+            f"If each row has its own Ref #/ID (e.g., 'A1', 'C12'), condition_name MUST combine that Ref # "
+            f"with the row's Subject Area heading, formatted exactly as \"<Ref #> - <Subject Area heading>\" "
+            f"(e.g., \"A1 - Mine Design, Development and Operation\", \"C12 - Wildlife & Terrestrial "
+            f"Resources\") — never just the Ref # alone, and never just the heading alone. If rows in this "
+            f"table have no Ref #/ID of their own at all, use just the Subject Area heading as the "
+            f"condition_name instead. The same Subject Area heading applies to every row underneath it "
+            f"until a new Subject Area appears. Do NOT create a condition for a Subject Area heading row "
+            f"that has no commitment text of its own — only create a condition for rows that have actual "
+            f"commitment text. "
+            f"CRITICAL: This table often has many dozens of rows. You MUST extract every single row from "
+            f"the very first to the very last one provided above — do not stop partway through and do not "
+            f"summarize or skip rows just because there are many of them. Keep going row by row until you "
+            f"reach the literal end of the text provided."
+        )
+    if doc_type == "bulleted_commitments":
+        section_info = ""
+        if section_headers:
+            section_info = f"Known section headers in this document: {', '.join(section_headers)}. "
+        return (
+            f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
+            f"Here is a section of an environmental assessment document ({label}). "
+            f"The document contains commitments organized as bullet points under topic headings. "
+            f"{section_info}\n\n"
+            f"{page_text}\n\n"
+            f"Extract conditions/commitments from this section. "
+            f"IMPORTANT: Each topic heading (e.g., 'Policies', 'Worker Orientation Training', 'Environmental Management') "
+            f"represents ONE condition. ALL bullet points and sub-bullets under the same topic heading "
+            f"must be combined into a SINGLE condition's condition_text. Do NOT split bullet points "
+            f"under the same heading into separate conditions. "
+            f"Only create a new condition when you encounter a new topic heading. "
+            f"Use the topic heading as the condition_name."
+        )
+    # mixed or fallback
+    return (
+        f"{EXTRACTION_SCOPE_INSTRUCTION}\n\n"
+        f"Here is a section of an environmental assessment document ({label}).\n\n"
+        f"{page_text}\n\n"
+        f"Extract every discrete condition, commitment, or requirement from this section. "
+        f"If conditions are numbered, use the document's numbering. "
+        f"If they are not numbered, assign sequential numbers. "
+        f"Use the section/topic header as the condition_name where applicable. "
+        f"IMPORTANT: When multiple bullet points or sub-items appear under the same heading or condition, "
+        f"they are part of ONE condition — combine them all into a single condition_text. "
+        f"Do NOT split bullet points under the same heading into separate conditions."
+    )
+
+
+def _split_text_in_half(text: str) -> Tuple[str, str]:
+    """Split text roughly in half at a line boundary, to avoid cutting mid-row."""
+    mid = len(text) // 2
+    split_at = text.find("\n", mid)
+    if split_at == -1:
+        split_at = mid
+    return text[:split_at], text[split_at:]
+
+
+def _extract_text_chunk_with_retry(
+    text: str,
+    doc_type: str,
+    section_headers: List[str],
+    label: str,
+    max_attempts: int = 3,
+) -> List[Dict[str, Any]]:
+    """Extract conditions from a text chunk without silently dropping content.
+
+    A `length` finish reason splits the TEXT itself in half (not just page
+    boundaries) and recurses, so even a single page that's too dense to fit
+    in one response still gets fully captured — page-level splitting alone
+    bottoms out once a chunk is down to one page, but a single page can
+    still be too dense (e.g. a table with 20+ rows), and retrying the exact
+    same prompt at temperature 0 just reproduces the same cutoff. Transient
+    errors are retried up to `max_attempts` times. Only after every retry
+    and every split is exhausted does this give up — and it says so loudly
+    in the logs, naming exactly what was lost, instead of failing silently.
+    """
+    if not text.strip():
+        return []
+
+    tool_schema = load_schema("condition_schema")
+    prompt = _build_page_chunk_prompt(doc_type, section_headers, label, text)
+    messages = [{"role": "user", "content": prompt}]
+    client = get_openai_client()
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            completion = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+                tools=[tool_schema],
+                temperature=0.0,
+                tool_choice={"type": "function", "function": {"name": tool_schema["function"]["name"]}},
+            )
+
+            if completion.choices[0].finish_reason == "length":
+                if len(text) > 2000:
+                    first_text, second_text = _split_text_in_half(text)
+                    logger.warning("Response cut off on %s; splitting text in half and retrying", label)
+                    first = _extract_text_chunk_with_retry(
+                        first_text, doc_type, section_headers, f"{label} (part 1)"
+                    )
+                    second = _extract_text_chunk_with_retry(
+                        second_text, doc_type, section_headers, f"{label} (part 2)"
+                    )
+                    return first + second
+                logger.warning(
+                    "Response cut off on %s and text is already minimal (attempt %d/%d); retrying",
+                    label, attempt, max_attempts,
+                )
+                continue
+
+            result = json.loads(completion.choices[0].message.tool_calls[0].function.arguments)
+            page_conditions = result.get("conditions", [])
+            logger.info("Extracted %d conditions from %s", len(page_conditions), label)
+            return page_conditions
+
+        except Exception as e:
+            logger.warning(
+                "Attempt %d/%d failed extracting %s: %s",
+                attempt, max_attempts, label, e,
+            )
+
+    logger.error(
+        "GIVING UP after %d attempts — %s was NOT extracted and is MISSING from the result.",
+        max_attempts, label,
+    )
+    return []
 
 
 def _deduplicate_conditions(conditions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

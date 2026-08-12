@@ -179,7 +179,7 @@ export const useUpdateDocumentDetails = (
   });
 };
 
-const fetchDocumentsByProject = (projectId?: string, documentId?: string, documentType?: string) => {
+const fetchDocumentsByProject = (projectId?: string, documentId?: string, documentType?: string, categoryId?: number | null) => {
   if (!projectId) {
     return Promise.reject(new Error("Project ID is required"));
   }
@@ -189,6 +189,7 @@ const fetchDocumentsByProject = (projectId?: string, documentId?: string, docume
     params: {
       documentId,
       documentType,
+      ...(categoryId != null ? { documentCategoryId: categoryId } : {}),
     },
   });
 
@@ -198,7 +199,8 @@ export const useGetDocumentsByProject = (
   shouldLoad: boolean,
   projectId?: string,
   documentId?: string,
-  documentType?: string
+  documentType?: string,
+  categoryId?: number | null
 ) => {
   return useQuery({
     queryKey: [
@@ -206,8 +208,9 @@ export const useGetDocumentsByProject = (
       projectId,
       documentId,
       documentType,
+      categoryId,
     ],
-    queryFn: () => fetchDocumentsByProject(projectId, documentId, documentType),
+    queryFn: () => fetchDocumentsByProject(projectId, documentId, documentType, categoryId),
     enabled: Boolean(projectId && shouldLoad),
     ...defaultUseQueryOptions,
   });

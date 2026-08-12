@@ -5,7 +5,6 @@ import DocumentTable from "./DocumentTable";
 import { ContentBox } from "../Shared/ContentBox";
 import { useNavigate } from "@tanstack/react-router";
 import { theme } from "@/styles/theme";
-import { DocumentCategory } from "@/utils/enums"
 
 export const CardInnerBox = styled(Box)({
     display: "flex",
@@ -24,20 +23,20 @@ export const Project = ({ project }: ProjectParam) => {
 
     const navigate = useNavigate();
 
-    const certificateDocument = project?.documents?.find(
-        (doc) =>
-            String(doc.document_category_id) === DocumentCategory.CertificateAndAmendments ||
-            String(doc.document_category_id) === DocumentCategory.ExemptionOrderAndAmendments
+    const anyDataEntryRequired = project?.documents?.some(doc => doc.status === null);
+
+    const totalDocumentCount = project?.documents?.reduce(
+        (sum, doc) => sum + (doc.parent_document_count || 0) + (doc.amendment_count || 0), 0
+    ) ?? 0;
+
+    const anyMissingMostRecent = project?.documents?.some(doc =>
+        doc.amendment_count > 0 && doc.is_latest_amendment_added !== true
     );
 
-    // Check if all documents have a status of true excluding other orders
-    const allDocumentsStatusTrue = project?.documents?.every(doc => 
-        String(doc.document_category_id) === DocumentCategory.OtherOrders 
-        || (doc.is_latest_amendment_added === true && doc.status !== null)
-    );
+    const canViewConsolidated = !anyDataEntryRequired && totalDocumentCount > 1 && !anyMissingMostRecent;
 
     const handleViewConsolidatedConditions = () => {
-        if (project?.project_id && certificateDocument) {
+        if (project?.project_id && canViewConsolidated) {
             navigate({
                 to: `/projects/${project?.project_id}/consolidated-conditions`,
             });
@@ -76,7 +75,7 @@ export const Project = ({ project }: ProjectParam) => {
                     variant="contained"
                     color="secondary"
                     onClick={handleViewConsolidatedConditions}
-                    disabled={!project || !certificateDocument || !allDocumentsStatusTrue}
+                    disabled={!project || !canViewConsolidated}
                     sx={{
                         color: BCDesignTokens.themeGray100,
                         border: `2px solid ${theme.palette.grey[700]}`,

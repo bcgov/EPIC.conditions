@@ -53,6 +53,7 @@ class DocumentSchema(Schema):
     consultation_records_required = fields.Bool(data_key="consultation_records_required")
     status = fields.Bool(data_key="status")
     amendment_count = fields.Int(data_key="amendment_count")
+    parent_document_count = fields.Int(data_key="parent_document_count")
     is_latest_amendment_added = fields.Bool(data_key="is_latest_amendment_added")
     parent_document_id = fields.Str(data_key="parent_document_id", allow_none=True)
     is_active = fields.Bool(data_key="is_active")

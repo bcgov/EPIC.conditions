@@ -2,6 +2,7 @@ import { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { Box, Typography, Button, Stack } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { ConditionModel } from "@/models/Condition";
+import { SubconditionModel } from "@/models/Subcondition";
 import { theme } from "@/styles/theme";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
@@ -35,6 +36,13 @@ type ConditionDescriptionProps = {
   setIsConditionApproved: React.Dispatch<React.SetStateAction<boolean>>;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+const normalizeSubconditions = (subs: SubconditionModel[]): SubconditionModel[] =>
+  subs.map((sub) => ({
+    ...sub,
+    subcondition_identifier: sub.subcondition_identifier ?? "",
+    subconditions: normalizeSubconditions(sub.subconditions || []),
+  }));
 
 // Main component to render the condition and its subconditions
 const ConditionDescription = memo(({
@@ -86,7 +94,7 @@ const ConditionDescription = memo(({
 
   const saveChanges = useCallback(() => {
     const data: updateTopicTagsModel = {
-      subconditions: subconditions
+      subconditions: normalizeSubconditions(subconditions)
     };
     updateConditionDetails(data);
   }, [subconditions, updateConditionDetails]);

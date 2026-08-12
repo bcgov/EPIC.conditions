@@ -13,6 +13,7 @@ export interface DocumentModel {
   act: string;
   status: boolean;
   amendment_count: number;
+  parent_document_count: number;
   is_latest_amendment_added: boolean;
   conditions?: ConditionModel[];  // Multiple conditions per document
   type: string;
