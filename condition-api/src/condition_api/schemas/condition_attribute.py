@@ -53,8 +53,18 @@ class ManagementPlanWithAttributesSchema(Schema):
     attributes = fields.List(fields.Nested(ConditionAttributeDetailsSchema))
 
 
+class IEMTermsWithAttributesSchema(Schema):
+    """IEM Terms of Engagement Condition Attribute schema."""
+
+    id = fields.Str(data_key="id", required=True)
+    name = fields.Str(data_key="name", required=True)
+    is_approved = fields.Bool(data_key="is_approved", required=False, allow_none=True)
+    attributes = fields.List(fields.Nested(ConditionAttributeDetailsSchema))
+
+
 class ConditionAttributesSchema(Schema):
     """Condition Attribute schema."""
 
     independent_attributes = fields.List(fields.Nested(ConditionAttributeDetailsSchema))
     management_plans = fields.List(fields.Nested(ManagementPlanWithAttributesSchema))
+    iem_terms = fields.List(fields.Nested(IEMTermsWithAttributesSchema))

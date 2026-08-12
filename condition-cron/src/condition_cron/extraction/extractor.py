@@ -100,6 +100,11 @@ def extract_conditions_from_pages(file_path: str, classification: Dict[str, Any]
         if estimated_count > 0:
             return _extract_numbered_conditions(file_path, estimated_count)
 
+    # Table-format docs pack many conditions per page; use smaller chunks to avoid
+    # the AI stopping early (finish_reason="stop") before extracting all conditions.
+    if pages_per_chunk is None:
+        pages_per_chunk = 2 if doc_type == "table_format" else 5
+
     # For all other formats, use page-based extraction
     return _extract_by_pages(file_path, classification, pages_per_chunk)
 

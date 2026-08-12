@@ -4,7 +4,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   Box,
-  Chip,
   CircularProgress,
   Button,
   Grid,
@@ -18,19 +17,20 @@ import {
   Typography,
   Stack,
   IconButton,
-  Tooltip
+  Tooltip,
+  Chip,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@/components/Shared/Icons/EditIcon";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
-import { IndependentAttributeModel, ManagementPlanModel } from "@/models/ConditionAttribute";
+import { IndependentAttributeModel, IEMTermsModel } from "@/models/ConditionAttribute";
 import { BCDesignTokens } from "epic.theme";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { CONDITION_KEYS } from "../../ConditionAttribute/Constants";
 import { QUERY_KEY } from "@/hooks/api/constants";
 import ConditionAttributeRow from "../../ConditionAttribute/Independent/ConditionAttributeRow";
 import { ConditionModel } from "@/models/Condition";
-import { usePatchManagementPlan } from "@/hooks/api/useManagementPlan";
+import { usePatchIEMTerms } from "@/hooks/api/useIEMTerms";
 import { useUpdateConditionAttributeDetails, useDeleteSingleConditionAttribute } from "@/hooks/api/useConditionAttribute";
 import { useQueryClient } from "@tanstack/react-query";
 import ErrorMessage from "../ErrorMessage";
@@ -39,7 +39,7 @@ import { validateRequiredAttributes } from "@/utils/attributeValidation";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
 import DeleteIcon from "@/components/Shared/Icons/DeleteIcon";
 import AddIcon from '@mui/icons-material/Add';
-import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import DeleteConfirmationModal from "../ManagementPlan/DeleteConfirmationModal";
 import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import { useGetAttributes } from "@/hooks/api/useAttributeKey";
 import AttributeModal from "../AttributeModal";
@@ -47,36 +47,34 @@ import DynamicFieldRenderer from "../DynamicFieldRenderer";
 import { SELECT_OPTIONS } from "../Constants";
 
 type Props = {
-  attributes: ManagementPlanModel;
+  attributes: IEMTermsModel;
   title: string;
   condition: ConditionModel;
   setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
-  onDelete?: (planId: string) => void;
+  onDelete?: (termsId: string) => void;
 };
 
-const ManagementPlanAccordion: React.FC<Props> = ({
-    attributes,
-    title,
-    condition,
-    setCondition,
-    onDelete
+const IEMTermsAccordion: React.FC<Props> = ({
+  attributes,
+  title,
+  condition,
+  setCondition,
+  onDelete
 }) => {
   const queryClient = useQueryClient();
   const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
   const [editMode, setEditMode] = useState(false);
-  const [planName, setPlanName] = useState(title);
+  const [termsName, setTermsName] = useState(title);
   const [expanded, setExpanded] = useState(false);
 
   const [isAnyRowEditing, setIsAnyRowEditing] = useState(false);
-  const [isEditingPlanName, setIsEditingPlanName] = useState(false);
+  const [isEditingTermsName, setIsEditingTermsName] = useState(false);
   const [showEditingError, setShowEditingError] = useState(false);
   const [conditionAttributeError, setConditionAttributeError] = useState(false);
   const [isConsultationRequired, setIsConsultationRequired] = useState(false);
-  const [isIEMRequired, setIsIEMRequired] = useState(false);
   const [attributeHasData, setAttributeHasData] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const isManagementRequired = true;
-  const [planNameError, setPlanNameError] = useState(false);
+  const [termsNameError, setTermsNameError] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedAttribute, setSelectedAttribute] = useState("");
   const [attributeValue, setAttributeValue] = useState("");
@@ -86,14 +84,14 @@ const ManagementPlanAccordion: React.FC<Props> = ({
   const [submissionMilestones, setSubmissionMilestones] = useState<string[]>([]);
   const [milestones, setMilestones] = useState<string[]>([]);
 
-  const planId = !String(attributes.id).includes("-") ? Number(attributes.id) : undefined;
+  const termsId = !String(attributes.id).includes("-") ? Number(attributes.id) : undefined;
 
   const {
     data: attributesData,
     isPending: isAttributesLoading,
     isError: isAttributesError,
     refetch: refetchAttributes,
-  } = useGetAttributes(condition.condition_id, planId);
+  } = useGetAttributes(condition.condition_id, undefined, termsId);
 
   useEffect(() => {
     if (isAddModalOpen) {
@@ -144,12 +142,12 @@ const ManagementPlanAccordion: React.FC<Props> = ({
         ? otherValue
         : attributeValue;
 
-    const updatedPlans = (condition.condition_attributes?.management_plans || []).map((plan) => {
-      if (plan.id === attributes.id) {
+    const updatedTerms = (condition.condition_attributes?.iem_terms || []).map((terms) => {
+      if (terms.id === attributes.id) {
         return {
-          ...plan,
+          ...terms,
           attributes: [
-            ...plan.attributes,
+            ...terms.attributes,
             {
               id: `temp-${selectedAttribute}-${Date.now()}`,
               key: selectedAttribute,
@@ -158,14 +156,15 @@ const ManagementPlanAccordion: React.FC<Props> = ({
           ],
         };
       }
-      return plan;
+      return terms;
     });
 
     updateAttributes({
-      requires_management_plan: true,
+      requires_iem_terms: true,
       condition_attribute: {
         independent_attributes: condition.condition_attributes?.independent_attributes || [],
-        management_plans: updatedPlans,
+        management_plans: condition.condition_attributes?.management_plans || [],
+        iem_terms: updatedTerms,
       },
     });
 
@@ -187,43 +186,34 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     );
   };
 
-  const {
-    mutateAsync: updatePlanName,
-    isPending: isUpdating,
-  } = usePatchManagementPlan(attributes.id, {
-    onSuccess: () => {
-      notify.success("Management plan name updated successfully");
-    },
-    onError: () => {
-      notify.error("Failed to update management plan name");
-    },
-  });
+  const { mutateAsync: updateTermsName, isPending: isUpdating } = usePatchIEMTerms(
+    attributes.id,
+    {
+      onSuccess: () => notify.success("IEM Terms name updated successfully"),
+      onError: () => notify.error("Failed to update IEM Terms name"),
+    }
+  );
 
-  const onApproveFailure = () => {
-    notify.error("Failed to approve condition attribute");
-  };
-
-  const onApproveSuccess = () => {
-    notify.success("Condition attribute successfully approved");
-  };
+  const onApproveFailure = () => notify.error("Failed to approve condition attribute");
+  const onApproveSuccess = () => notify.success("Condition attribute successfully approved");
 
   const { data: conditionDetails, mutate: updateConditionDetails } = useUpdateConditionDetails(
     false,
     false,
     condition.condition_id,
-      {
-        onSuccess: onApproveSuccess,
-        onError: onApproveFailure,
-      }
+    {
+      onSuccess: onApproveSuccess,
+      onError: onApproveFailure,
+    }
   );
 
   useEffect(() => {
     if (conditionDetails) {
-        setCondition((prevCondition) => ({
-            ...prevCondition,
-            ...conditionDetails,
-            subconditions: prevCondition.subconditions
-        }));
+      setCondition((prevCondition) => ({
+        ...prevCondition,
+        ...conditionDetails,
+        subconditions: prevCondition.subconditions
+      }));
     }
   }, [conditionDetails, setCondition]);
 
@@ -232,12 +222,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
       setAttributeHasData(false);
       return;
     }
-
-    // Check if any attribute value is non-empty
-    const anyHasValue = attributes.attributes.some(attr => (attr.value ?? '').trim() !== '');
-
-    setAttributeHasData(anyHasValue);
-
+    setAttributeHasData(attributes.attributes.some(attr => (attr.value ?? '').trim() !== ''));
   }, [attributes]);
 
   useEffect(() => {
@@ -248,35 +233,20 @@ const ManagementPlanAccordion: React.FC<Props> = ({
           attr.key === CONDITION_KEYS.REQUIRES_CONSULTATION && attr.value === "true"
       )
     );
-    setIsIEMRequired(
-      attrs.some(
-        (attr: IndependentAttributeModel) =>
-          attr.key === CONDITION_KEYS.REQUIRES_IEM_TERMS_OF_ENGAGEMENT && attr.value === "true"
-      )
-    );
   }, [attributes.attributes]);
 
-  const { data: conditionAttributeDetails, mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
-    condition.condition_id,
-    {
-        onSuccess: () => {
-            notify.success("Condition attributes saved successfully");
-
-            queryClient.invalidateQueries({
-              queryKey: ["conditions", condition.condition_id],
-            });
-            queryClient.invalidateQueries({
-              queryKey: [QUERY_KEY.CONDITIONSDETAIL],
-            });
-            queryClient.invalidateQueries({
-              queryKey: [QUERY_KEY.ATTRIBUTEKEYS, condition.condition_id, planId],
-            });
-          },
-          onError: () => {
-            notify.error("Failed to save condition attributes");
-          },
-    }
-  );
+  const { data: conditionAttributeDetails, mutateAsync: updateAttributes } =
+    useUpdateConditionAttributeDetails(condition.condition_id, {
+      onSuccess: () => {
+        notify.success("Condition attributes saved successfully");
+        queryClient.invalidateQueries({ queryKey: ["conditions", condition.condition_id] });
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CONDITIONSDETAIL] });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEY.ATTRIBUTEKEYS, condition.condition_id, undefined, termsId],
+        });
+      },
+      onError: () => notify.error("Failed to save condition attributes"),
+    });
 
   const { mutateAsync: deleteSingleAttribute } = useDeleteSingleConditionAttribute(
     condition.condition_id,
@@ -285,7 +255,9 @@ const ManagementPlanAccordion: React.FC<Props> = ({
         notify.success("Attribute deleted successfully");
         queryClient.invalidateQueries({ queryKey: ["conditions", condition.condition_id] });
         queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CONDITIONSDETAIL] });
-        queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ATTRIBUTEKEYS, condition.condition_id, planId] });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEY.ATTRIBUTEKEYS, condition.condition_id, undefined, termsId],
+        });
       },
       onError: () => notify.error("Failed to delete attribute"),
     }
@@ -299,336 +271,310 @@ const ManagementPlanAccordion: React.FC<Props> = ({
       condition_attributes: {
         ...prev.condition_attributes,
         independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
-        management_plans: (prev.condition_attributes?.management_plans || []).map((plan) => {
-          if (plan.id === attributes.id) {
+        management_plans: prev.condition_attributes?.management_plans ?? [],
+        iem_terms: (prev.condition_attributes?.iem_terms || []).map((terms) => {
+          if (terms.id === attributes.id) {
             return {
-              ...plan,
-              attributes: plan.attributes.filter((attr) => attr.id !== attributeToDelete.id),
+              ...terms,
+              attributes: terms.attributes.filter((attr) => attr.id !== attributeToDelete.id),
             };
           }
-          return plan;
+          return terms;
         }),
       },
     }));
   };
 
-  const handleUpdatePlan = async (
+  const handleUpdateTerms = async (
     updates: Partial<{ name: string; is_approved: boolean }>,
     afterSuccess?: () => void
   ) => {
     try {
-      await updatePlanName(updates);
-  
-      // Locally update the condition state
+      await updateTermsName(updates);
+
       setCondition((prev) => {
-        const updatedPlans = prev.condition_attributes?.management_plans?.map((plan) =>
-          plan.id === attributes.id ? { ...plan, ...updates } : plan
+        const updatedTerms = prev.condition_attributes?.iem_terms?.map((terms) =>
+          terms.id === attributes.id ? { ...terms, ...updates } : terms
         ) || [];
-  
+
         return {
           ...prev,
           condition_attributes: {
             ...prev.condition_attributes,
             independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
-            management_plans: updatedPlans,
+            management_plans: prev.condition_attributes?.management_plans ?? [],
+            iem_terms: updatedTerms,
           },
           subconditions: prev.subconditions,
         };
       });
-  
-      afterSuccess?.();
-    } catch (err) {
-      notify.error("Failed to update management plan.");
-    }
-  };  
 
-  const handleSavePlanName = (e: React.MouseEvent) => {
+      afterSuccess?.();
+    } catch {
+      notify.error("Failed to update IEM Terms.");
+    }
+  };
+
+  const handleSaveTermsName = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    const trimmedName = planName.trim();
+    const trimmedName = termsName.trim();
     if (!trimmedName) {
-      setPlanNameError(true);
+      setTermsNameError(true);
       return;
     }
-  
-    setPlanNameError(false);
+    setTermsNameError(false);
     setConditionAttributeError(false);
-    handleUpdatePlan({ name: trimmedName }, () => setEditMode(false));
-    setIsEditingPlanName(false);
+    handleUpdateTerms({ name: trimmedName }, () => setEditMode(false));
+    setIsEditingTermsName(false);
   };
 
   useEffect(() => {
-    if (conditionAttributeDetails?.management_plans) {
+    if (conditionAttributeDetails?.iem_terms) {
       setCondition((prevCondition) => ({
         ...prevCondition,
         condition_attributes: {
           independent_attributes: prevCondition.condition_attributes?.independent_attributes ?? [],
-          management_plans: conditionAttributeDetails.management_plans,
-          iem_terms: conditionAttributeDetails.iem_terms ?? prevCondition.condition_attributes?.iem_terms ?? [],
+          management_plans: prevCondition.condition_attributes?.management_plans ?? [],
+          iem_terms: conditionAttributeDetails.iem_terms,
         },
       }));
 
-      const allPlanAttributes = conditionAttributeDetails.management_plans.flatMap(
-        (plan: ManagementPlanModel) => plan.attributes || []
+      const allTermsAttributes = conditionAttributeDetails.iem_terms.flatMap(
+        (terms: IEMTermsModel) => terms.attributes || []
       );
 
-      const consultationRequired = allPlanAttributes.some(
-        (attr: IndependentAttributeModel) =>
-          attr.key === CONDITION_KEYS.REQUIRES_CONSULTATION && attr.value === "true"
+      setIsConsultationRequired(
+        allTermsAttributes.some(
+          (attr: IndependentAttributeModel) =>
+            attr.key === CONDITION_KEYS.REQUIRES_CONSULTATION && attr.value === "true"
+        )
       );
-      setIsConsultationRequired(!!consultationRequired);
-
-      const IEMRequired = allPlanAttributes.some(
-        (attr: IndependentAttributeModel) =>
-          attr.key === CONDITION_KEYS.REQUIRES_IEM_TERMS_OF_ENGAGEMENT && attr.value === "true"
-      );
-      setIsIEMRequired(!!IEMRequired);
     }
   }, [conditionAttributeDetails, setCondition]);
 
-  const handleApprovePlan = async (e: React.MouseEvent) => {
+  const handleApproveTerms = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (isAnyRowEditing || isEditingPlanName) {
-        setShowEditingError(true);
-        return;
+    if (isAnyRowEditing || isEditingTermsName) {
+      setShowEditingError(true);
+      return;
     }
-
     setShowEditingError(false);
 
     const allAttributes = attributes.attributes || [];
-
     const isValid = validateRequiredAttributes({
-        attributes: allAttributes,
-        isConsultationRequired,
-        isIEMRequired,
-        isManagementRequired,
+      attributes: allAttributes,
+      isConsultationRequired,
+      isIEMRequired: true,
+      isManagementRequired: false,
     });
-    
-    if (!isValid) {
-        setConditionAttributeError(true);
-        return;
-    }
 
+    if (!isValid) {
+      setConditionAttributeError(true);
+      return;
+    }
     setConditionAttributeError(false);
 
     const currentApproval = attributes.is_approved;
-    await handleUpdatePlan(
+    await handleUpdateTerms(
       { is_approved: !currentApproval },
       () => {
-        const updatedPlans = condition.condition_attributes?.management_plans || [];
+        const updatedTerms = condition.condition_attributes?.iem_terms || [];
+        if (updatedTerms.length === 0) return;
 
-        if (updatedPlans.length === 0) return;
-
-        const allApproved = updatedPlans.every((plan) => plan.id === attributes.id
-          ? !currentApproval // this one just got toggled
-          : plan.is_approved
+        const allApproved = updatedTerms.every((terms) =>
+          terms.id === attributes.id ? !currentApproval : terms.is_approved
         );
 
         if (condition.is_condition_attributes_approved !== allApproved) {
-          updateConditionDetails({
-            is_condition_attributes_approved: allApproved,
-          });
+          updateConditionDetails({ is_condition_attributes_approved: allApproved });
         }
       }
     );
-
   };
 
   const handleSave = async (updatedAttribute: IndependentAttributeModel) => {
-    const updatedPlans = (condition.condition_attributes?.management_plans || []).map((plan) => {
-      if (plan.id === attributes.id) {
+    const updatedTerms = (condition.condition_attributes?.iem_terms || []).map((terms) => {
+      if (terms.id === attributes.id) {
         return {
-          ...plan,
-          attributes: plan.attributes.map((attr) =>
+          ...terms,
+          attributes: terms.attributes.map((attr) =>
             attr.id === updatedAttribute.id ? updatedAttribute : attr
           ),
         };
       }
-      return plan;
+      return terms;
     });
-  
+
     const updatedConditionAttributes = {
       independent_attributes: condition.condition_attributes?.independent_attributes || [],
-      management_plans: updatedPlans,
+      management_plans: condition.condition_attributes?.management_plans || [],
+      iem_terms: updatedTerms,
     };
-  
+
     setCondition((prev) => ({
       ...prev,
       condition_attributes: updatedConditionAttributes,
     }));
-  
+
     await updateAttributes({
-      requires_management_plan: true,
+      requires_iem_terms: true,
       condition_attribute: updatedConditionAttributes,
     });
   };
-  
+
   return (
     <Grid
-        container
-        sx={{
-            border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
-            borderRadius: 1,
-            marginBottom: "20px",
-        }}
+      container
+      sx={{
+        border: `1px solid ${BCDesignTokens.surfaceColorBorderDefault}`,
+        borderRadius: 1,
+        marginBottom: "20px",
+      }}
     >
       <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           sx={{ flexDirection: "row-reverse", justifyContent: "start", gap: 1 }}
         >
-            <Box display="flex" flexDirection="row" alignItems="center" width="100%">
-              <Box display="flex" flexDirection="column" width="76%">
-                  <Typography>Management Plan</Typography>
+          <Box display="flex" flexDirection="row" alignItems="center" width="100%">
+            <Box display="flex" flexDirection="column" width="76%">
+              <Typography>IEM Terms of Engagement</Typography>
 
-                  {editMode && expanded ? (
-                      <Box>
-                        <Box display="flex" flexDirection="row" alignItems="stretch" gap={1}>
-                          <TextField
-                              variant="outlined"
-                              fullWidth
-                              value={planName}
-                              onChange={(e) => setPlanName(e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
-                              onFocus={(e) => e.stopPropagation()}
-                              sx={{
-                              "& .MuiOutlinedInput-root": {
-                                  borderRadius: "4px",
-                                  height: "40px",
-                              },
-                              }}
-                          />
-                          {isUpdating ? (
-                              <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
-                          ) : (
-                              <Button
-                                  variant="contained"
-                                  size="medium"
-                                  onClick={handleSavePlanName}
-                                  sx={{
-                                      minWidth: "100px",
-                                      borderRadius: "4px",
-                                      backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
-                                      color: "black",
-                                      '&:hover': {
-                                          backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
-                                      },
-                                      height: "40px",
-                                      padding: "0 12px",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      whiteSpace: "nowrap",
-                                  }}
-                              >
-                                  <SaveAltIcon sx={{ color: "#255A90", mr: 1 }} fontSize="small" />
-                                  <Box sx={{ color: "#255A90", fontWeight: "bold" }}>Save</Box>
-                              </Button>
-                          )}
-                          </Box>
-                          {planNameError && (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: "row",
-                                marginTop: "-15px",
-                                color: "#CE3E39",
-                                fontSize: "14px",
-                              }}
-                            >
-                              Please enter a Management Plan Name.
-                            </Box>
-                          )}
-                      </Box>
-                  ) : (
-                  <Box display="flex" alignItems="center" gap={1}>
-                      <Typography fontWeight="bold">{planName}</Typography>
-                      {canManage && expanded && !attributes.is_approved && (
+              {editMode && expanded ? (
+                <Box>
+                  <Box display="flex" flexDirection="row" alignItems="stretch" gap={1}>
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      value={termsName}
+                      onChange={(e) => setTermsName(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: "4px",
+                          height: "40px",
+                        },
+                      }}
+                    />
+                    {isUpdating ? (
+                      <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                    ) : (
                       <Button
-                          variant="contained"
-                          size="small"
-                          onClick={(e) => {
-                              e.stopPropagation(); // Prevent accordion toggle
-                              e.preventDefault();
-                              setEditMode(true);
-                              setIsEditingPlanName(true);
-                          }}
-                          sx={{
-                          height: "28px",
+                        variant="contained"
+                        size="medium"
+                        onClick={handleSaveTermsName}
+                        sx={{
+                          minWidth: "100px",
+                          borderRadius: "4px",
                           backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
                           color: "black",
                           '&:hover': {
-                              backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                            backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
                           },
-                          }}
+                          height: "40px",
+                          padding: "0 12px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          whiteSpace: "nowrap",
+                        }}
                       >
-                          <EditIcon size={20} color="#255A90" />
-                          <Box sx={{ color: "#255A90", fontWeight: "bold" }}>Edit</Box>
+                        <SaveAltIcon sx={{ color: "#255A90", mr: 1 }} fontSize="small" />
+                        <Box sx={{ color: "#255A90", fontWeight: "bold" }}>Save</Box>
                       </Button>
-                      )}
+                    )}
                   </Box>
+                  {termsNameError && (
+                    <Box sx={{ display: "flex", flexDirection: "row", marginTop: "-15px", color: "#CE3E39", fontSize: "14px" }}>
+                      Please enter a name for IEM Terms of Engagement.
+                    </Box>
                   )}
-              </Box>
-            </Box>
-
-            <Box display="flex" flexDirection="column" width="20%" marginTop="12px" alignItems="flex-end">
-              <Chip
-                label={
-                  !attributeHasData
-                    ? "Data Entry Required"
-                    : attributes.is_approved
-                    ? "Confirmed"
-                    : "Awaiting Confirmation"
-                }
-                sx={{
-                  height: "24px",
-                  padding: "2px 8px",
-                  alignItems: "center",
-                  gap: "8px",
-                  justifyContent: "center",
-                  "& .MuiChip-label": { px: 0 },
-                  background: !attributeHasData
-                    ? "var(--support-surfaceColor-danger, #F4E1E2)"
-                    : attributes.is_approved
-                    ? "var(--support-surfaceColor-success, #F6FFF8)"
-                    : "var(--support-surfaceColor-warning, #FEF1D8)",
-                  border: !attributeHasData
-                    ? "1px solid var(--support-borderColor-danger, #CE3E39)"
-                    : attributes.is_approved
-                    ? "1px solid var(--support-borderColor-success, #42814A)"
-                    : "1px solid var(--support-borderColor-warning, #F8BB47)",
-                  color: "#2D2D2D",
-                  fontFamily: '"BC Sans"',
-                  fontWeight: 400,
-                  fontSize: "12px",
-                  lineHeight: "18px",
-                  borderRadius: "2px",
-                }}
-              />
-            </Box>
-            <Box
-              display="flex"
-              flexDirection="column"
-              width="4%"
-              marginTop="8px"
-              alignItems="flex-end"
-            >
-              {canManage && (
-                <Tooltip title="Delete Management Plan">
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent accordion toggle
-                      setIsDeleteModalOpen(true);
-                    }}
-                    size="small"
-                  >
-                    <DeleteIcon size={20} />
-                  </IconButton>
-                </Tooltip>
+                </Box>
+              ) : (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography fontWeight="bold">{termsName}</Typography>
+                  {canManage && expanded && !attributes.is_approved && (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setEditMode(true);
+                        setIsEditingTermsName(true);
+                      }}
+                      sx={{
+                        height: "28px",
+                        backgroundColor: BCDesignTokens.surfaceColorBackgroundLightGray,
+                        color: "black",
+                        '&:hover': {
+                          backgroundColor: BCDesignTokens.surfaceColorBorderDefault,
+                        },
+                      }}
+                    >
+                      <EditIcon size={20} color="#255A90" />
+                      <Box sx={{ color: "#255A90", fontWeight: "bold" }}>Edit</Box>
+                    </Button>
+                  )}
+                </Box>
               )}
             </Box>
+          </Box>
+
+          <Box display="flex" flexDirection="column" width="20%" marginTop="12px" alignItems="flex-end">
+            <Chip
+              label={
+                !attributeHasData
+                  ? "Data Entry Required"
+                  : attributes.is_approved
+                  ? "Confirmed"
+                  : "Awaiting Confirmation"
+              }
+              sx={{
+                height: "24px",
+                padding: "2px 8px",
+                alignItems: "center",
+                gap: "8px",
+                justifyContent: "center",
+                "& .MuiChip-label": { px: 0 },
+                background: !attributeHasData
+                  ? "var(--support-surfaceColor-danger, #F4E1E2)"
+                  : attributes.is_approved
+                  ? "var(--support-surfaceColor-success, #F6FFF8)"
+                  : "var(--support-surfaceColor-warning, #FEF1D8)",
+                border: !attributeHasData
+                  ? "1px solid var(--support-borderColor-danger, #CE3E39)"
+                  : attributes.is_approved
+                  ? "1px solid var(--support-borderColor-success, #42814A)"
+                  : "1px solid var(--support-borderColor-warning, #F8BB47)",
+                color: "#2D2D2D",
+                fontFamily: '"BC Sans"',
+                fontWeight: 400,
+                fontSize: "12px",
+                lineHeight: "18px",
+                borderRadius: "2px",
+              }}
+            />
+          </Box>
+          <Box display="flex" flexDirection="column" width="4%" marginTop="8px" alignItems="flex-end">
+            {canManage && (
+              <Tooltip title="Delete IEM Terms of Engagement">
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDeleteModalOpen(true);
+                  }}
+                  size="small"
+                >
+                  <DeleteIcon size={20} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         </AccordionSummary>
 
         <AccordionDetails>
@@ -668,12 +614,10 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                     onSave={handleSave}
                     onDelete={handleDeleteAttribute}
                     is_approved={attributes.is_approved}
-                    onEditModeChange={(isEditing) => {
-                        setIsAnyRowEditing(isEditing);
-                    }}
-                    isManagementRequired={isManagementRequired}
+                    onEditModeChange={(isEditing) => setIsAnyRowEditing(isEditing)}
+                    isManagementRequired={false}
                     isConsultationRequired={isConsultationRequired}
-                    isIEMRequired={isIEMRequired}
+                    isIEMRequired={true}
                   />
                 ))}
               </TableBody>
@@ -682,7 +626,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
 
           <ErrorMessage
             visible={conditionAttributeError}
-            message="Please complete all the required attribute fields before confirming the Management Plan Attributes."
+            message="Please complete all the required attribute fields before confirming the IEM Terms Attributes."
           />
 
           <Stack sx={{ mt: 2 }} direction={"row"} justifyContent="space-between" alignItems="flex-end">
@@ -692,11 +636,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                   variant="contained"
                   color="secondary"
                   size="small"
-                  sx={{
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    color: BCDesignTokens.themeGray100,
-                  }}
+                  sx={{ padding: "4px 8px", borderRadius: "4px", color: BCDesignTokens.themeGray100 }}
                   onClick={handleAddConditionAttribute}
                 >
                   <AddIcon fontSize="small" /> Add Condition Attribute
@@ -710,12 +650,12 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                   isApproved={attributes.is_approved}
                   isAnyRowEditing={isAnyRowEditing}
                   showEditingError={showEditingError}
-                  isEditingPlanName={isEditingPlanName}
-                  onApprove={handleApprovePlan}
+                  isEditingPlanName={isEditingTermsName}
+                  onApprove={handleApproveTerms}
                   label={
                     attributes.is_approved
-                      ? "Un-confirm Management Plan Attributes"
-                      : "Confirm Management Plan Attributes"
+                      ? "Un-confirm IEM Terms Attributes"
+                      : "Confirm IEM Terms Attributes"
                   }
                 />
               </Box>
@@ -756,4 +696,4 @@ const ManagementPlanAccordion: React.FC<Props> = ({
   );
 };
 
-export default ManagementPlanAccordion;
+export default IEMTermsAccordion;

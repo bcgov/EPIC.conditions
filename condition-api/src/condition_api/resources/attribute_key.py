@@ -53,8 +53,10 @@ class AttributeKeyResource(Resource):
     def get(condition_id):
         """Fetch attribute keys."""
         management_plan_id = request.args.get("management_plan_id", type=int)
+        iem_terms_id = request.args.get("iem_terms_id", type=int)
         try:
-            attributes = AttributeKeyService.get_all_attributes(condition_id, management_plan_id)
+            attributes = AttributeKeyService.get_all_attributes(
+                condition_id, management_plan_id, iem_terms_id)
             if not attributes:
                 return []
             # Instantiate the schema

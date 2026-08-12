@@ -25,7 +25,10 @@ from .document import Document
 from .document_category import DocumentCategory
 from .document_type import DocumentType
 from .document_type_category import DocumentTypeCategory
+from .iem_terms import IEMTerms
 from .management_plan import ManagementPlan
+from .report import Report
+from .report_submission import ReportSubmission
 from .project import Project
 from .staff_user import StaffUser
 from .subcondition import Subcondition
