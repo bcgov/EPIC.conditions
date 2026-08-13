@@ -27,8 +27,8 @@ export interface ReportSubmissionModel {
   condition_subsection?: string;
   report_submission_type?: string;
   is_approved: boolean;
-  linked_management_plan_id?: number;
-  report_title?: string;
+  linked_management_plan_id?: number | null;
+  report_title?: string | null;
 }
 
 export interface ReportModel {
