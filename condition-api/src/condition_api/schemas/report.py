@@ -21,6 +21,8 @@ class ReportSubmissionSchema(BaseSchema):
     condition_subsection = fields.Str(allow_none=True)
     report_submission_type = fields.Str(allow_none=True)
     is_approved = fields.Bool()
+    linked_management_plan_id = fields.Int(allow_none=True)
+    report_title = fields.Str(allow_none=True)
 
 
 class ReportSchema(BaseSchema):
@@ -30,6 +32,4 @@ class ReportSchema(BaseSchema):
     condition_id = fields.Int()
     report_type = fields.Str()
     name = fields.Str(allow_none=True)
-    linked_management_plan_id = fields.Int(allow_none=True)
-    report_title = fields.Str(allow_none=True)
     submissions = fields.List(fields.Nested(ReportSubmissionSchema))

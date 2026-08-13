@@ -28,7 +28,6 @@ import { ManagementPlanModel, ReportSubmissionModel } from "@/models/ConditionAt
 import DeleteConfirmationModal from "../ManagementPlan/DeleteConfirmationModal";
 import {
   useAddReportSubmission,
-  usePatchReport,
   usePatchReportSubmission,
   useRemoveReportSubmission,
 } from "@/hooks/api/useReport";
@@ -56,6 +55,8 @@ type EditValues = {
   timing: string;
   condition_subsection: string;
   report_submission_type: string;
+  linked_management_plan_id?: number;
+  report_title: string;
 };
 
 const toEditValues = (row: PhaseRow): EditValues => ({
@@ -63,6 +64,8 @@ const toEditValues = (row: PhaseRow): EditValues => ({
   timing: row.timing ?? "",
   condition_subsection: row.condition_subsection ?? "",
   report_submission_type: row.report_submission_type ?? "",
+  linked_management_plan_id: row.linked_management_plan_id,
+  report_title: row.report_title ?? "",
 });
 
 type FrequencyStyle = { borderColor: string; background: string };
@@ -130,11 +133,6 @@ const SubsectionTypeBadge = ({ subsection, type }: { subsection?: string; type?:
   </Box>
 );
 
-type ReportEditValues = {
-  linked_management_plan_id?: number;
-  report_title?: string;
-};
-
 type Props = {
   phase: string;
   rows: PhaseRow[];
@@ -149,7 +147,6 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
   const [editMode, setEditMode] = useState(false);
   const [editMap, setEditMap] = useState<Record<number, EditValues>>({});
   const [newSubs, setNewSubs] = useState<Record<string, EditValues | null>>({});
-  const [reportEditMap, setReportEditMap] = useState<Record<number, ReportEditValues>>({});
   const [confirmRemoveType, setConfirmRemoveType] = useState<string | null>(null);
   const [confirmRemovePhase, setConfirmRemovePhase] = useState(false);
   const [freqErrors, setFreqErrors] = useState<Record<string, boolean>>({});
@@ -162,24 +159,11 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
   const { mutateAsync: patchSubmission, isPending: saving } = usePatchReportSubmission(conditionId);
   const { mutateAsync: removeSubmission } = useRemoveReportSubmission(conditionId);
   const { mutateAsync: addSubmission } = useAddReportSubmission(conditionId);
-  const { mutateAsync: patchReport } = usePatchReport();
 
   const enterEdit = () => {
     const map: Record<number, EditValues> = {};
     rows.forEach((r) => { map[r.id] = toEditValues(r); });
-    const rMap: Record<number, ReportEditValues> = {};
-    rows.forEach((r) => {
-      if (!rMap[r.reportId]) {
-        rMap[r.reportId] = {
-          // Prefer fresh row data; fall back to previously-saved reportEditMap values
-          // (rows may be stale if refetch hasn't completed yet after the last save)
-          linked_management_plan_id: r.linked_management_plan_id ?? reportEditMap[r.reportId]?.linked_management_plan_id,
-          report_title: r.report_title ?? reportEditMap[r.reportId]?.report_title,
-        };
-      }
-    });
     setEditMap(map);
-    setReportEditMap(rMap);
     setNewSubs({});
     setEditMode(true);
     setExpanded(true);
@@ -189,7 +173,6 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
     setEditMode(false);
     setEditMap({});
     setNewSubs({});
-    setReportEditMap({});
     setFreqErrors({});
   };
 
@@ -209,14 +192,6 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
     try {
       await Promise.all(
         rows.map((row) => patchSubmission({ submissionId: row.id, payload: editMap[row.id] }))
-      );
-      // Patch report-level fields for MP rows (deduplicated by reportId)
-      const mpReportIds = [...new Set(rows.filter((r) => r.reportType === MP_TYPE).map((r) => r.reportId))];
-      await Promise.all(
-        mpReportIds.map((reportId) => {
-          const payload = reportEditMap[reportId] ?? {};
-          return patchReport({ reportId, payload });
-        })
       );
       await Promise.all(
         Object.entries(newSubs).map(([reportType, newSub]) => {
@@ -277,7 +252,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
     setNewSubs((prev) => ({
       ...prev,
       [reportType]: {
-        ...(prev[reportType] ?? { frequency: "", timing: "", condition_subsection: "", report_submission_type: "" }),
+        ...(prev[reportType] ?? { frequency: "", timing: "", condition_subsection: "", report_submission_type: "", linked_management_plan_id: undefined, report_title: "" }),
         [key]: value,
       },
     }));
@@ -554,11 +529,11 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                           <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
                             {editMode ? (
                               <Select
-                                value={reportEditMap[row.reportId]?.linked_management_plan_id ?? -1}
-                                onChange={(e) => setReportEditMap((prev) => ({
+                                value={ev?.linked_management_plan_id ?? -1}
+                                onChange={(e) => setEditMap((prev) => ({
                                   ...prev,
-                                  [row.reportId]: {
-                                    ...prev[row.reportId],
+                                  [row.id]: {
+                                    ...prev[row.id],
                                     linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
                                   },
                                 }))}
@@ -573,7 +548,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                             ) : (
                               <Typography fontSize="13px">
                                 {(() => {
-                                  const planId = reportEditMap[row.reportId]?.linked_management_plan_id ?? row.linked_management_plan_id;
+                                  const planId = row.linked_management_plan_id;
                                   if (!planId) return "—";
                                   const idx = managementPlans.findIndex((mp) => Number(mp.id) === Number(planId));
                                   if (idx < 0) return "—";
@@ -586,11 +561,8 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                           <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
                             {editMode ? (
                               <TextField
-                                value={reportEditMap[row.reportId]?.report_title ?? ""}
-                                onChange={(e) => setReportEditMap((prev) => ({
-                                  ...prev,
-                                  [row.reportId]: { ...prev[row.reportId], report_title: e.target.value },
-                                }))}
+                                value={ev?.report_title ?? ""}
+                                onChange={(e) => setEdit(row.id, "report_title", e.target.value)}
                                 size="small"
                                 placeholder="Report title..."
                                 fullWidth
@@ -706,8 +678,35 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                     </TableCell>
                     {isMP && (
                       <>
-                        <TableCell />
-                        <TableCell />
+                        <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                          <Select
+                            value={newSubs[reportType]!.linked_management_plan_id ?? -1}
+                            onChange={(e) => setNewSubs((prev) => ({
+                              ...prev,
+                              [reportType]: {
+                                ...prev[reportType]!,
+                                linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                              },
+                            }))}
+                            size="small"
+                            fullWidth
+                          >
+                            <MenuItem value={-1}><em>Select management plan...</em></MenuItem>
+                            {managementPlans.map((mp, idx) => (
+                              <MenuItem key={mp.id} value={Number(mp.id)}>{mp.name || `Management Plan ${idx + 1}`}</MenuItem>
+                            ))}
+                          </Select>
+                        </TableCell>
+                        <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                          <TextField
+                            value={newSubs[reportType]!.report_title ?? ""}
+                            onChange={(e) => setNewField(reportType, "report_title", e.target.value)}
+                            size="small"
+                            placeholder="Report title..."
+                            fullWidth
+                            sx={{ mt: 3 }}
+                          />
+                        </TableCell>
                       </>
                     )}
                     {!isCN && !isMP && (
@@ -782,7 +781,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                   disableRipple
                   onClick={() => setNewSubs((prev) => ({
                     ...prev,
-                    [reportType]: { frequency: "", timing: "", condition_subsection: "", report_submission_type: "" },
+                    [reportType]: { frequency: "", timing: "", condition_subsection: "", report_submission_type: "", linked_management_plan_id: undefined, report_title: "" },
                   }))}
                   disabled={newSubs[reportType] !== null && newSubs[reportType] !== undefined}
                   startIcon={<AddIcon sx={{ fontSize: "13px !important" }} />}

@@ -16,12 +16,6 @@ class Report(BaseModel):
     condition_id = Column(Integer, ForeignKey('condition.conditions.id', ondelete='CASCADE'), nullable=False)
     report_type = Column(String, nullable=False)
     name = Column(Text, nullable=True)
-    linked_management_plan_id = Column(
-        Integer,
-        ForeignKey('condition.management_plans.id', ondelete='SET NULL'),
-        nullable=True
-    )
-    report_title = Column(Text, nullable=True)
 
     submissions = relationship('ReportSubmission', back_populates='report', cascade='all, delete-orphan')
 
