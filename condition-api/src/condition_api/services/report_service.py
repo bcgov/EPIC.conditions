@@ -16,6 +16,8 @@ def _serialize_submission(s):
         'condition_subsection': s.condition_subsection,
         'report_submission_type': s.report_submission_type,
         'is_approved': s.is_approved or False,
+        'linked_management_plan_id': s.linked_management_plan_id,
+        'report_title': s.report_title,
     }
 
 
@@ -25,8 +27,6 @@ def _serialize_report(report):
         'condition_id': report.condition_id,
         'report_type': report.report_type,
         'name': report.name,
-        'linked_management_plan_id': report.linked_management_plan_id,
-        'report_title': report.report_title,
         'submissions': [_serialize_submission(s) for s in report.submissions],
     }
 
@@ -47,11 +47,12 @@ class ReportService:
             condition_id=condition_id,
             report_type=payload.get('report_type', ''),
             name=payload.get('name'),
-            linked_management_plan_id=payload.get('linked_management_plan_id'),
-            report_title=payload.get('report_title'),
         )
         db.session.add(report)
         db.session.flush()
+
+        linked_management_plan_id = payload.get('linked_management_plan_id')
+        report_title = payload.get('report_title')
 
         for sub_data in payload.get('submissions', []):
             phases = sub_data.get('phases') or [sub_data.get('phase', 'All Phases')]
@@ -64,6 +65,8 @@ class ReportService:
                     condition_subsection=sub_data.get('condition_subsection'),
                     report_submission_type=sub_data.get('report_submission_type'),
                     is_approved=False,
+                    linked_management_plan_id=linked_management_plan_id,
+                    report_title=report_title,
                 ))
 
         condition = Condition.query.get(condition_id)
@@ -98,7 +101,7 @@ class ReportService:
         if not report:
             raise ValueError("Report not found.")
 
-        for field in ['report_type', 'name', 'linked_management_plan_id', 'report_title']:
+        for field in ['report_type', 'name']:
             if field in payload:
                 setattr(report, field, payload[field])
 
@@ -113,7 +116,8 @@ class ReportService:
         if not submission:
             raise ValueError("Report submission not found.")
 
-        for field in ['phase', 'frequency', 'timing', 'condition_subsection', 'report_submission_type', 'is_approved']:
+        for field in ['phase', 'frequency', 'timing', 'condition_subsection', 'report_submission_type',
+                      'is_approved', 'linked_management_plan_id', 'report_title']:
             if field in payload:
                 setattr(submission, field, payload[field])
 

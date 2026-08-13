@@ -61,18 +61,16 @@ const ReportsSection = memo(({ condition, setCondition }: Props) => {
 
   const phaseMap: Record<string, PhaseRow[]> = {};
   reports.forEach((report: ReportModel) => {
-    const linkedPlan = managementPlans.find(
-      (mp) => String(mp.id) === String(report.linked_management_plan_id)
-    );
     (report.submissions || []).forEach((sub) => {
       if (!phaseMap[sub.phase]) phaseMap[sub.phase] = [];
+      const linkedPlan = managementPlans.find(
+        (mp) => String(mp.id) === String(sub.linked_management_plan_id)
+      );
       phaseMap[sub.phase].push({
         ...sub,
         reportType: report.report_type,
         reportId: report.id,
-        linked_management_plan_id: report.linked_management_plan_id,
         linked_management_plan_name: linkedPlan?.name,
-        report_title: report.report_title,
       });
     });
   });

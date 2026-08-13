@@ -20,6 +20,12 @@ class ReportSubmission(BaseModel):
     condition_subsection = Column(Text, nullable=True)
     report_submission_type = Column(String, nullable=True)
     is_approved = Column(Boolean, nullable=True, server_default=text('false'))
+    linked_management_plan_id = Column(
+        Integer,
+        ForeignKey('condition.management_plans.id', ondelete='SET NULL'),
+        nullable=True
+    )
+    report_title = Column(Text, nullable=True)
 
     report = relationship('Report', back_populates='submissions')
 
