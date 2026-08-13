@@ -45,9 +45,7 @@ const TIMING_PLACEHOLDER = "e.g. within 30 days after the issuance of this Certi
 export type PhaseRow = ReportSubmissionModel & {
   reportType: string;
   reportId: number;
-  linked_management_plan_id?: number;
   linked_management_plan_name?: string;
-  report_title?: string;
 };
 
 type EditValues = {
@@ -55,7 +53,7 @@ type EditValues = {
   timing: string;
   condition_subsection: string;
   report_submission_type: string;
-  linked_management_plan_id?: number;
+  linked_management_plan_id: number | null;
   report_title: string;
 };
 
@@ -64,7 +62,7 @@ const toEditValues = (row: PhaseRow): EditValues => ({
   timing: row.timing ?? "",
   condition_subsection: row.condition_subsection ?? "",
   report_submission_type: row.report_submission_type ?? "",
-  linked_management_plan_id: row.linked_management_plan_id,
+  linked_management_plan_id: row.linked_management_plan_id ?? null,
   report_title: row.report_title ?? "",
 });
 
@@ -252,7 +250,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
     setNewSubs((prev) => ({
       ...prev,
       [reportType]: {
-        ...(prev[reportType] ?? { frequency: "", timing: "", condition_subsection: "", report_submission_type: "", linked_management_plan_id: undefined, report_title: "" }),
+        ...(prev[reportType] ?? { frequency: "", timing: "", condition_subsection: "", report_submission_type: "", linked_management_plan_id: null, report_title: "" }),
         [key]: value,
       },
     }));
@@ -534,7 +532,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                                   ...prev,
                                   [row.id]: {
                                     ...prev[row.id],
-                                    linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                                    linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : null,
                                   },
                                 }))}
                                 size="small"
@@ -685,7 +683,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                               ...prev,
                               [reportType]: {
                                 ...prev[reportType]!,
-                                linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                                linked_management_plan_id: Number(e.target.value) > 0 ? Number(e.target.value) : null,
                               },
                             }))}
                             size="small"
@@ -781,7 +779,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                   disableRipple
                   onClick={() => setNewSubs((prev) => ({
                     ...prev,
-                    [reportType]: { frequency: "", timing: "", condition_subsection: "", report_submission_type: "", linked_management_plan_id: undefined, report_title: "" },
+                    [reportType]: { frequency: "", timing: "", condition_subsection: "", report_submission_type: "", linked_management_plan_id: null, report_title: "" },
                   }))}
                   disabled={newSubs[reportType] !== null && newSubs[reportType] !== undefined}
                   startIcon={<AddIcon sx={{ fontSize: "13px !important" }} />}
