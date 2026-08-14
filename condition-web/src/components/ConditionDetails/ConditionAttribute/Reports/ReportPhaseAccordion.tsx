@@ -148,6 +148,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
   const [confirmRemoveType, setConfirmRemoveType] = useState<string | null>(null);
   const [confirmRemovePhase, setConfirmRemovePhase] = useState(false);
   const [freqErrors, setFreqErrors] = useState<Record<string, boolean>>({});
+  const [confirmError, setConfirmError] = useState(false);
 
   const allApproved = rows.length > 0 && rows.every((r) => r.is_approved);
   const isPSN = rows.some((r) => r.reportType === PSN_TYPE);
@@ -231,6 +232,11 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
   };
 
   const handleApprove = async () => {
+    if (!allApproved && hasDataEntryRequired) {
+      setConfirmError(true);
+      return;
+    }
+    setConfirmError(false);
     const next = !allApproved;
     try {
       await Promise.all(
@@ -811,15 +817,20 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
 
         {/* Approve Report button (hidden in edit mode) */}
         {!editMode && canManage && (
-          <Box display="flex" justifyContent="flex-end" px={2} pb={2} pt={1}>
+          <Box display="flex" flexDirection="column" alignItems="flex-end" px={2} pb={2} pt={1} gap={0.5}>
             <Button
               variant="contained"
               size="small"
               onClick={handleApprove}
-              sx={{ textTransform: "none", backgroundColor: allApproved ? "#555" : undefined }}
+              sx={{ textTransform: "none" }}
             >
               {allApproved ? "Un-confirm Report" : "Confirm Report"}
             </Button>
+            {confirmError && (
+              <Typography fontSize="12px" color="error">
+                Select a management plan before confirming
+              </Typography>
+            )}
           </Box>
         )}
       </AccordionDetails>
