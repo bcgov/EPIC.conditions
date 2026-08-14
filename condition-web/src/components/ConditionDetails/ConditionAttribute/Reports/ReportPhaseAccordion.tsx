@@ -596,6 +596,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                                   value={ev?.report_submission_type ?? ""}
                                   onChange={(e) => setEdit(row.id, "report_submission_type", e.target.value)}
                                   size="small"
+                                  displayEmpty
                                   sx={{ width: 220 }}
                                 >
                                   <MenuItem value=""><em>Select...</em></MenuItem>
@@ -728,6 +729,7 @@ const ReportPhaseAccordion: React.FC<Props> = ({ phase, rows, conditionId, manag
                               value={newSubs[reportType]!.report_submission_type}
                               onChange={(e) => setNewField(reportType, "report_submission_type", e.target.value)}
                               size="small"
+                              displayEmpty
                               sx={{ width: 220 }}
                             >
                               <MenuItem value=""><em>Select type...</em></MenuItem>

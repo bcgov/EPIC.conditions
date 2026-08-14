@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import {
   Box,
   Button,
@@ -8,9 +8,11 @@ import {
   FormControlLabel,
   FormGroup,
   FormHelperText,
+  IconButton,
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -71,14 +73,16 @@ type Props = {
   onChange?: (values: ReportFormValues, isValid: boolean) => void;
 };
 
-const AddReportForm: React.FC<Props> = ({
+export type AddReportFormHandle = { validate: () => boolean };
+
+const AddReportForm = forwardRef<AddReportFormHandle, Props>(({
   managementPlans = [],
   onSave,
   onCancel,
   saving,
   embedded = false,
   onChange,
-}) => {
+}, ref) => {
   const [form, setForm] = useState<ReportFormValues>(defaultForm());
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -102,6 +106,8 @@ const AddReportForm: React.FC<Props> = ({
     setErrors(next);
     return Object.keys(next).length === 0;
   };
+
+  useImperativeHandle(ref, () => ({ validate }));
 
   const handleSave = () => {
     if (validate()) onSave?.(form);
@@ -203,10 +209,12 @@ const AddReportForm: React.FC<Props> = ({
       {form.submissions.map((sub, i) => (
         <Box key={i} mb={2}>
           {form.submissions.length > 1 && (
-            <Box display="flex" justifyContent="flex-end" mb={0.5}>
-              <Button size="small" color="error" startIcon={<DeleteIcon />} onClick={() => removeSubmission(i)}>
-                Remove
-              </Button>
+            <Box display="flex" justifyContent="flex-end" mt={3} mb={0.5}>
+              <Tooltip title="Remove submission requirement">
+                <IconButton size="small" onClick={() => removeSubmission(i)}>
+                  <DeleteIcon size={20} />
+                </IconButton>
+              </Tooltip>
             </Box>
           )}
 
@@ -326,6 +334,6 @@ const AddReportForm: React.FC<Props> = ({
       )}
     </Box>
   );
-};
+});
 
 export default AddReportForm;

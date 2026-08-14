@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -10,11 +10,12 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import { useQueryClient } from "@tanstack/react-query";
 import ManagementPlanSection from "./ManagementPlan/ManagementPlanSection";
 import IEMTermsSection from "./IEMTerms/IEMTermsSection";
 import ReportsSection from "./Reports/ReportsSection";
-import AddReportForm, { ReportFormValues } from "./Reports/AddReportForm";
+import AddReportForm, { AddReportFormHandle, ReportFormValues } from "./Reports/AddReportForm";
 import { ConditionModel } from "@/models/Condition";
 import { IEMTermsModel, ManagementPlanModel } from "@/models/ConditionAttribute";
 import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
@@ -53,8 +54,10 @@ const ConditionAttribute = memo(
 
     const [activeTypes, setActiveTypes] = useState<SubmissionType[]>(() => {
       const init: SubmissionType[] = [];
-      if (condition.requires_management_plan) init.push("management_plan");
-      if (condition.requires_iem_terms) init.push("iem_terms_of_engagement");
+      const planCount = condition.condition_attributes?.management_plans?.length ?? 0;
+      if (condition.requires_management_plan && planCount > 0) init.push("management_plan");
+      const termsCount = condition.condition_attributes?.iem_terms?.length ?? 0;
+      if (condition.requires_iem_terms && termsCount > 0) init.push("iem_terms_of_engagement");
       if (condition.requires_report) init.push("report");
       return init;
     });
@@ -63,6 +66,7 @@ const ConditionAttribute = memo(
     const [pendingTypes, setPendingTypes] = useState<SubmissionType[]>([]);
     const [reportFormValues, setReportFormValues] = useState<ReportFormValues | null>(null);
     const [reportFormValid, setReportFormValid] = useState(false);
+    const reportFormRef = useRef<AddReportFormHandle>(null);
 
     useEffect(() => {
       const planCount = condition.condition_attributes?.management_plans?.length ?? 0;
@@ -74,12 +78,13 @@ const ConditionAttribute = memo(
     }, [condition.condition_attributes?.management_plans]);
 
     useEffect(() => {
-      if (condition.requires_iem_terms) {
+      const termsCount = condition.condition_attributes?.iem_terms?.length ?? 0;
+      if (condition.requires_iem_terms && termsCount > 0) {
         setActiveTypes((prev) => prev.includes("iem_terms_of_engagement") ? prev : [...prev, "iem_terms_of_engagement"]);
       } else {
         setActiveTypes((prev) => prev.filter((t) => t !== "iem_terms_of_engagement"));
       }
-    }, [condition.requires_iem_terms]);
+    }, [condition.requires_iem_terms, condition.condition_attributes?.iem_terms]);
 
     useEffect(() => {
       if (condition.requires_report) {
@@ -88,6 +93,11 @@ const ConditionAttribute = memo(
         setActiveTypes((prev) => prev.filter((t) => t !== "report"));
       }
     }, [condition.requires_report]);
+
+    const handleReportsEmpty = useCallback(() => {
+      setActiveTypes((prev) => prev.filter((t) => t !== "report"));
+      setCondition((prev) => ({ ...prev, requires_report: false }));
+    }, [setCondition]);
 
     const { mutateAsync: updateAttributes } = useUpdateConditionAttributeDetails(
       condition.condition_id
@@ -130,6 +140,12 @@ const ConditionAttribute = memo(
       const addingMP = pendingTypes.includes("management_plan");
       const addingIEM = pendingTypes.includes("iem_terms_of_engagement");
       const addingReport = pendingTypes.includes("report");
+
+      // Validate report form before any side effects so the form stays visible on error
+      if (addingReport && !reportFormValid) {
+        reportFormRef.current?.validate();
+        return;
+      }
 
       // Add non-report types immediately; "report" is added only after successful creation
       setActiveTypes((prev) => {
@@ -257,7 +273,7 @@ const ConditionAttribute = memo(
         }
       }
 
-      if (addingReport && reportFormValues) {
+      if (addingReport) {
         try {
           await createReport(reportFormValues as never);
           setCondition((prev) => ({ ...prev, requires_report: true }));
@@ -273,10 +289,7 @@ const ConditionAttribute = memo(
     const canAddMore = canManage;
     const hasNoTypes = activeTypes.length === 0;
 
-    const isConfirmDisabled =
-      pendingTypes.length === 0 ||
-      creatingReport ||
-      (pendingTypes.includes("report") && !reportFormValid);
+    const isConfirmDisabled = pendingTypes.length === 0 || creatingReport;
 
     const submissionTypeForm = (
       <>
@@ -313,6 +326,7 @@ const ConditionAttribute = memo(
                 key={type}
                 label={labelFor(type)}
                 onDelete={() => handleRemovePending(type)}
+                deleteIcon={<CloseIcon />}
                 sx={{
                   backgroundColor: "#e8f4fd",
                   border: "1px solid",
@@ -323,6 +337,7 @@ const ConditionAttribute = memo(
                   "& .MuiChip-deleteIcon": {
                     color: "primary.main",
                     fontSize: "16px",
+                    marginTop: "3px",
                   },
                 }}
               />
@@ -341,6 +356,7 @@ const ConditionAttribute = memo(
             }}
           >
             <AddReportForm
+              ref={reportFormRef}
               embedded
               managementPlans={condition.condition_attributes?.management_plans ?? []}
               onChange={(values, isValid) => {
@@ -427,7 +443,7 @@ const ConditionAttribute = memo(
             {activeTypes.includes("report") && (
               <ReportsSection
                 condition={condition}
-                setCondition={setCondition}
+                onEmpty={handleReportsEmpty}
               />
             )}
 
