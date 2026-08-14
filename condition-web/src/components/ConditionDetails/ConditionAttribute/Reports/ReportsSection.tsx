@@ -17,10 +17,10 @@ import DeleteConfirmationModal from "../ManagementPlan/DeleteConfirmationModal";
 
 type Props = {
   condition: ConditionModel;
-  setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
+  onEmpty: () => void;
 };
 
-const ReportsSection = memo(({ condition, setCondition }: Props) => {
+const ReportsSection = memo(({ condition, onEmpty }: Props) => {
   const [deletingReport, setDeletingReport] = useState<ReportModel | null>(null);
 
   const conditionId = condition.condition_id;
@@ -40,15 +40,14 @@ const ReportsSection = memo(({ condition, setCondition }: Props) => {
     onError: () => {},
   });
 
-  // Auto-delete reports that have no submissions left (e.g. after all phases removed).
-  // Once all reports are gone, clear requires_report so the parent hides this section.
+  // Auto-delete reports that have no submissions left and hide the section when none remain.
   useEffect(() => {
     if (isLoading) return;
-    const empty = reports.filter((r: ReportModel) => (r.submissions ?? []).length === 0);
-    if (empty.length > 0) {
-      empty.forEach((r: ReportModel) => silentRemoveReport(r.id));
-    } else if (reports.length === 0) {
-      setCondition((prev) => ({ ...prev, requires_report: false }));
+    const emptyReports = reports.filter((r: ReportModel) => (r.submissions ?? []).length === 0);
+    emptyReports.forEach((r: ReportModel) => silentRemoveReport(r.id));
+    const hasActiveReports = reports.some((r: ReportModel) => (r.submissions ?? []).length > 0);
+    if (!hasActiveReports) {
+      onEmpty();
     }
   }, [reports, isLoading]);
 

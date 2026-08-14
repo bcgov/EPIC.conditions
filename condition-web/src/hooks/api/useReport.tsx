@@ -29,7 +29,7 @@ export const useCreateReport = (conditionId?: number, options?: Options) => {
         data: payload,
       });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [REPORTS_KEY, conditionId] }),
+    onSuccess: () => queryClient.removeQueries({ queryKey: [REPORTS_KEY, conditionId] }),
     ...options,
   });
 };
