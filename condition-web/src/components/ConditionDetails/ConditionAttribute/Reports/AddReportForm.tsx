@@ -269,8 +269,6 @@ const AddReportForm: React.FC<Props> = ({
               placeholder={TIMING_PLACEHOLDER}
               size="small"
               sx={{ width: fieldWidth }}
-              multiline
-              minRows={1}
             />
           </Box>
 
