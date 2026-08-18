@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import {
   Box,
   CircularProgress,
@@ -49,7 +49,7 @@ const ReportsSection = memo(({ condition, onEmpty }: Props) => {
     if (!hasActiveReports) {
       onEmpty();
     }
-  }, [reports, isLoading]);
+  }, [reports, isLoading, onEmpty, silentRemoveReport]);
 
   const confirmDelete = async () => {
     if (deletingReport) await removeReport(deletingReport.id);

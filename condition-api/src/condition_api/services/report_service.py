@@ -6,18 +6,18 @@ from condition_api.models.report import Report
 from condition_api.models.report_submission import ReportSubmission
 
 
-def _serialize_submission(s):
+def _serialize_submission(submission):
     return {
-        'id': s.id,
-        'report_id': s.report_id,
-        'phase': s.phase,
-        'frequency': s.frequency,
-        'timing': s.timing,
-        'condition_subsection': s.condition_subsection,
-        'report_submission_type': s.report_submission_type,
-        'is_approved': s.is_approved or False,
-        'linked_management_plan_id': s.linked_management_plan_id,
-        'report_title': s.report_title,
+        'id': submission.id,
+        'report_id': submission.report_id,
+        'phase': submission.phase,
+        'frequency': submission.frequency,
+        'timing': submission.timing,
+        'condition_subsection': submission.condition_subsection,
+        'report_submission_type': submission.report_submission_type,
+        'is_approved': submission.is_approved or False,
+        'linked_management_plan_id': submission.linked_management_plan_id,
+        'report_title': submission.report_title,
     }
 
 
