@@ -52,6 +52,7 @@ type Props = {
   condition: ConditionModel;
   setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
   onDelete?: (planId: string) => void;
+  hasLinkedReport?: boolean;
 };
 
 const ManagementPlanAccordion: React.FC<Props> = ({
@@ -59,7 +60,8 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     title,
     condition,
     setCondition,
-    onDelete
+    onDelete,
+    hasLinkedReport = false,
 }) => {
   const queryClient = useQueryClient();
   const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
@@ -751,6 +753,11 @@ const ManagementPlanAccordion: React.FC<Props> = ({
           onDelete?.(attributes.id);
           setIsDeleteModalOpen(false);
         }}
+        description={
+          hasLinkedReport
+            ? "This Management Plan has associated Reports. Deleting it will also permanently delete all linked Reports and their submission requirements.<br/><br/>Are you sure you wish to proceed?"
+            : undefined
+        }
       />
     </Grid>
   );

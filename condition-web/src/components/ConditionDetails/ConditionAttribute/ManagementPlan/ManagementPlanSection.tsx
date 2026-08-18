@@ -1,10 +1,13 @@
 import React, { memo } from "react";
 import { Box, Typography } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import ManagementPlanAccordion from "./ManagementPlanAccordion";
 import { ConditionModel } from "@/models/Condition";
 import { useRemoveManagementPlan } from "@/hooks/api/useManagementPlan";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
+import { useGetReports } from "@/hooks/api/useReport";
+import { ReportModel } from "@/models/ConditionAttribute";
 
 type ManagementPlanSectionProps = {
   condition: ConditionModel;
@@ -13,8 +16,19 @@ type ManagementPlanSectionProps = {
 
 const ManagementPlanSection = memo(
   ({ condition, setCondition }: ManagementPlanSectionProps) => {
+    const queryClient = useQueryClient();
     const managementPlans =
       condition?.condition_attributes?.management_plans || [];
+
+    const { data: reports = [] } = useGetReports(condition.condition_id);
+
+    // Build a set of plan IDs that have at least one linked report submission
+    const linkedPlanIds = new Set<string>(
+      (reports as ReportModel[])
+        .flatMap((r) => r.submissions ?? [])
+        .filter((s) => s.linked_management_plan_id != null)
+        .map((s) => String(s.linked_management_plan_id))
+    );
 
     const { mutateAsync: removeManagementPlan } = useRemoveManagementPlan({
       onSuccess: () => notify.success("Management plan deleted"),
@@ -29,6 +43,8 @@ const ManagementPlanSection = memo(
 
     const handleDeletePlan = async (planId: string) => {
       await removeManagementPlan(planId);
+      // Invalidate reports cache — linked reports were cascade-deleted on the backend
+      queryClient.removeQueries({ queryKey: ["reports", condition.condition_id] });
       setCondition((prev) => {
         const remainingPlans =
           prev.condition_attributes?.management_plans?.filter(
@@ -98,6 +114,7 @@ const ManagementPlanSection = memo(
               condition={condition}
               setCondition={setCondition}
               onDelete={handleDeletePlan}
+              hasLinkedReport={linkedPlanIds.has(String(plan.id))}
             />
           ))}
         </Box>

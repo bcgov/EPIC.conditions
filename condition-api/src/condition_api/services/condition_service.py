@@ -73,7 +73,7 @@ class ConditionService:
         condition = ConditionService._build_condition_structure(condition_rows)
 
         # Fetch and attach condition attributes (includes management plans, IEM terms, independent)
-        condition["condition_attributes"] = ConditionAttributeService._fetch_all_attributes(
+        condition["condition_attributes"] = ConditionAttributeService.fetch_all_attributes(
             condition_id)
 
         # Extract static document metadata from the first row

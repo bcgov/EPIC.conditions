@@ -39,12 +39,14 @@ const PSN_TYPE = "Project Status Notification";
 const CN_TYPE = "Compliance Notification";
 const CSR_TYPE = "Compliance Self-Report";
 const MP_TYPE = "Management Plan Associated Report";
+const MT_TYPE = "Monitoring/Technical Report";
 
 export const getFrequencies = (reportType: string) => {
   if (reportType === PSN_TYPE) return PSN_FREQUENCIES;
   if (reportType === CN_TYPE) return COMPLIANCE_NOTIFICATION_FREQUENCIES;
   if (reportType === CSR_TYPE) return COMPLIANCE_SELF_REPORT_FREQUENCIES;
   if (reportType === MP_TYPE) return MANAGEMENT_PLAN_FREQUENCIES;
+  if (reportType === MT_TYPE) return MONITORING_TECHNICAL_FREQUENCIES;
   return REPORT_FREQUENCIES;
 };
 
@@ -61,6 +63,14 @@ export const COMPLIANCE_SELF_REPORT_FREQUENCIES = [
   { value: "One Time", label: "One Time" },
   { value: "Annually", label: "Annually" },
   { value: "Quarterly", label: "Quarterly" },
+];
+
+export const MONITORING_TECHNICAL_FREQUENCIES = [
+  { value: "As Needed", label: "As Needed" },
+  { value: "One Time", label: "One Time" },
+  { value: "Annually", label: "Annually" },
+  { value: "Quarterly", label: "Quarterly" },
+  { value: "Other", label: "Other" },
 ];
 
 export const COMPLIANCE_NOTIFICATION_FREQUENCIES = [

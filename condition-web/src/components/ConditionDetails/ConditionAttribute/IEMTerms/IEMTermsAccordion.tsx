@@ -129,7 +129,7 @@ const IEMTermsAccordion: React.FC<Props> = ({
     }
 
     const formatArray = (arr: string[]) =>
-      `{${arr.filter((item) => item.trim() !== "").map((item) => `"${item.replace(/"/g, '\\"')}"`).join(",")}}`;
+      `{${arr.filter((item) => item.trim() !== "").map((item) => `"${item.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(",")}}`;
 
     const newAttrValue =
       selectedAttribute === CONDITION_KEYS.PARTIES_REQUIRED

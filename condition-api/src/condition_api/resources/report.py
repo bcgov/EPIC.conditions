@@ -7,7 +7,6 @@ from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
-from condition_api.models.report import Report
 from condition_api.models.report_submission import ReportSubmission
 from condition_api.schemas.report import ReportSchema, ReportSubmissionSchema
 from condition_api.services.report_service import ReportService
@@ -41,7 +40,7 @@ class ReportListResource(Resource):
         try:
             reports = ReportService.get_reports_by_condition(condition_id)
             return reports, HTTPStatus.OK
-        except Exception as err:
+        except (KeyError, ValueError) as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
 
     @staticmethod

@@ -36,6 +36,62 @@ class ConditionAttributeService:
     """Service for managing condition-attribute related operations."""
 
     @staticmethod
+    def _upsert_management_plans(condition_id, attributes):
+        """Upsert management plan records and their attributes."""
+        for plan in attributes.get("management_plans", []):
+            plan_id = plan.get("id")
+            plan_name = plan.get("name")
+            existing_plan = (
+                db.session.query(ManagementPlan).filter_by(id=plan_id).first()
+                if plan_id and "-" not in str(plan_id)
+                else None
+            )
+            if existing_plan:
+                existing_plan.name = plan_name
+            else:
+                existing_plan = ManagementPlan(condition_id=condition_id, name=plan_name)
+                db.session.add(existing_plan)
+                db.session.flush()
+
+            for attr in plan.get("attributes", []):
+                ConditionAttributeService._upsert_single_attribute(
+                    condition_id=condition_id,
+                    attribute_data=attr,
+                    management_plan_id=existing_plan.id
+                )
+            ConditionAttributeService._handle_requires_management_plan(
+                condition_id, existing_plan.id
+            )
+
+    @staticmethod
+    def _upsert_iem_terms(condition_id, attributes):
+        """Upsert IEM Terms of Engagement records and their attributes."""
+        for terms in attributes.get("iem_terms", []):
+            terms_id = terms.get("id")
+            terms_name = terms.get("name")
+            existing_terms = (
+                db.session.query(IEMTerms).filter_by(id=terms_id).first()
+                if terms_id and "-" not in str(terms_id)
+                else None
+            )
+            if existing_terms:
+                existing_terms.name = terms_name
+            else:
+                existing_terms = IEMTerms(condition_id=condition_id, name=terms_name)
+                db.session.add(existing_terms)
+                db.session.flush()
+
+            for attr in terms.get("attributes", []):
+                ConditionAttributeService._upsert_single_attribute(
+                    condition_id=condition_id,
+                    attribute_data=attr,
+                    iem_terms_id=existing_terms.id
+                )
+            ConditionAttributeService._handle_requires_iem_terms_package(
+                condition_id, existing_terms.id
+            )
+
+    @staticmethod
     def upsert_condition_attribute(requires_management_plan, condition_id, attributes,
                                    requires_iem_terms=False):
         """
@@ -54,66 +110,13 @@ class ConditionAttributeService:
                 condition.requires_iem_terms = True
 
         if requires_management_plan:
-            management_plans = attributes.get("management_plans", [])
-            for plan in management_plans:
-                plan_id = plan.get("id")
-                plan_name = plan.get("name")
-
-                if plan_id and "-" not in str(plan_id):
-                    existing_plan = db.session.query(ManagementPlan).filter_by(id=plan_id).first()
-                else:
-                    existing_plan = None
-
-                if existing_plan:
-                    existing_plan.name = plan_name
-                else:
-                    existing_plan = ManagementPlan(condition_id=condition_id, name=plan_name)
-                    db.session.add(existing_plan)
-                    db.session.flush()
-
-                for attr in plan.get("attributes", []):
-                    ConditionAttributeService._upsert_single_attribute(
-                        condition_id=condition_id,
-                        attribute_data=attr,
-                        management_plan_id=existing_plan.id
-                    )
-
-                ConditionAttributeService._handle_requires_management_plan(
-                    condition_id, existing_plan.id
-                )
+            ConditionAttributeService._upsert_management_plans(condition_id, attributes)
 
         if requires_iem_terms:
-            iem_terms_list = attributes.get("iem_terms", [])
-            for terms in iem_terms_list:
-                terms_id = terms.get("id")
-                terms_name = terms.get("name")
-
-                if terms_id and "-" not in str(terms_id):
-                    existing_terms = db.session.query(IEMTerms).filter_by(id=terms_id).first()
-                else:
-                    existing_terms = None
-
-                if existing_terms:
-                    existing_terms.name = terms_name
-                else:
-                    existing_terms = IEMTerms(condition_id=condition_id, name=terms_name)
-                    db.session.add(existing_terms)
-                    db.session.flush()
-
-                for attr in terms.get("attributes", []):
-                    ConditionAttributeService._upsert_single_attribute(
-                        condition_id=condition_id,
-                        attribute_data=attr,
-                        iem_terms_id=existing_terms.id
-                    )
-
-                ConditionAttributeService._handle_requires_iem_terms_package(
-                    condition_id, existing_terms.id
-                )
+            ConditionAttributeService._upsert_iem_terms(condition_id, attributes)
 
         if not requires_management_plan and not requires_iem_terms:
-            independent_attrs = attributes.get("independent_attributes", [])
-            for attribute in independent_attrs:
+            for attribute in attributes.get("independent_attributes", []):
                 ConditionAttributeService._upsert_single_attribute(
                     condition_id=condition_id,
                     attribute_data=attribute
@@ -121,7 +124,7 @@ class ConditionAttributeService:
 
         db.session.commit()
 
-        return ConditionAttributeService._fetch_all_attributes(condition_id)
+        return ConditionAttributeService.fetch_all_attributes(condition_id)
 
     @staticmethod
     def _upsert_single_attribute(condition_id, attribute_data, management_plan_id=None,
@@ -305,7 +308,7 @@ class ConditionAttributeService:
                 db.session.flush()
 
     @staticmethod
-    def _fetch_all_attributes(condition_id):
+    def fetch_all_attributes(condition_id):
         """Fetch and format all attribute types for a condition."""
         excluded_key_names = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value}
 
