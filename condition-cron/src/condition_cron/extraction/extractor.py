@@ -6,6 +6,7 @@ from condition_cron.extraction import pdf_reader
 from condition_cron.extraction.document_classifier import classify_document
 from condition_cron.extraction.pdf_reader import read_pdf_page_range, get_page_count
 from condition_cron.extraction.management_plans import extract_management_plan_info_from_json
+from condition_cron.extraction.reports import extract_report_info_from_json
 
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -416,9 +417,9 @@ def _deduplicate_conditions(conditions: List[Dict[str, Any]]) -> List[Dict[str, 
 # ---------------------------------------------------------------------------
 
 def enrich_condition(condition_text: str, condition_name: Optional[str] = None) -> Dict[str, Any]:
-    """Extract clauses, deliverables, and report submissions from a single condition.
+    """Break a single condition down into its nested clause/subcondition structure.
 
-    Returns a dict with: clauses, deliverables, report_submissions.
+    Returns a dict with: clauses.
     """
     enrichment_schema = load_schema("enrichment_schema")
 
@@ -430,11 +431,8 @@ def enrich_condition(condition_text: str, condition_name: Optional[str] = None) 
     prompt = (
         "Here is a condition from an environmental assessment document:\n\n"
         f"{full_text}\n\n"
-        "Extract the following from this condition:\n"
-        "1. Break it down into clauses and subconditions (nested structure with identifiers like 1.1, a), i., etc.)\n"
-        "2. Identify any deliverables — management plans, reports, proposals, or other documents that must be written/submitted\n"
-        "3. Identify any periodic report submission requirements (separate from one-time deliverables)\n"
-        "If any category has no items, return an empty array for that category."
+        "Break it down into clauses and subconditions (nested structure with identifiers like 1.1, a), i., etc.)\n"
+        "If it has no sub-structure, return an empty array."
     )
 
     messages = [{"role": "user", "content": prompt}]
@@ -455,11 +453,11 @@ def enrich_condition(condition_text: str, condition_name: Optional[str] = None) 
 
     except Exception as e:
         logger.error("Enrichment error: %s", e, exc_info=True)
-        return {"clauses": [], "deliverables": [], "report_submissions": []}
+        return {"clauses": []}
 
 
 def enrich_all_conditions(input_json: Dict[str, Any]) -> Dict[str, Any]:
-    """Enrich all conditions with clauses, deliverables, and report submissions.
+    """Enrich all conditions with their clause/subcondition structure.
 
     Modifies input_json in place and returns it.
     """
@@ -473,14 +471,8 @@ def enrich_all_conditions(input_json: Dict[str, Any]) -> Dict[str, Any]:
         enrichment = enrich_condition(condition_text, condition_name)
 
         condition["clauses"] = enrichment.get("clauses", [])
-        condition["deliverables"] = enrichment.get("deliverables", [])
-        condition["report_submissions"] = enrichment.get("report_submissions", [])
 
-        # Log what was found
-        n_clauses = len(condition["clauses"])
-        n_deliverables = len(condition["deliverables"])
-        n_reports = len(condition["report_submissions"])
-        logger.debug("Condition %s: %d clauses, %d deliverables, %d report submissions", cond_num, n_clauses, n_deliverables, n_reports)
+        logger.debug("Condition %s: %d clauses", cond_num, len(condition["clauses"]))
 
     return input_json
 
@@ -503,13 +495,17 @@ def extract_and_enrich_all(file_path: str, classification: Dict[str, Any]) -> Di
     logger.info("=== STEP 1: Extracting conditions ===")
     result = extract_conditions_from_pages(file_path, classification)
 
-    # Step 2: Enrich each condition (clauses + report_submissions)
-    logger.info("=== STEP 2: Enriching conditions (clauses & report submissions) ===")
+    # Step 2: Break each condition into its clause/subcondition structure
+    logger.info("=== STEP 2: Enriching conditions (clauses) ===")
     result = enrich_all_conditions(result)
 
     # Step 3: Extract deliverables using dedicated management plan extraction
     logger.info("=== STEP 3: Extracting deliverables ===")
     result = extract_management_plan_info_from_json(result)
+
+    # Step 4: Extract report submissions using dedicated report extraction
+    logger.info("=== STEP 4: Extracting report submissions ===")
+    result = extract_report_info_from_json(result)
 
     logger.info("=== Extraction complete: %d conditions ===", len(result.get('conditions', [])))
     return result
