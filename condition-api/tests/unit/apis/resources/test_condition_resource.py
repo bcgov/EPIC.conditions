@@ -20,6 +20,7 @@ from tests.utilities.factory_utils import (
     factory_project_model,
     factory_user_model,
     factory_document_model,
+    get_seeded_document_category,
     get_seeded_document_type,
     factory_auth_header
 )
@@ -42,8 +43,10 @@ def setup_condition(session):
     """Create a project, document and condition for testing."""
     project = factory_project_model(project_id=str(uuid.uuid4()))
     doc_type = get_seeded_document_type("Certificate")
+    category = get_seeded_document_category("Certificate and Amendments")
     document = factory_document_model(
-        project_id=project.project_id, document_type_id=doc_type.id
+        project_id=project.project_id, document_type_id=doc_type.id,
+        document_category_id=category.id
     )
     condition = factory_condition_model(
         project_id=project.project_id, document_id=document.document_id

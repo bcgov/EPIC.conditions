@@ -17,9 +17,7 @@ from condition_api.utils.enums import ConditionType
 
 ATTRIBUTE_EXTERNAL_KEYS = (
     "approval_type",
-    "days_prior_to_commencement",
     "related_phase",
-    "deliverable_name",
     "management_plan_acronym",
     "fn_consultation_required",
     "implementation_phase",
@@ -29,12 +27,17 @@ ATTRIBUTE_EXTERNAL_KEYS = (
 
 ATTRIBUTE_EXTERNAL_KEY_ALIASES = {
     "approval_type": "submitted_to_eao_for",
-    "days_prior_to_commencement": "time_associated_with_submission_milestone",
+    "related_phase": "milestone_related_to_plan_submission",
     "implementation_phase": "milestones_related_to_plan_implementation",
     "fn_consultation_required": "requires_consultation",
     "stakeholders_to_submit_to": "parties_required_to_be_submitted",
     "stakeholders_to_consult": "parties_required_to_be_consulted",
 }
+
+# Combines submission_time_value/unit/direction into the single free-text value
+# expected by condition-web's "Time associated with submission milestone" field,
+# e.g. "60 Days Before" — see DynamicFieldRenderer.tsx's parsing regex.
+SUBMISSION_TIME_EXTERNAL_KEY = "time_associated_with_submission_milestone"
 
 
 class ExtractionImportService:
@@ -172,6 +175,17 @@ class ExtractionImportService:
                 )
                 db.session.add(attribute)
 
+            submission_time_value = self._format_submission_time(deliverable)
+            if submission_time_value is not None:
+                attribute_key = self.attribute_keys.get(SUBMISSION_TIME_EXTERNAL_KEY)
+                if attribute_key:
+                    db.session.add(ConditionAttribute(
+                        condition_id=condition.id,
+                        attribute_key_id=attribute_key.id,
+                        attribute_value=submission_time_value,
+                        management_plan_id=management_plan.id if management_plan else None,
+                    ))
+
     @staticmethod
     def _list_or_none(value: Any) -> list[Any] | None:
         if value is None:
@@ -179,6 +193,20 @@ class ExtractionImportService:
         if isinstance(value, list):
             return value
         return [value]
+
+    @staticmethod
+    def _format_submission_time(deliverable: dict[str, Any]) -> str | None:
+        """Combine submission_time_value/unit/direction into e.g. '60 Days Before'.
+
+        Matches the "{value} {Days|Month(s)|Year(s)} {After|Before|Prior to}"
+        format that condition-web's DynamicFieldRenderer parses back apart.
+        """
+        value = deliverable.get("submission_time_value")
+        unit = deliverable.get("submission_time_unit")
+        direction = deliverable.get("submission_time_direction")
+        if value is None or not unit or not direction:
+            return None
+        return f"{value} {unit} {direction}"
 
     @staticmethod
     def _serialize_attribute_value(value: Any) -> str | None:

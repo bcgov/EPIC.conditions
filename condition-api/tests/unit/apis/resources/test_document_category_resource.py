@@ -13,6 +13,7 @@ from tests.utilities.factory_utils import (
     factory_project_model,
     factory_user_model,
     factory_document_model,
+    get_seeded_document_category,
     get_seeded_document_type,
     factory_auth_header
 )
@@ -34,10 +35,14 @@ def test_get_documents_by_category_success(client, auth_user):
     """Test fetching documents by project and category successfully."""
     project = factory_project_model(project_id=str(uuid.uuid4()))
     doc_type = get_seeded_document_type("Certificate")
-    factory_document_model(project_id=project.project_id, document_type_id=doc_type.id)
+    category = get_seeded_document_category("Certificate and Amendments")
+    factory_document_model(
+        project_id=project.project_id, document_type_id=doc_type.id,
+        document_category_id=category.id
+    )
 
     response = client.get(
-        f"/api/document-category/project/{project.project_id}/category/{doc_type.id}",
+        f"/api/document-category/project/{project.project_id}/category/{category.id}",
         headers=auth_user
     )
 

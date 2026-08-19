@@ -20,7 +20,6 @@ from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
-from condition_api.models.management_plan import ManagementPlan
 from condition_api.schemas.management_plan import ManagementPlanSchema
 from condition_api.services.management_plan import ManagementPlanService
 from condition_api.utils.roles import EpicConditionRole
