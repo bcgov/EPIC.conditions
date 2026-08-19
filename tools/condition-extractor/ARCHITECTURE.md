@@ -3,7 +3,7 @@
 ## Purpose
 
 `condition-extractor` is a thin, stateless HTTP proxy deployed as an Azure App Service container.
-It sits between the condition-parser (local Gradio app) and Azure OpenAI, providing:
+It sits between `condition-cron` and Azure OpenAI, providing:
 
 - **Centralised auth** — callers use a shared `API_KEY`; the Azure OpenAI key never leaves Azure
 - **Private network path** — all traffic stays inside the Microsoft network via VNet + private endpoint
@@ -14,7 +14,7 @@ It sits between the condition-parser (local Gradio app) and Azure OpenAI, provid
 ## Request Flow
 
 ```
-condition-parser (local)
+condition-cron
     │
     │  POST /v1/chat/completions
     │  Authorization: Bearer <API_KEY>   (OpenAI SDK format)
@@ -35,7 +35,7 @@ Private Endpoint → Azure OpenAI Service
     │
     │  Response forwarded as-is
     ▼
-condition-parser
+condition-cron
 ```
 
 ---

@@ -93,7 +93,7 @@ Key things to set in `deploy.env`:
 - `OPENAI_NAME`, `OPENAI_RESOURCE_GROUP` — existing Azure OpenAI service, or leave `OPENAI_NAME` as a new name for `openai-deploy.ps1` to create
 - `DOCKER_REGISTRY`, `ACR_NAME`, `ACR_SUBSCRIPTION` — the `tools` subscription ACR
 - `DOCKER_REGISTRY_SERVER_USERNAME/PASSWORD` — required because the ACR is in a **different subscription** from the App Service (cross-subscription managed identity is not supported by Azure App Service for ACR pull)
-- `API_KEY` — a strong random string; set this same value in `condition-parser/.env` as `EXTRACTOR_API_KEY`
+- `API_KEY` — a strong random string; set this same value in `condition-cron/.env` as `EXTRACTOR_API_KEY`
 
 **2. Log in to Azure (test/prod subscription)**
 
@@ -119,7 +119,7 @@ This runs 7 steps in sequence:
 | 4 | `acr-push.ps1` | Builds Docker image, tags it, pushes to ACR |
 | 5 | `webapp-deploy.ps1` | Creates App Service Plan + App Service, enables Managed Identity, grants AcrPull, configures VNet integration |
 | 6 | `configure-settings.ps1` | Sets all environment variables as App Service Application Settings |
-| 7 | `test-api.ps1` | Smoke tests: `/health`, auth guard, `/classify` |
+| 7 | `test-api.ps1` | Smoke tests: `/health`, auth guard, `/v1/chat/completions` |
 
 A timestamped log file (`deploy-<timestamp>.log`) is written to the working directory.
 
@@ -182,8 +182,7 @@ Then **restart the App Service** in the Azure portal (or `az webapp restart`) to
 ## Architecture
 
 ```
-condition-parser (Gradio / local)
-condition-processor (OpenShift CronJob)
+condition-cron (OpenShift, go-crond schedule)
     │
     │  POST /v1/chat/completions  (OpenAI-compatible)
     │  X-API-Key: <API_KEY>
