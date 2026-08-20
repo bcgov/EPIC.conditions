@@ -7,6 +7,8 @@ class BaseSchema(Schema):
     """Base schema to exclude unknown fields."""
 
     class Meta:
+        """Meta options."""
+
         unknown = EXCLUDE
 
 

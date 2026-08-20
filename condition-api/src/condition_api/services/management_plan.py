@@ -29,7 +29,9 @@ class ManagementPlanService:
     @staticmethod
     def delete_management_plan(plan_id):
         """Delete a management plan and only the submissions directly linked to it.
-        Parent reports are removed only if they have no remaining submissions."""
+
+        Parent reports are removed only if they have no remaining submissions.
+        """
         linked_submissions = ReportSubmission.query.filter_by(
             linked_management_plan_id=plan_id
         ).all()
