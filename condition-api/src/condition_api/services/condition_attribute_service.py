@@ -128,7 +128,7 @@ class ConditionAttributeService:
 
     @staticmethod
     def _upsert_single_attribute(condition_id, attribute_data, management_plan_id=None,
-                                  iem_terms_id=None):
+                                 iem_terms_id=None):
         """Update or insert a single attribute."""
         attribute_id = attribute_data.get("id")
         key_name = attribute_data.get("key")
@@ -178,9 +178,7 @@ class ConditionAttributeService:
 
     @staticmethod
     def _handle_requires_consultation(condition_id, management_plan_id, iem_terms_id=None):
-        """
-        Handles additional attributes when REQUIRES_CONSULTATION is set to true.
-        """
+        """Handles additional attributes when REQUIRES_CONSULTATION is set to true."""
         consultation_key = db.session.query(AttributeKey).filter(
             AttributeKey.key_name == AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED.value
         ).first()
@@ -205,9 +203,9 @@ class ConditionAttributeService:
 
     @staticmethod
     def _handle_requires_iem_terms_of_engagement(condition_id, attribute_value, management_plan_id):
-        """
-        Handles additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true
-        within a management plan attribute.
+        """Handle additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true.
+
+        Applies within a management plan attribute context.
         """
         deliverable_key_name = AttributeKeys.DELIVERABLE_NAME.value
         deliverable_value = IEMTermsConfig.DELIVERABLE_VALUE
@@ -255,9 +253,7 @@ class ConditionAttributeService:
 
     @staticmethod
     def _handle_requires_management_plan(condition_id, management_plan_id):
-        """
-        Creates required attributes for a new management plan package.
-        """
+        """Create required attributes for a new management plan package."""
         required_keys = ManagementPlanConfig.required_attribute_keys()
 
         all_attribute_keys = db.session.query(AttributeKey).filter(
@@ -282,9 +278,7 @@ class ConditionAttributeService:
 
     @staticmethod
     def _handle_requires_iem_terms_package(condition_id, iem_terms_id):
-        """
-        Creates required attributes for a new IEM Terms of Engagement package.
-        """
+        """Create required attributes for a new IEM Terms of Engagement package."""
         required_keys = IEMTermsConfig.required_attribute_keys()
 
         all_attribute_keys = db.session.query(AttributeKey).filter(
