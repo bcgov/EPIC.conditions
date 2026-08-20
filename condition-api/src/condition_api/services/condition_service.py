@@ -37,6 +37,7 @@ from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
+from condition_api.services.condition_attribute_service import ConditionAttributeService
 from condition_api.utils.enums import AttributeKeys, ConditionType, IEMTermsConfig
 
 ENABLE_NEW_SUBMIT_FLOW = _Config.ENABLE_NEW_SUBMIT_FLOW
@@ -71,9 +72,9 @@ class ConditionService:
 
         condition = ConditionService._build_condition_structure(condition_rows)
 
-        # Fetch and attach condition attributes
-        condition["condition_attributes"] = ConditionService._fetch_condition_attributes(
-            condition_rows[0].requires_management_plan, condition_id)
+        # Fetch and attach condition attributes (includes management plans, IEM terms, independent)
+        condition["condition_attributes"] = ConditionAttributeService.fetch_all_attributes(
+            condition_id)
 
         # Extract static document metadata from the first row
         first = condition_rows[0]
@@ -1361,6 +1362,8 @@ class ConditionService:
                 conditions.is_condition_attributes_approved,
                 conditions.is_standard_condition,
                 conditions.requires_management_plan,
+                conditions.requires_iem_terms,
+                conditions.requires_report,
                 conditions.subtopic_tags,
                 conditions.condition_type,
                 subconditions.id.label("subcondition_id"),
@@ -1400,6 +1403,8 @@ class ConditionService:
             "is_condition_attributes_approved": first.is_condition_attributes_approved,
             "is_standard_condition": first.is_standard_condition,
             "requires_management_plan": first.requires_management_plan,
+            "requires_iem_terms": first.requires_iem_terms,
+            "requires_report": first.requires_report,
             "subtopic_tags": first.subtopic_tags,
             "condition_type": first.condition_type,
             "year_issued": first.year_issued,

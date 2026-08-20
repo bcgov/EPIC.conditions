@@ -26,7 +26,7 @@ class AttributeKeyService:
     """Attribute Key management service."""
 
     @staticmethod
-    def get_all_attributes(condition_id, management_plan_id=None):
+    def get_all_attributes(condition_id, management_plan_id=None, iem_terms_id=None):
         """Fetch all attributes."""
         condition_attributes = aliased(ConditionAttribute)
         attribute_keys = aliased(AttributeKey)
@@ -35,6 +35,12 @@ class AttributeKeyService:
             subquery = (
                 db.session.query(condition_attributes.attribute_key_id)
                 .filter(condition_attributes.management_plan_id == management_plan_id)
+                .subquery()
+            )
+        elif iem_terms_id:
+            subquery = (
+                db.session.query(condition_attributes.attribute_key_id)
+                .filter(condition_attributes.iem_terms_id == iem_terms_id)
                 .subquery()
             )
         else:
@@ -48,10 +54,13 @@ class AttributeKeyService:
             AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value,
             AttributeKeys.DELIVERABLE_NAME.value,
         ]
-        if not management_plan_id:
+        if not management_plan_id and not iem_terms_id:
             always_excluded.append(AttributeKeys.MANAGEMENT_PLAN_ACRONYM.value)
-        else:
+        elif management_plan_id:
             always_excluded.append(AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT.value)
+        elif iem_terms_id:
+            always_excluded.append(AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT.value)
+            always_excluded.append(AttributeKeys.MANAGEMENT_PLAN_ACRONYM.value)
 
         attributes_data = (
             db.session.query(

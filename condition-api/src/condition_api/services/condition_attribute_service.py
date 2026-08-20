@@ -18,6 +18,7 @@ from condition_api.models.attribute_key import AttributeKey
 from condition_api.models.condition import Condition
 from condition_api.models.condition_attribute import ConditionAttribute
 from condition_api.models.db import db
+from condition_api.models.iem_terms import IEMTerms
 from condition_api.models.management_plan import ManagementPlan
 from condition_api.utils.enums import AttributeKeys, IEMTermsConfig, ManagementPlanConfig
 
@@ -35,57 +36,87 @@ class ConditionAttributeService:
     """Service for managing condition-attribute related operations."""
 
     @staticmethod
-    def upsert_condition_attribute(requires_management_plan, condition_id, attributes):
+    def _upsert_management_plans(condition_id, attributes):
+        """Upsert management plan records and their attributes."""
+        for plan in attributes.get("management_plans", []):
+            plan_id = plan.get("id")
+            plan_name = plan.get("name")
+            existing_plan = (
+                db.session.query(ManagementPlan).filter_by(id=plan_id).first()
+                if plan_id and "-" not in str(plan_id)
+                else None
+            )
+            if existing_plan:
+                existing_plan.name = plan_name
+            else:
+                existing_plan = ManagementPlan(condition_id=condition_id, name=plan_name)
+                db.session.add(existing_plan)
+                db.session.flush()
+
+            for attr in plan.get("attributes", []):
+                ConditionAttributeService._upsert_single_attribute(
+                    condition_id=condition_id,
+                    attribute_data=attr,
+                    management_plan_id=existing_plan.id
+                )
+            ConditionAttributeService._handle_requires_management_plan(
+                condition_id, existing_plan.id
+            )
+
+    @staticmethod
+    def _upsert_iem_terms(condition_id, attributes):
+        """Upsert IEM Terms of Engagement records and their attributes."""
+        for terms in attributes.get("iem_terms", []):
+            terms_id = terms.get("id")
+            terms_name = terms.get("name")
+            existing_terms = (
+                db.session.query(IEMTerms).filter_by(id=terms_id).first()
+                if terms_id and "-" not in str(terms_id)
+                else None
+            )
+            if existing_terms:
+                existing_terms.name = terms_name
+            else:
+                existing_terms = IEMTerms(condition_id=condition_id, name=terms_name)
+                db.session.add(existing_terms)
+                db.session.flush()
+
+            for attr in terms.get("attributes", []):
+                ConditionAttributeService._upsert_single_attribute(
+                    condition_id=condition_id,
+                    attribute_data=attr,
+                    iem_terms_id=existing_terms.id
+                )
+            ConditionAttributeService._handle_requires_iem_terms_package(
+                condition_id, existing_terms.id
+            )
+
+    @staticmethod
+    def upsert_condition_attribute(requires_management_plan, condition_id, attributes,
+                                   requires_iem_terms=False):
         """
         Updates or inserts condition attributes for a given condition.
 
-        Also updates the 'requires_management_plan' field on the Condition record.
-
-        :param requires_management_plan: Boolean flag indicating whether management plans are required.
+        :param requires_management_plan: Boolean flag for management plans.
         :param condition_id: ID of the condition.
-        :param attributes: Dict containing 'independent_attributes' and/or 'management_plans'.
-        :return: Dict with keys 'independent_attributes' and 'management_plans'.
+        :param attributes: Dict with 'independent_attributes', 'management_plans', and/or 'iem_terms'.
+        :param requires_iem_terms: Boolean flag for IEM Terms of Engagement.
+        :return: Dict with all attribute types.
         """
-        # 1. Update requires_management_plan in the condition table
         condition = db.session.query(Condition).filter_by(id=condition_id).first()
         if condition:
             condition.requires_management_plan = requires_management_plan
+            if requires_iem_terms:
+                condition.requires_iem_terms = True
 
         if requires_management_plan:
-            # 2. Handle management plans
-            management_plans = attributes.get("management_plans", [])
-            for plan in management_plans:
-                plan_id = plan.get("id")
-                plan_name = plan.get("name")
+            ConditionAttributeService._upsert_management_plans(condition_id, attributes)
 
-                # If plan_id contains a "-", treat it as a new (frontend-generated) plan
-                if plan_id and "-" not in str(plan_id):
-                    # Check if the plan already exists in the DB
-                    existing_plan = db.session.query(ManagementPlan).filter_by(id=plan_id).first()
-                else:
-                    existing_plan = None
+        if requires_iem_terms:
+            ConditionAttributeService._upsert_iem_terms(condition_id, attributes)
 
-                if existing_plan:
-                    existing_plan.name = plan_name
-                else:
-                    existing_plan = ManagementPlan(condition_id=condition_id, name=plan_name)
-                    db.session.add(existing_plan)
-                    db.session.flush()
-
-                for attr in plan.get("attributes", []):
-                    ConditionAttributeService._upsert_single_attribute(
-                        condition_id=condition_id,
-                        attribute_data=attr,
-                        management_plan_id=existing_plan.id
-                    )
-
-                ConditionAttributeService._handle_requires_management_plan(
-                    condition_id, existing_plan.id
-                )
-        else:
-            # 3. Handle independent attributes
-            independent_attrs = attributes.get("independent_attributes", [])
-            for attribute in independent_attrs:
+        if not requires_management_plan and not requires_iem_terms:
+            for attribute in attributes.get("independent_attributes", []):
                 ConditionAttributeService._upsert_single_attribute(
                     condition_id=condition_id,
                     attribute_data=attribute
@@ -93,26 +124,25 @@ class ConditionAttributeService:
 
         db.session.commit()
 
-        return ConditionAttributeService._fetch_all_attributes(
-            requires_management_plan, condition_id)
+        return ConditionAttributeService.fetch_all_attributes(condition_id)
 
     @staticmethod
-    def _upsert_single_attribute(condition_id, attribute_data, management_plan_id=None):
-        """Update of insert the attributes"""
+    def _upsert_single_attribute(condition_id, attribute_data, management_plan_id=None,
+                                 iem_terms_id=None):
+        """Update or insert a single attribute."""
         attribute_id = attribute_data.get("id")
         key_name = attribute_data.get("key")
         value = attribute_data.get("value")
 
-        # Get the key reference
         key = db.session.query(AttributeKey).filter_by(key_name=key_name).first()
         if not key:
             raise AttributeKeyNotFoundError(key_name)
 
-        # Try to fetch existing attribute
         existing_attribute = db.session.query(ConditionAttribute).filter_by(
             condition_id=condition_id,
             attribute_key_id=key.id,
-            management_plan_id=management_plan_id
+            management_plan_id=management_plan_id,
+            iem_terms_id=iem_terms_id,
         ).first()
 
         if not existing_attribute and attribute_id and "-" not in str(attribute_id):
@@ -130,14 +160,15 @@ class ConditionAttributeService:
                 condition_id=condition_id,
                 attribute_key_id=key.id,
                 attribute_value=value,
-                management_plan_id=management_plan_id
+                management_plan_id=management_plan_id,
+                iem_terms_id=iem_terms_id,
             )
             db.session.add(attribute)
             db.session.flush()
 
         if key.key_name == AttributeKeys.REQUIRES_CONSULTATION.value and value == 'true':
             ConditionAttributeService._handle_requires_consultation(
-                condition_id, management_plan_id
+                condition_id, management_plan_id, iem_terms_id
             )
 
         if key.key_name == AttributeKeys.REQUIRES_IEM_TERMS_OF_ENGAGEMENT.value and value == 'true':
@@ -146,15 +177,8 @@ class ConditionAttributeService:
             )
 
     @staticmethod
-    def _handle_requires_consultation(condition_id, management_plan_id):
-        """
-        Handles additional attributes when REQUIRES_CONSULTATION is set to true.
-
-        :param condition_id: ID of the condition.
-        :param attribute_key_id: Key ID of the current attribute.
-        :param attribute_value: Value of the current attribute.
-        :param management_plan_id: If the attribute is for a management plan.
-        """
+    def _handle_requires_consultation(condition_id, management_plan_id, iem_terms_id=None):
+        """Handles additional attributes when REQUIRES_CONSULTATION is set to true."""
         consultation_key = db.session.query(AttributeKey).filter(
             AttributeKey.key_name == AttributeKeys.PARTIES_REQUIRED_TO_BE_CONSULTED.value
         ).first()
@@ -162,7 +186,8 @@ class ConditionAttributeService:
         existing_attribute = db.session.query(ConditionAttribute).filter_by(
             condition_id=condition_id,
             attribute_key_id=consultation_key.id,
-            management_plan_id=management_plan_id
+            management_plan_id=management_plan_id,
+            iem_terms_id=iem_terms_id,
         ).first()
 
         if not existing_attribute:
@@ -170,26 +195,23 @@ class ConditionAttributeService:
                 condition_id=condition_id,
                 attribute_key_id=consultation_key.id,
                 attribute_value='{}',
-                management_plan_id=management_plan_id
+                management_plan_id=management_plan_id,
+                iem_terms_id=iem_terms_id,
             )
             db.session.add(new_attribute)
             db.session.flush()
 
     @staticmethod
     def _handle_requires_iem_terms_of_engagement(condition_id, attribute_value, management_plan_id):
-        """
-        Handles additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true.
+        """Handle additional attributes when REQUIRES_IEM_TERMS_OF_ENGAGEMENT is set to true.
 
-        :param condition_id: ID of the condition.
-        :param attribute_value: Value of the current attribute.
-        :param management_plan_id: If the attribute is for a management plan.
+        Applies within a management plan attribute context.
         """
         deliverable_key_name = AttributeKeys.DELIVERABLE_NAME.value
         deliverable_value = IEMTermsConfig.DELIVERABLE_VALUE
         required_keys = IEMTermsConfig.required_attribute_keys()
 
         if attribute_value != 'true':
-            # Remove deliverable attribute if present
             deliverable_key = db.session.query(AttributeKey).filter(
                 AttributeKey.key_name == deliverable_key_name
             ).first()
@@ -208,7 +230,6 @@ class ConditionAttributeService:
             ).first()
 
             if not existing:
-                # Check if the current key is DELIVERABLE_NAME
                 attribute_value = deliverable_value if key.key_name == deliverable_key_name else None
                 new_attribute = ConditionAttribute(
                     condition_id=condition_id,
@@ -219,7 +240,6 @@ class ConditionAttributeService:
                 db.session.add(new_attribute)
                 db.session.flush()
             else:
-                # Update DELIVERABLE_NAME if it already exists
                 if key.key_name == deliverable_key_name:
                     current_value = existing.attribute_value or ""
                     values = current_value.strip('{}').split(',') if current_value else []
@@ -233,20 +253,17 @@ class ConditionAttributeService:
 
     @staticmethod
     def _handle_requires_management_plan(condition_id, management_plan_id):
-        """
-        Handles additional attributes when REQUIRES_MANAGEMENT_PLAN is set to true.
-
-        :param condition_id: ID of the condition.
-        :param attribute_key_id: Key ID of the current attribute.
-        :param attribute_value: Value of the current attribute.
-        :param management_plan_id: If the attribute is for a management plan
-        """
+        """Create required attributes for a new management plan package."""
         required_keys = ManagementPlanConfig.required_attribute_keys()
 
-        all_attribute_keys = db.session.query(AttributeKey).filter(AttributeKey.key_name.in_(required_keys)).all()
+        all_attribute_keys = db.session.query(AttributeKey).filter(
+            AttributeKey.key_name.in_(required_keys)
+        ).all()
         for key in all_attribute_keys:
             existing_attribute = db.session.query(ConditionAttribute).filter_by(
-                condition_id=condition_id, attribute_key_id=key.id
+                condition_id=condition_id,
+                attribute_key_id=key.id,
+                management_plan_id=management_plan_id,
             ).first()
 
             if not existing_attribute:
@@ -260,74 +277,108 @@ class ConditionAttributeService:
                 db.session.flush()
 
     @staticmethod
-    def _fetch_all_attributes(requires_management_plan, condition_id):
-        """Fetch and format all independent and management plan attributes."""
+    def _handle_requires_iem_terms_package(condition_id, iem_terms_id):
+        """Create required attributes for a new IEM Terms of Engagement package."""
+        required_keys = IEMTermsConfig.required_attribute_keys()
+
+        all_attribute_keys = db.session.query(AttributeKey).filter(
+            AttributeKey.key_name.in_(required_keys)
+        ).all()
+        for key in all_attribute_keys:
+            existing_attribute = db.session.query(ConditionAttribute).filter_by(
+                condition_id=condition_id,
+                attribute_key_id=key.id,
+                iem_terms_id=iem_terms_id,
+            ).first()
+
+            if not existing_attribute:
+                new_attribute = ConditionAttribute(
+                    condition_id=condition_id,
+                    attribute_key_id=key.id,
+                    attribute_value=None,
+                    iem_terms_id=iem_terms_id
+                )
+                db.session.add(new_attribute)
+                db.session.flush()
+
+    @staticmethod
+    def fetch_all_attributes(condition_id):
+        """Fetch and format all attribute types for a condition."""
         excluded_key_names = {AttributeKeys.PARTIES_REQUIRED_TO_BE_SUBMITTED.value}
 
-        # Fetch all attributes for this condition, joined with keys, and sort using sort_key
-        if requires_management_plan:
-            management_plans = []
-            plans = db.session.query(ManagementPlan).filter_by(condition_id=condition_id).all()
-
-            for plan in plans:
-                plan_attrs = (
-                    db.session.query(ConditionAttribute, AttributeKey)
-                    .join(AttributeKey)
-                    .filter(
-                        ConditionAttribute.condition_id == condition_id,
-                        ConditionAttribute.management_plan_id == plan.id,
-                        ~AttributeKey.key_name.in_(excluded_key_names)
-                    )
-                    .order_by(AttributeKey.sort_order)
-                    .all()
+        # Fetch management plans
+        management_plans = []
+        plans = db.session.query(ManagementPlan).filter_by(condition_id=condition_id).all()
+        for plan in plans:
+            plan_attrs = (
+                db.session.query(ConditionAttribute, AttributeKey)
+                .join(AttributeKey)
+                .filter(
+                    ConditionAttribute.condition_id == condition_id,
+                    ConditionAttribute.management_plan_id == plan.id,
+                    ~AttributeKey.key_name.in_(excluded_key_names)
                 )
-
-                attributes = [
-                    {
-                        "id": attr.id,
-                        "key": key.key_name,
-                        "value": attr.attribute_value
-                    }
+                .order_by(AttributeKey.sort_order)
+                .all()
+            )
+            management_plans.append({
+                "id": plan.id,
+                "name": plan.name,
+                "is_approved": plan.is_approved,
+                "attributes": [
+                    {"id": attr.id, "key": key.key_name, "value": attr.attribute_value}
                     for attr, key in plan_attrs
                 ]
+            })
 
-                management_plans.append({
-                    "id": plan.id,
-                    "name": plan.name,
-                    "is_approved": plan.is_approved,
-                    "attributes": attributes
-                })
+        # Fetch IEM terms
+        iem_terms_result = []
+        all_iem_terms = db.session.query(IEMTerms).filter_by(condition_id=condition_id).all()
+        for terms in all_iem_terms:
+            terms_attrs = (
+                db.session.query(ConditionAttribute, AttributeKey)
+                .join(AttributeKey)
+                .filter(
+                    ConditionAttribute.condition_id == condition_id,
+                    ConditionAttribute.iem_terms_id == terms.id,
+                    ~AttributeKey.key_name.in_(excluded_key_names)
+                )
+                .order_by(AttributeKey.sort_order)
+                .all()
+            )
+            iem_terms_result.append({
+                "id": terms.id,
+                "name": terms.name,
+                "is_approved": terms.is_approved,
+                "attributes": [
+                    {"id": attr.id, "key": key.key_name, "value": attr.attribute_value}
+                    for attr, key in terms_attrs
+                ]
+            })
 
-            return {
-                "independent_attributes": [],
-                "management_plans": management_plans
-            }
-
+        # Fetch independent attributes (no management_plan_id and no iem_terms_id)
         independent_attrs = (
             db.session.query(ConditionAttribute, AttributeKey)
             .join(AttributeKey, ConditionAttribute.attribute_key_id == AttributeKey.id)
             .filter(
                 ConditionAttribute.condition_id == condition_id,
                 ConditionAttribute.management_plan_id.is_(None),
+                ConditionAttribute.iem_terms_id.is_(None),
                 ~AttributeKey.key_name.in_(excluded_key_names),
             )
             .order_by(AttributeKey.sort_order)
             .all()
         )
 
-        # Format the result
         independent_attributes = [
-            {
-                "id": attr.id,
-                "key": key.key_name,
-                "value": attr.attribute_value,
-            }
+            {"id": attr.id, "key": key.key_name, "value": attr.attribute_value}
             for attr, key in independent_attrs
         ]
 
         return {
             "independent_attributes": independent_attributes,
-            "management_plans": []
+            "management_plans": management_plans,
+            "iem_terms": iem_terms_result,
         }
 
     @staticmethod
@@ -353,24 +404,19 @@ class ConditionAttributeService:
             if condition:
                 condition.requires_management_plan = requires_management_plan
 
-        # Delete management plans if they exist
         plan_query = db.session.query(ManagementPlan).filter(
             ManagementPlan.condition_id == condition_id
         )
-
         if plan_query.count() > 0:
             plan_query.delete()
 
-        # Delete condition attributes if they exist
         attr_query = db.session.query(ConditionAttribute).filter(
             ConditionAttribute.condition_id == condition_id
         )
-
         if attr_query.count() == 0:
-            db.session.commit()  # commit deletion of plans if any
-            return False  # No condition attributes to delete
+            db.session.commit()
+            return False
 
         attr_query.delete()
-
         db.session.commit()
-        return True  # Deleted successfully
+        return True

@@ -4,6 +4,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Box,
+  Chip,
   CircularProgress,
   Button,
   Grid,
@@ -20,7 +21,7 @@ import {
   Tooltip
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
+import EditIcon from "@/components/Shared/Icons/EditIcon";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import { IndependentAttributeModel, ManagementPlanModel } from "@/models/ConditionAttribute";
 import { BCDesignTokens } from "epic.theme";
@@ -30,14 +31,13 @@ import { QUERY_KEY } from "@/hooks/api/constants";
 import ConditionAttributeRow from "../../ConditionAttribute/Independent/ConditionAttributeRow";
 import { ConditionModel } from "@/models/Condition";
 import { usePatchManagementPlan } from "@/hooks/api/useManagementPlan";
-import DocumentStatusChip from "../../../Projects/DocumentStatusChip";
 import { useUpdateConditionAttributeDetails, useDeleteSingleConditionAttribute } from "@/hooks/api/useConditionAttribute";
 import { useQueryClient } from "@tanstack/react-query";
 import ErrorMessage from "../ErrorMessage";
 import { ApproveButton } from "../ApproveButton";
 import { validateRequiredAttributes } from "@/utils/attributeValidation";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@/components/Shared/Icons/DeleteIcon";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
@@ -52,6 +52,7 @@ type Props = {
   condition: ConditionModel;
   setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
   onDelete?: (planId: string) => void;
+  hasLinkedReport?: boolean;
 };
 
 const ManagementPlanAccordion: React.FC<Props> = ({
@@ -59,7 +60,8 @@ const ManagementPlanAccordion: React.FC<Props> = ({
     title,
     condition,
     setCondition,
-    onDelete
+    onDelete,
+    hasLinkedReport = false,
 }) => {
   const queryClient = useQueryClient();
   const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
@@ -364,22 +366,20 @@ const ManagementPlanAccordion: React.FC<Props> = ({
         condition_attributes: {
           independent_attributes: prevCondition.condition_attributes?.independent_attributes ?? [],
           management_plans: conditionAttributeDetails.management_plans,
+          iem_terms: conditionAttributeDetails.iem_terms ?? prevCondition.condition_attributes?.iem_terms ?? [],
         },
       }));
-  
-      // Flatten all attributes from all management plans
+
       const allPlanAttributes = conditionAttributeDetails.management_plans.flatMap(
         (plan: ManagementPlanModel) => plan.attributes || []
       );
-  
-      // Check if consultation is required
+
       const consultationRequired = allPlanAttributes.some(
         (attr: IndependentAttributeModel) =>
           attr.key === CONDITION_KEYS.REQUIRES_CONSULTATION && attr.value === "true"
       );
       setIsConsultationRequired(!!consultationRequired);
-  
-      // Check if IEM terms of engagement are required
+
       const IEMRequired = allPlanAttributes.some(
         (attr: IndependentAttributeModel) =>
           attr.key === CONDITION_KEYS.REQUIRES_IEM_TERMS_OF_ENGAGEMENT && attr.value === "true"
@@ -566,7 +566,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                           },
                           }}
                       >
-                          <EditIcon sx={{ color: "#255A90", mr: 0.5 }} fontSize="small" />
+                          <EditIcon size={20} color="#255A90" />
                           <Box sx={{ color: "#255A90", fontWeight: "bold" }}>Edit</Box>
                       </Button>
                       )}
@@ -576,15 +576,45 @@ const ManagementPlanAccordion: React.FC<Props> = ({
             </Box>
 
             <Box display="flex" flexDirection="column" width="20%" marginTop="12px" alignItems="flex-end">
-              <DocumentStatusChip
-                status={!attributeHasData ? "nodata" : attributes.is_approved ? "true" : "false"}
+              <Chip
+                label={
+                  !attributeHasData
+                    ? "Data Entry Required"
+                    : attributes.is_approved
+                    ? "Confirmed"
+                    : "Awaiting Confirmation"
+                }
+                sx={{
+                  height: "24px",
+                  padding: "2px 8px",
+                  alignItems: "center",
+                  gap: "8px",
+                  justifyContent: "center",
+                  "& .MuiChip-label": { px: 0 },
+                  background: !attributeHasData
+                    ? "var(--support-surfaceColor-danger, #F4E1E2)"
+                    : attributes.is_approved
+                    ? "var(--support-surfaceColor-success, #F6FFF8)"
+                    : "var(--support-surfaceColor-warning, #FEF1D8)",
+                  border: !attributeHasData
+                    ? "1px solid var(--support-borderColor-danger, #CE3E39)"
+                    : attributes.is_approved
+                    ? "1px solid var(--support-borderColor-success, #42814A)"
+                    : "1px solid var(--support-borderColor-warning, #F8BB47)",
+                  color: "#2D2D2D",
+                  fontFamily: '"BC Sans"',
+                  fontWeight: 400,
+                  fontSize: "12px",
+                  lineHeight: "18px",
+                  borderRadius: "2px",
+                }}
               />
             </Box>
             <Box
               display="flex"
               flexDirection="column"
               width="4%"
-              marginTop="5px"
+              marginTop="8px"
               alignItems="flex-end"
             >
               {canManage && (
@@ -596,7 +626,7 @@ const ManagementPlanAccordion: React.FC<Props> = ({
                     }}
                     size="small"
                   >
-                    <DeleteIcon sx={{ fontSize: '34px' }} />
+                    <DeleteIcon size={20} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -723,6 +753,11 @@ const ManagementPlanAccordion: React.FC<Props> = ({
           onDelete?.(attributes.id);
           setIsDeleteModalOpen(false);
         }}
+        description={
+          hasLinkedReport
+            ? "This Management Plan has associated Reports. Deleting it will also permanently delete all linked Reports and their submission requirements.<br/><br/>Are you sure you wish to proceed?"
+            : undefined
+        }
       />
     </Grid>
   );

@@ -21,6 +21,8 @@ export interface ConditionModel {
   is_condition_attributes_approved?: boolean;
   is_standard_condition?: boolean;
   requires_management_plan?: boolean;
+  requires_iem_terms?: boolean;
+  requires_report?: boolean;
   source_document?: string;
   subtopic_tags?: string[];
   subconditions?: SubconditionModel[];   // Nested subconditions
@@ -47,6 +49,7 @@ export const createDefaultCondition = (): ConditionModel => {
       condition_attributes: {
         independent_attributes: [],
         management_plans: [],
+        iem_terms: [],
       },
       condition_type: ConditionType.ADD,
   };

@@ -18,6 +18,7 @@ class ConditionAttribute(BaseModel):
     attribute_key_id = Column(Integer, ForeignKey('condition.attribute_keys.id', ondelete='CASCADE'), nullable=False)
     attribute_value = Column(Text, nullable=True)
     management_plan_id = Column(Integer, ForeignKey('condition.management_plans.id', ondelete='CASCADE'), nullable=True)
+    iem_terms_id = Column(Integer, ForeignKey('condition.iem_terms.id', ondelete='CASCADE'), nullable=True)
 
     @classmethod
     def get_all(cls):

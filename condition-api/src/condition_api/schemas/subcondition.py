@@ -19,7 +19,7 @@ class SubconditionSchema(BaseSchema):
     """Subcondition schema."""
 
     subcondition_id = fields.Str(data_key="subcondition_id")
-    subcondition_identifier = fields.Str(data_key="subcondition_identifier")
+    subcondition_identifier = fields.Str(data_key="subcondition_identifier", allow_none=True, load_default=None)
     subcondition_text = fields.Str(data_key="subcondition_text")
     sort_order = fields.Int(data_key="sort_order")
 

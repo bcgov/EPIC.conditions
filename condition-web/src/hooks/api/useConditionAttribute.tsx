@@ -3,12 +3,15 @@ import { submitRequest } from "@/utils/axiosUtils";
 import { useMutation } from "@tanstack/react-query";
 import { Options } from "./types";
 
+type UpdateConditionAttributePayload = {
+  requires_management_plan?: boolean;
+  requires_iem_terms?: boolean;
+  condition_attribute: ConditionAttributeModel;
+};
+
 const updateConditionAttributeDetails = (
   conditionId: number,
-  payload: {
-    requires_management_plan: boolean;
-    condition_attribute: ConditionAttributeModel;
-  }
+  payload: UpdateConditionAttributePayload
 ) => {
   return submitRequest({
     url: `/attributes/condition/${conditionId}`,
@@ -22,10 +25,7 @@ export const useUpdateConditionAttributeDetails = (
   options? : Options
 ) => {
   return useMutation({
-    mutationFn: (payload: {
-      requires_management_plan: boolean;
-      condition_attribute: ConditionAttributeModel;
-    }) => {
+    mutationFn: (payload: UpdateConditionAttributePayload) => {
       if (!conditionId) {
         return Promise.reject(new Error("Condition ID is required"));
       }

@@ -54,11 +54,13 @@ class ConditionAttributeaResource(Resource):
     def patch(condition_id):
         """Edit condition attributes data."""
         try:
-            requires_management_plan = API.payload.get("requires_management_plan", [])
+            requires_management_plan = API.payload.get("requires_management_plan", False)
+            requires_iem_terms = API.payload.get("requires_iem_terms", False)
             condition_attribute = API.payload.get("condition_attribute", [])
             conditions_attributes_data = ConditionAttributesSchema().load(condition_attribute)
             updated_conditions_attributes = ConditionAttributeService.upsert_condition_attribute(
-                requires_management_plan, condition_id, conditions_attributes_data)
+                requires_management_plan, condition_id, conditions_attributes_data,
+                requires_iem_terms=requires_iem_terms)
             return ConditionAttributesSchema().dump(updated_conditions_attributes), HTTPStatus.OK
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST

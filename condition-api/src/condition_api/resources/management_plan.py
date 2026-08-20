@@ -20,7 +20,6 @@ from flask_restx import Namespace, Resource
 
 from marshmallow import ValidationError
 
-from condition_api.models.management_plan import ManagementPlan
 from condition_api.schemas.management_plan import ManagementPlanSchema
 from condition_api.services.management_plan import ManagementPlanService
 from condition_api.utils.roles import EpicConditionRole
@@ -70,11 +69,10 @@ class ManagementPlanResource(Resource):
     @cross_origin(origins=allowedorigins())
     @auth.has_one_of_roles([EpicConditionRole.MANAGE_CONDITIONS.value])
     def delete(plan_id):
-        """Remove management plan data."""
+        """Remove management plan data and any reports linked to it."""
         try:
-            deleted = ManagementPlan().delete_by_id(plan_id)
+            deleted = ManagementPlanService.delete_management_plan(plan_id)
             if not deleted:
-                # No data found to delete, but still OK
                 return 'No management plans data found to remove', HTTPStatus.OK
             return 'Management plans successfully removed', HTTPStatus.OK
         except (KeyError, ValueError) as err:

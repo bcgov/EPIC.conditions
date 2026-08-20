@@ -58,7 +58,6 @@ class IEMTermsConfig:
             AttributeKeys.MILESTONES_RELATED_TO_PLAN_IMPLEMENTATION.value,
             AttributeKeys.TIME_ASSOCIATED_WITH_SUBMISSION_MILESTONE.value,
             AttributeKeys.REQUIRES_CONSULTATION.value,
-            AttributeKeys.DELIVERABLE_NAME.value,
         ]
 
 

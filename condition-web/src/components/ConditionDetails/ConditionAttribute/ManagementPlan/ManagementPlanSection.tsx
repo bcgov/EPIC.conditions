@@ -1,58 +1,38 @@
 import React, { memo } from "react";
-import {
-  Box,
-  Button,
-  CircularProgress
-} from "@mui/material";
-import { managementRequiredKeys, managementOptionalDefaultKeys } from "../../ConditionAttribute/Constants";
-import { createDefaultManagementPlan } from "./helpers";
+import { Box, Typography } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import ManagementPlanAccordion from "./ManagementPlanAccordion";
-import { ManagementPlanModel } from "@/models/ConditionAttribute";
 import { ConditionModel } from "@/models/Condition";
-import { useUpdateConditionAttributeDetails } from "@/hooks/api/useConditionAttribute";
 import { useRemoveManagementPlan } from "@/hooks/api/useManagementPlan";
 import { notify } from "@/components/Shared/Snackbar/snackbarStore";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEY } from "@/hooks/api/constants";
-import { useHasAllowedRoles, KeycloakRoles } from "@/hooks/useAuthorization";
 import { useUpdateConditionDetails } from "@/hooks/api/useConditions";
+import { useGetReports } from "@/hooks/api/useReport";
+import { ReportModel } from "@/models/ConditionAttribute";
 
 type ManagementPlanSectionProps = {
-    condition: ConditionModel;
-    setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
+  condition: ConditionModel;
+  setCondition: React.Dispatch<React.SetStateAction<ConditionModel>>;
 };
 
-const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlanSectionProps) => {
+const ManagementPlanSection = memo(
+  ({ condition, setCondition }: ManagementPlanSectionProps) => {
     const queryClient = useQueryClient();
-    const canManage = useHasAllowedRoles([KeycloakRoles.MANAGE_CONDITIONS]);
+    const managementPlans =
+      condition?.condition_attributes?.management_plans || [];
 
-    const managementPlans = condition?.condition_attributes?.management_plans || [];
+    const { data: reports = [] } = useGetReports(condition.condition_id);
 
-    const onCreateSuccess = () => {
-      notify.success("Management Plan added successfully");
-      queryClient.invalidateQueries({ queryKey: ["conditions", condition.condition_id] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CONDITIONSDETAIL] });
-    };
-  
-    const onCreateFailure = () => {
-      notify.error("Failed to add management plan");
-    };
-  
-    const { mutateAsync: updateAttributes, isPending: isUpdating } = useUpdateConditionAttributeDetails(
-      condition.condition_id,
-      {
-        onSuccess: onCreateSuccess,
-        onError: onCreateFailure,
-      }
+    // Build a set of plan IDs that have at least one linked report submission
+    const linkedPlanIds = new Set<string>(
+      (reports as ReportModel[])
+        .flatMap((r) => r.submissions ?? [])
+        .filter((s) => s.linked_management_plan_id != null)
+        .map((s) => String(s.linked_management_plan_id))
     );
 
     const { mutateAsync: removeManagementPlan } = useRemoveManagementPlan({
-      onSuccess: () => {
-        notify.success("Management plan deleted");
-      },
-      onError: () => {
-        notify.error("Failed to delete management plan");
-      },
+      onSuccess: () => notify.success("Management plan deleted"),
+      onError: () => notify.error("Failed to delete management plan"),
     });
 
     const { mutate: updateConditionDetails } = useUpdateConditionDetails(
@@ -61,46 +41,17 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
       condition.condition_id
     );
 
-    const handleAddPlan = async () => {
-      const newPlan: ManagementPlanModel = createDefaultManagementPlan(
-        `(condition.condition_attributes?.length || 0) + 1-${Date.now()}`,
-        managementRequiredKeys,
-        managementOptionalDefaultKeys
-      );
-  
-      try { 
-        const updatedPlans = [...managementPlans, newPlan];
-
-        const response = await updateAttributes({
-          requires_management_plan: true,
-          condition_attribute: {
-            independent_attributes: condition.condition_attributes?.independent_attributes || [],
-            management_plans: updatedPlans,
-          },
-        });
-
-        const updatedResponsePlans = response?.management_plans ?? updatedPlans;
-
-        // Update global condition state too
-        setCondition((prev) => ({
-          ...prev,
-          condition_attributes: {
-            independent_attributes: prev.condition_attributes?.independent_attributes ?? [],
-            management_plans: updatedResponsePlans,
-          },
-          subconditions: prev.subconditions, // preserve optional fields if needed
-        }));
-
-      } catch (error) {
-        notify.error("Failed to add plan.");
-      }
-    };
-
     const handleDeletePlan = async (planId: string) => {
       await removeManagementPlan(planId);
+      // Invalidate reports cache — linked reports were cascade-deleted on the backend
+      queryClient.removeQueries({ queryKey: ["reports", condition.condition_id] });
       setCondition((prev) => {
-        const remainingPlans = prev.condition_attributes?.management_plans?.filter(p => p.id !== planId) || [];
-        const allApproved = remainingPlans.length > 0 && remainingPlans.every(p => p.is_approved);
+        const remainingPlans =
+          prev.condition_attributes?.management_plans?.filter(
+            (p) => p.id !== planId
+          ) || [];
+        const allApproved =
+          remainingPlans.length > 0 && remainingPlans.every((p) => p.is_approved);
         if (prev.is_condition_attributes_approved !== allApproved) {
           updateConditionDetails({ is_condition_attributes_approved: allApproved });
         }
@@ -110,39 +61,66 @@ const ManagementPlanSection = memo(({ condition, setCondition, }: ManagementPlan
           condition_attributes: {
             ...prev.condition_attributes,
             management_plans: remainingPlans,
-            independent_attributes: prev.condition_attributes?.independent_attributes || [],
+            independent_attributes:
+              prev.condition_attributes?.independent_attributes || [],
           },
         };
       });
     };
 
+    if (managementPlans.length === 0) return null;
+
     return (
-      <Box>
+      <Box sx={{ mb: 2 }}>
+        {/* Section header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            ml: "28px",
+            py: 1,
+            backgroundColor: "#f1f8fe",
+            borderRadius: "2px 2px 0 0",
+          }}
+        >
+          <Typography fontSize="18px" color="#2d2d2d" ml="15px">
+            Management Plans
+          </Typography>
+          <Box
+            sx={{
+              height: 22,
+              borderRadius: "100px",
+              backgroundColor: "#d8d8d8",
+              color: "#474543",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              px: 1,
+            }}
+          >
+            {managementPlans.length}
+          </Box>
+        </Box>
+
+        {/* Accordions */}
+        <Box sx={{ px: "28px", py: 2 }}>
           {managementPlans.map((plan, index) => (
-          <ManagementPlanAccordion
+            <ManagementPlanAccordion
               key={plan.id}
               attributes={plan}
               title={plan.name || `Management Plan ${index + 1}`}
               condition={condition}
               setCondition={setCondition}
               onDelete={handleDeletePlan}
-          />
+              hasLinkedReport={linkedPlanIds.has(String(plan.id))}
+            />
           ))}
-
-          {canManage && (isUpdating ? (
-            <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
-          ) : (
-            <Button
-                variant="outlined"
-                onClick={handleAddPlan}
-                sx={{ mt: 2 }}
-                data-testid="add-management-plan-btn"
-                >
-                Add Management Plan
-            </Button>
-          ))}
+        </Box>
       </Box>
     );
-});
+  }
+);
 
 export default ManagementPlanSection;

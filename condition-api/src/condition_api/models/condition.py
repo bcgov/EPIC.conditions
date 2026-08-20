@@ -33,6 +33,8 @@ class Condition(BaseModel):
     is_active = Column(Boolean, nullable=False, default=True)
     is_standard_condition = Column(Boolean, nullable=True)
     requires_management_plan = Column(Boolean, nullable=True)
+    requires_iem_terms = Column(Boolean, nullable=True)
+    requires_report = Column(Boolean, nullable=True)
     condition_type = Column(
         Enum(ConditionType, name="condition_type_enum"),
         nullable=False,
