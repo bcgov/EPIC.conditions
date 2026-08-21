@@ -17,41 +17,33 @@ See [API Application Readme](condition-api/README.md)
 ## Front End Setup
 See [Web Application Readme](condition-web/README.md)
 
+## Extraction Pipeline Setup
+See [Condition Cron Readme](condition-cron/README.md)
+
 
 ## Usage
 
-### Individual PDFs:
+Conditions are extracted automatically from uploaded PDF documents:
 
-### Extracting conditions and related details from PDF documents
-See [Data Extractor Readme](condition-parser/README.md)
-
-### Importing extracted conditions into the database
-See [Data Loader Readme](condition-loader/README.md)
-
-### Multiple PDFs (Batch Processing):
-See [Batch Processing README](./batch_api_calling).
-
-For verifying the output of a batch, see [manual verification README](./batch_api_calling/manual_verification/).
-
-*Note: gradio_ui.py in this directory is depreciated.* 
+1. Staff upload a document through the Condition Web application, creating a pending extraction request.
+2. `condition-cron` picks up the request on its schedule, downloads the PDF from S3, classifies its structure, and extracts conditions — along with clauses, management plan deliverables, and report submission requirements — using OpenAI. See [Condition Cron Readme](condition-cron/README.md) for how the pipeline works.
+3. Staff review the extracted result in the web UI and either import it into the condition tables or reject it.
 
 ## Directory Structure
 
     .github/                   - PR, CI action workflows and Issue templates
-    /docs                      - Miscellaneous documentations
+    docs/                      - Miscellaneous documentation
     condition-web/             - Condition Web application root
     └── src/                   - React.js application
-    condition-api/             - Condition API Application Root
-    ├── src/                   - Python flask application
-    │   └── met_api/           - Models, Resources and Services
-    └── migrations             - Database migration scripts
+    condition-api/             - Condition API application root
+    ├── src/                   - Python Flask application
+    │   └── condition_api/     - Models, Resources and Services
+    └── migrations/            - Database migration scripts
     └── tests/                 - API application tests
         └── unit/              - Python unit tests
-    condition-loader/          - Module for loading extracted conditions into the database
-    ├── condition_jsons/       - Collection of extracted condition JSON files
-    └── loadConditions         - Script for importing the extracted conditions into the database
-    condition-parser/          - Module for extracting conditions and related details from PDF documents.
-    openshift/                 - OpenShift templates and documentation
+    condition-cron/            - Scheduled job that extracts conditions from uploaded PDFs and stages them for staff review
+    deployment/                - Helm charts for OpenShift deployment
+    tools/condition-extractor/ - Azure-hosted OpenAI proxy used by condition-cron
     LICENSE                    - License
 
 ## Demo

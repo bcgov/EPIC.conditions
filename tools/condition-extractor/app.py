@@ -4,7 +4,7 @@ EPIC Condition Extractor
 Thin Azure-hosted proxy that forwards OpenAI-compatible chat completion
 requests to the configured AI backend (OpenAI or Azure OpenAI).
 
-All prompts, schemas, and retry logic live in condition-parser — this
+All prompts, schemas, and retry logic live in condition-cron — this
 service only provides authenticated API access to the model.
 
 Endpoints

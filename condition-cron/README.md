@@ -11,8 +11,9 @@ Scheduled cron job that processes pending document extraction requests. It reads
 3. **Process** — for each pending record:
    - Sets status → `processing`
    - Downloads the PDF from S3 using the `s3_url` key stored in the record
-   - Classifies the document type (numbered conditions, table format, etc.)
-   - Extracts and enriches all conditions via OpenAI GPT
+   - Classifies the document type (numbered conditions, table format, bulleted commitments, etc.)
+   - Extracts all conditions from the document via OpenAI GPT, page-chunked for larger/denser documents
+   - Enriches each condition with its clause/subcondition structure, management plan deliverables, and report submission requirements (including recurring submission schedules)
    - Extracts First Nations references from the document
    - Saves the parsed JSON in `condition.extraction_requests.extracted_data`
    - Sets status → `completed`
@@ -38,6 +39,7 @@ Use a read-only S3 credential scoped to the document bucket, and preferably to t
 | `pending` | Uploaded via UI, waiting to be processed |
 | `processing` | Currently being processed by the cron |
 | `completed` | Successfully extracted and saved to `extracted_data` for staff review |
+| `unsupported` | Document doesn't look like a real EAO conditions document (below the confidence threshold). Staff can switch to manual entry. |
 | `failed` | Processing failed — see `error_message` column for details. Staff can switch to manual entry. |
 | `imported` | Staff imported the extracted JSON into the condition tables |
 | `rejected` | Staff rejected or stopped the extraction; raw extracted JSON is cleared |
@@ -97,9 +99,13 @@ Copy `sample.env` to `.env` and fill in the values.
 | `S3_HOST` | S3 endpoint host, without protocol unless the provider requires one |
 | `S3_REGION` | S3 region (defaults to `us-east-1` in code if unset) |
 | `S3_SERVICE` | S3 service name, usually `s3` |
-| `EXTRACTOR_API_URL` | Azure-hosted extractor API URL (optional) |
-| `EXTRACTOR_API_KEY` | Extractor API key (optional) |
+| `EXTRACTOR_API_URL` | Azure-hosted extractor API URL — set this to route through `tools/condition-extractor` instead of calling OpenAI directly |
+| `EXTRACTOR_API_KEY` | Extractor API key, required when `EXTRACTOR_API_URL` is set |
+| `OPENAI_API_KEY` | Direct OpenAI API key — used instead of the extractor proxy when `EXTRACTOR_API_URL` is unset |
 | `EXTRACTION_UNSUPPORTED_CONFIDENCE_THRESHOLD` | Confidence required to stop extraction as unsupported (default: `0.75`) |
+| `EXTRACTION_QUEUE_CRON_INTERVAL_MINUTES` | Must match the cron schedule below — used by condition-api to estimate queue wait times in the UI (default: `30`) |
+| `EXTRACTION_PROCESSING_ESTIMATE_MINUTES` | Estimated time to process one document, used for UI wait-time estimates (default: `15`) |
+| `EXTRACTION_PROCESSING_STALE_AFTER_MINUTES` | How long a request can sit in `processing` before the queue retries it (default: `120`) |
 
 ---
 

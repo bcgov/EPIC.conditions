@@ -39,7 +39,7 @@ make run
 ## Step 2: Set Environment Variables
 
 1. Set the `FLASK_APP` and `FLASK_ENV` environment variables:
-    - set FLASK_APP=app.py 
+    - set FLASK_APP=wsgi.py
     - set FLASK_ENV=development
       
 2. Configure `PYTHONPATH` to your project's folder location up to `condition-api/src`:
