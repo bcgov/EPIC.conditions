@@ -33,6 +33,7 @@ from condition_api.models.db import db
 from condition_api.models.document import Document
 from condition_api.models.document_category import DocumentCategory
 from condition_api.models.document_type import DocumentType
+from condition_api.models.iem_terms import IEMTerms
 from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.project import Project
 from condition_api.models.subcondition import Subcondition
@@ -947,6 +948,7 @@ class ConditionService:
                 Condition.is_topic_tags_approved,
                 Condition.is_standard_condition,
                 Condition.requires_management_plan,
+                Condition.requires_iem_terms,
                 Condition.condition_type,
                 case(
                     (Condition.amended_document_id.isnot(None), Condition.amended_document_id),
@@ -1107,19 +1109,35 @@ class ConditionService:
                         "is_standard_condition": row.is_standard_condition,
                         "condition_attributes": condition_attributes
                     })
+            elif row.requires_iem_terms:
+                terms_packages = db.session.query(IEMTerms).filter(
+                    IEMTerms.condition_id == row.condition_id,
+                    IEMTerms.is_approved.is_(True)
+                ).all()
+
+                for terms in terms_packages:
+                    plan_name = terms.name
+
+                    condition_attributes = (
+                        ConditionService._fetch_condition_attributes_external(
+                            row.condition_id, include_condition_attributes,
+                            iem_terms_id=terms.id, plan_name=plan_name)
+                    )
+
+                    result.append({
+                        "condition_name": row.condition_name,
+                        "plan_name": plan_name,
+                        "condition_number": row.condition_number,
+                        "condition_text": condition_text,
+                        "is_standard_condition": row.is_standard_condition,
+                        "condition_attributes": condition_attributes
+                    })
             else:
                 condition_attributes = (
                     ConditionService._fetch_condition_attributes_external(
                         row.condition_id, include_condition_attributes)
                 )
                 plan_name = row.condition_name
-
-                if (
-                    condition_attributes.get("requires_iem_terms_of_engagement")
-                    and condition_attributes.get("deliverable_name")
-                ):
-                    deliverable_name = condition_attributes.get("deliverable_name")
-                    plan_name = deliverable_name[0]
 
                 result.append({
                     "condition_name": row.condition_name,
@@ -1152,6 +1170,7 @@ class ConditionService:
         condition_id,
         include_condition_attributes,
         management_plan_id=None,
+        iem_terms_id=None,
         plan_name=None
     ):
         """Fetch condition attributes based on the user type and flags."""
@@ -1178,8 +1197,13 @@ class ConditionService:
 
         if management_plan_id:
             query = query.filter(ConditionAttribute.management_plan_id == management_plan_id)
+        elif iem_terms_id:
+            query = query.filter(ConditionAttribute.iem_terms_id == iem_terms_id)
         else:
-            query = query.filter(ConditionAttribute.management_plan_id.is_(None))
+            query = query.filter(
+                ConditionAttribute.management_plan_id.is_(None),
+                ConditionAttribute.iem_terms_id.is_(None),
+            )
 
         attributes_data = query.order_by(AttributeKey.sort_order).all()
 
@@ -1214,6 +1238,9 @@ class ConditionService:
 
         if management_plan_id:
             result["requires_management_plan"] = "true"
+            result["deliverable_name"] = [plan_name]
+        elif iem_terms_id:
+            result["requires_iem_terms_of_engagement"] = "true"
             result["deliverable_name"] = [plan_name]
 
         return result
