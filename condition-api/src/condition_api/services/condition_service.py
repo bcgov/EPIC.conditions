@@ -1087,69 +1087,65 @@ class ConditionService:
             else:
                 condition_text = row.condition_text  # fallback if no subconditions
 
-            if row.requires_management_plan:
-                plans = db.session.query(ManagementPlan).filter(
-                    ManagementPlan.condition_id == row.condition_id,
-                    ManagementPlan.is_approved.is_(True)
-                ).all()
-
-                for plan in plans:
-                    plan_name = plan.name
-
-                    condition_attributes = (
-                        ConditionService._fetch_condition_attributes_external(
-                            row.condition_id, include_condition_attributes, plan.id, plan_name)
-                    )
-
-                    result.append({
-                        "condition_name": row.condition_name,
-                        "plan_name": plan_name,
-                        "condition_number": row.condition_number,
-                        "condition_text": condition_text,
-                        "is_standard_condition": row.is_standard_condition,
-                        "condition_attributes": condition_attributes
-                    })
-            elif row.requires_iem_terms:
-                terms_packages = db.session.query(IEMTerms).filter(
-                    IEMTerms.condition_id == row.condition_id,
-                    IEMTerms.is_approved.is_(True)
-                ).all()
-
-                for terms in terms_packages:
-                    plan_name = terms.name
-
-                    condition_attributes = (
-                        ConditionService._fetch_condition_attributes_external(
-                            row.condition_id, include_condition_attributes,
-                            iem_terms_id=terms.id, plan_name=plan_name)
-                    )
-
-                    result.append({
-                        "condition_name": row.condition_name,
-                        "plan_name": plan_name,
-                        "condition_number": row.condition_number,
-                        "condition_text": condition_text,
-                        "is_standard_condition": row.is_standard_condition,
-                        "condition_attributes": condition_attributes
-                    })
-            else:
-                condition_attributes = (
-                    ConditionService._fetch_condition_attributes_external(
-                        row.condition_id, include_condition_attributes)
+            result.extend(
+                ConditionService._build_external_condition_rows(
+                    row, condition_text, include_condition_attributes
                 )
-                plan_name = row.condition_name
-
-                result.append({
-                    "condition_name": row.condition_name,
-                    "plan_name": plan_name,
-                    "condition_number": row.condition_number,
-                    "condition_text": condition_text,
-                    "is_standard_condition": row.is_standard_condition,
-                    "condition_attributes": condition_attributes,
-                })
+            )
 
         conditions_schema = ConsolidatedConditionSchema(many=True)
         return {"conditions": conditions_schema.dump(result)}
+
+    @staticmethod
+    def _build_external_condition_rows(row, condition_text, include_condition_attributes):
+        """Build one result row per management plan / IEM terms package, or a single row otherwise."""
+        base_row = {
+            "condition_name": row.condition_name,
+            "condition_number": row.condition_number,
+            "condition_text": condition_text,
+            "is_standard_condition": row.is_standard_condition,
+        }
+
+        if row.requires_management_plan:
+            plans = db.session.query(ManagementPlan).filter(
+                ManagementPlan.condition_id == row.condition_id,
+                ManagementPlan.is_approved.is_(True)
+            ).all()
+            return [
+                {
+                    **base_row,
+                    "plan_name": plan.name,
+                    "condition_attributes": ConditionService._fetch_condition_attributes_external(
+                        row.condition_id, include_condition_attributes, plan.id, plan.name
+                    ),
+                }
+                for plan in plans
+            ]
+
+        if row.requires_iem_terms:
+            terms_packages = db.session.query(IEMTerms).filter(
+                IEMTerms.condition_id == row.condition_id,
+                IEMTerms.is_approved.is_(True)
+            ).all()
+            return [
+                {
+                    **base_row,
+                    "plan_name": terms.name,
+                    "condition_attributes": ConditionService._fetch_condition_attributes_external(
+                        row.condition_id, include_condition_attributes,
+                        iem_terms_id=terms.id, plan_name=terms.name
+                    ),
+                }
+                for terms in terms_packages
+            ]
+
+        return [{
+            **base_row,
+            "plan_name": row.condition_name,
+            "condition_attributes": ConditionService._fetch_condition_attributes_external(
+                row.condition_id, include_condition_attributes
+            ),
+        }]
 
     @staticmethod
     def _build_condition_text(subconditions):
