@@ -8,12 +8,12 @@ export const REPORT_TYPES = [
 
 export const REPORT_PHASES = [
   "All Phases",
+  "Post-Issuance",
   "Pre-Construction",
   "Construction",
   "Operations",
   "Closure",
   "Post-Closure",
-  "Post-Issuance",
 ];
 
 export const PHASE_ORDER = REPORT_PHASES;
