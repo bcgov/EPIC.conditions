@@ -33,7 +33,7 @@ def management_plan_required(input_condition_text: str) -> bool:
       "type": "function",
       "function": {
         "name": "extract_info",
-        "description": "If the condition requires a specific external plan/report/proposal/summary/etc. document to be written, extract the info related to the document.",
+        "description": "If the condition requires a specific external plan/report/proposal/summary/etc. document to be written, or requires retaining/appointing an Independent Environmental Monitor (IEM) and developing the IEM's Terms of Engagement, extract the info related to the document.",
 
         "parameters": {
           "type": "object",
@@ -41,7 +41,24 @@ def management_plan_required(input_condition_text: str) -> bool:
 
             "requires_plan": {
               "type": "boolean",
-              "description": "Does the condition explicitly state that a specific external plan/report/proposal/etc. document (e.g., air quality management plan, wildlife action plan, pollution mitigation plan, mountain goat proposal, frog monitoring report) should be written/submitted? If a condition only outlines how plans should be written/developed/handled or simply references a management plan without requiring one to be written, it should be marked False.",
+              "description": (
+                  "Does the condition explicitly state that a specific external plan/report/proposal/etc. "
+                  "document (e.g., air quality management plan, wildlife action plan, pollution mitigation "
+                  "plan, mountain goat proposal, frog monitoring report) should be written/submitted? If a "
+                  "condition only outlines how plans should be written/developed/handled or simply "
+                  "references a management plan without requiring one to be written, it should be marked "
+                  "False. Also mark True when the condition requires retaining, appointing, or engaging the "
+                  "'IEM' or 'Independent Environmental Monitor' BY THAT NAME, or requires developing, "
+                  "submitting, or having approved the IEM's Terms of Engagement / Terms of Reference — even "
+                  "though this is not a 'plan' document, it is captured through this same mechanism (see "
+                  "is_iem_terms_of_engagement below). Do NOT mark True on this basis for conditions that "
+                  "retain a 'Qualified Professional', consultant, contractor, or any other role that is not "
+                  "explicitly named 'IEM' / 'Independent Environmental Monitor' — retaining a Qualified "
+                  "Professional to develop an ordinary management/monitoring plan is a ROUTINE plan "
+                  "requirement (mark True for the ordinary plan/report reason above, not because of this IEM "
+                  "clause), not an IEM engagement, even though the sentence structure ('retain X to develop "
+                  "Y') looks similar."
+              ),
             },
 
           },
@@ -102,12 +119,26 @@ def extract_management_plan_info_using_gpt(condition_text: str) -> str:
                       "is_iem_terms_of_engagement": {
                         "type": "boolean",
                         "description": (
-                            "True only if this deliverable IS the Independent Environmental Monitor (IEM) "
-                            "Terms of Engagement / Terms of Reference document itself — the document that "
-                            "defines the IEM's role, responsibilities, authority, and reporting relationship. "
-                            "False for any other plan or report, even one the IEM is involved in preparing, "
-                            "reviewing, or implementing, and false for ordinary environmental monitoring plans "
-                            "that are not specifically about defining the IEM's own terms of engagement."
+                            "True if this deliverable IS the Independent Environmental Monitor (IEM) Terms "
+                            "of Engagement / Terms of Reference document itself — the document that defines "
+                            "the IEM's role, responsibilities, authority, and reporting relationship — OR if "
+                            "the condition requires retaining/appointing/engaging an IEM together with "
+                            "developing, submitting, or obtaining approval for those terms of engagement "
+                            "(e.g., 'the Holder must retain the IEM ... and develop the terms of engagement "
+                            "for the IEM'). In that case, use this single deliverable to represent the whole "
+                            "IEM engagement requirement — do not also create a separate report/plan entry for "
+                            "the retention clause. REQUIRES that the condition text explicitly refers to the "
+                            "retained/engaged party as the 'IEM' or 'Independent Environmental Monitor' by "
+                            "that name — False whenever the retained party is instead a 'Qualified "
+                            "Professional', consultant, contractor, or any other unnamed/differently-named "
+                            "role, even if the sentence has the same 'retain X to develop a plan/document Y' "
+                            "structure as a genuine IEM clause (e.g., 'retain a Qualified Professional to "
+                            "develop a plan for the management of adverse Project effects' is an ordinary "
+                            "management plan, NOT an IEM engagement — mark is_iem_terms_of_engagement False "
+                            "for it, even though is_plan should be True). False for any other plan or "
+                            "report, even one the IEM is involved in preparing, reviewing, or implementing, "
+                            "and false for ordinary environmental monitoring plans that are not specifically "
+                            "about defining the IEM's own terms of engagement."
                         ),
                       },
                       "approval_type": {
@@ -151,7 +182,20 @@ def extract_management_plan_info_using_gpt(condition_text: str) -> str:
                       "related_phase": {
                         "type": "string",
                         "enum": SUBMISSION_MILESTONE_PHASES,
-                        "description": "The project phase that the plan/report/proposal/etc.'s SUBMISSION due date is related to (e.g., the phase referenced in 'a minimum of X days prior to the planned commencement of ___'). Use 'N/A' if not tied to a specific phase, or null if not specified at all."
+                        "description": (
+                            "The project phase DURING WHICH the plan/report/proposal/etc.'s SUBMISSION due "
+                            "date falls — not necessarily the phase named in the timing language. For 'X "
+                            "days/months prior to the planned commencement of <phase>' wording, submission "
+                            "happens BEFORE <phase> begins, so use the phase immediately preceding <phase> "
+                            "in the project timeline (Pre-Construction, Construction, Commissioning, "
+                            "Operations, Care and Maintenance, Decommissioning, Closure, in that order) — "
+                            "e.g. 'a minimum of 60 days prior to the planned commencement of Construction' "
+                            "means related_phase is 'Pre-Construction', and 'prior to the commencement of "
+                            "Operations' means 'Construction'. Only use the named phase itself when "
+                            "submission is due DURING that phase (e.g., 'annually during Operations') or "
+                            "after that phase has started. Use 'N/A' if not tied to a specific phase, or "
+                            "null if not specified at all."
+                        ),
                       },
                       "submission_time_value": {
                         "type": "integer",
