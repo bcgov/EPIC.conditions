@@ -662,12 +662,12 @@ class ConditionService:
 
     @staticmethod
     def _copy_condition_attributes(source_condition_id, target_condition_id):
-        """Copy management plans, IEM terms of engagement, reports, and condition
-        attributes from source to target. Used when a condition is created via the
-        'Amend Existing Condition' flow, so all submission requirements carry over
-        onto the new amendment condition for staff to review/confirm. Every copied
-        package (management plan, IEM terms, report) starts unapproved, same as the
-        existing management-plan carry-over behaviour this mirrors.
+        """Copy management plans, IEM terms, reports, and condition attributes from source to target.
+
+        Used when a condition is created via the 'Amend Existing Condition' flow, so all
+        submission requirements carry over onto the new amendment condition for staff to
+        review/confirm. Every copied package (management plan, IEM terms, report) starts
+        unapproved, same as the existing management-plan carry-over behaviour this mirrors.
         """
         source_condition = db.session.query(Condition).filter_by(id=source_condition_id).first()
         target_condition = db.session.query(Condition).filter_by(id=target_condition_id).first()
