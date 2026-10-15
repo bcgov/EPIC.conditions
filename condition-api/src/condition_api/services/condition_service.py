@@ -36,6 +36,8 @@ from condition_api.models.document_type import DocumentType
 from condition_api.models.iem_terms import IEMTerms
 from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.project import Project
+from condition_api.models.report import Report
+from condition_api.models.report_submission import ReportSubmission
 from condition_api.models.subcondition import Subcondition
 from condition_api.schemas.condition import ConsolidatedConditionSchema, ProjectDocumentConditionSchema
 from condition_api.services.condition_attribute_service import ConditionAttributeService
@@ -660,12 +662,23 @@ class ConditionService:
 
     @staticmethod
     def _copy_condition_attributes(source_condition_id, target_condition_id):
-        """Copy requires_management_plan flag, management plans, and condition attributes from source to target."""
+        """Copy management plans, IEM terms of engagement, reports, and condition
+        attributes from source to target. Used when a condition is created via the
+        'Amend Existing Condition' flow, so all submission requirements carry over
+        onto the new amendment condition for staff to review/confirm. Every copied
+        package (management plan, IEM terms, report) starts unapproved, same as the
+        existing management-plan carry-over behaviour this mirrors.
+        """
         source_condition = db.session.query(Condition).filter_by(id=source_condition_id).first()
-        if source_condition and source_condition.requires_management_plan is not None:
-            target_condition = db.session.query(Condition).filter_by(id=target_condition_id).first()
-            if target_condition:
+        target_condition = db.session.query(Condition).filter_by(id=target_condition_id).first()
+
+        if source_condition and target_condition:
+            if source_condition.requires_management_plan is not None:
                 target_condition.requires_management_plan = source_condition.requires_management_plan
+            if source_condition.requires_iem_terms is not None:
+                target_condition.requires_iem_terms = source_condition.requires_iem_terms
+            if source_condition.requires_report is not None:
+                target_condition.requires_report = source_condition.requires_report
 
         source_plans = db.session.query(ManagementPlan).filter_by(
             condition_id=source_condition_id
@@ -678,6 +691,17 @@ class ConditionService:
             db.session.flush()
             plan_id_map[plan.id] = new_plan.id
 
+        source_iem_terms = db.session.query(IEMTerms).filter_by(
+            condition_id=source_condition_id
+        ).all()
+
+        iem_terms_id_map = {}
+        for terms in source_iem_terms:
+            new_terms = IEMTerms(condition_id=target_condition_id, name=terms.name)
+            db.session.add(new_terms)
+            db.session.flush()
+            iem_terms_id_map[terms.id] = new_terms.id
+
         source_attrs = db.session.query(ConditionAttribute).filter_by(
             condition_id=source_condition_id
         ).all()
@@ -687,13 +711,49 @@ class ConditionService:
                 plan_id_map.get(attr.management_plan_id)
                 if attr.management_plan_id else None
             )
+            new_iem_terms_id = (
+                iem_terms_id_map.get(attr.iem_terms_id)
+                if attr.iem_terms_id else None
+            )
             new_attr = ConditionAttribute(
                 condition_id=target_condition_id,
                 attribute_key_id=attr.attribute_key_id,
                 attribute_value=attr.attribute_value,
-                management_plan_id=new_management_plan_id
+                management_plan_id=new_management_plan_id,
+                iem_terms_id=new_iem_terms_id
             )
             db.session.add(new_attr)
+
+        source_reports = db.session.query(Report).filter_by(
+            condition_id=source_condition_id
+        ).all()
+
+        for report in source_reports:
+            new_report = Report(
+                condition_id=target_condition_id,
+                report_type=report.report_type,
+                name=report.name,
+                recipients=list(report.recipients) if report.recipients else None,
+            )
+            db.session.add(new_report)
+            db.session.flush()
+
+            for submission in report.submissions:
+                new_linked_plan_id = (
+                    plan_id_map.get(submission.linked_management_plan_id)
+                    if submission.linked_management_plan_id else None
+                )
+                new_submission = ReportSubmission(
+                    report_id=new_report.id,
+                    phase=submission.phase,
+                    frequency=submission.frequency,
+                    timing=submission.timing,
+                    condition_subsection=submission.condition_subsection,
+                    report_submission_type=submission.report_submission_type,
+                    linked_management_plan_id=new_linked_plan_id,
+                    report_title=submission.report_title,
+                )
+                db.session.add(new_submission)
 
         db.session.commit()
 
