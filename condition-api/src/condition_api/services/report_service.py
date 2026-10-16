@@ -2,8 +2,34 @@
 
 from condition_api.models.condition import Condition
 from condition_api.models.db import db
+from condition_api.models.management_plan import ManagementPlan
 from condition_api.models.report import Report
 from condition_api.models.report_submission import ReportSubmission
+
+
+def _serialize_submission_external(submission, plan_by_id):
+    linked_plan = (
+        plan_by_id.get(submission.linked_management_plan_id)
+        if submission.linked_management_plan_id else None
+    )
+    return {
+        'phase': submission.phase,
+        'frequency': submission.frequency,
+        'timing': submission.timing,
+        'condition_subsection': submission.condition_subsection,
+        'report_submission_type': submission.report_submission_type,
+        'report_title': submission.report_title,
+        'management_plan': linked_plan.name if linked_plan else None,
+    }
+
+
+def _serialize_report_external(report, condition, plan_by_id):
+    return {
+        'condition_name': condition.condition_name,
+        'condition_number': condition.condition_number,
+        'report_type': report.report_type,
+        'submissions': [_serialize_submission_external(s, plan_by_id) for s in report.submissions],
+    }
 
 
 def _serialize_submission(submission):
@@ -40,6 +66,52 @@ class ReportService:
         """Fetch all reports with submissions for a condition."""
         reports = Report.get_by_condition_id(condition_id)
         return [_serialize_report(r) for r in reports]
+
+    @staticmethod
+    def get_approved_reports_by_project(project_id):
+        """Fetch all reports (with submissions) for approved conditions in a project.
+
+        For external consumption: only includes reports belonging to conditions that
+        have cleared the same approval gate as the external consolidated-conditions
+        endpoint (is_approved, is_condition_attributes_approved, is_topic_tags_approved
+        all True) — which, by construction, means every submission on these reports is
+        itself already approved too.
+        """
+        reports = (
+            Report.query
+            .join(Condition, Condition.id == Report.condition_id)
+            .filter(
+                Condition.project_id == project_id,
+                Condition.is_approved.is_(True),
+                Condition.is_condition_attributes_approved.is_(True),
+                Condition.is_topic_tags_approved.is_(True),
+            )
+            .all()
+        )
+
+        if not reports:
+            return []
+
+        condition_by_id = {
+            c.id: c for c in Condition.query.filter(
+                Condition.id.in_({r.condition_id for r in reports})
+            ).all()
+        }
+
+        plan_ids = {
+            s.linked_management_plan_id
+            for r in reports for s in r.submissions
+            if s.linked_management_plan_id
+        }
+        plan_by_id = (
+            {p.id: p for p in ManagementPlan.query.filter(ManagementPlan.id.in_(plan_ids)).all()}
+            if plan_ids else {}
+        )
+
+        return [
+            _serialize_report_external(r, condition_by_id[r.condition_id], plan_by_id)
+            for r in reports
+        ]
 
     @staticmethod
     def create_report(condition_id, payload):

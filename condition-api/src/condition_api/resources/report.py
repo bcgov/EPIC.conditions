@@ -24,6 +24,25 @@ submission_model = ApiHelper.convert_ma_schema_to_restx_model(
 )
 
 
+@cors_preflight("OPTIONS, GET")
+@API.route("/project/<string:project_id>", methods=["GET", "OPTIONS"])
+class ProjectReportListResource(Resource):
+    """Resource for fetching all approved reports for a project, for external consumers."""
+
+    @staticmethod
+    @ApiHelper.swagger_decorators(API, endpoint_description="Get approved reports for a project")
+    @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
+    @auth.optional
+    @cross_origin(origins=allowedorigins())
+    def get(project_id):
+        """Fetch all approved reports, with submissions, for a project."""
+        try:
+            reports = ReportService.get_approved_reports_by_project(project_id)
+            return {"reports": reports}, HTTPStatus.OK
+        except (KeyError, ValueError) as err:
+            return {"message": str(err)}, HTTPStatus.BAD_REQUEST
+
+
 @cors_preflight("OPTIONS, GET, POST")
 @API.route("/condition/<int:condition_id>", methods=["GET", "POST", "OPTIONS"])
 class ReportListResource(Resource):
