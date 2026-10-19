@@ -25,6 +25,7 @@ def _serialize_submission_external(submission, plan_by_id):
 
 def _serialize_report_external(report, condition, plan_by_id):
     return {
+        'id': report.id,
         'condition_name': condition.condition_name,
         'condition_number': condition.condition_number,
         'report_type': report.report_type,
