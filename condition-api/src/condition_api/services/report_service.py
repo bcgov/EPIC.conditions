@@ -13,6 +13,7 @@ def _serialize_submission_external(submission, plan_by_id):
         if submission.linked_management_plan_id else None
     )
     return {
+        'id': submission.id,
         'phase': submission.phase,
         'frequency': submission.frequency,
         'timing': submission.timing,
@@ -73,16 +74,18 @@ class ReportService:
         """Fetch all reports (with submissions) for approved conditions in a project.
 
         For external consumption: only includes reports belonging to conditions that
-        have cleared the same approval gate as the external consolidated-conditions
-        endpoint (is_approved, is_condition_attributes_approved, is_topic_tags_approved
-        all True) — which, by construction, means every submission on these reports is
-        itself already approved too.
+        are active and have cleared the same approval gate as the external
+        consolidated-conditions endpoint (is_active, is_approved,
+        is_condition_attributes_approved, is_topic_tags_approved all True) — which, by
+        construction, means every submission on these reports is itself already
+        approved too.
         """
         reports = (
             Report.query
             .join(Condition, Condition.id == Report.condition_id)
             .filter(
                 Condition.project_id == project_id,
+                Condition.is_active.is_(True),
                 Condition.is_approved.is_(True),
                 Condition.is_condition_attributes_approved.is_(True),
                 Condition.is_topic_tags_approved.is_(True),
