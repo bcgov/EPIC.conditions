@@ -31,6 +31,7 @@ from condition_api.services import authorization
 from condition_api.services.amendment_service import AmendmentService
 from condition_api.services.condition_service import ConditionService
 from condition_api.services.docgen_service import TEMPLATE_KEY, DocGenService
+from condition_api.utils.roles import EpicConditionRole
 from condition_api.utils.util import allowedorigins, cors_preflight
 
 from .apihelper import Api as ApiHelper
@@ -131,7 +132,11 @@ class ConsolidatedConditionRenderResource(Resource):
     @ApiHelper.swagger_decorators(API, endpoint_description="Render consolidated conditions as PDF")
     @API.response(HTTPStatus.BAD_REQUEST, "Bad Request")
     @API.response(HTTPStatus.NOT_FOUND, "No conditions found")
-    @auth.optional
+    @auth.has_one_of_roles([
+        EpicConditionRole.VIEW_CONDITIONS.value,
+        EpicConditionRole.EXTRACT_CONDITIONS.value,
+        EpicConditionRole.MANAGE_CONDITIONS.value,
+    ])
     @cross_origin(origins=allowedorigins())
     def post(project_id):
         """Generate a PDF of consolidated conditions for a project."""
@@ -168,7 +173,13 @@ class ConsolidatedConditionRenderResource(Resource):
         except ValidationError as err:
             return {"message": str(err)}, HTTPStatus.BAD_REQUEST
         except http_requests.exceptions.RequestException as err:
-            return {"message": f"Failed to reach document generation service: {str(err)}"}, \
+            # Log full detail server-side; don't leak the internal DocGen service
+            # URL/host or request internals to the caller.
+            current_app.logger.error("DocGen request failed for project %s: %s", project_id, err)
+            return {"message": "Failed to generate the document. Please try again later."}, \
                 HTTPStatus.INTERNAL_SERVER_ERROR
         except SQLAlchemyError as err:
-            return {"message": f"Database error: {str(err)}"}, HTTPStatus.INTERNAL_SERVER_ERROR
+            # Log full detail server-side; don't leak SQL/schema internals.
+            current_app.logger.error("Database error rendering project %s: %s", project_id, err)
+            return {"message": "An internal error occurred while generating the document."}, \
+                HTTPStatus.INTERNAL_SERVER_ERROR
