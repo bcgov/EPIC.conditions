@@ -406,55 +406,66 @@ const ConditionHeader = ({
                 borderRadius: "4px",
                 display: 'flex',
                 flexDirection: 'column',
-                height: '100%'
+                height: '100%',
+                containerType: 'inline-size',
               }}
             >
-              <Grid container direction={{ xs: "column", sm: "row" }}>
-                <Grid item xs={8} sx={{ pl: 2, pt: 2 }}>
-                  <Stack 
-                      direction="row" 
-                      alignItems="center" // Aligns items in a visually consistent way
-                      gap={4.5} // Controls spacing dynamically
-                  >
-                      <StyledLabel sx={{ whiteSpace: "nowrap" }}>
-                          Project:
-                      </StyledLabel>
-                      <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
-                          {projectName}
-                      </Typography>
-                  </Stack>
-                </Grid>
-                <Grid item xs={4} sx={{ pl: 2, pt: 2 }}>
-                  <Stack 
-                      direction="row" 
-                      alignItems="center" // Aligns items in a visually consistent way
-                      gap={1.5} // Controls spacing dynamically
-                  >
-                      <StyledLabel sx={{ whiteSpace: "nowrap" }}>
-                        Year Condition Issued:
-                      </StyledLabel>
-                      <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
-                          {condition?.year_issued}
-                      </Typography>
-                  </Stack>
-                </Grid>
-              </Grid>
-              <Grid container direction={{ xs: "column", sm: "row" }}>
-                <Grid item xs={12} sm={8} sx={{ pl: 2, pb: 2, pt: 1 }}>
-                  <Stack 
-                      direction="row" 
-                      alignItems="center" // Aligns items in a visually consistent way
-                      gap={1.5} // Controls spacing dynamically
-                  >
-                      <StyledLabel sx={{ whiteSpace: "nowrap" }}>
-                        Document:
-                      </StyledLabel>
-                      <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
-                          {documentLabel}
-                      </Typography>
-                  </Stack>
-                </Grid>
-              </Grid>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  columnGap: 2,
+                  rowGap: 1,
+                  p: 2,
+                }}
+              >
+                <Box sx={{ order: 1, display: 'flex', alignItems: 'center', gap: 4.5, minWidth: 0 }}>
+                  <StyledLabel sx={{ whiteSpace: "nowrap" }}>
+                    Project:
+                  </StyledLabel>
+                  <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
+                    {projectName}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    order: 2,
+                    flexBasis: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    minWidth: 0,
+                    '@container (min-width: 520px)': { order: 3 },
+                  }}
+                >
+                  <StyledLabel sx={{ whiteSpace: "nowrap" }}>
+                    Document:
+                  </StyledLabel>
+                  <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
+                    {documentLabel}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    order: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    flexWrap: 'nowrap',
+                    '@container (min-width: 520px)': { order: 2, ml: 'auto' },
+                  }}
+                >
+                  <StyledLabel sx={{ whiteSpace: "nowrap" }}>
+                    Year Condition Issued:
+                  </StyledLabel>
+                  <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+                    {condition?.year_issued}
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
           </Grid>
 
