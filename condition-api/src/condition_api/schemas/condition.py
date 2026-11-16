@@ -6,12 +6,23 @@ from condition_api.schemas.condition_attribute import ConditionAttributesSchema
 from condition_api.schemas.subcondition import SubconditionSchema
 from condition_api.utils.enums import ConditionType
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, pre_load
 from marshmallow_enum import EnumField
 
 
 class ConditionSchema(Schema):
     """Condition schema."""
+
+    @pre_load
+    def _strip_read_only(self, data, **kwargs):  # pylint: disable=unused-argument
+        """Drop server-computed fields a client may echo back (e.g. when amending).
+
+        Marshmallow rejects dump_only fields on load as "Unknown field", so a payload
+        built from a previously fetched condition would otherwise 400.
+        """
+        if isinstance(data, dict) and "status" in data:
+            data = {k: v for k, v in data.items() if k != "status"}
+        return data
 
     condition_id = fields.Str(data_key="condition_id")
     condition_name = fields.Str(data_key="condition_name", allow_none=True)
