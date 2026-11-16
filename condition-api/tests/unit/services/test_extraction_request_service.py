@@ -226,7 +226,7 @@ def test_import_request_loads_reports_and_resolves_cross_condition_plan_link():
                             "recipients": [],
                             "submission_schedule": [
                                 {
-                                    "phase": "All Phases",
+                                    "phase": "Phase-Agnostic (submittable at any point)",
                                     "frequency": "As Needed",
                                     "timing": "Within 72 hours of non-compliance",
                                 }

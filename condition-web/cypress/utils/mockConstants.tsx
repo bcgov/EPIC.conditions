@@ -268,7 +268,7 @@ export const mockReports = [
       {
         id: 9001,
         report_id: 501,
-        phase: "All Phases",
+        phase: "Phase-Agnostic (submittable at any point)",
         frequency: "As Needed",
         timing: "Within 72 hours of non-compliance",
         condition_subsection: null,

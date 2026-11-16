@@ -33,7 +33,7 @@ REPORT_FREQUENCIES = ["As Needed", "One Time", "Annually", "Semi-Annually", "Qua
 # in condition-web (see PHASE_ORDER), and is used below as the chronological
 # phase sequence for "X days prior to <phase>" reasoning.
 REPORT_PHASES = [
-    "All Phases",
+    "Phase-Agnostic (submittable at any point)",
     "Post-Issuance",
     "Pre-Construction",
     "Construction",
@@ -292,7 +292,7 @@ def extract_report_info_using_gpt(condition_text: str) -> str:
                                     "submission recurs DURING that phase (e.g., 'annually during "
                                     "Construction'), is triggered by/follows a milestone within that phase "
                                     "(e.g. 'within 30 days of the commencement/suspension of <phase>'), or is "
-                                    "otherwise due after that phase has started. Use 'All Phases' "
+                                    "otherwise due after that phase has started. Use 'Phase-Agnostic (submittable at any point)' "
                                     "when the report recurs continuously across all phases, or when it is "
                                     "event-triggered without a specific phase (e.g., a non-compliance "
                                     "notification). Some certificates use the term 'Decommissioning' for "
@@ -312,9 +312,8 @@ def extract_report_info_using_gpt(condition_text: str) -> str:
                                     "for Compliance Notification and Project Status Notification. Use "
                                     "'One Time' for a single submission tied to a milestone or phase. Use "
                                     "'Annually', 'Semi-Annually', 'Quarterly', or 'Monthly' for a fixed "
-                                    "recurring schedule. Use 'Other' only for Compliance Self-Report or "
-                                    "Management Plan Associated Report entries whose schedule doesn't fit the "
-                                    "above — describe the actual schedule in 'timing' instead."
+                                    "recurring schedule. Use 'Other' for any report type whose schedule "
+                                    "doesn't fit the above — describe the actual schedule in 'timing' instead."
                                 ),
                               },
                               "timing": {

@@ -56,11 +56,11 @@ describe("AddReportForm", () => {
       "Within 30 days of a contact change"
     );
 
-    // Check "Construction", then uncheck it, then check "All Phases" —
+    // Check "Construction", then uncheck it, then check "Phase-Agnostic" —
     // exercises both the add and remove branches of the phase toggle
     cy.contains("Construction").click();
     cy.contains("Construction").click();
-    cy.contains("All Phases").click();
+    cy.contains("Phase-Agnostic (submittable at any point)").click();
 
     cy.contains("Save Report").click();
 
@@ -155,7 +155,7 @@ describe("AddReportForm", () => {
       "Within 30 days after each quarter"
     );
 
-    cy.contains("All Phases").click();
+    cy.contains("Phase-Agnostic (submittable at any point)").click();
 
     cy.contains("Save Report").click();
 

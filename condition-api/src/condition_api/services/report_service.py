@@ -142,7 +142,7 @@ class ReportService:
         report_title = payload.get('report_title')
 
         for sub_data in payload.get('submissions', []):
-            phases = sub_data.get('phases') or [sub_data.get('phase', 'All Phases')]
+            phases = sub_data.get('phases') or [sub_data.get('phase', 'Phase-Agnostic (submittable at any point)')]
             for phase in phases:
                 db.session.add(ReportSubmission(
                     report_id=report.id,
@@ -226,7 +226,7 @@ class ReportService:
         if not report:
             raise ValueError("Report not found.")
 
-        phases = payload.get('phases') or [payload.get('phase', 'All Phases')]
+        phases = payload.get('phases') or [payload.get('phase', 'Phase-Agnostic (submittable at any point)')]
         new_submissions = []
         for phase in phases:
             sub = ReportSubmission(

@@ -7,7 +7,7 @@ export const REPORT_TYPES = [
 ];
 
 export const REPORT_PHASES = [
-  "All Phases",
+  "Phase-Agnostic (submittable at any point)",
   "Post-Issuance",
   "Pre-Construction",
   "Construction",
@@ -34,6 +34,7 @@ export const PSN_FREQUENCIES = [
   { value: "One Time", label: "One Time" },
   { value: "Annually", label: "Annually" },
   { value: "Quarterly", label: "Quarterly" },
+  { value: "Other", label: "Other" },
 ];
 
 const PSN_TYPE = "Project Status Notification";
@@ -64,6 +65,7 @@ export const COMPLIANCE_SELF_REPORT_FREQUENCIES = [
   { value: "One Time", label: "One Time" },
   { value: "Annually", label: "Annually" },
   { value: "Quarterly", label: "Quarterly" },
+  { value: "Other", label: "Other" },
 ];
 
 export const MONITORING_TECHNICAL_FREQUENCIES = [
@@ -79,6 +81,7 @@ export const COMPLIANCE_NOTIFICATION_FREQUENCIES = [
   { value: "One Time", label: "One Time" },
   { value: "Annually", label: "Annually" },
   { value: "Quarterly", label: "Quarterly" },
+  { value: "Other", label: "Other" },
 ];
 
 export const PSN_SUBMISSION_TYPES = [

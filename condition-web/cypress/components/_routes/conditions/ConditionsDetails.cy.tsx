@@ -226,10 +226,10 @@ describe("conditions details page", () => {
 
     // Reports section renders with one report grouped under its phase
     cy.contains("Reports").should("exist");
-    cy.contains("All Phases").should("exist");
+    cy.contains("Phase-Agnostic (submittable at any point)").should("exist");
 
     // Expand the phase accordion to reveal the submission details
-    cy.contains("All Phases").click();
+    cy.contains("Phase-Agnostic (submittable at any point)").click();
     cy.contains("Submission Requirements").should("exist");
     cy.contains("Compliance Notification").should("exist");
     cy.contains("Awaiting Confirmation").should("exist");
